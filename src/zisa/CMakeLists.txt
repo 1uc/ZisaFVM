@@ -1,0 +1,6 @@
+add_subdirectory(cli)
+add_subdirectory(flux)
+add_subdirectory(grid)
+add_subdirectory(io)
+add_subdirectory(math)
+add_subdirectory(utils)
