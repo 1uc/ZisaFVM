@@ -62,12 +62,10 @@ public:
 };
 
 struct AllVariablesDimensions {
-  int n_cells;
-  int n_conserved_variables;
-  int n_advected_variables;
+  int_t n_cells;
+  int_t n_conserved_variables;
+  int_t n_advected_variables;
 };
-
-std::ostream &operator<<(std::ostream &os, const AllVariablesDimensions &dims);
 
 class AllVariables {
 public:
@@ -76,12 +74,10 @@ public:
 
 public:
   AllVariables() = default;
-  AllVariables(const device_type &device, const AllVariablesDimensions &dims);
+  AllVariables(const AllVariablesDimensions &dims, const device_type &device);
 
-  double &operator[](int i);
-  double operator[](int i) const;
-
-  void allocate(const device_type &device, const AllVariablesDimensions &dims);
+  double &operator[](int_t i);
+  double operator[](int_t i) const;
 
   int_t size() const;
 
@@ -92,6 +88,9 @@ public:
 
   void save(HDF5Writer &writer, const std::vector<std::string> &labels) const;
   void load(HDF5Reader &reader, const std::vector<std::string> &labels);
+
+protected:
+  void allocate(const AllVariablesDimensions &dims, const device_type &device);
 };
 
 } // namespace zisa

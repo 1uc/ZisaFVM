@@ -26,8 +26,9 @@ void GMSHReader::load_vertices() {
 }
 
 void GMSHReader::load_vertex(std::istringstream line) {
+  int discard;
   double x, y, z;
-  line >> x >> y >> z;
+  line >> discard >> x >> y >> z;
 
   vertices.push_back({x, y, z});
 }

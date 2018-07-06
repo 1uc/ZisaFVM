@@ -231,6 +231,7 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
 Grid::Grid(array<XY, 1> vertices, array<int_t, 2> vertex_indices)
     : vertices(std::move(vertices)), vertex_indices(std::move(vertex_indices)) {
 
+  n_cells = vertex_indices.shape(0);
   neighbours = compute_neighbours(this->vertex_indices);
   is_valid = compute_valid_neighbours(neighbours);
 
@@ -242,6 +243,14 @@ Grid::Grid(array<XY, 1> vertices, array<int_t, 2> vertex_indices)
       this->vertices, this->vertex_indices, neighbours, is_valid, edge_indices);
 
   tangentials = compute_tangentials(normals);
+}
+
+Triangle Grid::triangles(int_t i) const {
+  const auto &v0 = vertices[vertex_indices(i, 0)];
+  const auto &v1 = vertices[vertex_indices(i, 1)];
+  const auto &v2 = vertices[vertex_indices(i, 2)];
+
+  return Triangle(v0, v1, v2);
 }
 
 std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
@@ -268,6 +277,16 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
   }
 
   return std::make_shared<Grid>(std::move(vertices), std::move(vertex_indices));
+}
+
+double largest_circum_radius(const Grid &grid) {
+
+  double r = 0.0;
+  for (auto &&tri : triangles(grid)) {
+    r = zisa::max(r, circum_radius(tri));
+  }
+
+  return r;
 }
 
 } // namespace zisa

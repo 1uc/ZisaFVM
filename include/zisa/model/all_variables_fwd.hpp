@@ -3,7 +3,7 @@
 #ifndef ALL_VARIABLES_FWD_H_WCNVRL92
 #define ALL_VARIABLES_FWD_H_WCNVRL92
 
-namespace tyr {
+namespace zisa {
 
 class GridVariables;
 

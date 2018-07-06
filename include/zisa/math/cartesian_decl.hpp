@@ -137,9 +137,9 @@ public:
     return !((*this) == e);
   }
 
-  __host__ __device__ constexpr static int size(void) { return n_vars; }
+  ANY_DEVICE constexpr static int size(void) { return n_vars; }
 
-  __host__ __device__ static Cartesian<n_vars> zeros(void) {
+  ANY_DEVICE static Cartesian<n_vars> zeros(void) {
     Cartesian<n_vars> ret;
     return ret.assign_zero();
   }
@@ -156,7 +156,7 @@ public:
   }
 
   /// Cartesian orthonormal basis $e_i(j) = delta_{i,j}.$
-  __host__ __device__ static Cartesian<n_vars> unit_vector(int i) {
+  ANY_DEVICE static Cartesian<n_vars> unit_vector(int i) {
     Cartesian<n_vars> e = zeros();
     e(i) = 1;
 
@@ -166,6 +166,17 @@ public:
 protected:
   double data[n_vars];
 };
+
+template <int n_vars>
+std::ostream operator<<(std::ostream &os, const Cartesian<n_vars> &x) {
+
+  os << "[ ";
+  for (int_t i = 0; i < x.size(); ++i) {
+    os << x[i] << (i == x.size()-1 ? " ]" : ", ");
+  }
+
+  return os;
+}
 
 class XY : public Cartesian<2> {
 private:

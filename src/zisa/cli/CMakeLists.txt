@@ -1,4 +1,5 @@
-target_sources(zisa PUBLIC
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/input_parameters.cpp
-  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/parse_command_line.cpp
+target_sources(zisa
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/input_parameters.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/parse_command_line.cpp
 )
+
