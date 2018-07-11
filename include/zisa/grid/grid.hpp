@@ -12,6 +12,7 @@ namespace zisa {
 
 struct Grid {
   int_t n_cells;
+  int_t max_neighbours;
 
   array<int_t, 2> vertex_indices;
   array<int_t, 2> edge_indices;

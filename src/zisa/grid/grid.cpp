@@ -228,10 +228,12 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
   return neighbours;
 }
 
-Grid::Grid(array<XY, 1> vertices, array<int_t, 2> vertex_indices)
-    : vertices(std::move(vertices)), vertex_indices(std::move(vertex_indices)) {
+Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
+    : vertices(std::move(vertices_)), vertex_indices(std::move(vertex_indices_)) {
 
   n_cells = vertex_indices.shape(0);
+  max_neighbours = vertex_indices.shape(1);
+
   neighbours = compute_neighbours(this->vertex_indices);
   is_valid = compute_valid_neighbours(neighbours);
 
