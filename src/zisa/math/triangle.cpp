@@ -16,8 +16,8 @@ Triangle::Triangle(const XY &A, const XY &B, const XY &C)
 double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg) {
   auto center = barycenter(tri);
 
-  auto f = [&tri, x_deg, y_deg, &center](const Barycentric &bc) {
-    auto x = XY(bc(tri) - center);
+  auto f = [x_deg, y_deg, &center](const XY &xy) {
+    auto x = XY(xy - center);
     return zisa::pow(x[0], x_deg) * zisa::pow(x[1], y_deg);
   };
 

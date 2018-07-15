@@ -42,16 +42,16 @@ const QuadratureRule &cached_triangular_quadrature_rule() {
 
 template <int deg, class F>
 auto quadrature(const F &f, const Triangle &tri)
-    -> decltype(f(std::declval<QuadratureRule>().points[0])) {
+    -> decltype(f(std::declval<XY>())) {
 
   const auto &qr = cached_triangular_quadrature_rule<deg>();
   const auto &w = qr.weights;
   const auto &x = qr.points;
 
-  decltype(f(x[0])) ret = w[0] * f(x[0]);
+  decltype(f(x[0](tri))) ret = w[0] * f(x[0](tri));
 
   for (int_t i = 1; i < qr.weights.size(); ++i) {
-    ret = ret + w[i] * f(x[i]);
+    ret = ret + w[i] * f(x[i](tri));
   }
 
   return tri.volume * ret;
@@ -59,7 +59,7 @@ auto quadrature(const F &f, const Triangle &tri)
 
 template <class F>
 auto quadrature(const F &f, const Triangle &tri, int deg)
-    -> decltype(f(std::declval<QuadratureRule>().points[0])) {
+    -> decltype(f(std::declval<XY>())) {
 
   if (deg == 1) {
     return quadrature<1>(f, tri);
@@ -75,12 +75,10 @@ auto quadrature(const F &f, const Triangle &tri, int deg)
 }
 
 template <int deg, class F>
-auto quadrature(const F &f_, const Grid &grid)
-    -> decltype(f_(std::declval<XY>())) {
+auto quadrature(const F &f, const Grid &grid)
+    -> decltype(f(std::declval<XY>())) {
 
   auto tri = grid.triangles(0);
-
-  auto f = [&tri, &f_](const Barycentric &bc) { return f_(bc(tri)); };
 
   auto ret = quadrature<deg>(f, tri);
 
