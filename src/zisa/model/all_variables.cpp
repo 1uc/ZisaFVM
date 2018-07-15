@@ -49,7 +49,7 @@ void AllVariables::allocate(const AllVariablesDimensions &dims,
 }
 
 double AllVariables::operator[](int_t i) const {
-  int n_conserved_elements = conserved_variables.size();
+  auto n_conserved_elements = conserved_variables.size();
 
   if (i < n_conserved_elements) {
     return conserved_variables[i];
@@ -59,7 +59,7 @@ double AllVariables::operator[](int_t i) const {
 }
 
 double &AllVariables::operator[](int_t i) {
-  int n_conserved_elements = conserved_variables.size();
+  auto n_conserved_elements = conserved_variables.size();
 
   if (i < n_conserved_elements) {
     return conserved_variables[i];
@@ -87,8 +87,7 @@ void AllVariables::save(HDF5Writer &writer,
   // conserved variables
   conserved_variables.split_save(writer, labels);
 
-  int n_advected_variables = advected_variables.shape(1);
-  assert(n_advected_variables == 0);
+  assert(advected_variables.shape(1) == 0);
   // // advected variables
   // int n_advected_variables = advected_variables.shape(1);
   // writer.write_scalar(n_advected_variables, "n_advected_variables");

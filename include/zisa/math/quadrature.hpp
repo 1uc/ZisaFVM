@@ -23,7 +23,7 @@ private:
   double lambda[3];
 };
 
-std::ostream& operator<<(std::ostream &os, const Barycentric &bc);
+std::ostream &operator<<(std::ostream &os, const Barycentric &bc);
 
 struct QuadratureRule {
   array<double, 1> weights;
@@ -55,6 +55,23 @@ auto quadrature(const F &f, const Triangle &tri)
   }
 
   return tri.volume * ret;
+}
+
+template <class F>
+auto quadrature(const F &f, const Triangle &tri, int deg)
+    -> decltype(f(std::declval<QuadratureRule>().points[0])) {
+
+  if (deg == 1) {
+    return quadrature<1>(f, tri);
+  } else if (deg == 2) {
+    return quadrature<2>(f, tri);
+  } else if (deg == 3) {
+    return quadrature<3>(f, tri);
+  } else if (deg == 4) {
+    return quadrature<4>(f, tri);
+  } else {
+    LOG_ERR("Implement the remaining quadrature rules.");
+  }
 }
 
 template <int deg, class F>

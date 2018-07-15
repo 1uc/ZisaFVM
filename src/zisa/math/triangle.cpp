@@ -13,16 +13,15 @@ Triangle::Triangle(const XY &A, const XY &B, const XY &C)
       c(zisa::norm(A - B)),
       volume(herons_formula(a, b, c)) {}
 
-double Triangle::avg_moment(int x_deg, int y_deg) {
+double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg) {
+  auto center = barycenter(tri);
 
-  auto center = barycenter(*this);
-
-  auto f = [this, x_deg, y_deg, &center](const Barycentric &bc) {
-    auto x = XY(bc(*this) - center);
+  auto f = [&tri, x_deg, y_deg, &center](const Barycentric &bc) {
+    auto x = XY(bc(tri) - center);
     return zisa::pow(x[0], x_deg) * zisa::pow(x[1], y_deg);
   };
 
-  return 1.0 / volume * quadrature<3>(f, *this);
+  return 1.0 / tri.volume * quadrature(f, tri, quad_deg);
 }
 
 XY barycenter(const Triangle &tri) { return XY((tri.A + tri.B + tri.C) / 3.0); }

@@ -21,22 +21,22 @@ public:
   using super::operator();
 
   template <class Variable>
-  ANY_DEVICE_INLINE Variable read(Variable &var, int i) const {
-    for (int k = 0; k < (*this).shape(1); k++) {
+  ANY_DEVICE_INLINE Variable read(Variable &var, int_t i) const {
+    for (int_t k = 0; k < (*this).shape(1); k++) {
       var[k] = (*this)(i, k);
     }
   }
 
   template <class Variable>
-  ANY_DEVICE_INLINE Variable read(int i) const {
+  ANY_DEVICE_INLINE Variable read(int_t i) const {
     Variable var;
     read(var, i);
     return var;
   }
 
   template <class Variable>
-  ANY_DEVICE_INLINE void write(const Variable &var, int i) {
-    for (int k = 0; k < (*this).shape(1); k++) {
+  ANY_DEVICE_INLINE void write(const Variable &var, int_t i) {
+    for (int_t k = 0; k < (*this).shape(1); k++) {
       (*this)(i, k) = var[k];
     }
   }

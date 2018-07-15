@@ -168,7 +168,7 @@ protected:
 };
 
 template <int n_vars>
-std::ostream & operator<<(std::ostream &os, const Cartesian<n_vars> &x) {
+std::ostream &operator<<(std::ostream &os, const Cartesian<n_vars> &x) {
 
   os << "[ ";
   for (int_t i = 0; i < x.size(); ++i) {
@@ -188,6 +188,18 @@ public:
   using super::Cartesian;
   using super::operator=;
 };
+
+template <class E1, class E2, class E3>
+double cos_angle(const CartesianExpr<E1, double> &e1_,
+                 const CartesianExpr<E2, double> &e2_,
+                 const CartesianExpr<E3, double> &e3_) {
+
+  const auto &e1 = static_cast<const E1 &>(e1_);
+  const auto &e2 = static_cast<const E2 &>(e2_);
+  const auto &e3 = static_cast<const E3 &>(e3_);
+
+  return zisa::dot(normalize(e1 - e2), normalize(e3 - e1));
+}
 
 template <class E>
 bool isreal(const CartesianExpr<E, double> &e_) {

@@ -1,6 +1,9 @@
 #include "basic_functions.hpp"
-#include <cmath>
+#include <zisa/math/basic_functions.hpp>
+
 #include <cassert>
+#include <catch/catch.hpp>
+#include <cmath>
 
 std::vector<double> convergence_rates(const std::vector<double> &dx,
                                       const std::vector<double> &e) {
@@ -14,4 +17,18 @@ std::vector<double> convergence_rates(const std::vector<double> &dx,
   }
 
   return r;
+}
+
+TEST_CASE("factorial") {
+  REQUIRE(zisa::factorial(0) == 1);
+  REQUIRE(zisa::factorial(1) == 1);
+  REQUIRE(zisa::factorial(2) == 2);
+  REQUIRE(zisa::factorial(3) == 6);
+  REQUIRE(zisa::factorial(4) == 24);
+}
+
+TEST_CASE("Gamma") {
+  for (int k = 1; k < 6; ++k) {
+    REQUIRE(zisa::Gamma(k) == zisa::factorial(k - 1));
+  }
 }

@@ -192,16 +192,6 @@ edges_t compute_edges(const vertex_indices_t &vertex_indices) {
   return ret;
 }
 
-namespace /* anon */ {
-int_t first_empty(const neighbours_t &neighbours, int_t i) {
-  int_t k = 0;
-  while (neighbours(i, k) != magic_index_value) {
-    ++k;
-  }
-  return k;
-};
-} // namespace
-
 neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
   // Only works when all polygons in the grid have the same number of edges.
   assert(vertex_indices.shape(1) == 3);
@@ -229,7 +219,8 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
 }
 
 Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
-    : vertices(std::move(vertices_)), vertex_indices(std::move(vertex_indices_)) {
+    : vertex_indices(std::move(vertex_indices_)),
+      vertices(std::move(vertices_)) {
 
   n_cells = vertex_indices.shape(0);
   max_neighbours = vertex_indices.shape(1);
@@ -247,10 +238,14 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
   tangentials = compute_tangentials(normals);
 }
 
+const XY &Grid::vertex(int_t i, int_t k) const {
+  return vertices(vertex_indices(i, k));
+}
+
 Triangle Grid::triangles(int_t i) const {
-  const auto &v0 = vertices[vertex_indices(i, 0)];
-  const auto &v1 = vertices[vertex_indices(i, 1)];
-  const auto &v2 = vertices[vertex_indices(i, 2)];
+  const auto &v0 = vertex(i, 0);
+  const auto &v1 = vertex(i, 1);
+  const auto &v2 = vertex(i, 2);
 
   return Triangle(v0, v1, v2);
 }

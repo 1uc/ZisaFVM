@@ -27,6 +27,7 @@ struct Grid {
   array<XY, 1> tangentials;
 
   Grid(array<XY, 1> vertices, array<int_t, 2> vertex_indices);
+  const XY &vertex(int_t i, int_t k) const;
 
   Triangle triangles(int_t i) const;
 };

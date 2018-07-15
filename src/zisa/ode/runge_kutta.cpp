@@ -137,7 +137,7 @@ void runge_kutta_sum(AllVariables &u1,
   for (int_t i = 0; i < N; ++i) {
     double dudt = 0.0;
 
-    for (int stage = 0; stage < n_stages; ++stage) {
+    for (int_t stage = 0; stage < n_stages; ++stage) {
       if (coeffs[stage] != 0.0) {
         dudt += coeffs[stage] * tendency_buffers[stage][i];
       }
