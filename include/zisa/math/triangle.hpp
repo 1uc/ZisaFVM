@@ -29,6 +29,7 @@ public:
 XY barycenter(const Triangle &tri);
 double circum_radius(const Triangle &tri);
 double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg);
+Triangle reference_triangle();
 
 } // namespace zisa
 #endif /* end of include guard */

@@ -14,7 +14,9 @@ namespace zisa {
 
 class Barycentric {
 public:
+  Barycentric() = default;
   Barycentric(double lambda1, double lambda2, double lambda3);
+
   XY operator()(const Triangle &tri) const;
 
   double operator[](int i) const { return lambda[i]; }
@@ -78,12 +80,12 @@ template <int deg, class F>
 auto quadrature(const F &f, const Grid &grid)
     -> decltype(f(std::declval<XY>())) {
 
-  auto tri = grid.triangles(0);
+  auto tri = grid.triangle(0);
 
   auto ret = quadrature<deg>(f, tri);
 
   for (int_t i = 1; i < grid.n_cells; ++i) {
-    tri = grid.triangles(i);
+    tri = grid.triangle(i);
     ret = ret + quadrature<deg>(f, tri);
   }
 

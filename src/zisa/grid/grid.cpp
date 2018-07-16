@@ -8,6 +8,7 @@
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/poly2d.hpp>
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
@@ -236,13 +237,18 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
       this->vertices, this->vertex_indices, neighbours, is_valid, edge_indices);
 
   tangentials = compute_tangentials(normals);
+
+  normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
+  for (const auto &[i, tri] : triangles(*this)) {
+    normalized_moments(i) = zisa::normalized_moments(tri, 2, 4);
+  }
 }
 
 const XY &Grid::vertex(int_t i, int_t k) const {
   return vertices(vertex_indices(i, k));
 }
 
-Triangle Grid::triangles(int_t i) const {
+Triangle Grid::triangle(int_t i) const {
   const auto &v0 = vertex(i, 0);
   const auto &v1 = vertex(i, 1);
   const auto &v2 = vertex(i, 2);
@@ -279,11 +285,32 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 double largest_circum_radius(const Grid &grid) {
 
   double r = 0.0;
-  for (auto &&tri : triangles(grid)) {
+  for (auto &&[i, tri] : triangles(grid)) {
     r = zisa::max(r, circum_radius(tri));
   }
 
   return r;
+}
+
+array<double, 1>
+normalized_moments(const Triangle &tri, int degree, int quad_deg) {
+
+  auto m = array<double, 1>(shape_t<1>{poly_dof(degree)});
+
+  auto length = circum_radius(tri);
+  auto length_d = 1;
+
+  for (int d = 0; d <= degree; ++d) {
+    for (int k = 0; k <= d; ++k) {
+      int l = d - k;
+
+      m(poly_index(k, l)) = avg_moment(tri, k, l, quad_deg) / length_d;
+    }
+
+    length_d *= length;
+  }
+
+  return m;
 }
 
 } // namespace zisa

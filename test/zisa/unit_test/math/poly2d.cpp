@@ -1,6 +1,8 @@
 #include <catch/catch.hpp>
 
 #include <zisa/math/poly2d.hpp>
+#include <zisa/math/triangle.hpp>
+#include <zisa/math/quadrature.hpp>
 
 TEST_CASE("poly_dof", "[math][poly2d]") {
   REQUIRE(zisa::poly_dof(0) == 1);
@@ -60,17 +62,26 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
     auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
                              {0.0, 0.0, 0.0, 1.0, 2.0, 3.0});
 
-    auto q = zisa::Poly2D<5>({1.0, 2.0, 3.0},
-                             {0.0, 0.0, 0.0});
+    auto q = zisa::Poly2D<5>({1.0, 2.0, 3.0}, {0.0, 0.0, 0.0});
 
     auto x = zisa::XY{-3.4, 2.138};
 
-    auto pq = zisa::Poly2D<5>(0.2*p + q - 0.4*p);
+    auto pq = zisa::Poly2D<5>(0.2 * p + q - 0.4 * p);
 
-    auto exact = 0.2*p(x) + q(x) - 0.4*p(x);
+    auto exact = 0.2 * p(x) + q(x) - 0.4 * p(x);
     auto approx = pq(x);
 
     INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
     REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+  }
+
+  SECTION("quadrature") {
+    auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+                             {0.0, 0.0, 0.0, -1.0, -2.0, -3.0});
+
+    auto tri = zisa::reference_triangle();
+
+    auto pbar = zisa::quadrature<4>(p, tri);
+    REQUIRE(pbar > 0.0);
   }
 }

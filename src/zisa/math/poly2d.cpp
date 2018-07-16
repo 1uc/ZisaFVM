@@ -33,4 +33,5 @@ int poly_degree(int_t n_coeffs) {
     LOG_ERR("Broken logic.");
   }
 }
+
 } // namespace zisa

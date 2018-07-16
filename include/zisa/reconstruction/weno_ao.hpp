@@ -23,26 +23,33 @@ using LocalBuffer = array<double, 1>;
 
 class WENO_AO {
 public:
-  static constexpr int_t max_degree() { return 4ul; }
+  static constexpr int max_degree() { return 2; }
 
 public:
   using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
 
 public:
-  WENO_AO(const Grid &grid, int_t i_cell);
-  Poly2D<4> reconstruct(const LocalBuffer &buffer) const;
+  WENO_AO(const std::shared_ptr<Grid> &grid, int_t i_cell);
+  Poly2D<2> reconstruct(const LocalBuffer &buffer) const;
+
+  const std::vector<int_t> &local2global() const;
 
 protected:
   array<LocalIndex, 1>
   assign_local_indices(const std::vector<int_t> &global_indices,
                        std::vector<int_t> &l2g);
 
-  void compute_stencils(const Grid &grid, int_t i_cell);
-  void compute_qr(const Grid &grid, int_t i_cells);
+  void compute_stencils();
+  void compute_qr();
 
 private:
+  std::shared_ptr<Grid> grid;
+  int_t i_cell;
+
   array<array<LocalIndex, 1>, 1> stencils;
   array<QR, 1> qr;
+
+  std::vector<int_t> l2g;
   int order;
 };
 

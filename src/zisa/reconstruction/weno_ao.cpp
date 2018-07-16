@@ -7,50 +7,73 @@
 
 namespace zisa {
 
-WENO_AO::WENO_AO(const Grid &grid, int_t i_cell) : stencils(shape_t<1>{4ul}) {
-  compute_stencils(grid, i_cell);
-  compute_qr(grid, i_cell);
+WENO_AO::WENO_AO(const std::shared_ptr<Grid> &grid, int_t i_cell)
+    : grid(grid),
+      i_cell(i_cell),
+      stencils(shape_t<1>{4ul}),
+      qr(shape_t<1>{4ul}) {
+
+  compute_stencils();
+  compute_qr();
 }
 
-auto WENO_AO::reconstruct(const LocalBuffer &buffer) const
+auto WENO_AO::reconstruct(const LocalBuffer &qbar) const
     -> Poly2D<max_degree()> {
-  LOG_ERR("implement first.");
+
+  auto pC = qr(0).solve(
+      Eigen::Map<const Eigen::VectorXd>(qbar.raw(), qr(0).rows()));
+
+  // TODO: implement hybridization.
+  // auto p0 = qr(1)(qbar);
+  // auto p1 = qr(2)(qbar);
+  // auto p2 = qr(3)(qbar);
+
+  const auto &moments = grid->normalized_moments(i_cell);
+
+  auto i20 = poly_index(2, 0);
+  auto i11 = poly_index(1, 1);
+  auto i02 = poly_index(0, 2);
+  return {{qbar(0), pC(0), pC(1), pC(2), pC(3), pC(4)},
+          {0.0, 0.0, 0.0, moments(i20), moments(i11), moments(i02)}};
 }
 
-void WENO_AO::compute_qr(const Grid &grid, int_t i_cell) {
+void WENO_AO::compute_qr() {
   for (int_t i = 0; i < stencils.shape(0); ++i) {
-    qr(i) = QR(assemble_weno_ao_matrix(
-        grid, stencils(i), order, (i == 0 ? 2.0 : 1.5)));
+    qr(i).compute(assemble_weno_ao_matrix(
+        *grid, stencils(i), order, (i == 0 ? 2.0 : 1.5)));
   }
 }
 
-void WENO_AO::compute_stencils(const Grid &grid, int_t i_cell) {
-  int_t max_order = 3;
-  int_t max_points = required_stencil_size(max_order - 1, 2.0);
+void WENO_AO::compute_stencils() {
+  int_t max_points = required_stencil_size(max_degree(), 2.0);
 
-  auto c = zisa::central_stencil(grid, i_cell, max_points);
+  auto c = zisa::central_stencil(*grid, i_cell, max_points);
 
-  auto b0 = zisa::biased_stencil(grid, i_cell, 0, max_points);
-  auto b1 = zisa::biased_stencil(grid, i_cell, 1, max_points);
-  auto b2 = zisa::biased_stencil(grid, i_cell, 2, max_points);
+  auto b0 = zisa::biased_stencil(*grid, i_cell, 0, max_points);
+  auto b1 = zisa::biased_stencil(*grid, i_cell, 1, max_points);
+  auto b2 = zisa::biased_stencil(*grid, i_cell, 2, max_points);
 
   order = zisa::min(deduce_max_order(c, 2.0),
                     deduce_max_order(b0, 1.5),
                     deduce_max_order(b1, 1.5),
                     deduce_max_order(b2, 1.5));
 
+  order = zisa::min(max_degree() + 1, order);
+
   c.resize(required_stencil_size(order - 1, 2.0));
   b0.resize(required_stencil_size(order - 1, 1.5));
   b1.resize(required_stencil_size(order - 1, 1.5));
   b2.resize(required_stencil_size(order - 1, 1.5));
 
-  auto l2g = std::vector<int_t>(c.size());
+  l2g = std::vector<int_t>(c.size());
 
   stencils(0) = assign_local_indices(c, l2g);
   stencils(1) = assign_local_indices(b0, l2g);
   stencils(2) = assign_local_indices(b1, l2g);
   stencils(3) = assign_local_indices(b2, l2g);
 }
+
+const std::vector<int_t> &WENO_AO::local2global() const { return l2g; }
 
 int_t deduce_max_order(const std::vector<int_t> &stencil, double factor) {
   auto stencil_size = stencil.size();
@@ -149,24 +172,6 @@ std::vector<int_t> biased_stencil(const Grid &grid,
   return candidates;
 }
 
-/// Generate all moment for a 2D poly of degree 'deg'.
-array<double, 1>
-normalized_moments(const Triangle &tri, double length, int_t deg) {
-
-  auto moments = array<double, 1>(shape_t<1>{poly_dof(deg)});
-
-  int_t order = deg + 1;
-
-  for (int_t i = 0; i < deg; ++i) {
-    for (int_t j = 0; j <= i; ++j) {
-      moments(poly_index(i, j))
-          = avg_moment(tri, i, j, order) / zisa::pow(length, i + j);
-    }
-  }
-
-  return moments;
-}
-
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const array<LocalIndex, 1> &stencil,
                                         int_t order,
@@ -176,18 +181,19 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   auto A = Eigen::MatrixXd(stencil_size, poly_dof(order - 1) - 1);
 
   auto i0 = stencil(0).global;
-  auto tri0 = grid.triangles(i0);
+  auto tri0 = grid.triangle(i0);
   auto x0 = grid.cell_centers(i0);
   auto l0 = circum_radius(tri0);
-  auto C0 = normalized_moments(tri0, l0, order - 1);
+  const auto &C0 = grid.normalized_moments(i0);
 
-  for (int_t ii = 1; ii < stencil_size; ++ii) {
+  auto dof = poly_dof(order - 1);
+  for (int_t ii = 1; ii < dof; ++ii) {
 
     auto j = stencil(ii).global;
-    auto trij = grid.triangles(j);
+    auto trij = grid.triangle(j);
     auto xj = XY(grid.cell_centers(j) - x0) / l0;
     auto lj = circum_radius(trij) / l0;
-    auto Cj = normalized_moments(trij, lj, order - 1);
+    const auto &Cj = grid.normalized_moments(j);
 
     if (order == 1) {
       LOG_ERR("You should not be calling this.");
