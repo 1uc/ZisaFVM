@@ -18,8 +18,8 @@ int poly_degree(int_t n_coeffs) {
     return 0;
   }
 
-  auto d1 = (-3.0 + zisa::sqrt(4.0 * (2.0 * n_coeffs - 2.0))) / 2.0;
-  auto d2 = (-3.0 - zisa::sqrt(4.0 * (2.0 * n_coeffs - 2.0))) / 2.0;
+  auto d1 = (-3.0 + zisa::sqrt(4.0 * (2.0 * double(n_coeffs) - 2.0))) / 2.0;
+  auto d2 = (-3.0 - zisa::sqrt(4.0 * (2.0 * double(n_coeffs) - 2.0))) / 2.0;
 
   auto d = int(zisa::max(d1, d2));
 

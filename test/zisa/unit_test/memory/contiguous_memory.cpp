@@ -58,6 +58,7 @@ TEST_CASE("contiguous_memory") {
   int n_elements = 15;
 
   auto a = zisa::contiguous_memory<double>(n_elements);
+  std::fill(a.begin(), a.end(), 0.0);
 
   SECTION("copy-less upcast -- ref") {
     SECTION("host") { check_copyless_ref(a, a.raw()); }

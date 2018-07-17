@@ -53,11 +53,11 @@ private:
   int order;
 };
 
-int_t deduce_max_order(const std::vector<int_t> &stencil, double factor);
-int_t required_stencil_size(int_t deg, double factor);
+int deduce_max_order(const std::vector<int_t> &stencil, double factor);
+int_t required_stencil_size(int deg, double factor);
 
 array<double, 1>
-normalized_moments(const Triangle &tri, double length, int_t deg);
+normalized_moments(const Triangle &tri, double length, int deg);
 
 std::vector<int_t> central_stencil(const Grid &grid, int_t i, int_t n_points);
 
@@ -69,7 +69,7 @@ biased_stencil(const Grid &grid, int_t i, int_t n_points, const Cone &cone);
 
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const array<LocalIndex, 1> &stencil,
-                                        int_t order,
+                                        int order,
                                         double factor);
 
 } // namespace zisa

@@ -14,8 +14,6 @@ public:
   XY B;
   XY C;
 
-  XY center;
-
   double a;
   double b;
   double c;

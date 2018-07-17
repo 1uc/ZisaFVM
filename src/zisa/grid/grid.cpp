@@ -39,7 +39,7 @@ normals_t compute_normals(const vertices_t &vertices,
                           const edge_indices_t &edge_indices) {
 
   auto n_edges = count_edges(neighbours, is_valid);
-  auto n_cells = vertices.shape(0);
+  auto n_cells = vertex_indices.shape(0);
   auto max_neighbours = vertex_indices.shape(1);
 
   auto normals = normals_t(n_edges);
@@ -81,9 +81,9 @@ volumes_t compute_volumes(const vertices_t &vertices,
   auto volumes = volumes_t(shape_t<1>(n_cells));
 
   for (int_t i = 0; i < n_cells; ++i) {
-    const auto &v0 = vertices[vertex_indices(i, 0)];
-    const auto &v1 = vertices[vertex_indices(i, 1)];
-    const auto &v2 = vertices[vertex_indices(i, 2)];
+    const auto &v0 = vertices[vertex_indices(i, int_t(0))];
+    const auto &v1 = vertices[vertex_indices(i, int_t(1))];
+    const auto &v2 = vertices[vertex_indices(i, int_t(2))];
 
     auto a = norm(v1 - v0);
     auto b = norm(v2 - v1);
@@ -99,14 +99,13 @@ cell_centers_t compute_cell_centers(const vertices_t &vertices,
                                     const vertex_indices_t &vertex_indices) {
   assert(vertex_indices.shape(1) == 3);
 
-  auto cell_centers = empty_like(vertices);
-
-  int_t n_cells = vertices.shape(0);
+  int_t n_cells = vertex_indices.shape(0);
+  auto cell_centers = cell_centers_t(shape_t<1>{n_cells});
   for (int_t i = 0; i < n_cells; ++i) {
 
-    const auto &v1 = vertices[vertex_indices(i, 0)];
-    const auto &v2 = vertices[vertex_indices(i, 1)];
-    const auto &v3 = vertices[vertex_indices(i, 2)];
+    const auto &v1 = vertices[vertex_indices(i, int_t(0))];
+    const auto &v2 = vertices[vertex_indices(i, int_t(1))];
+    const auto &v3 = vertices[vertex_indices(i, int_t(2))];
 
     cell_centers(i) = (v1 + v2 + v3) / 3.0;
   }
@@ -181,9 +180,9 @@ edges_t compute_edges(const vertex_indices_t &vertex_indices) {
   assert(vertex_indices.shape(0) == n_cells);
   for (int_t i = 0; i < n_cells; ++i) {
 
-    int_t v0 = vertex_indices(i, 0);
-    int_t v1 = vertex_indices(i, 1);
-    int_t v2 = vertex_indices(i, 2);
+    int_t v0 = vertex_indices(i, int_t(0));
+    int_t v1 = vertex_indices(i, int_t(1));
+    int_t v2 = vertex_indices(i, int_t(2));
 
     ret[v0][v1] = i;
     ret[v1][v2] = i;
@@ -224,13 +223,17 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
       vertices(std::move(vertices_)) {
 
   n_cells = vertex_indices.shape(0);
+  n_vertices = vertices.shape(0);
   max_neighbours = vertex_indices.shape(1);
 
   neighbours = compute_neighbours(this->vertex_indices);
   is_valid = compute_valid_neighbours(neighbours);
 
+  n_edges = count_edges(neighbours, is_valid);
+
   cell_centers = compute_cell_centers(this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
+
   volumes = compute_volumes(this->vertices, this->vertex_indices);
 
   normals = compute_normals(
@@ -239,7 +242,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
   tangentials = compute_tangentials(normals);
 
   normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
-  for (const auto &[i, tri] : triangles(*this)) {
+  for (auto [i, tri] : triangles(*this)) {
     normalized_moments(i) = zisa::normalized_moments(tri, 2, 4);
   }
 }
@@ -285,7 +288,7 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 double largest_circum_radius(const Grid &grid) {
 
   double r = 0.0;
-  for (auto &&[i, tri] : triangles(grid)) {
+  for (auto [i, tri] : triangles(grid)) {
     r = zisa::max(r, circum_radius(tri));
   }
 
@@ -298,7 +301,7 @@ normalized_moments(const Triangle &tri, int degree, int quad_deg) {
   auto m = array<double, 1>(shape_t<1>{poly_dof(degree)});
 
   auto length = circum_radius(tri);
-  auto length_d = 1;
+  double length_d = 1.0;
 
   for (int d = 0; d <= degree; ++d) {
     for (int k = 0; k <= d; ++k) {

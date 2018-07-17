@@ -8,11 +8,12 @@
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/polynomial_expr.hpp>
+#include <zisa/io/format_as_list.hpp>
 
 namespace zisa {
 
 constexpr ANY_DEVICE_INLINE int_t poly_dof(int deg) {
-  return ((deg + 1) * (deg + 2) / 2);
+  return int_t((deg + 1) * (deg + 2) / 2);
 }
 
 /// Highest degree of a polynomial with '<=n_coeffs' coefficients.
@@ -32,9 +33,9 @@ int poly_degree(int_t n_coeffs);
  *    @param l  -- fast index, i.e. for fixed (k+l) consecutive values of l
  *                 result in consecutive values of the linear index.
  **/
-constexpr ANY_DEVICE_INLINE int poly_index(int a, int b) {
+constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b) {
   auto n = a + b;
-  return ((n + 1) * n) / 2 + b;
+  return int_t(((n + 1) * n) / 2 + b);
 }
 
 template <int MAX_DEGREE>
@@ -69,7 +70,7 @@ public:
     deep_copy(static_cast<const E &>(e_));
   }
 
-  template <int_t D>
+  template <int D>
   void operator=(const Poly2D<D> &other) {
     deep_copy(other);
   }
@@ -143,7 +144,19 @@ protected:
   int degree_;
   double coeffs[n_coeffs()];
   double moments[n_coeffs()];
+
+  template <int DEG>
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const Poly2D<DEG> &poly2d);
 };
+
+template <int MAX_DEGREE>
+std::ostream &operator<<(std::ostream &os, const Poly2D<MAX_DEGREE> &poly2d) {
+  os << format_as_list(poly2d.coeffs, poly_dof(poly2d.degree())) << "\n";
+  os << format_as_list(poly2d.moments, poly_dof(poly2d.degree())) << "\n";
+
+  return os;
+}
 
 } // namespace zisa
 #endif /* end of include guard */

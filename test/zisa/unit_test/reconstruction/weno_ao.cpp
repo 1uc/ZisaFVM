@@ -6,6 +6,7 @@
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/quadrature.hpp>
 #include <zisa/reconstruction/weno_ao.hpp>
+#include <zisa/unit_test/math/basic_functions.hpp>
 
 TEST_CASE("select stencil", "[weno_ao]") {
 
@@ -91,39 +92,69 @@ TEST_CASE("deduce_max_order", "[weno_ao]") {
   REQUIRE(zisa::deduce_max_order(s, factor) == 5);
 }
 
-TEST_CASE("reconstruct smooth", "[.][weno_ao][math]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh");
-
+TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
   auto f = [](const zisa::XY &x) {
     return zisa::sin(zisa::pi * x[0] + 0.8 * x[1] * x[0] * x[0]);
   };
 
-  auto qbar = zisa::array<double, 1>(zisa::shape_t<1>{grid->n_cells});
-
-  for (const auto &[i, tri] : triangles(*grid)) {
-    qbar(i) = zisa::quadrature<4>(f, tri);
-  }
-
-  double l1_err = 0.0;
-  double linf_err = 0.0;
   auto qbar_local = zisa::array<double, 1>{zisa::shape_t<1>{20ul}};
 
-  for (const auto &[i, tri] : triangles(*grid)) {
-    auto weno_ao = zisa::WENO_AO(grid, i);
+  std::vector<double> resolution;
+  std::vector<double> l1_errors;
+  std::vector<double> linf_errors;
 
-    const auto &l2g = weno_ao.local2global();
+  auto grid_names
+      = std::vector<std::string>{"grids/convergence/unit_square_0.msh",
+                                 "grids/convergence/unit_square_1.msh",
+                                 "grids/convergence/unit_square_2.msh",
+                                 "grids/convergence/unit_square_3.msh"};
 
-    for (zisa::int_t i = 0; i < l2g.size(); ++i) {
-      qbar_local(i) = qbar(l2g[i]);
+  for (auto &&grid_name : grid_names) {
+    auto grid = zisa::load_gmsh(grid_name);
+
+    auto qbar = zisa::array<double, 1>(zisa::shape_t<1>{grid->n_cells});
+
+    for (auto [i, tri] : triangles(*grid)) {
+      qbar(i) = zisa::quadrature<4>(f, tri);
     }
 
-    auto p = weno_ao.reconstruct(qbar_local);
+    double l1_err = 0.0;
+    double linf_err = 0.0;
 
-    auto err = zisa::abs(zisa::quadrature<4>(p, tri) - qbar(i));
+    for (auto [i, tri] : triangles(*grid)) {
+      auto weno_ao = zisa::WENO_AO(grid, i);
 
-    l1_err += err;
-    linf_err = zisa::max(linf_err, err);
+      const auto &l2g = weno_ao.local2global();
+
+      for (zisa::int_t i = 0; i < l2g.size(); ++i) {
+        qbar_local(i) = qbar(l2g[i]);
+      }
+
+      auto p = weno_ao.reconstruct(qbar_local);
+
+      auto f = [tri=tri, &p](const zisa::XY &x) {
+        auto xx
+            = zisa::XY((x - zisa::barycenter(tri)) / zisa::circum_radius(tri));
+        return p(xx);
+      };
+
+      auto err = zisa::abs(zisa::quadrature<3>(f, tri) - qbar(i));
+
+      l1_err += err * tri.volume;
+      linf_err = zisa::max(linf_err, err);
+    }
+
+    resolution.push_back(zisa::largest_circum_radius(*grid));
+    l1_errors.push_back(l1_err);
+    linf_errors.push_back(linf_err);
   }
 
-  PRINT(linf_err);
+  auto rates = convergence_rates(resolution, l1_errors);
+
+  for (zisa::int_t i = 0; i < rates.size(); ++i) {
+    INFO(string_format("[%d] %e @ dx = %e \n", i, l1_errors[i], resolution[i]));
+    CHECK(zisa::almost_equal(rates[i], 2.0, 0.3));
+  }
+
+  CHECK(l1_errors.back() < 4e-5);
 }

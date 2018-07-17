@@ -9,7 +9,7 @@ namespace zisa {
 std::tuple<std::vector<double>, std::vector<std::vector<double>>>
 permutate(double w, const std::vector<double> &lambda) {
 
-  int n = lambda.size();
+  auto n = lambda.size();
 
   if (n == 1) {
     return {{w}, {{lambda[0], lambda[0], lambda[0]}}};

@@ -171,7 +171,7 @@ template <int n_vars>
 std::ostream &operator<<(std::ostream &os, const Cartesian<n_vars> &x) {
 
   os << "[ ";
-  for (int_t i = 0; i < x.size(); ++i) {
+  for (int i = 0; i < x.size(); ++i) {
     os << x[i] << (i == x.size() - 1 ? " ]" : ", ");
   }
 
