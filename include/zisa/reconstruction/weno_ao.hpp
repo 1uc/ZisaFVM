@@ -25,7 +25,7 @@ class WENO_AO {
 public:
   static constexpr int max_degree() { return 2; }
 
-public:
+private:
   using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
 
 public:
@@ -42,12 +42,18 @@ protected:
   void compute_stencils();
   void compute_qr();
 
+  Poly2D<2> convert_to_poly(const array<double, 1> &qbar,
+                            const Eigen::VectorXd &coeffs) const;
+
 private:
+  int_t n_stencils;
+
   std::shared_ptr<Grid> grid;
   int_t i_cell;
 
   array<array<LocalIndex, 1>, 1> stencils;
   array<QR, 1> qr;
+  mutable array<double, 1> rhs;
 
   std::vector<int_t> l2g;
   int order;

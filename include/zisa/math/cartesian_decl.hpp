@@ -198,7 +198,7 @@ double cos_angle(const CartesianExpr<E1, double> &e1_,
   const auto &e2 = static_cast<const E2 &>(e2_);
   const auto &e3 = static_cast<const E3 &>(e3_);
 
-  return zisa::dot(normalize(e1 - e2), normalize(e3 - e1));
+  return zisa::dot(normalize(e1 - e2), normalize(e3 - e2));
 }
 
 template <class E>

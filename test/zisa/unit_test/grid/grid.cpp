@@ -164,7 +164,7 @@ TEST_CASE("Grid; moments", "[grid]") {
 
   SECTION("avg_moment") {
 
-    for (auto [i, tri] : zisa::triangles(*grid)) {
+    for (const auto &[i, tri] : zisa::triangles(*grid)) {
 
       check_moment(tri, 0, 0, 1.0);
 
@@ -184,7 +184,7 @@ TEST_CASE("Grid; moments", "[grid]") {
       REQUIRE(zisa::abs(m(ikl)) < 2.0);
     };
 
-    for (auto [i, tri] : zisa::triangles(*grid)) {
+    for (const auto &[i, tri] : zisa::triangles(*grid)) {
       auto m = zisa::normalized_moments(tri, 4, 3);
 
       for (zisa::int_t d = 0; d <= 3; ++d) {

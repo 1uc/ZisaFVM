@@ -8,34 +8,56 @@
 namespace zisa {
 
 WENO_AO::WENO_AO(const std::shared_ptr<Grid> &grid, int_t i_cell)
-    : grid(grid),
+    : n_stencils(4),
+      grid(grid),
       i_cell(i_cell),
-      stencils(shape_t<1>{4ul}),
-      qr(shape_t<1>{4ul}) {
+      stencils(shape_t<1>{n_stencils}),
+      qr(shape_t<1>{n_stencils}) {
 
   compute_stencils();
-  compute_qr();
+  if (order >= 2) {
+    compute_qr();
+  }
+
+  rhs = array<double, 1>(shape_t<1>{required_stencil_size(order - 1, 2.0)});
 }
 
 auto WENO_AO::reconstruct(const LocalBuffer &qbar) const
     -> Poly2D<max_degree()> {
 
-  Eigen::VectorXd pC = qr(0).solve(
-      Eigen::Map<const Eigen::VectorXd>(qbar.raw(), qr(0).rows()));
+  if (order == 1) {
+    return {{qbar(0)}, {0.0}};
+  }
 
-  // TODO: implement hybridization.
-  // auto p0 = qr(1)(qbar);
-  // auto p1 = qr(2)(qbar);
-  // auto p2 = qr(3)(qbar);
+  int_t k = 0;
+  for (int_t i = 0; i < qr(0).rows(); ++i) {
+    rhs(i) = qbar(stencils(k)(i + 1).local) - qbar(0);
+  }
 
+  Eigen::VectorXd coeffs
+      = qr(k).solve(Eigen::Map<const Eigen::VectorXd>(rhs.raw(), qr(k).rows()));
+
+  return convert_to_poly(qbar, coeffs);
+}
+
+Poly2D<WENO_AO::max_degree()>
+WENO_AO::convert_to_poly(const array<double, 1> &qbar,
+                         const Eigen::VectorXd &coeffs) const {
   const auto &moments = grid->normalized_moments(i_cell);
+  if (order == 2) {
+    return {{qbar(0), coeffs(0), coeffs(1)}, {0.0, 0.0, 0.0}};
+  }
 
-  auto i20 = poly_index(2, 0);
-  auto i11 = poly_index(1, 1);
-  auto i02 = poly_index(0, 2);
+  if (order == 3) {
+    auto i20 = poly_index(2, 0);
+    auto i11 = poly_index(1, 1);
+    auto i02 = poly_index(0, 2);
 
-  return {{qbar(0), pC(0), pC(1), pC(2), pC(3), pC(4)},
-          {0.0, 0.0, 0.0, moments(i20), moments(i11), moments(i02)}};
+    return {{qbar(0), coeffs(0), coeffs(1), coeffs(2), coeffs(3), coeffs(4)},
+            {0.0, 0.0, 0.0, moments(i20), moments(i11), moments(i02)}};
+  }
+
+  LOG_ERR("Implement first.");
 }
 
 void WENO_AO::compute_qr() {
@@ -51,7 +73,8 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const array<LocalIndex, 1> &stencil,
                                         int order,
                                         double factor) {
-  LOG_ERR_IF(order == 1, "You should not be calling this.");
+  LOG_ERR_IF(order <= 1,
+             string_format("You should not be calling this. [%d]", order));
 
   auto degree = order - 1;
   auto n_rows = required_stencil_size(degree, factor) - 1;
@@ -83,9 +106,9 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
       auto i_11 = poly_index(1, 1);
       auto i_02 = poly_index(0, 2);
 
-      A(ii, 2) = xj(0) * xj(0) - C0(i_20) + lj * lj * Cj(i_20);
-      A(ii, 3) = xj(0) * xj(1) - C0(i_11) + lj * lj * Cj(i_11);
-      A(ii, 4) = xj(1) * xj(1) - C0(i_02) + lj * lj * Cj(i_02);
+      A(ii, i_20 - 1) = xj(0) * xj(0) - C0(i_20) + lj * lj * Cj(i_20);
+      A(ii, i_11 - 1) = xj(0) * xj(1) - C0(i_11) + lj * lj * Cj(i_11);
+      A(ii, i_02 - 1) = xj(1) * xj(1) - C0(i_02) + lj * lj * Cj(i_02);
     }
     if (order == 4) {
       LOG_ERR("Implement first.");
@@ -131,6 +154,28 @@ void WENO_AO::compute_stencils() {
   stencils(3) = assign_local_indices(b2, l2g);
 }
 
+array<LocalIndex, 1>
+WENO_AO::assign_local_indices(const std::vector<int_t> &global_indices,
+                              std::vector<int_t> &l2g) {
+
+  assert(global_indices.size() > 0);
+
+  auto a = array<LocalIndex, 1>(shape_t<1>{global_indices.size()});
+
+  for (int_t i = 0; i < global_indices.size(); ++i) {
+    a(i).global = global_indices[i];
+
+    auto local_index_ptr = std::find(l2g.begin(), l2g.end(), a(i).global);
+    a(i).local = local_index_ptr - l2g.begin();
+
+    if (local_index_ptr == l2g.end()) {
+      l2g.push_back(a(i).global);
+    }
+  }
+
+  return a;
+}
+
 const std::vector<int_t> &WENO_AO::local2global() const { return l2g; }
 
 int deduce_max_order(const std::vector<int_t> &stencil, double factor) {
@@ -145,28 +190,11 @@ int deduce_max_order(const std::vector<int_t> &stencil, double factor) {
 }
 
 int_t required_stencil_size(int deg, double factor) {
-  return int_t(double(poly_dof(deg) - 1) * factor);
-}
-
-array<LocalIndex, 1>
-WENO_AO::assign_local_indices(const std::vector<int_t> &global_indices,
-                              std::vector<int_t> &l2g) {
-
-  auto a = array<LocalIndex, 1>(shape_t<1>{global_indices.size()});
-
-  for (int_t i = 0; i < global_indices.size(); ++i) {
-    a(i).global = global_indices[i];
-
-    auto local_index_ptr = std::find(l2g.begin(), l2g.end(), a(i).global);
-
-    if (local_index_ptr == l2g.end()) {
-      l2g.push_back(a(i).global);
-    }
-
-    a(i).local = local_index_ptr - l2g.begin();
+  if (deg == 0) {
+    return 1;
   }
 
-  return a;
+  return int_t(double(poly_dof(deg) - 1) * factor);
 }
 
 std::vector<int_t>
@@ -202,7 +230,7 @@ std::vector<int_t> biased_stencil(const Grid &grid,
            == candidates.end();
   };
 
-  auto is_inside = [cone, &grid](int_t cand) {
+  auto is_inside = [&cone, &grid](int_t cand) {
     return cone.is_inside(grid.cell_centers(cand));
   };
 
@@ -211,15 +239,16 @@ std::vector<int_t> biased_stencil(const Grid &grid,
       break;
     }
 
+    int_t j = candidates[p];
     for (int_t k = 0; k < max_neighbours; ++k) {
+      if (!grid.is_valid(j, k)) {
+        continue;
+      }
 
-      int_t j = candidates[p];
-      if (grid.is_valid(j, k)) {
-        int_t cand = grid.neighbours(j, k);
+      int_t cand = grid.neighbours(j, k);
 
-        if (not_found(cand) && is_inside(cand)) {
-          candidates.push_back(cand);
-        }
+      if (not_found(cand) && is_inside(cand)) {
+        candidates.push_back(cand);
       }
     }
   }
@@ -231,7 +260,7 @@ std::vector<int_t> biased_stencil(const Grid &grid,
   };
 
   std::sort(candidates.begin(), candidates.end(), closer);
-  candidates.resize(n_points);
+  candidates.resize(zisa::min(n_points, candidates.size()));
   return candidates;
 }
 

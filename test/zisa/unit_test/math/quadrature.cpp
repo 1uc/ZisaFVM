@@ -32,7 +32,7 @@ void check_convergence(double expected, double atol) {
   for (zisa::int_t i = 0; i < rates.size(); ++i) {
     if (error[i + 1] > atol) {
       INFO(string_format("[%d] %e (%e)\n", i, rates[i], expected));
-      REQUIRE(std::abs(rates[i] - expected) < expected);
+      REQUIRE(rates[i] > expected - 0.3);
     }
   }
 }

@@ -242,7 +242,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
   tangentials = compute_tangentials(normals);
 
   normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
-  for (auto [i, tri] : triangles(*this)) {
+  for (const auto &[i, tri] : triangles(*this)) {
     normalized_moments(i) = zisa::normalized_moments(tri, 2, 4);
   }
 }
@@ -288,7 +288,7 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 double largest_circum_radius(const Grid &grid) {
 
   double r = 0.0;
-  for (auto [i, tri] : triangles(grid)) {
+  for (const auto &[i, tri] : triangles(grid)) {
     r = zisa::max(r, circum_radius(tri));
   }
 

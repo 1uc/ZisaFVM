@@ -94,7 +94,11 @@ TEST_CASE("deduce_max_order", "[weno_ao]") {
 
 TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
   auto f = [](const zisa::XY &x) {
-    return zisa::sin(zisa::pi * x[0] + 0.8 * x[1] * x[0] * x[0]);
+    auto d = zisa::norm(x - zisa::XY{0.5, 0.5});
+    return 12 * zisa::sin(3 * d);
+
+    // double sigma = 0.2;
+    // return zisa::exp(-zisa::pow<2>(d / sigma));
   };
 
   auto qbar_local = zisa::array<double, 1>{zisa::shape_t<1>{20ul}};
@@ -114,47 +118,53 @@ TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
 
     auto qbar = zisa::array<double, 1>(zisa::shape_t<1>{grid->n_cells});
 
-    for (auto [i, tri] : triangles(*grid)) {
-      qbar(i) = zisa::quadrature<4>(f, tri);
+    for (const auto &[i, tri] : triangles(*grid)) {
+      qbar(i) = zisa::quadrature<4>(f, tri) / tri.volume;
     }
 
     double l1_err = 0.0;
     double linf_err = 0.0;
+    double effective_volume = 0.0;
 
-    for (auto [i, tri] : triangles(*grid)) {
+    for (const auto &[i, tri] : triangles(*grid)) {
       auto weno_ao = zisa::WENO_AO(grid, i);
 
       const auto &l2g = weno_ao.local2global();
 
+      REQUIRE(l2g[0] == i);
       for (zisa::int_t i = 0; i < l2g.size(); ++i) {
         qbar_local(i) = qbar(l2g[i]);
       }
 
       auto p = weno_ao.reconstruct(qbar_local);
 
-      auto f = [tri=tri, &p](const zisa::XY &x) {
-        auto xx
-            = zisa::XY((x - zisa::barycenter(tri)) / zisa::circum_radius(tri));
-        return p(xx);
+      auto diff = [tri = tri, &p, &f](const zisa::XY &x) {
+        auto x_center = zisa::barycenter(tri);
+        auto xx = zisa::XY((x - x_center) / zisa::circum_radius(tri));
+        return zisa::abs(p(xx) - f(x));
       };
 
-      auto err = zisa::abs(zisa::quadrature<3>(f, tri) - qbar(i));
+      auto err = zisa::quadrature<3>(diff, tri);
 
-      l1_err += err * tri.volume;
-      linf_err = zisa::max(linf_err, err);
+      if (p.degree() == 2) {
+        l1_err += err;
+        linf_err = zisa::max(linf_err, err);
+        effective_volume += tri.volume;
+      }
     }
 
     resolution.push_back(zisa::largest_circum_radius(*grid));
-    l1_errors.push_back(l1_err);
+    l1_errors.push_back(l1_err / effective_volume);
     linf_errors.push_back(linf_err);
   }
 
   auto rates = convergence_rates(resolution, l1_errors);
 
   for (zisa::int_t i = 0; i < rates.size(); ++i) {
-    INFO(string_format("[%d] %e @ dx = %e \n", i, l1_errors[i], resolution[i]));
-    CHECK(zisa::almost_equal(rates[i], 2.0, 0.3));
+    INFO(string_format(
+        "[%d] (%e, %e) @ %e \n", i, l1_errors[i], rates[i], resolution[i]));
+    CHECK(rates[i] > 2.6);
   }
 
-  CHECK(l1_errors.back() < 4e-5);
+  CHECK(l1_errors.back() < 9e-5);
 }
