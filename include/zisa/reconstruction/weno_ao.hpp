@@ -5,78 +5,38 @@
 #ifndef WENO_AO_H_A1UM2
 #define WENO_AO_H_A1UM2
 
-#include <Eigen/Dense>
-
 #include <zisa/config.hpp>
-#include <zisa/math/cartesian.hpp>
-#include <zisa/math/cone.hpp>
-#include <zisa/memory/array_view.hpp>
+
+#include <zisa/reconstruction/lsq_solver_family.hpp>
+#include <zisa/reconstruction/stencil_family.hpp>
+#include <zisa/reconstruction/weno_ao_params.hpp>
 
 namespace zisa {
 
-struct LocalIndex {
-  int_t local;
-  int_t global;
-};
-
-using LocalBuffer = array<double, 1>;
-
 class WENO_AO {
-public:
-  static constexpr int max_degree() { return 2; }
-
 private:
-  using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
+  static constexpr int MAX_DEGREE = 4;
 
 public:
-  WENO_AO(const std::shared_ptr<Grid> &grid, int_t i_cell);
-  Poly2D<2> reconstruct(const LocalBuffer &buffer) const;
+  WENO_AO(const std::shared_ptr<Grid> &grid,
+          int_t i_cell,
+          const WENO_AO_Params &params);
 
+  Poly2D<MAX_DEGREE> reconstruct(const array<double, 1> &qbar) const;
   const std::vector<int_t> &local2global() const;
 
-protected:
-  array<LocalIndex, 1>
-  assign_local_indices(const std::vector<int_t> &global_indices,
-                       std::vector<int_t> &l2g);
-
-  void compute_stencils();
-  void compute_qr();
-
-  Poly2D<2> convert_to_poly(const array<double, 1> &qbar,
-                            const Eigen::VectorXd &coeffs) const;
-
 private:
-  int_t n_stencils;
+  StencilFamily stencils;
+  LSQSolverFamily lsq_solvers;
 
-  std::shared_ptr<Grid> grid;
-  int_t i_cell;
-
-  array<array<LocalIndex, 1>, 1> stencils;
-  array<QR, 1> qr;
+  std::vector<double> linear_weights;
   mutable array<double, 1> rhs;
-
-  std::vector<int_t> l2g;
-  int order;
 };
 
-int deduce_max_order(const std::vector<int_t> &stencil, double factor);
-int_t required_stencil_size(int deg, double factor);
-
-array<double, 1>
-normalized_moments(const Triangle &tri, double length, int deg);
-
-std::vector<int_t> central_stencil(const Grid &grid, int_t i, int_t n_points);
-
-std::vector<int_t>
-biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points);
-
-std::vector<int_t>
-biased_stencil(const Grid &grid, int_t i, int_t n_points, const Cone &cone);
-
-Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
-                                        const array<LocalIndex, 1> &stencil,
-                                        int order,
-                                        double factor);
+// Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
+//                                         const array<LocalIndex, 1> &stencil,
+//                                         int order,
+//                                         double factor);
 
 } // namespace zisa
 #endif /* end of include guard */
