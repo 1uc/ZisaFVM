@@ -118,12 +118,6 @@ std::string RungeKutta::assemble_description(int indent,
          + rate_of_change->str(indent);
 }
 
-void runge_kutta_sum_cpu_impl(AllVariables &u1,
-                              const AllVariables &u0,
-                              const TendencyBuffers &tendency_buffers,
-                              const array<double, 1> &coeffs,
-                              double dt) {}
-
 void runge_kutta_sum(AllVariables &u1,
                      const AllVariables &u0,
                      const TendencyBuffers &tendency_buffers,
