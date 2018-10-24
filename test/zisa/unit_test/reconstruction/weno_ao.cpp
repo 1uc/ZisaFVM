@@ -22,10 +22,17 @@ TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
                                  "grids/convergence/unit_square_2.msh",
                                  "grids/convergence/unit_square_3.msh"};
 
-  auto cases = std::vector<std::tuple<int, zisa::WENO_AO_Params>>{
-      {1, {{{1}, {"c"}, {2.0}}, {1.0}}},
-      {2, {{{2}, {"c"}, {2.0}}, {1.0}}},
-      {3, {{{3}, {"c"}, {2.0}}, {1.0}}}};
+  auto cases = std::vector<std::tuple<double, zisa::WENO_AO_Params>>{
+      {1.0, {{{1}, {"c"}, {2.0}}, {1.0}}},
+      {1.0, {{{1}, {"b"}, {2.0}}, {1.0}}},
+      {2.0, {{{2}, {"c"}, {2.0}}, {1.0}}},
+      {2.0, {{{2}, {"b"}, {2.0}}, {1.0}}},
+      {3.0, {{{3}, {"c"}, {2.0}}, {1.0}}},
+      {3.0, {{{3}, {"b"}, {2.0}}, {1.0}}}};
+
+  // cases.push_back({3.0,
+  //                  {{{1, 1, 1, 3}, {"b", "b", "b", "c"}, {1.5, 1.5, 1.5, 2.0}},
+  //                   {1.0, 1.0, 1.0, 100.0}}});
 
   for (auto &[expected_rate, weno_ao_params] : cases) {
     std::vector<double> resolution;

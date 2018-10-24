@@ -31,6 +31,9 @@ Stencil::Stencil(std::vector<int_t> &l2g,
 
   assert(bias() == StencilBias::one_sided);
   assign_local_indices(biased_stencil(*grid, i_cell, k, max_size()), l2g);
+
+  assert(local_.size() == global_.size());
+  order_ = deduce_max_order(local_.size(), overfit_factor());
 }
 
 void Stencil::assign_local_indices(const std::vector<int_t> &global_indices,

@@ -20,6 +20,8 @@ WENO_AO::WENO_AO(const std::shared_ptr<Grid> &grid,
 auto WENO_AO::reconstruct(const array<double, 1> &qbar) const
     -> Poly2D<MAX_DEGREE> {
 
+  assert(stencils.size() == 1);
+
   auto p_avg = Poly2D<MAX_DEGREE>{{qbar(0)}, {0.0}};
   if (stencils.order() == 1) {
     return p_avg;

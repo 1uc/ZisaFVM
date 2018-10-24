@@ -24,9 +24,9 @@ StencilFamily::StencilFamily(const std::shared_ptr<Grid> &grid,
 
   combined_stencil_size_ = l2g.size();
 
-  order_ = std::numeric_limits<int>::max();
+  order_ = 0;
   for (int_t i = 0; i < size(); ++i) {
-    order_ = zisa::min(order_, (*this)[i].order());
+    order_ = zisa::max(order_, (*this)[i].order());
   }
 }
 
