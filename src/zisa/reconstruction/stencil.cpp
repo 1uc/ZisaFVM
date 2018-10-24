@@ -52,7 +52,7 @@ void Stencil::assign_local_indices(const std::vector<int_t> &global_indices,
     global_(i) = current;
 
     auto local_index_ptr = std::find(l2g.begin(), l2g.end(), current);
-    local_(i) = local_index_ptr - l2g.begin();
+    local_(i) = static_cast<int_t>(local_index_ptr - l2g.begin());
 
     if (local_index_ptr == l2g.end()) {
       l2g.push_back(current);
