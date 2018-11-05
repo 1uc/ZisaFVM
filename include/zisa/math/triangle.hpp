@@ -24,6 +24,7 @@ public:
   Triangle(const XY &A, const XY &B, const XY &C);
 };
 
+double volume(const Triangle &tri);
 XY barycenter(const Triangle &tri);
 double circum_radius(const Triangle &tri);
 double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg);

@@ -259,6 +259,16 @@ Triangle Grid::triangle(int_t i) const {
   return Triangle(v0, v1, v2);
 }
 
+double volume(const Grid &grid) {
+  double vol = 0.0;
+
+  for (const auto &[i, tri] : triangles(grid)) {
+    vol += volume(tri);
+  }
+
+  return vol;
+}
+
 std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 
   auto gmsh = GMSHReader(filename);

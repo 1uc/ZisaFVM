@@ -24,6 +24,8 @@ double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg) {
   return 1.0 / tri.volume * quadrature(f, tri, quad_deg);
 }
 
+double volume(const Triangle &tri) { return tri.volume; }
+
 XY barycenter(const Triangle &tri) { return XY((tri.A + tri.B + tri.C) / 3.0); }
 
 double circum_radius(const Triangle &tri) {

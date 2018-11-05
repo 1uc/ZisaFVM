@@ -72,6 +72,8 @@ private:
   const Grid &grid;
 };
 
+double volume(const Grid &grid);
+
 inline TriangleRange triangles(const Grid &grid) { return TriangleRange(grid); }
 
 double largest_circum_radius(const Grid &grid);
