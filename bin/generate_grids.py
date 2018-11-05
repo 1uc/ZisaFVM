@@ -3,12 +3,15 @@
 
 import argparse
 import subprocess
+import glob
 
 gmsh = "bin/gmsh"
 
 def run_gmesh(geo):
     cmd = [gmsh, "-2", geo]
     subprocess.check_call(cmd)
+
+
 
 def minimal_geo_files(path):
     return [
@@ -17,6 +20,9 @@ def minimal_geo_files(path):
     ] + [
         path + "/convergence/unit_square_{:d}.geo".format(d) for d in range(4)
     ]
+
+def all_geo_files(path):
+    return glob.glob("{}/**/*.geo".format(path))
 
 if __name__ == "__main__":
 
@@ -30,5 +36,8 @@ if __name__ == "__main__":
 
     if args.minimal:
         geos = minimal_geo_files("grids")
-        for geo in geos:
-            run_gmesh(geo)
+    else:
+        geos = all_geo_files("grids")
+
+    for geo in geos:
+        run_gmesh(geo)
