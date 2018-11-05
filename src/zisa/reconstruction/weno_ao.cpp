@@ -1,4 +1,5 @@
-#include <algorithm>
+#include <numeric>
+
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/comparison.hpp>

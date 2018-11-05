@@ -1,8 +1,8 @@
 #include <catch/catch.hpp>
 
 #include <zisa/math/poly2d.hpp>
-#include <zisa/math/triangle.hpp>
 #include <zisa/math/quadrature.hpp>
+#include <zisa/math/triangle.hpp>
 
 TEST_CASE("poly_dof", "[math][poly2d]") {
   REQUIRE(zisa::poly_dof(0) == 1);

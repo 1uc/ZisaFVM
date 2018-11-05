@@ -4,7 +4,6 @@
 #include <zisa/reconstruction/stencil.hpp>
 
 TEST_CASE("select stencil", "[weno_ao]") {
-
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
   zisa::int_t i_cell = 42;
   zisa::int_t n_points = 12;
@@ -55,7 +54,7 @@ TEST_CASE("select stencil", "[weno_ao]") {
   }
 }
 
-TEST_CASE("Stencil") {
+TEST_CASE("Stencil API") {
   auto grid = zisa::load_gmsh("grids/dbg.msh");
 
   zisa::int_t i_cell = 6;
@@ -64,9 +63,11 @@ TEST_CASE("Stencil") {
   auto l2g = std::vector<zisa::int_t>();
 
   SECTION("central_stencil") {
+    // this is how one should generate a stencil
     auto approx = zisa::Stencil(l2g, grid, i_cell, params);
     REQUIRE(approx.size() > 0);
 
+    // this is internal API, just a vector of int_t.
     auto exact = zisa::central_stencil(*grid, i_cell, approx.size());
 
     REQUIRE(approx.size() == exact.size());

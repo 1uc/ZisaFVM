@@ -8,9 +8,8 @@
 #include "zisa/memory/host_contiguous_memory.hpp"
 
 template <class T>
-zisa::contiguous_memory<bool>
-check_equal(const zisa::contiguous_memory<T> &a,
-            const zisa::contiguous_memory<T> &b) {
+zisa::contiguous_memory<bool> check_equal(const zisa::contiguous_memory<T> &a,
+                                          const zisa::contiguous_memory<T> &b) {
   assert(a.size() == b.size());
 
   auto is_equal = zisa::contiguous_memory<bool>(a.size());

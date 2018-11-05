@@ -24,6 +24,7 @@ auto LSQSolver::solve(const array<double, 1> &rhs) const -> Poly2D<MAX_DEGREE> {
       = qr.solve(Eigen::Map<const Eigen::VectorXd>(rhs.raw(), qr.rows()));
 
   const auto &moments = grid->normalized_moments(i_cell);
+
   if (order == 2) {
     return {{0.0, coeffs(0), coeffs(1)}, {0.0, 0.0, 0.0}};
   }
