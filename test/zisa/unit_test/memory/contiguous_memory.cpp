@@ -75,3 +75,27 @@ TEST_CASE("contiguous_memory") {
     SECTION("host") { check_move_construction(a); }
   }
 }
+
+TEST_CASE("contiguous_memory; initialization", "[memory]") {
+  zisa::int_t n_elements = 15;
+  zisa::int_t n_arrays = 5;
+
+  auto elem = zisa::contiguous_memory<double>(n_elements);
+  std::fill(elem.begin(), elem.end(), 42.0);
+
+  auto seq = zisa::contiguous_memory<zisa::contiguous_memory<double>>(n_arrays);
+
+  for (zisa::int_t i = 0; i < n_arrays; ++i) {
+    REQUIRE(seq[i].raw() == nullptr);
+  }
+
+  for (zisa::int_t i = 0; i < n_arrays; ++i) {
+    elem[0] = 42.0 + 0.1 * i;
+    seq[i] = elem;
+  }
+
+  for (zisa::int_t i = 0; i < n_arrays; ++i) {
+    elem[0] = 42.0 + 0.1 * i;
+    REQUIRE(std::equal(seq[i].begin(), seq[i].end(), elem.begin(), elem.end()));
+  }
+}
