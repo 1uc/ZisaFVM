@@ -32,5 +32,7 @@ public:
 
 StencilParams extract(const StencilFamilyParams &family_params, int_t k);
 
+std::ostream &operator<<(std::ostream &os, const StencilFamilyParams &params);
+
 } // namespace zisa
 #endif /* end of include guard */

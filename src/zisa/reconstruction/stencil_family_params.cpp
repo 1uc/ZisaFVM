@@ -1,5 +1,6 @@
 #include <zisa/reconstruction/stencil_family_params.hpp>
 #include <zisa/reconstruction/stencil_params.hpp>
+#include <zisa/io/format_as_list.hpp>
 
 namespace zisa {
 
@@ -21,6 +22,14 @@ StencilParams extract(const StencilFamilyParams &family_params, int_t k) {
   return {family_params.orders[k],
           family_params.biases[k],
           family_params.overfit_factors[k]};
+}
+
+std::ostream &operator<<(std::ostream &os, const StencilFamilyParams &params) {
+  os << "orders: " << format_as_list(params.orders) << "\n";
+  os << "biases: " << format_as_list(params.biases) << "\n";
+  os << "overfit_factors: " << format_as_list(params.overfit_factors);
+
+  return os;
 }
 
 } // namespace zisa
