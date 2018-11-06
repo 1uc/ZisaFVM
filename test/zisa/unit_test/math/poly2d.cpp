@@ -29,7 +29,6 @@ TEST_CASE("poly_index", "[math][poly2d]") {
   REQUIRE(zisa::poly_index(2, 1) == i++);
   REQUIRE(zisa::poly_index(1, 2) == i++);
   REQUIRE(zisa::poly_index(0, 3) == i++);
-
 }
 
 TEST_CASE("poly_degree", "[math][poly2d]") {
