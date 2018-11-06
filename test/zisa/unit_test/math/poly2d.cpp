@@ -12,6 +12,26 @@ TEST_CASE("poly_dof", "[math][poly2d]") {
   REQUIRE(zisa::poly_dof(4) == 15);
 }
 
+TEST_CASE("poly_index", "[math][poly2d]") {
+
+  int i = 0;
+
+  REQUIRE(zisa::poly_index(0, 0) == i++);
+
+  REQUIRE(zisa::poly_index(1, 0) == i++);
+  REQUIRE(zisa::poly_index(0, 1) == i++);
+
+  REQUIRE(zisa::poly_index(2, 0) == i++);
+  REQUIRE(zisa::poly_index(1, 1) == i++);
+  REQUIRE(zisa::poly_index(0, 2) == i++);
+
+  REQUIRE(zisa::poly_index(3, 0) == i++);
+  REQUIRE(zisa::poly_index(2, 1) == i++);
+  REQUIRE(zisa::poly_index(1, 2) == i++);
+  REQUIRE(zisa::poly_index(0, 3) == i++);
+
+}
+
 TEST_CASE("poly_degree", "[math][poly2d]") {
 
   SECTION("right-inverse") {

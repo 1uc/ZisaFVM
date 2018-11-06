@@ -75,6 +75,32 @@ TEST_CASE("Stencil API") {
       REQUIRE(approx.global(i) == exact[i]);
     }
   }
+
+  SECTION("compatibility with std::vector") {
+
+    auto grid = zisa::load_gmsh("grids/dbg.msh");
+    zisa::int_t i_cell = 6;
+    zisa::int_t n_stencils = 3;
+
+    auto params = zisa::StencilParams(3, "c", 2.0);
+
+    auto l2g = std::vector<zisa::int_t>();
+    auto stencils = std::vector<zisa::Stencil>();
+
+    auto exact = zisa::Stencil(l2g, grid, i_cell, params);
+
+    for (zisa::int_t i = 0; i < n_stencils; ++i) {
+      stencils.push_back(zisa::Stencil(l2g, grid, i_cell, params));
+    }
+
+    REQUIRE(stencils.size() == n_stencils);
+    for (zisa::int_t i = 0; i < n_stencils; ++i) {
+      const auto &approx = stencils[i];
+
+      REQUIRE(approx.size() == exact.size());
+      REQUIRE(approx == exact);
+    }
+  }
 }
 
 TEST_CASE("deduce_max_order", "[weno_ao]") {

@@ -32,4 +32,29 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
       REQUIRE(o311_stencils.order() == 3);
     }
   }
+
+  SECTION("compatibility with std::vector") {
+    SECTION("push_back") {
+
+      auto grid = zisa::load_gmsh("grids/small.msh");
+      auto params = zisa::StencilFamilyParams({{1}, {"c"}, {2.0}});
+
+      auto stencils = std::vector<zisa::StencilFamily>();
+      for (const auto &[i, tri] : triangles(*grid)) {
+        stencils.push_back(zisa::StencilFamily(grid, i, params));
+      }
+
+      REQUIRE(stencils.size() == grid->n_cells);
+
+      // REQUIRE(stencils.size() == n_stencils);
+      // for (zisa::int_t i = 0; i < n_stencils; ++i) {
+      //   const auto &approx = stencils[i];
+
+      //   REQUIRE(approx.size() == exact.size());
+      //   REQUIRE(approx == exact);
+      // }
+    }
+
+
+  }
 }
