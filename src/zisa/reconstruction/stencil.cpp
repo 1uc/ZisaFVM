@@ -83,6 +83,42 @@ int_t Stencil::max_size() const {
   return required_stencil_size(max_order() - 1, overfit_factor());
 }
 
+bool operator==(const Stencil &a, const Stencil &b) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+
+  if (a.order() != b.order()) {
+    return false;
+  }
+
+  if (a.max_order() != b.max_order()) {
+    return false;
+  }
+
+  if (a.overfit_factor() != b.overfit_factor()) {
+    return false;
+  }
+
+  if (a.bias() != b.bias()) {
+    return false;
+  }
+
+  for (int_t i = 0; i < a.size(); ++i) {
+    if (a.local(i) != b.local(i)) {
+      return false;
+    }
+
+    if (a.global(i) != b.global(i)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool operator!=(const Stencil &a, const Stencil &b) { return !(a == b); }
+
 int deduce_max_order(int_t stencil_size, double factor) {
   int deg = 0;
   while (required_stencil_size(deg + 1, factor) <= stencil_size) {

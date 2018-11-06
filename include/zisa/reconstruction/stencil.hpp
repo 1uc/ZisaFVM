@@ -61,6 +61,9 @@ private:
   array<int_t, 1> global_;
 };
 
+bool operator==(const Stencil &a, const Stencil &b);
+bool operator!=(const Stencil &a, const Stencil &b);
+
 std::vector<int_t> central_stencil(const Grid &grid, int_t i, int_t n_points);
 
 std::vector<int_t>
