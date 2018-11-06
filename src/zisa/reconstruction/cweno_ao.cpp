@@ -31,7 +31,7 @@ auto CWENO_AO::reconstruct(const array<double, 1> &qbar) const
 
 
 bool CWENO_AO::operator==(const CWENO_AO &other) const {
-  if (k_high == other.k_high) {
+  if (k_high != other.k_high) {
     return false;
   }
 
