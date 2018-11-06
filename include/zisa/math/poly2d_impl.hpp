@@ -53,6 +53,7 @@ Poly2D<MAX_DEGREE>::Poly2D(const std::initializer_list<double> &coeffs_list,
   assert(coeffs_list.size() == moments_list.size());
   assert(poly_dof(degree()) == coeffs_list.size());
 
+  std::fill(coeffs, coeffs + n_coeffs(), 0.0);
   std::copy(coeffs_list.begin(), coeffs_list.end(), coeffs);
   std::copy(moments_list.begin(), moments_list.end(), moments);
 }
@@ -75,6 +76,22 @@ void Poly2D<MAX_DEGREE>::operator=(const PolynomialCRTP<E> &e_) {
   const E &e = static_cast<const E &>(e_);
 
   deep_copy(e);
+}
+
+template <int MAX_DEGREE>
+template <class E>
+void Poly2D<MAX_DEGREE>::operator+=(const PolynomialCRTP<E> &e_) {
+  const E &e = static_cast<const E &>(e_);
+
+  *this = *this + e;
+}
+
+template <int MAX_DEGREE>
+template <class E>
+void Poly2D<MAX_DEGREE>::operator-=(const PolynomialCRTP<E> &e_) {
+  const E &e = static_cast<const E &>(e_);
+
+  *this = *this - e;
 }
 
 template <int MAX_DEGREE>
