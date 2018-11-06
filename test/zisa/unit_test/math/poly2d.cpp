@@ -95,6 +95,57 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
     REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
   }
 
+  SECTION("assignment") {
+    auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0});
+
+    auto q = zisa::Poly2D<5>({1.0, 2.0, 3.0}, {0.0, 0.0, 0.0});
+
+    auto x = zisa::XY{-3.4, 2.138};
+
+    auto tmp = zisa::Poly2D<5>(p);
+
+    SECTION("+=") {
+      tmp += q;
+
+      auto exact = p(x) + q(x);
+      auto approx = tmp(x);
+
+      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
+      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    }
+
+    SECTION("+=") {
+      tmp -= q;
+
+      auto exact = p(x) - q(x);
+      auto approx = tmp(x);
+
+      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
+      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    }
+
+    SECTION("*=") {
+      tmp *= 2.0;
+
+      auto exact = 2.0 * p(x);
+      auto approx = tmp(x);
+
+      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
+      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    }
+
+    SECTION("/=") {
+      tmp /= 2.0;
+
+      auto exact = 0.5*p(x);
+      auto approx = tmp(x);
+
+      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
+      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    }
+  }
+
   SECTION("quadrature") {
     auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
                              {0.0, 0.0, 0.0, -1.0, -2.0, -3.0});

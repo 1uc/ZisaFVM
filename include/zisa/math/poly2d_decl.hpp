@@ -63,6 +63,10 @@ public:
   template <class E>
   void operator-=(const PolynomialCRTP<E> &e_);
 
+  void operator*=(double alpha);
+  void operator/=(double alpha);
+
+
   template <class E>
   void deep_copy(const PolynomialCRTP<E> &e_);
 

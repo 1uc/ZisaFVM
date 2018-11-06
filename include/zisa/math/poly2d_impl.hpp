@@ -95,6 +95,16 @@ void Poly2D<MAX_DEGREE>::operator-=(const PolynomialCRTP<E> &e_) {
 }
 
 template <int MAX_DEGREE>
+void Poly2D<MAX_DEGREE>::operator*=(double alpha) {
+  *this = alpha * (*this);
+}
+
+template <int MAX_DEGREE>
+void Poly2D<MAX_DEGREE>::operator/=(double alpha) {
+  *this *= 1.0 / alpha;
+}
+
+template <int MAX_DEGREE>
 template <class E>
 void Poly2D<MAX_DEGREE>::deep_copy(const PolynomialCRTP<E> &e_) {
   const E &e = static_cast<const E &>(e_);
