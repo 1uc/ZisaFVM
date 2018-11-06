@@ -14,4 +14,27 @@ LSQSolverFamily::LSQSolverFamily(const std::shared_ptr<Grid> &grid,
   assert(solvers_.size() == stencils.size());
 }
 
+auto LSQSolverFamily::begin() -> decltype(solvers_.begin()) {
+  return solvers_.begin();
+}
+auto LSQSolverFamily::begin() const -> decltype(solvers_.begin()) {
+  return solvers_.begin();
+}
+
+auto LSQSolverFamily::end() -> decltype(solvers_.end()) {
+  return solvers_.end();
+}
+auto LSQSolverFamily::end() const -> decltype(solvers_.end()) {
+  return solvers_.end();
+}
+
+  bool operator==(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs) {
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+  }
+
+  bool operator!=(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs) {
+    return !(lhs == rhs);
+  }
+
+
 } // namespace zisa

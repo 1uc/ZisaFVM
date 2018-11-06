@@ -11,6 +11,9 @@
 namespace zisa {
 
 class LSQSolverFamily {
+private:
+  std::vector<LSQSolver> solvers_;
+
 public:
   LSQSolverFamily(const std::shared_ptr<Grid> &grid,
                   const StencilFamily &stencils);
@@ -24,9 +27,15 @@ public:
   /// Returns the number of LSQ solvers.
   inline int_t size() const { return solvers_.size(); }
 
-private:
-  std::vector<LSQSolver> solvers_;
+  auto begin() -> decltype(solvers_.begin());
+  auto begin() const -> decltype(solvers_.begin());
+
+  auto end() -> decltype(solvers_.end());
+  auto end() const -> decltype(solvers_.end());
 };
+
+bool operator==(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs);
+bool operator!=(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs);
 
 } // namespace zisa
 #endif /* end of include guard */
