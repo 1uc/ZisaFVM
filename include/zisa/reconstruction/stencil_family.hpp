@@ -41,5 +41,8 @@ private:
   int order_;
 };
 
+bool operator==(const StencilFamily &lhs, const StencilFamily &rhs);
+bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs);
+
 } // namespace zisa
 #endif /* end of include guard */

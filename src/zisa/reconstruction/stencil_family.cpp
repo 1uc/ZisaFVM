@@ -52,4 +52,28 @@ auto StencilFamily::end() const -> decltype(stencils_.end()) {
   return stencils_.end();
 }
 
+bool operator==(const StencilFamily &lhs, const StencilFamily &rhs) {
+  if (lhs.combined_stencil_size() != rhs.combined_stencil_size()) {
+    return false;
+  }
+
+  if (!std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end())) {
+    return false;
+  }
+
+  auto l2g_lhs = lhs.local2global();
+  auto l2g_rhs = rhs.local2global();
+
+  auto stencil_size = lhs.combined_stencil_size();
+
+  return std::equal(lhs.begin(),
+                    lhs.begin() + stencil_size,
+                    rhs.begin(),
+                    rhs.begin() + stencil_size);
+}
+
+bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs) {
+  return !(lhs == rhs);
+}
+
 } // namespace zisa
