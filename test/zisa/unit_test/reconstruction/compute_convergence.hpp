@@ -3,6 +3,11 @@
 #ifndef COMPUTE_ERRORS_H_LJXFJ
 #define COMPUTE_ERRORS_H_LJXFJ
 
+#include <vector>
+
+#include <zisa/grid/grid.hpp>
+#include <zisa/math/quadrature.hpp>
+
 template <class F, class RC>
 std::tuple<double, double>
 compute_errors(const zisa::Grid &grid, const F &f, const std::vector<RC> &rc) {
