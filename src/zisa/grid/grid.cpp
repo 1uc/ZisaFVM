@@ -243,7 +243,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
 
   normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
   for (const auto &[i, tri] : triangles(*this)) {
-    normalized_moments(i) = zisa::normalized_moments(tri, 2, 4);
+    normalized_moments(i) = zisa::normalized_moments(tri, 3, 4);
   }
 }
 

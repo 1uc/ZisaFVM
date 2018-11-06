@@ -2,11 +2,38 @@
 #include <numeric>
 
 #include <zisa/grid/grid.hpp>
+#include <zisa/io/to_string.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/quadrature.hpp>
 #include <zisa/reconstruction/weno_ao.hpp>
 #include <zisa/unit_test/math/basic_functions.hpp>
+#include <zisa/unit_test/reconstruction/compute_convergence.hpp>
+
+TEST_CASE("WENO_AO API", "[weno_ao][math]") {
+
+  SECTION("compatibility with std::vector") {
+    SECTION("push_back") {
+
+      auto grid = zisa::load_gmsh("grids/small.msh");
+      auto params = zisa::HybridWENO_Params({{{1}, {"c"}, {2.0}}, {1.0}});
+
+      auto rc = std::vector<zisa::WENO_AO>();
+      for (const auto &[i, tri] : triangles(*grid)) {
+        rc.push_back(zisa::WENO_AO(grid, i, params));
+      }
+
+      REQUIRE(rc.size() == grid->n_cells);
+
+      for (decltype(rc.size()) i = 0; i < rc.size(); ++i) {
+        const auto &approx = rc[i];
+        auto exact = zisa::WENO_AO(grid, i, params);
+
+        REQUIRE(approx == exact);
+      }
+    }
+  }
+}
 
 TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
   auto f = [](const zisa::XY &x) {
@@ -15,26 +42,42 @@ TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
     return zisa::exp(-zisa::pow<2>(d / sigma));
   };
 
-  auto qbar_local = zisa::array<double, 1>{zisa::shape_t<1>{20ul}};
-
   auto grid_names
       = std::vector<std::string>{"grids/convergence/unit_square_1.msh",
                                  "grids/convergence/unit_square_2.msh",
                                  "grids/convergence/unit_square_3.msh"};
 
-  auto cases = std::vector<std::tuple<double, zisa::WENO_AO_Params>>{
-      {1.0, {{{1}, {"c"}, {2.0}}, {1.0}}},
-      {1.0, {{{1}, {"b"}, {2.0}}, {1.0}}},
-      {2.0, {{{2}, {"c"}, {2.0}}, {1.0}}},
-      {2.0, {{{2}, {"b"}, {2.0}}, {1.0}}},
-      {3.0, {{{3}, {"c"}, {2.0}}, {1.0}}},
-      {3.0, {{{3}, {"b"}, {2.0}}, {1.0}}}};
+  using interval_t = std::tuple<double, double>;
+  auto cases = std::vector<std::tuple<interval_t, zisa::HybridWENO_Params>>{
+      {{0.8, 1.15}, {{{1}, {"c"}, {2.0}}, {1.0}}},
+      {{0.8, 1.15}, {{{1}, {"b"}, {2.0}}, {1.0}}},
+      {{1.8, 2.2}, {{{2}, {"c"}, {2.0}}, {1.0}}},
+      {{1.8, 2.2}, {{{2}, {"b"}, {2.0}}, {1.0}}},
+      {{2.8, 3.25}, {{{3}, {"c"}, {2.0}}, {1.0}}},
+      {{2.8, 3.25}, {{{3}, {"b"}, {2.0}}, {1.0}}},
+      {{3.8, 4.4}, {{{4}, {"c"}, {2.0}}, {1.0}}}};
 
-  // cases.push_back({3.0,
-  //                  {{{1, 1, 1, 3}, {"b", "b", "b", "c"}, {1.5, 1.5, 1.5, 2.0}},
-  //                   {1.0, 1.0, 1.0, 100.0}}});
+  // This expected not to converge high-order, because biases stencils at the
+  // boundary might not be large enough to be high-order. In such cases the
+  // order is reduced accordingly.
+  cases.push_back({{1.0, 4.1}, {{{4}, {"b"}, {2.0}}, {1.0}}});
+
+  cases.push_back({{2.8, 3.25},
+                   {{{2, 2, 2, 3}, {"b", "b", "b", "c"}, {1.5, 1.5, 1.5, 2.0}},
+                    {1.0, 1.0, 1.0, 100.0}}});
+
+  // The reason for the second order convergence is the linear weights. They
+  // allow too much pollution from the second order stencils.
+  cases.push_back({{1.8, 4.2},
+                   {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+                    {100.0, 1.0, 1.0, 1.0}}});
+
+  cases.push_back({{3.8, 4.4},
+                   {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+                    {1000.0, 1.0, 1.0, 1.0}}});
 
   for (auto &[expected_rate, weno_ao_params] : cases) {
+    auto desc_params = zisa::to_string(weno_ao_params);
     std::vector<double> resolution;
     std::vector<double> l1_errors;
     std::vector<double> linf_errors;
@@ -42,53 +85,30 @@ TEST_CASE("reconstruct smooth", "[weno_ao][math]") {
     for (auto &&grid_name : grid_names) {
       auto grid = zisa::load_gmsh(grid_name);
 
-      auto qbar = zisa::array<double, 1>(zisa::shape_t<1>{grid->n_cells});
-
+      auto rc = std::vector<zisa::WENO_AO>();
       for (const auto &[i, tri] : triangles(*grid)) {
-        qbar(i) = zisa::quadrature<4>(f, tri) / tri.volume;
+        rc.push_back(zisa::WENO_AO(grid, i, weno_ao_params));
       }
 
-      double l1_err = 0.0;
-      double linf_err = 0.0;
-      double effective_volume = 0.0;
-
-      for (const auto &[i, tri] : triangles(*grid)) {
-        auto weno_ao = zisa::WENO_AO(grid, i, weno_ao_params);
-
-        const auto &l2g = weno_ao.local2global();
-
-        INFO(string_format("grid_name = '%s'", grid_name.c_str()));
-        REQUIRE(l2g[0] == i);
-        for (zisa::int_t i = 0; i < l2g.size(); ++i) {
-          qbar_local(i) = qbar(l2g[i]);
-        }
-
-        auto p = weno_ao.reconstruct(qbar_local);
-
-        auto diff = [tri = tri, &p, &f](const zisa::XY &x) {
-          auto x_center = zisa::barycenter(tri);
-          auto xx = zisa::XY((x - x_center) / zisa::circum_radius(tri));
-          return zisa::abs(p(xx) - f(x));
-        };
-
-        auto err = zisa::quadrature<3>(diff, tri);
-
-        l1_err += err;
-        linf_err = zisa::max(linf_err, err);
-        effective_volume += tri.volume;
-      }
+      auto [l1_err, linf_err] = compute_errors(*grid, f, rc);
 
       resolution.push_back(zisa::largest_circum_radius(*grid));
-      l1_errors.push_back(l1_err / effective_volume);
+      l1_errors.push_back(l1_err);
       linf_errors.push_back(linf_err);
     }
 
     auto rates = convergence_rates(resolution, l1_errors);
 
     for (zisa::int_t i = 0; i < rates.size(); ++i) {
-      INFO(string_format(
-          "[%d] (%e, %e) @ %e \n", i, l1_errors[i], rates[i], resolution[i]));
-      CHECK(zisa::almost_equal(rates[i], expected_rate, 0.22));
+      auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e",
+                                   i,
+                                   l1_errors[i],
+                                   i,
+                                   rates[i],
+                                   resolution[i]);
+
+      INFO(string_format("%s \n%s", err_str.c_str(), desc_params.c_str()));
+      CHECK(zisa::is_inside_interval(rates[i], expected_rate));
     }
   }
 }
