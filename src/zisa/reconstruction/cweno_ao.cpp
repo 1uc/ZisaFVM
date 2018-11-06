@@ -22,9 +22,11 @@ auto CWENO_AO::reconstruct(const array<double, 1> &qbar) const
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     if (k_high != k) {
-      polys[k_high] -= linear_weights[k] / linear_weights[k_high] * polys[k];
+      polys[k_high] -= linear_weights[k] * polys[k];
     }
   }
+
+  polys[k_high] /= linear_weights[k_high];
 
   return hybridize();
 }
