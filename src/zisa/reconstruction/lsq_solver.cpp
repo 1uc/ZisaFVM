@@ -103,4 +103,24 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   return A;
 }
 
+bool LSQSolver::operator==(const LSQSolver &other) const {
+  if (grid != other.grid) {
+    return false;
+  }
+
+  if (i_cell != other.i_cell) {
+    return false;
+  }
+
+  if (order != other.order) {
+    return false;
+  }
+
+  return qr.matrixQR() == other.qr.matrixQR();
+}
+
+bool LSQSolver::operator!=(const LSQSolver &other) const {
+  return !((*this) == other);
+}
+
 } // namespace zisa

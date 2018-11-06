@@ -31,6 +31,12 @@ public:
   /// Solve the LSQ problem with right-hand side `rhs`.
   Poly2D<MAX_DEGREE> solve(const array<double, 1> &rhs) const;
 
+  /// Indistinguishable by calls to the public interface.
+  bool operator==(const LSQSolver &other) const;
+
+  /// Can be distinguished by calls to the public interface.
+  bool operator!=(const LSQSolver &other) const;
+
 private:
   std::shared_ptr<Grid> grid;
   int_t i_cell;
