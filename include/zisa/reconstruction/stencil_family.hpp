@@ -44,5 +44,7 @@ private:
 bool operator==(const StencilFamily &lhs, const StencilFamily &rhs);
 bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs);
 
+int_t highest_order_central_stencil(const StencilFamily &stencils);
+
 } // namespace zisa
 #endif /* end of include guard */

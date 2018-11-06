@@ -12,8 +12,7 @@ CWENO_AO::CWENO_AO(const std::shared_ptr<Grid> &grid,
                    int_t i_cell,
                    const HybridWENO_Params &params)
     : super(grid, i_cell, params) {
-  // k_high = highest_order_central_stencil(stencils);
-  k_high = 0; // TODO fixme
+  k_high = highest_order_central_stencil(stencils);
 }
 
 auto CWENO_AO::reconstruct(const array<double, 1> &qbar) const
