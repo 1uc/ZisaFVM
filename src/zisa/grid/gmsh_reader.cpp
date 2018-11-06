@@ -19,9 +19,8 @@ void GMSHReader::load_vertices() {
 
   vertices.reserve(n_vertices);
 
-  std::string line;
-  while (msh.good() && !starts_with(line = getline(msh), "$EndNodes")) {
-    load_vertex(std::istringstream(line));
+  for (index_t i = 0; (i < n_vertices) && msh.good(); ++i) {
+    load_vertex(std::istringstream(getline(msh)));
   }
 }
 
@@ -46,9 +45,8 @@ void GMSHReader::load_elements(index_t element_kind) {
 
   vertex_indices.reserve(n_elements);
 
-  std::string line;
-  while (msh.good() && !starts_with(line = getline(msh), "$EndElements")) {
-    load_element(std::istringstream(line), element_kind);
+  for (index_t i = 0; (i < n_elements) && msh.good(); ++i) {
+    load_element(std::istringstream(getline(msh)), element_kind);
   }
 }
 
