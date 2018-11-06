@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <numeric>
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/basic_functions.hpp>
@@ -18,7 +19,11 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       exponent(4)
 {
   rhs = array<double, 1>(shape_t<1>{stencils.combined_stencil_size()});
-  std::copy(params.linear_weights.begin(), params.linear_weights.end(), linear_weights.begin());
+
+  auto tot = std::accumulate(params.linear_weights.begin(), params.linear_weights.end(), 0.0);
+  for (int_t i = 0; i < linear_weights.size(); ++i) {
+    linear_weights[i] = params.linear_weights[i] / tot;
+  }
 }
 
 void HybridWENO::compute_polys(const array<double, 1> &qbar) const {
