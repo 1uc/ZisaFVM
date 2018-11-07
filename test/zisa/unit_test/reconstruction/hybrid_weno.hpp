@@ -7,6 +7,7 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/io/to_string.hpp>
 #include <zisa/io/type_name.hpp>
+#include <zisa/utils/indent_block.hpp>
 #include <zisa/unit_test/math/basic_functions.hpp>
 #include <zisa/unit_test/reconstruction/compute_convergence.hpp>
 
@@ -51,8 +52,9 @@ void test_hybrid_weno_convergence(
                                  i,
                                  rates[i],
                                  resolution[i]);
+    err_str = zisa::indent_block(1, err_str);
 
-    auto desc_params = zisa::to_string(params);
+    auto desc_params = zisa::indent_block(1, zisa::to_string(params));
     INFO(string_format("%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
     CHECK(zisa::is_inside_interval(rates[i], expected_rate));
   }
