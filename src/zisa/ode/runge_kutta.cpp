@@ -3,9 +3,9 @@
 
 #include <numeric>
 
+#include <zisa/math/comparison.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/ode/runge_kutta.hpp>
-#include <zisa/math/comparison.hpp>
 
 namespace zisa {
 ButcherTableau::ButcherTableau(const std::vector<std::vector<double>> &a,

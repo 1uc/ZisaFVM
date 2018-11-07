@@ -16,11 +16,11 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       polys(stencils.size()),
       linear_weights(stencils.size()),
       epsilon(1e-6),
-      exponent(4)
-{
+      exponent(4) {
   rhs = array<double, 1>(shape_t<1>{stencils.combined_stencil_size()});
 
-  auto tot = std::accumulate(params.linear_weights.begin(), params.linear_weights.end(), 0.0);
+  auto tot = std::accumulate(
+      params.linear_weights.begin(), params.linear_weights.end(), 0.0);
   for (int_t i = 0; i < linear_weights.size(); ++i) {
     linear_weights[i] = params.linear_weights[i] / tot;
   }
