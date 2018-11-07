@@ -129,8 +129,8 @@ public:
   }
 
   /// Self-documenting string.
-  static std::string str(int indent) {
-    return indent_line(indent, "HLLC with Batten wavespeeds (`HLLCBatten`)\n");
+  static std::string str() {
+    return "HLLC with Batten wavespeeds (`HLLCBatten`)";
   }
 };
 

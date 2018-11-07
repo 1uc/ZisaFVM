@@ -11,7 +11,6 @@
 #include "zisa/math/comparison.hpp"
 #include "zisa/model/all_variables.hpp"
 #include "zisa/ode/rate_of_change.hpp"
-#include "zisa/utils/indent_line.hpp"
 
 namespace zisa {
 
@@ -51,11 +50,13 @@ double SumRatesOfChange::pick_time_step(const AllVariables &all_variables,
   return dt;
 }
 
-std::string SumRatesOfChange::str(int indent) const {
+std::string SumRatesOfChange::str() const {
   std::stringstream ss;
+  bool is_first = true;
 
   for (auto &&roc : rates_of_change) {
-    ss << roc->str(indent);
+    ss << (is_first ? "" : "\n") << roc->str();
+    is_first = false;
   }
 
   return ss.str();
@@ -79,9 +80,7 @@ double ZeroRateOfChange::pick_time_step(const AllVariables &, double dt) const {
   return zisa::min(dt_max, dt);
 }
 
-std::string ZeroRateOfChange::str(int indent) const {
-  return indent_line(indent, "Zero right-hand side.\n");
-}
+std::string ZeroRateOfChange::str() const { return "Zero right-hand side."; }
 
 } // namespace zisa
 #endif /* end of include guard: RATE_OF_CHANGE_CPP_UYNX1QZJ */

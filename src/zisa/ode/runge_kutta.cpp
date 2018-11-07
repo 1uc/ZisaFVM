@@ -6,7 +6,6 @@
 #include <zisa/model/all_variables.hpp>
 #include <zisa/ode/runge_kutta.hpp>
 #include <zisa/math/comparison.hpp>
-#include <zisa/utils/indent_line.hpp>
 
 namespace zisa {
 ButcherTableau::ButcherTableau(const std::vector<std::vector<double>> &a,
@@ -112,10 +111,8 @@ double RungeKutta::pick_time_step(const AllVariables &all_variables,
   return zisa::min(dt, pick_time_step(all_variables));
 }
 
-std::string RungeKutta::assemble_description(int indent,
-                                             const std::string &detail) const {
-  return indent_line(indent, detail) + bc->str(indent)
-         + rate_of_change->str(indent);
+std::string RungeKutta::assemble_description(const std::string &detail) const {
+  return detail + "\n" + bc->str() + "\n" + rate_of_change->str();
 }
 
 void runge_kutta_sum(AllVariables &u1,
@@ -146,8 +143,8 @@ ForwardEuler::ForwardEuler(const std::shared_ptr<RateOfChange> &rate_of_change,
                            const AllVariablesDimensions &dims)
     : super(rate_of_change, bc, ButcherTableau({{0.0}}, {1.0}), dims, 0.45) {}
 
-std::string ForwardEuler::str(int indent) const {
-  return assemble_description(indent, "Forward Euler (`ForwardEuler`)\n");
+std::string ForwardEuler::str() const {
+  return assemble_description("Forward Euler (`ForwardEuler`)");
 }
 
 SSP2::SSP2(const std::shared_ptr<RateOfChange> &rate_of_change,
@@ -159,8 +156,8 @@ SSP2::SSP2(const std::shared_ptr<RateOfChange> &rate_of_change,
             dims,
             0.85) {}
 
-std::string SSP2::str(int indent) const {
-  return assemble_description(indent, "SSP 2 (`SSP2`)\n");
+std::string SSP2::str() const {
+  return assemble_description("SSP 2 (`SSP2`)");
 }
 
 SSP3::SSP3(const std::shared_ptr<RateOfChange> &rate_of_change,
@@ -178,8 +175,8 @@ SSP3::SSP3(const std::shared_ptr<RateOfChange> &rate_of_change,
           dims,
           0.85) {}
 
-std::string SSP3::str(int indent) const {
-  return assemble_description(indent, "SSP 3 (`SSP3`)\n");
+std::string SSP3::str() const {
+  return assemble_description("SSP 3 (`SSP3`)");
 }
 
 Wicker::Wicker(const std::shared_ptr<RateOfChange> &rate_of_change,
@@ -197,8 +194,8 @@ Wicker::Wicker(const std::shared_ptr<RateOfChange> &rate_of_change,
             dims,
             0.85) {}
 
-std::string Wicker::str(int indent) const {
-  return assemble_description(indent, "Wicker (`Wicker`)\n");
+std::string Wicker::str() const {
+  return assemble_description("Wicker (`Wicker`)");
 }
 
 RK4::RK4(const std::shared_ptr<RateOfChange> &rate_of_change,
@@ -216,8 +213,8 @@ RK4::RK4(const std::shared_ptr<RateOfChange> &rate_of_change,
             dims,
             0.85) {}
 
-std::string RK4::str(int indent) const {
-  return assemble_description(indent, "The Runge Kutta (`RK4`)\n");
+std::string RK4::str() const {
+  return assemble_description("The Runge Kutta (`RK4`)");
 }
 
 Fehlberg::Fehlberg(const std::shared_ptr<RateOfChange> &rate_of_change,
@@ -255,9 +252,8 @@ Fehlberg::Fehlberg(const std::shared_ptr<RateOfChange> &rate_of_change,
             0.85) { /* otherwise empty constructor */
 }
 
-std::string Fehlberg::str(int indent) const {
-  return assemble_description(indent,
-                              "Fehlberg RK method, sixth order part.\n");
+std::string Fehlberg::str() const {
+  return assemble_description("Fehlberg RK method, sixth order part.");
 }
 
 } // namespace zisa

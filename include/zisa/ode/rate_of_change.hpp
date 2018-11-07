@@ -48,7 +48,7 @@ public:
                                 double dt) const = 0;
 
   /// Short self-documenting string.
-  virtual std::string str(int indent) const = 0;
+  virtual std::string str() const = 0;
 };
 
 /// Convenient way to sum individual terms of the rate of change.
@@ -74,7 +74,7 @@ public:
                                 double dt) const override;
 
   /// Short self-documenting string.
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 
 private:
   std::vector<std::shared_ptr<RateOfChange>> rates_of_change;
@@ -95,7 +95,7 @@ public:
   virtual double pick_time_step(const AllVariables &all_variables,
                                 double dt) const override;
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 
 protected:
   double dt_max;

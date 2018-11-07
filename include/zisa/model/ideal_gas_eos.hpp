@@ -5,7 +5,6 @@
 #define IDEAL_GAS_EOS_H_SNFCI
 
 #include <zisa/model/equation_of_state_base.hpp>
-#include <zisa/utils/indent_line.hpp>
 
 namespace zisa {
 
@@ -250,11 +249,9 @@ public:
     return 1.0 / (gamma() - 1.0) * specific_gas_constant();
   }
 
-  std::string str(int indent = 0) const {
-    return indent_line(indent,
-                       string_format("Ideal gas EOS [%.3e, %.3e]\n",
-                                     gamma(),
-                                     specific_gas_constant()));
+  std::string str() const {
+    return string_format(
+        "Ideal gas EOS [%.3e, %.3e]", gamma(), specific_gas_constant());
   }
 
 private:

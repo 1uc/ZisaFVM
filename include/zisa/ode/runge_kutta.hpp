@@ -118,7 +118,7 @@ public:
                                 double dt) const override;
 
 protected:
-  std::string assemble_description(int indent, const std::string &detail) const;
+  std::string assemble_description(const std::string &detail) const;
 
 protected:
   ButcherTableau tableau;
@@ -153,7 +153,7 @@ public:
                const std::shared_ptr<BoundaryCondition> &bc,
                const AllVariablesDimensions &dims);
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 };
 
 /// Second order strong stability preserving Runge-Kutta scheme.
@@ -166,7 +166,7 @@ public:
        const std::shared_ptr<BoundaryCondition> &bc,
        const AllVariablesDimensions &dims);
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 };
 
 /// Third order strong stability preserving Runge-Kutta scheme.
@@ -179,7 +179,7 @@ public:
        const std::shared_ptr<BoundaryCondition> &bc,
        const AllVariablesDimensions &dims);
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 };
 
 /// Third order Wicker-Skamarock time-integrator.
@@ -192,7 +192,7 @@ public:
          const std::shared_ptr<BoundaryCondition> &bc,
          const AllVariablesDimensions &dims);
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 };
 
 /// The classical Runge-Kutta method.
@@ -205,7 +205,7 @@ public:
       const std::shared_ptr<BoundaryCondition> &bc,
       const AllVariablesDimensions &dims);
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 };
 
 /// The 6-stage fifth-order part of the Fehlberg method.
@@ -218,7 +218,7 @@ public:
            const std::shared_ptr<BoundaryCondition> &bc,
            const AllVariablesDimensions &dims);
 
-  virtual std::string str(int indent) const override;
+  virtual std::string str() const override;
 };
 
 } // namespace zisa

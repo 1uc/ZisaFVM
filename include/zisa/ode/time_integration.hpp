@@ -45,7 +45,7 @@ public:
                                 double dt) const = 0;
 
   /// Self-documenting string.
-  virtual std::string str(int indent = 0) const = 0;
+  virtual std::string str() const = 0;
 };
 
 } // namespace zisa
