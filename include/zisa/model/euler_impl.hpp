@@ -9,19 +9,15 @@
 
 #include "euler_decl.hpp"
 
+#include <zisa/utils/indent_block.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/isreal.hpp>
 #include <zisa/model/equation_of_state.hpp>
 
 namespace zisa {
 template <class EOS, class Gravity>
-Euler<EOS, Gravity>::Euler(double omega, const EOS &eos, const Gravity &gravity)
-    : eos(eos), gravity(gravity), omega_(omega) {}
-
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE double Euler<EOS, Gravity>::omega(void) const {
-  return omega_;
-}
+Euler<EOS, Gravity>::Euler(const EOS &eos, const Gravity &gravity)
+    : eos(eos), gravity(gravity) {}
 
 template <class EOS, class Gravity>
 ANY_DEVICE_INLINE double
@@ -45,33 +41,6 @@ ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::flux(const euler_var_t &u,
   pf(4) = v * (u(4) + p);
 
   return pf;
-}
-
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::physical_source(
-    const euler_var_t &u, const XY &x, double /* t */) const {
-
-  euler_var_t ps;
-  double om = omega();
-
-  double dphi_dx = gravity.dphi_dx(x, 0);
-  double dphi_dy = gravity.dphi_dx(x, 1);
-
-  // The coriolis force is
-  //     coriolis = 2*(0, 0, omega) x (u(1), u(2), u(3))
-
-  // density
-  ps(0) = 0.0;
-
-  // momentum
-  ps(1) = -u(0) * dphi_dx + 2 * om * u(2);
-  ps(2) = -u(0) * dphi_dy - 2 * om * u(1);
-  ps(3) = 0.0;
-
-  // energy
-  ps(4) = -(u(1) * dphi_dx + u(2) * dphi_dy);
-
-  return ps;
 }
 
 template <class EOS, class Gravity>
@@ -142,7 +111,6 @@ inline void save_parameters(const IdealGasEOS &eos, HDF5Writer &writer) {
 template <class EOS, class Gravity>
 void Euler<EOS, Gravity>::save_parameters(HDF5Writer &writer) const {
   writer.write_string("Euler", "model");
-  writer.write_scalar(omega(), "omega");
 
   detail::save_parameters(eos, writer);
 }
@@ -158,13 +126,12 @@ void Euler<EOS, Gravity>::save_parameters(HDF5Writer &writer) const {
 // }
 
 template <class EOS, class Gravity>
-std::string Euler<EOS, Gravity>::str(int indent) const {
+std::string Euler<EOS, Gravity>::str() const {
   std::stringstream ss;
-  std::string space(2 * indent, ' ');
-  std::string space2(2 * (indent + 1), ' ');
 
-  ss << space << "Euler equations:\n";
-  ss << space2 << string_format("omega   = %.3e \n", omega());
+  ss << "Euler equations:\n"
+     << indent_block(1, eos.str()) << "\n"
+     << indent_block(1, gravity.str());
 
   return ss.str();
 }

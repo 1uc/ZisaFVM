@@ -13,7 +13,7 @@ TEST_CASE("HLLC; consistency") {
   auto eos = eos_t{1.6, 1.0};
   auto gravity = gravity_t{0.9};
 
-  auto euler = euler_t(0.0, eos, gravity);
+  auto euler = euler_t(eos, gravity);
   auto u = zisa::euler_var_t{1.0, -0.2, 0.3, 0.8, 12.0};
   auto p = eos.pressure(u);
 

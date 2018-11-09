@@ -27,15 +27,10 @@ public:
 public:
   eos_t eos;
   gravity_t gravity;
-  double omega_;
 
 public:
   Euler() = default;
-  Euler(double omega, const EOS &eos, const Gravity &gravity);
-
-  // --- planetary parameters
-  /// Planetary rotation rate.
-  ANY_DEVICE_INLINE double omega(void) const;
+  Euler(const EOS &eos, const Gravity &gravity);
 
   /// Largest eigenvalue of the derivative of the flux.
   ANY_DEVICE_INLINE double max_eigen_value(const euler_var_t &u) const;
@@ -45,11 +40,6 @@ public:
    *  through which the flux is computed.
    */
   ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u, double p) const;
-
-  /// Source terms in the Euler equations.
-  ANY_DEVICE_INLINE euler_var_t physical_source(const euler_var_t &u,
-                                                const XY &x,
-                                                double t) const;
 
   /// Flow velocity.
   ANY_DEVICE_INLINE XY velocity(const euler_var_t &u) const;
@@ -81,7 +71,7 @@ public:
   void save_parameters(HDF5Writer &writer) const;
 
   /// Self-documenting string.
-  std::string str(int indent = 0) const;
+  std::string str() const;
 };
 
 /// Are the value obviously unphysical?
