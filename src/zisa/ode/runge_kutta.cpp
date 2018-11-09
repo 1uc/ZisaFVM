@@ -19,11 +19,11 @@ ButcherTableau::ButcherTableau(const std::vector<std::vector<double>> &a,
 void ButcherTableau::allocate() {
   this->a.resize(n_stages);
   for (int_t i = 0; i < n_stages; ++i) {
-    this->a[i] = array<double, 1>({n_stages}, device);
+    this->a[i] = array<double, 1>(shape_t<1>{n_stages});
   }
 
-  this->b = array<double, 1>({n_stages}, device);
-  this->c = array<double, 1>({n_stages}, device);
+  this->b = array<double, 1>(shape_t<1>{n_stages});
+  this->c = array<double, 1>(shape_t<1>{n_stages});
 }
 
 void ButcherTableau::assign(const std::vector<std::vector<double>> &a,
@@ -43,7 +43,7 @@ TendencyBuffers::TendencyBuffers(const AllVariablesDimensions &dims,
                                  int_t n_stages)
     : buffers(n_stages) {
   for (int_t i = 0; i < n_stages; ++i) {
-    buffers.at(i) = AllVariables(dims, device);
+    buffers.at(i) = AllVariables(dims);
   }
 }
 
@@ -61,17 +61,15 @@ std::vector<AllVariables>::iterator TendencyBuffers::end() {
   return buffers.end();
 }
 
-RungeKutta::RungeKutta(const std::shared_ptr<RateOfChange> &rate_of_change,
-                       const std::shared_ptr<BoundaryCondition> &bc,
+RungeKutta::RungeKutta(std::shared_ptr<RateOfChange> rate_of_change,
+                       std::shared_ptr<BoundaryCondition> bc,
                        ButcherTableau tableau,
-                       const AllVariablesDimensions &dims,
-                       double cfl_number)
+                       const AllVariablesDimensions &dims)
     : tableau(std::move(tableau)),
-      rate_of_change(rate_of_change),
-      bc(bc),
-      tendency_buffers(dims, this->tableau.n_stages),
-      cfl_number(cfl_number) {
-  ux = std::make_shared<AllVariables>(dims, device);
+      rate_of_change(std::move(rate_of_change)),
+      bc(std::move(bc)),
+      tendency_buffers(dims, this->tableau.n_stages) {
+  ux = std::make_shared<AllVariables>(dims);
 }
 
 std::shared_ptr<AllVariables> RungeKutta::compute_step(
@@ -100,15 +98,6 @@ std::shared_ptr<AllVariables> RungeKutta::compute_step(
 
 void RungeKutta::boundary_condition(AllVariables &u0, double t) const {
   return bc->apply(u0, t);
-}
-
-double RungeKutta::pick_time_step(const AllVariables &all_variables) const {
-  return cfl_number * rate_of_change->pick_time_step(all_variables);
-}
-
-double RungeKutta::pick_time_step(const AllVariables &all_variables,
-                                  double dt) const {
-  return zisa::min(dt, pick_time_step(all_variables));
 }
 
 std::string RungeKutta::assemble_description(const std::string &detail) const {
@@ -141,7 +130,7 @@ void runge_kutta_sum(AllVariables &u1,
 ForwardEuler::ForwardEuler(const std::shared_ptr<RateOfChange> &rate_of_change,
                            const std::shared_ptr<BoundaryCondition> &bc,
                            const AllVariablesDimensions &dims)
-    : super(rate_of_change, bc, ButcherTableau({{0.0}}, {1.0}), dims, 0.45) {}
+    : super(rate_of_change, bc, ButcherTableau({{0.0}}, {1.0}), dims) {}
 
 std::string ForwardEuler::str() const {
   return assemble_description("Forward Euler (`ForwardEuler`)");
@@ -153,12 +142,9 @@ SSP2::SSP2(const std::shared_ptr<RateOfChange> &rate_of_change,
     : super(rate_of_change,
             bc,
             ButcherTableau({{0.0, 0.0}, {1.0, 0.0}}, {0.5, 0.5}),
-            dims,
-            0.85) {}
+            dims) {}
 
-std::string SSP2::str() const {
-  return assemble_description("SSP 2 (`SSP2`)");
-}
+std::string SSP2::str() const { return assemble_description("SSP 2 (`SSP2`)"); }
 
 SSP3::SSP3(const std::shared_ptr<RateOfChange> &rate_of_change,
            const std::shared_ptr<BoundaryCondition> &bc,
@@ -172,12 +158,9 @@ SSP3::SSP3(const std::shared_ptr<RateOfChange> &rate_of_change,
                           {0.25, 0.25, 0.0}},
                          {1.0 / 6, 1.0 / 6, 2.0 / 3}),
           // clang-format on
-          dims,
-          0.85) {}
+          dims) {}
 
-std::string SSP3::str() const {
-  return assemble_description("SSP 3 (`SSP3`)");
-}
+std::string SSP3::str() const { return assemble_description("SSP 3 (`SSP3`)"); }
 
 Wicker::Wicker(const std::shared_ptr<RateOfChange> &rate_of_change,
                const std::shared_ptr<BoundaryCondition> &bc,
@@ -191,8 +174,7 @@ Wicker::Wicker(const std::shared_ptr<RateOfChange> &rate_of_change,
                  {0.0, 0.5, 0.0}},
                 {0.0, 0.0, 1.0}),
             // clang-format on
-            dims,
-            0.85) {}
+            dims) {}
 
 std::string Wicker::str() const {
   return assemble_description("Wicker (`Wicker`)");
@@ -204,14 +186,13 @@ RK4::RK4(const std::shared_ptr<RateOfChange> &rate_of_change,
     : super(rate_of_change,
             bc,
             // clang-format off
-                ButcherTableau({{0.0, 0.0, 0.0, 0.0},
-                                {0.5, 0.0, 0.0, 0.0},
-                                {0.0, 0.5, 0.0, 0.0},
-                                {0.0, 0.0, 1.0, 0.0}},
-                                {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6}),
+            ButcherTableau({{0.0, 0.0, 0.0, 0.0},
+                            {0.5, 0.0, 0.0, 0.0},
+                            {0.0, 0.5, 0.0, 0.0},
+                            {0.0, 0.0, 1.0, 0.0}},
+                            {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6}),
             // clang-format on
-            dims,
-            0.85) {}
+            dims) {}
 
 std::string RK4::str() const {
   return assemble_description("The Runge Kutta (`RK4`)");
@@ -248,8 +229,7 @@ Fehlberg::Fehlberg(const std::shared_ptr<RateOfChange> &rate_of_change,
                  -9.0 / 50.0,
                  2.0 / 55.0}),
             // clang-format on
-            dims,
-            0.85) { /* otherwise empty constructor */
+            dims) { /* otherwise empty constructor */
 }
 
 std::string Fehlberg::str() const {

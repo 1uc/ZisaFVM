@@ -8,11 +8,3 @@ target_sources(zisa
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/time_keeper_factory.cpp
 )
 
-if(USE_CUDA)
-
-target_sources(zisa
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/runge_kutta_kernels.cu
-)
-
-endif()
-

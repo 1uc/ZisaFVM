@@ -19,7 +19,7 @@ public:
   virtual void apply(AllVariables &u, double t) = 0;
 
   /// Self-documenting string.
-  virtual std::string str(int indent = 0) const = 0;
+  virtual std::string str() const = 0;
 };
 
 } // namespace zisa

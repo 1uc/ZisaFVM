@@ -3,14 +3,24 @@
 #ifndef COORDINATES_DECL_HPP_PCND3ABZ
 #define COORDINATES_DECL_HPP_PCND3ABZ
 
-#include "zisa/config.hpp"
+#include <zisa/config.hpp>
 
-#include "zisa/math/cartesian_expr.hpp"
-#include "zisa/memory/array_base.hpp"
+#include <zisa/math/cartesian_expr.hpp>
+#include <zisa/math/isreal.hpp>
+#include <zisa/memory/array_base.hpp>
 
 namespace zisa {
-template <int n_vars>
+template <int_t n_vars>
 class Cartesian : public CartesianExpr<Cartesian<n_vars>, double> {
+protected:
+  template <class, class = std::void_t<>>
+  struct has_compatible_size : std::true_type {};
+
+  template <class T>
+  struct has_compatible_size<T, std::void_t<decltype(T::size())>> {
+    static constexpr bool value = T::size() == n_vars;
+  };
+
 public:
   using scalar_t = double;
 
@@ -25,7 +35,7 @@ public:
   // Construct from CRTP expression.
   template <class E>
   explicit Cartesian(const CartesianExpr<E, scalar_t> &e) {
-    static_assert(E::size() == size(), "Length mismatch.");
+    static_assert(has_compatible_size<E>::value, "Length mismatch.");
     (*this) = e;
   }
 
@@ -39,18 +49,18 @@ public:
     }
   }
 
-  ANY_DEVICE_INLINE const scalar_t &operator()(int i) const { return data[i]; }
+  ANY_DEVICE_INLINE const scalar_t &operator()(int_t i) const { return data[i]; }
 
-  ANY_DEVICE_INLINE scalar_t &operator()(int i) { return data[i]; }
+  ANY_DEVICE_INLINE scalar_t &operator()(int_t i) { return data[i]; }
 
-  ANY_DEVICE_INLINE const scalar_t &operator[](int i) const { return data[i]; }
+  ANY_DEVICE_INLINE const scalar_t &operator[](int_t i) const { return data[i]; }
 
-  ANY_DEVICE_INLINE scalar_t &operator[](int i) { return data[i]; }
+  ANY_DEVICE_INLINE scalar_t &operator[](int_t i) { return data[i]; }
 
   /// Deep copy.
   ANY_DEVICE_INLINE Cartesian<n_vars> &
   operator=(const Cartesian<n_vars> &other) {
-    for (int i = 0; i < n_vars; ++i) {
+    for (int_t i = 0; i < n_vars; ++i) {
       data[i] = other.data[i];
     }
 
@@ -73,10 +83,11 @@ public:
   /// Deep copy.
   template <class E>
   Cartesian<n_vars> &operator=(const CartesianExpr<E, scalar_t> &e_) {
-    static_assert(E::size() == size(), "Number of variables don't match!");
+    static_assert(has_compatible_size<E>::value,
+                  "Number of variables don't match!");
     const E &e = static_cast<const E &>(e_);
 
-    for (int i = 0; i < e.size(); ++i) {
+    for (int_t i = 0; i < size(); ++i) {
       data[i] = e(i);
     }
 
@@ -88,8 +99,8 @@ public:
   void operator+=(const CartesianExpr<E, scalar_t> &e_) {
     const E &e = static_cast<const E &>(e_);
 
-    for (int i = 0; i < e.size(); ++i) {
-      data[i] += e(i);
+    for (int_t i = 0; i < e.size(); ++i) {
+      data[i] += e[i];
     }
   }
 
@@ -98,21 +109,21 @@ public:
   void operator-=(const CartesianExpr<E, scalar_t> &e_) {
     const E &e = static_cast<const E &>(e_);
 
-    for (int i = 0; i < e.size(); ++i) {
+    for (int_t i = 0; i < e.size(); ++i) {
       data[i] -= e(i);
     }
   }
 
   /// Multiply with scalar (inplace)
   inline void operator*=(const double factor) {
-    for (int i = 0; i < size(); ++i) {
+    for (int_t i = 0; i < size(); ++i) {
       data[i] *= factor;
     }
   }
 
   /// Divide by scalar (inplace)
   inline void operator/=(const double factor) {
-    for (int i = 0; i < size(); ++i) {
+    for (int_t i = 0; i < size(); ++i) {
       data[i] /= factor;
     }
   }
@@ -122,8 +133,10 @@ public:
    */
   template <class E>
   bool operator==(const CartesianExpr<E, scalar_t> &e_) const {
+    static_assert(has_compatible_size<E>::value, "Dimensions mismatch.");
+
     const E &e = static_cast<const E &>(e_);
-    for (int i = 0; i < e.size(); ++i) {
+    for (int_t i = 0; i < size(); ++i) {
       if (data[i] != e(i))
         return false;
     }
@@ -137,7 +150,7 @@ public:
     return !((*this) == e);
   }
 
-  ANY_DEVICE constexpr static int size(void) { return n_vars; }
+  ANY_DEVICE constexpr static int_t size(void) { return n_vars; }
 
   ANY_DEVICE static Cartesian<n_vars> zeros(void) {
     Cartesian<n_vars> ret;
@@ -148,7 +161,7 @@ public:
     return this->assign_constant(0);
   }
   ANY_DEVICE_INLINE Cartesian<n_vars> &assign_constant(const scalar_t &rhs) {
-    for (int i = 0; i < n_vars; ++i) {
+    for (int_t i = 0; i < n_vars; ++i) {
       (*this)[i] = rhs;
     }
 
@@ -156,7 +169,7 @@ public:
   }
 
   /// Cartesian orthonormal basis $e_i(j) = delta_{i,j}.$
-  ANY_DEVICE static Cartesian<n_vars> unit_vector(int i) {
+  ANY_DEVICE static Cartesian<n_vars> unit_vector(int_t i) {
     Cartesian<n_vars> e = zeros();
     e(i) = 1;
 
@@ -167,11 +180,11 @@ protected:
   double data[n_vars];
 };
 
-template <int n_vars>
+template <int_t n_vars>
 std::ostream &operator<<(std::ostream &os, const Cartesian<n_vars> &x) {
 
   os << "[ ";
-  for (int i = 0; i < x.size(); ++i) {
+  for (int_t i = 0; i < x.size(); ++i) {
     os << x[i] << (i == x.size() - 1 ? " ]" : ", ");
   }
 
@@ -205,7 +218,7 @@ template <class E>
 bool isreal(const CartesianExpr<E, double> &e_) {
   const E &e = static_cast<const E &>(e_);
 
-  for (int k = 0; k < e.size(); ++k) {
+  for (int_t k = 0; k < e.size(); ++k) {
     if (!isreal(e[k])) {
       return false;
     }
@@ -231,25 +244,25 @@ XY rotate_left(const CartesianExpr<E, double> &e_) {
   return {-e(1), e(0)};
 }
 
-/// Save an array of `XY`.
-template <class Indexing, class Array, class Shape>
-static void save(HDF5Writer &writer,
-                 const array_base<XY, Indexing, Array, Shape> &arr,
-                 const std::string &tag) {
-  XY const *const data = arr.raw();
-  const auto &dims = arr.shape;
+// /// Save an array of `XY`.
+// template <class Indexing, class Array, class Shape>
+// static void save(HDF5Writer &writer,
+//                  const array_base<XY, Indexing, Array, Shape> &arr,
+//                  const std::string &tag) {
+//   XY const *const data = arr.raw();
+//   const auto &dims = arr.shape;
 
-  HDF5DataType data_type = make_hdf5_data_type<double>();
+//   HDF5DataType data_type = make_hdf5_data_type<double>();
 
-  constexpr int rank = Shape::size() + 1;
-  hsize_t h5_dims[rank];
-  for (int i = 0; i < rank - 1; ++i) {
-    h5_dims[i] = hsize_t(dims(i)); // size of (i, j, k) axes
-  }
-  h5_dims[rank - 1] = 2; // number of space components
+//   constexpr int_t rank = Shape::size() + 1;
+//   hsize_t h5_dims[rank];
+//   for (int i = 0; i < rank - 1; ++i) {
+//     h5_dims[i] = hsize_t(dims(i)); // size of (i, j, k) axes
+//   }
+//   h5_dims[rank - 1] = 2; // number of space components
 
-  writer.write_array((double *)data, data_type, tag, rank, h5_dims);
-}
+//   writer.write_array((double *)data, data_type, tag, rank, h5_dims);
+// }
 
 // /// Save an array of `XY`.
 // template <class LinearIndex>

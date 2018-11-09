@@ -22,15 +22,15 @@ template <class cvars_t> std::vector<std::string> all_labels(void) {
   return ret;
 }
 
-template <class Model>
-void save_state(HDF5Writer &writer, const Model &model, const AllVariables &u,
-                double t, int n_steps) {
-  model.save_parameters(writer);
+// template <class Model>
+// void save_state(HDF5Writer &writer, const Model &model, const AllVariables &u,
+//                 double t, int n_steps) {
+//   model.save_parameters(writer);
 
-  writer.write_scalar(t, "time");
-  writer.write_scalar(n_steps, "n_steps");
+//   writer.write_scalar(t, "time");
+//   writer.write_scalar(n_steps, "n_steps");
 
-  u.save(writer, all_labels<typename Model::cvars_t>());
-}
+//   u.save(writer, all_labels<typename Model::cvars_t>());
+// }
 } // namespace tyr
 #endif /* end of include guard: MODELS_H_KL3BI6CZ */

@@ -35,18 +35,6 @@ public:
   compute(AllVariables &tendency, const AllVariables &current_state, double t)
       = 0;
 
-  /// Pick a stable time-step.
-  /** @param all_variables  current state prognostic variables.
-   */
-  virtual double pick_time_step(const AllVariables &all_variables) const = 0;
-
-  /// Pick a stable time step smaller than `dt`.
-  /** @param all_variables  current state prognostic variables.
-   *  @param dt  proposed time-step.
-   */
-  virtual double pick_time_step(const AllVariables &all_variables,
-                                double dt) const = 0;
-
   /// Short self-documenting string.
   virtual std::string str() const = 0;
 };
@@ -67,12 +55,6 @@ public:
 
   void remove_all_terms();
 
-  virtual double
-  pick_time_step(const AllVariables &all_variables) const override;
-
-  virtual double pick_time_step(const AllVariables &all_variables,
-                                double dt) const override;
-
   /// Short self-documenting string.
   virtual std::string str() const override;
 
@@ -88,12 +70,6 @@ public:
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
                        double t) override;
-
-  virtual double
-  pick_time_step(const AllVariables &all_variables) const override;
-
-  virtual double pick_time_step(const AllVariables &all_variables,
-                                double dt) const override;
 
   virtual std::string str() const override;
 

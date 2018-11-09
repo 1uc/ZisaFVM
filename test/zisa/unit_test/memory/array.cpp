@@ -1,8 +1,9 @@
 #include <catch/catch.hpp>
 
-#include "zisa/memory/array.hpp"
-#include "zisa/memory/array_view.hpp"
-#include "zisa/memory/column_major.hpp"
+#include <zisa/io/hdf5_serial_writer.hpp>
+#include <zisa/memory/array.hpp>
+#include <zisa/memory/array_view.hpp>
+#include <zisa/memory/column_major.hpp>
 
 using namespace zisa;
 
@@ -32,4 +33,32 @@ TEST_CASE("array; basics") {
   REQUIRE(b(0, 0, 0) == 42.0);
 
   REQUIRE(implicit_conversion(a));
+}
+
+TEST_CASE("array; write to file") {
+
+  auto filename = "unit_test--array-to-hdf5.h5";
+  auto label = "a";
+
+  auto shape = zisa::shape_t<3>{3ul, 4ul, 2ul};
+
+  auto a = array<double, 3>(shape);
+  for (zisa::int_t i = 0; i < a.size(); ++i) {
+    a[i] = i;
+  }
+
+  auto writer = HDF5SerialWriter(filename);
+  zisa::save(writer, a, label);
+
+  auto reader = HDF5SerialReader(filename);
+  auto dims = reader.dims(label);
+
+  for (zisa::int_t k = 0; k < 3; ++k) {
+    REQUIRE(shape[0] == static_cast<zisa::int_t>(dims[0]));
+  }
+
+  auto b = array<double, 3>(shape);
+  zisa::load(reader, b, label);
+
+  REQUIRE(b == a);
 }

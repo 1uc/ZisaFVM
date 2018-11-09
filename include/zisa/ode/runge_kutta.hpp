@@ -16,6 +16,9 @@ namespace zisa {
 
 /// Rate of change buffers.
 class TendencyBuffers {
+private:
+  std::vector<AllVariables> buffers;
+
 public:
   TendencyBuffers(const AllVariablesDimensions &dims, int_t n_stages);
 
@@ -26,14 +29,10 @@ public:
   const AllVariables &operator[](int_t i) const;
 
   /// Iterator to first buffer.
-  std::vector<AllVariables>::iterator begin();
+  auto begin() -> decltype(buffers.begin());
 
   /// Iterator to past-the-end.
-  std::vector<AllVariables>::iterator end();
-
-private:
-  std::vector<AllVariables> buffers;
-  device_type device = device_type::cpu;
+  auto end() -> decltype(buffers.end());
 };
 
 /// The Butcher tableau for Runge-Kutta time-integrators.
@@ -48,13 +47,7 @@ private:
  *
  *      y^1 = y^0 + dt sum_i b_i k_i.
  *
- *
- *  Depending on the coefficients the scheme may be explicit or implicit.
- *
- *  NOTE: This tableau only supports explicit schemes, mainly because zisa
- *  only supports explicit time integration and some of the coefficients must
- *  live on the GPU, hence checking them after construction is more
- *  cumbersome.
+ *  The coefficients should be such that the scheme is explicit.
  */
 struct ButcherTableau {
   /// Allocate and initialize the Butcher tableau.
@@ -65,19 +58,16 @@ struct ButcherTableau {
                  const std::vector<double> &b);
 
 public:
-  std::vector<array<double, 1>> a; /// `a`-coefficients in accelerator memory.
-  array<double, 1> b;              /// `b`-coefficients in accelerator memory.
-  array<double, 1> c;              /// `c`-coefficients in host memory
+  std::vector<array<double, 1>> a;
+  array<double, 1> b;
+  array<double, 1> c;
 
-  int_t n_stages; /// number of stages
+  int_t n_stages;
 
 private:
   void allocate();
   void assign(const std::vector<std::vector<double>> &a,
               const std::vector<double> &b);
-
-private:
-  device_type device = device_type::cpu;
 };
 
 /// Implementation of Runge-Kutta based on `ButcherTableau`.
@@ -96,28 +86,19 @@ public:
    *    Butcher tableau determining the Runge-Kutta scheme.
    *  @param dims
    *    Shape of the rate of change buffers.
-   *  @param cfl_number
-   *    The CFL-number controlling stability of the time-integration.
    */
-  RungeKutta(const std::shared_ptr<RateOfChange> &rate_of_change,
-             const std::shared_ptr<BoundaryCondition> &bc,
+  RungeKutta(std::shared_ptr<RateOfChange> rate_of_change,
+             std::shared_ptr<BoundaryCondition> bc,
              ButcherTableau tableau,
-             const AllVariablesDimensions &dims,
-             double cfl_number);
+             const AllVariablesDimensions &dims);
 
   virtual ~RungeKutta() = default;
 
   virtual std::shared_ptr<AllVariables> compute_step(
       const std::shared_ptr<AllVariables> &u0, double t, double dt) override;
 
-  virtual void boundary_condition(AllVariables &u0, double t) const override;
-
-  virtual double
-  pick_time_step(const AllVariables &all_variables) const override;
-  virtual double pick_time_step(const AllVariables &all_variables,
-                                double dt) const override;
-
 protected:
+  void boundary_condition(AllVariables &u0, double t) const;
   std::string assemble_description(const std::string &detail) const;
 
 protected:
@@ -127,11 +108,6 @@ protected:
 
   std::shared_ptr<AllVariables> ux;
   TendencyBuffers tendency_buffers;
-
-  double cfl_number;
-
-protected:
-  device_type device = device_type::cpu;
 };
 
 /// Perform the Runge-Kutta step: `u1 = u0 + dt*(a1*k1 + ... + as*ks)`.

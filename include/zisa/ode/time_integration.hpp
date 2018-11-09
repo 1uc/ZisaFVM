@@ -29,21 +29,6 @@ public:
   compute_step(const std::shared_ptr<AllVariables> &u0, double t, double dt)
       = 0;
 
-  /// Apply the boundary conditions of the PDE.
-  virtual void boundary_condition(AllVariables &u0, double t) const = 0;
-
-  /// Pick a stable time step smaller than `dt`.
-  /** @param all_variables  current state prognostic variables.
-   */
-  virtual double pick_time_step(const AllVariables &all_variables) const = 0;
-
-  /// Pick a stable time step smaller than `dt`.
-  /** @param all_variables  current state prognostic variables.
-   *  @param dt  proposed time-step.
-   */
-  virtual double pick_time_step(const AllVariables &all_variables,
-                                double dt) const = 0;
-
   /// Self-documenting string.
   virtual std::string str() const = 0;
 };

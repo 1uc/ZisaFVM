@@ -24,7 +24,7 @@ std::string exec(const std::string &cmd) {
   // Read the buffer in 128 byte chunks.
   char read_buffer[128];
   while (!feof(pipe.get())) {
-    if (fgets(read_buffer, 128, pipe.get()) != NULL) {
+    if (fgets(read_buffer, 128, pipe.get()) != nullptr) {
       result += read_buffer;
     }
   }

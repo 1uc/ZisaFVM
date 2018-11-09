@@ -35,21 +35,6 @@ void SumRatesOfChange::add_term(const std::shared_ptr<RateOfChange> &rate) {
   }
 }
 
-double
-SumRatesOfChange::pick_time_step(const AllVariables &all_variables) const {
-  double dt = std::numeric_limits<double>::max();
-  return pick_time_step(all_variables, dt);
-}
-
-double SumRatesOfChange::pick_time_step(const AllVariables &all_variables,
-                                        double dt) const {
-  for (auto &&roc : rates_of_change) {
-    dt = roc->pick_time_step(all_variables, dt);
-  }
-
-  return dt;
-}
-
 std::string SumRatesOfChange::str() const {
   std::stringstream ss;
   bool is_first = true;
@@ -69,15 +54,9 @@ ZeroRateOfChange::ZeroRateOfChange(double dt_max) : dt_max(dt_max) {}
 void ZeroRateOfChange::compute(AllVariables &tendency,
                                const AllVariables &,
                                double) {
-  tendency.fill(0);
-}
-
-double ZeroRateOfChange::pick_time_step(const AllVariables &) const {
-  return dt_max;
-}
-
-double ZeroRateOfChange::pick_time_step(const AllVariables &, double dt) const {
-  return zisa::min(dt_max, dt);
+  for (int_t i = 0; i < tendency.size(); ++i) {
+    tendency[i] = 0.0;
+  }
 }
 
 std::string ZeroRateOfChange::str() const { return "Zero right-hand side."; }
