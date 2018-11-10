@@ -6,6 +6,8 @@
 
 namespace zisa {
 
+int_t highest_order_central_stencil(const StencilFamily &stencils);
+
 StencilFamily::StencilFamily(const std::shared_ptr<Grid> &grid,
                              int_t i_cell,
                              const StencilFamilyParams &params)
@@ -28,6 +30,8 @@ StencilFamily::StencilFamily(const std::shared_ptr<Grid> &grid,
   for (int_t i = 0; i < size(); ++i) {
     order_ = zisa::max(order_, (*this)[i].order());
   }
+
+  k_high_ = highest_order_central_stencil(*this);
 }
 
 const Stencil &StencilFamily::operator[](int_t k) const {
@@ -51,6 +55,8 @@ auto StencilFamily::begin() const -> decltype(stencils_.begin()) {
 auto StencilFamily::end() const -> decltype(stencils_.end()) {
   return stencils_.end();
 }
+
+int_t StencilFamily::highest_order_stencil() const { return k_high_; }
 
 bool operator==(const StencilFamily &lhs, const StencilFamily &rhs) {
   if (lhs.combined_stencil_size() != rhs.combined_stencil_size()) {

@@ -28,6 +28,9 @@ public:
   /// Return the size of the combined stencil.
   int_t combined_stencil_size() const;
 
+  /// Return the index of the highest order central stencil.
+  int_t highest_order_stencil() const;
+
   /// Returns the highest order possible for the given stencils.
   int order() const;
 
@@ -39,6 +42,7 @@ private:
 
   int_t combined_stencil_size_;
   int order_;
+  int k_high_;
 };
 
 bool operator==(const StencilFamily &lhs, const StencilFamily &rhs);
