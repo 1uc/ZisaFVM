@@ -5,15 +5,14 @@ import os
 import errno
 import os.path
 
+SUFFIXES = [".c", ".C", ".cpp", ".c++"]
+
 def find_files(folder, suffix):
-    files = sorted(glob.glob(folder + "*" + suffix))
-    return [os.path.basename(f) for f in files if "CMake" not in f]
+    files = sum((glob.glob("{}*{}".format(folder, s)) for s in SUFFIXES), [])
+    return [os.path.basename(f) for f in sorted(files)]
 
-def find_cpp_files(folder):
+def find_source_files(folder):
     return find_files(folder, ".cpp")
-
-def find_cuda_files(folder):
-    return find_files(folder, ".cu")
 
 def find_subdirectories(folder):
     dirs = sorted(glob.glob(folder + "*/"))
@@ -34,7 +33,7 @@ def add_subdirectory(folder):
     line_pattern = "add_subdirectory({:s})\n"
     return  line_pattern.format(os.path.basename(folder[:-1]))
 
-def truncate_file(filename):
+def remove_file(filename):
     try:
         os.remove(filename)
     except OSError as e:
@@ -46,57 +45,36 @@ def append_to_file(filename, text):
         f.write(text)
 
 def recurse(base_directory, target):
-    filename = base_directory + "CMakeLists.txt"
-    write_output = lambda s : append_to_file(filename, s)
-    truncate_file(filename)
+    cmake_file = base_directory + "CMakeLists.txt"
+    remove_file(cmake_file)
 
-    if target == "zisa":
-        cpp = find_cpp_files(base_directory)
-        write_output(format_sources(target, cpp))
+    source_files = find_source_files(base_directory)
+    append_to_file(cmake_file, format_sources(target, source_files))
 
-        cuda = find_cuda_files(base_directory)
-        if cuda:
-            write_output("if(USE_CUDA)\n\n")
-            write_output(format_sources(target, cuda))
-            write_output("endif()\n\n")
+    for d in find_subdirectories(base_directory):
+        recurse(d, target)
+        append_to_file(cmake_file, add_subdirectory(base_directory + d))
 
-    elif target == "unit_tests":
-        cpp = find_cpp_files(base_directory)
-        write_output(format_sources(target, cpp))
-
-    else:
-        raise Exception("Unknown 'target'. [{:s}]".format(target))
-
-    subdirectories = find_subdirectories(base_directory)
-
-    for subdirectory in subdirectories:
-        write_output(add_subdirectory(base_directory + subdirectory))
-
-    for subdirectory in subdirectories:
-        recurse(subdirectory, target)
-
-def add_executable(filename):
+def add_executable(cmake_file, target, source_file):
     line = """
-target_sources(run
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/zisa.cpp
+target_sources({}
+  PRIVATE ${{CMAKE_CURRENT_SOURCE_DIR}}/{}
 )
-"""
-    append_to_file(filename, line)
+""".format(target, source_file)
+    append_to_file(cmake_file, line)
 
 
 if __name__ == "__main__":
 
-    filename = "src/CMakeLists.txt"
+    cmake_file = "src/CMakeLists.txt"
+    remove_file(cmake_file)
+
     base_directory = "src/"
+    for d in find_subdirectories(base_directory):
+        recurse(d, "zisa")
+        append_to_file(cmake_file, add_subdirectory(base_directory + d))
 
-    truncate_file(filename)
-    subdirectories = find_subdirectories(base_directory)
-
-    regular_folders = ["zisa/"]
-    for d in regular_folders:
-        recurse("src/" + d, "zisa")
-        append_to_file(filename, add_subdirectory(base_directory + d))
-
-    add_executable(filename)
+    add_executable(cmake_file, "run", "zisa.cpp")
+    add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
 
     recurse("test/", "unit_tests")
