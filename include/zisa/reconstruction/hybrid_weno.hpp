@@ -45,6 +45,8 @@ public:
 protected:
   void compute_polys(const array<double, 1> &qbar) const;
   auto hybridize() const -> Poly2D<MAX_DEGREE>;
+  auto eno_hybridize() const -> Poly2D<MAX_DEGREE>;
+  auto tau_hybridize() const -> Poly2D<MAX_DEGREE>;
 };
 
 } // namespace zisa

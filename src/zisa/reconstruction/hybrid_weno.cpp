@@ -40,7 +40,10 @@ void HybridWENO::compute_polys(const array<double, 1> &qbar) const {
 }
 
 auto HybridWENO::hybridize() const -> Poly2D<MAX_DEGREE> {
+  return eno_hybridize();
+}
 
+auto HybridWENO::eno_hybridize() const -> Poly2D<MAX_DEGREE> {
   double al_tot = 0.0;
   auto p = Poly2D<MAX_DEGREE>{{0.0}, {0.0}};
   for (int_t k = 0; k < stencils.size(); ++k) {
@@ -53,6 +56,21 @@ auto HybridWENO::hybridize() const -> Poly2D<MAX_DEGREE> {
   }
 
   return p / al_tot;
+}
+
+auto HybridWENO::tau_hybridize() const -> Poly2D<MAX_DEGREE> {
+  LOG_ERR("Not implemented.");
+  // auto k_high = stencils.highest_order_stencil();
+
+  // auto beta_high = smoothness_indicator(polys[k_high]);
+  // for (int_t k = 0; k < stencils.size(); ++k) {
+  //   if (k != k_high) {
+  //     auto beta = smoothness_indicator(polys[k]);
+  //     tau += zisa::abs(beta_high - beta);
+  //   }
+  // }
+
+  // tau /= stencils.size() - 1;
 }
 
 bool HybridWENO::operator==(const HybridWENO &other) const {
