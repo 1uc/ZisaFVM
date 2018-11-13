@@ -11,8 +11,6 @@ def run_gmesh(geo):
     cmd = [gmsh, "-2", geo]
     subprocess.check_call(cmd)
 
-
-
 def minimal_geo_files(path):
     return [
         path + "/dbg.geo",
@@ -22,7 +20,7 @@ def minimal_geo_files(path):
     ]
 
 def all_geo_files(path):
-    return glob.glob("{}/**/*.geo".format(path))
+    return glob.glob("{}/*.geo".format(path)) + glob.glob("{}/**/*.geo".format(path))
 
 if __name__ == "__main__":
 
