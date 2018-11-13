@@ -27,17 +27,17 @@ int main() {
 
   do {
     for (zisa::int_t i = 0; i < colors.size() / 3; ++i) {
-      colors[3*i][0] = dist(e);
-      colors[3*i][1] = dist(e);
-      colors[3*i][2] = dist(e);
+      colors[3 * i][0] = dist(e);
+      colors[3 * i][1] = dist(e);
+      colors[3 * i][2] = dist(e);
 
-      colors[3*i + 1][0] = colors[3*i][0];
-      colors[3*i + 1][1] = colors[3*i][1];
-      colors[3*i + 1][2] = colors[3*i][2];
+      colors[3 * i + 1][0] = colors[3 * i][0];
+      colors[3 * i + 1][1] = colors[3 * i][1];
+      colors[3 * i + 1][2] = colors[3 * i][2];
 
-      colors[3*i + 2][0] = colors[3*i][0];
-      colors[3*i + 2][1] = colors[3*i][1];
-      colors[3*i + 2][2] = colors[3*i][2];
+      colors[3 * i + 2][0] = colors[3 * i][0];
+      colors[3 * i + 2][1] = colors[3 * i][1];
+      colors[3 * i + 2][2] = colors[3 * i][2];
     }
     plot.draw(colors);
 
