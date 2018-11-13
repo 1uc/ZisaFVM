@@ -28,11 +28,11 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
 
 void HybridWENO::compute_polys(const array<double, 1> &qbar_local) const {
 
-  auto p_avg = WENOPoly{{qbar_local(0)}, {0.0}};
+  auto p_avg = WENOPoly{{qbar_local(int_t(0))}, {0.0}};
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     for (int_t i = 0; i < stencils[k].size() - 1; ++i) {
-      rhs(i) = qbar_local(stencils[k].local(i + 1)) - qbar_local(0);
+      rhs(i) = qbar_local(stencils[k].local(i + 1)) - qbar_local(int_t(0));
     }
 
     polys[k] = p_avg + lsq_solvers[k].solve(rhs);

@@ -36,7 +36,7 @@ static void check_gl_shader_error(GLuint id) {
   int log_length;
   glGetShaderiv(id, GL_INFO_LOG_LENGTH, &log_length);
   if (log_length > 0) {
-    std::vector<char> error_msg(log_length + 1);
+    std::vector<char> error_msg(static_cast<int_t>(log_length + 1));
     glGetShaderInfoLog(id, log_length, nullptr, error_msg.data());
 
     printf("%s\n", error_msg.data());
@@ -48,7 +48,7 @@ static void check_gl_program_error(GLuint id) {
   int log_length;
   glGetProgramiv(id, GL_INFO_LOG_LENGTH, &log_length);
   if (log_length > 0) {
-    std::vector<char> error_msg(log_length + 1);
+    std::vector<char> error_msg(static_cast<int_t>(log_length + 1));
     glGetProgramInfoLog(id, log_length, nullptr, error_msg.data());
 
     printf("%s\n", error_msg.data());

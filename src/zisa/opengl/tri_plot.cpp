@@ -62,25 +62,25 @@ void TriPlot::compute_normalized_coordinates(
     const Vertices &vertices, const VertexIndices &vertex_indices) {
 
   std::array<float, 2> min_, max_;
-  for (int k = 0; k < 2; ++k) {
+  for (int_t k = 0; k < 2; ++k) {
     min_[k] = std::numeric_limits<float>::max();
     max_[k] = std::numeric_limits<float>::min();
   }
 
   for (const auto &v : vertices) {
-    for (int k = 0; k < 2; ++k) {
+    for (int_t k = 0; k < 2; ++k) {
       min_[k] = std::min(min_[k], float(v[k]));
       max_[k] = std::max(max_[k], float(v[k]));
     }
   }
 
   auto n_cells = vertex_indices.shape(0);
-  for (decltype(n_cells) i = 0; i < n_cells; ++i) {
-    for (int k = 0; k < 3; ++k) {
-      decltype(n_cells) j = vertex_indices(i, k); // index in 'vertices'.
-      decltype(n_cells) jj = 3 * i + k;           // index in 'this->vertices'.
+  for (int_t i = 0; i < n_cells; ++i) {
+    for (int_t k = 0; k < 3; ++k) {
+      int_t j = vertex_indices(i, k); // index in 'vertices'.
+      int_t jj = 3 * i + k;           // index in 'this->vertices'.
 
-      for (int kk = 0; kk < 2; ++kk) {
+      for (int_t kk = 0; kk < 2; ++kk) {
         this->vertices[jj][kk]
             = float((vertices[j][kk] - min_[kk]) / (max_[kk] - min_[kk]));
       }

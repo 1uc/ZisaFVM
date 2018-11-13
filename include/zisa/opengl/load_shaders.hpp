@@ -4,6 +4,8 @@
 #if ZISA_HAS_OPENGL == 1
 #include <string>
 
+#include <zisa/config.hpp>
+
 namespace zisa {
 GLuint load_shaders(const std::string &vertex_shader,
                     const std::string &fragment_shader);
