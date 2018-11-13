@@ -82,7 +82,7 @@ public:
     }
   }
 
-  virtual std::string str() const { return "RateOfChangeMock"; }
+  virtual std::string str() const override { return "RateOfChangeMock"; }
 
 protected:
   std::shared_ptr<MockRHS> rhs;
