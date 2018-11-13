@@ -23,7 +23,7 @@ SumRatesOfChange::SumRatesOfChange(
 
 void SumRatesOfChange::compute(AllVariables &tendency,
                                const AllVariables &current_state,
-                               double t) {
+                               double t) const {
   for (auto &&roc : rates_of_change) {
     roc->compute(tendency, current_state, t);
   }
@@ -53,7 +53,7 @@ ZeroRateOfChange::ZeroRateOfChange(double dt_max) : dt_max(dt_max) {}
 
 void ZeroRateOfChange::compute(AllVariables &tendency,
                                const AllVariables &,
-                               double) {
+                               double) const {
   for (int_t i = 0; i < tendency.size(); ++i) {
     tendency[i] = 0.0;
   }

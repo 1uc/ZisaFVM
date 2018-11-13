@@ -33,7 +33,7 @@ public:
    */
   virtual void
   compute(AllVariables &tendency, const AllVariables &current_state, double t)
-      = 0;
+     const = 0;
 
   /// Short self-documenting string.
   virtual std::string str() const = 0;
@@ -49,7 +49,7 @@ public:
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
-                       double t) override;
+                       double t) const override;
 
   void add_term(const std::shared_ptr<RateOfChange> &rate);
 
@@ -69,7 +69,7 @@ public:
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
-                       double t) override;
+                       double t) const override;
 
   virtual std::string str() const override;
 

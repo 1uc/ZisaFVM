@@ -76,7 +76,7 @@ public:
 
   /// One update step.
   virtual void
-  compute(AllVariables &dudt, const AllVariables &u0, double t) override {
+  compute(AllVariables &dudt, const AllVariables &u0, double t) const override {
     for (int_t i = 0; i < u0.size(); ++i) {
       dudt[i] = rhs->dudt(t, u0[i]);
     }
