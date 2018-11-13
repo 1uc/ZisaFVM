@@ -17,9 +17,7 @@ private:
   using super = HybridWENO;
 
 public:
-  WENO_AO(const std::shared_ptr<Grid> &grid,
-          int_t i_cell,
-          const HybridWENO_Params &params);
+  using super::super;
 
   auto reconstruct(const array<double, 1> &qbar) const -> decltype(hybridize());
 };

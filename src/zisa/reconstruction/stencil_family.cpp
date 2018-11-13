@@ -86,13 +86,17 @@ int_t highest_order_central_stencil(const StencilFamily &stencils) {
   int_t k_high = 0;
 
   for (int_t i = 1; i < stencils.size(); ++i) {
-    if (stencils[i].order() > stencils[k_high].order()
-        && stencils[i].bias() == StencilBias::central) {
+
+    auto k_order = stencils[k_high].order();
+
+    if (stencils[i].order() > k_order) {
+      k_high = i;
+    } else if (stencils[i].order() == k_order
+               && stencils[i].bias() == StencilBias::central) {
       k_high = i;
     }
   }
 
-  assert(stencils[k_high].bias() == StencilBias::central);
   return k_high;
 }
 

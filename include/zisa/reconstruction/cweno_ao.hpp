@@ -10,17 +10,9 @@ private:
   using super = HybridWENO;
 
 public:
-  CWENO_AO(const std::shared_ptr<Grid> &grid,
-           int_t i_cell,
-           const HybridWENO_Params &params);
+  using super::super;
 
   auto reconstruct(const array<double, 1> &qbar) const -> decltype(hybridize());
-
-  bool operator==(const CWENO_AO &other) const;
-  bool operator!=(const CWENO_AO &other) const;
-
-private:
-  int_t k_high;
 };
 
 } // namespace zisa

@@ -8,11 +8,6 @@
 
 namespace zisa {
 
-WENO_AO::WENO_AO(const std::shared_ptr<Grid> &grid,
-                 int_t i_cell,
-                 const HybridWENO_Params &params)
-    : super(grid, i_cell, params) {}
-
 auto WENO_AO::reconstruct(const array<double, 1> &qbar) const
     -> decltype(hybridize()) {
 
