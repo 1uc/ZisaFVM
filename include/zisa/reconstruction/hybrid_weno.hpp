@@ -10,18 +10,15 @@
 #include <zisa/reconstruction/hybrid_weno_params.hpp>
 #include <zisa/reconstruction/lsq_solver_family.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
+#include <zisa/reconstruction/weno_poly.hpp>
 
 namespace zisa {
-
 class HybridWENO {
-private:
-  static constexpr int MAX_DEGREE = 4;
-
 protected:
   StencilFamily stencils;
   LSQSolverFamily lsq_solvers;
 
-  mutable array<Poly2D<MAX_DEGREE>, 1> polys;
+  mutable array<WENOPoly, 1> polys;
   mutable array<double, 1> rhs;
 
   array<double, 1> linear_weights;
@@ -33,7 +30,7 @@ public:
              int_t i_cell,
              const HybridWENO_Params &params);
 
-  Poly2D<MAX_DEGREE> reconstruct(const array<double, 1> &qbar) const;
+  WENOPoly reconstruct(const array<double, 1> &qbar_local) const;
   auto local2global() const -> decltype(stencils.local2global());
 
   /// Indistinguishable by calls to the public interface.
@@ -44,9 +41,9 @@ public:
 
 protected:
   void compute_polys(const array<double, 1> &qbar) const;
-  auto hybridize() const -> Poly2D<MAX_DEGREE>;
-  auto eno_hybridize() const -> Poly2D<MAX_DEGREE>;
-  auto tau_hybridize() const -> Poly2D<MAX_DEGREE>;
+  WENOPoly hybridize() const;
+  WENOPoly eno_hybridize() const;
+  WENOPoly tau_hybridize() const;
 };
 
 } // namespace zisa

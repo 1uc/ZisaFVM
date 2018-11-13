@@ -7,6 +7,7 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/reconstruction/stencil.hpp>
+#include <zisa/reconstruction/weno_poly.hpp>
 
 namespace zisa {
 
@@ -21,15 +22,11 @@ class LSQSolver {
 private:
   using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
 
-private:
-  /// Highest degree polynomial possible.
-  static constexpr int MAX_DEGREE = 4;
-
 public:
   LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil);
 
   /// Solve the LSQ problem with right-hand side `rhs`.
-  Poly2D<MAX_DEGREE> solve(const array<double, 1> &rhs) const;
+  WENOPoly solve(const array<double, 1> &rhs) const;
 
   /// Indistinguishable by calls to the public interface.
   bool operator==(const LSQSolver &other) const;

@@ -26,26 +26,26 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
   }
 }
 
-void HybridWENO::compute_polys(const array<double, 1> &qbar) const {
+void HybridWENO::compute_polys(const array<double, 1> &qbar_local) const {
 
-  auto p_avg = Poly2D<MAX_DEGREE>{{qbar(0)}, {0.0}};
+  auto p_avg = WENOPoly{{qbar_local(0)}, {0.0}};
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     for (int_t i = 0; i < stencils[k].size() - 1; ++i) {
-      rhs(i) = qbar(stencils[k].local(i + 1)) - qbar(0);
+      rhs(i) = qbar_local(stencils[k].local(i + 1)) - qbar_local(0);
     }
 
     polys[k] = p_avg + lsq_solvers[k].solve(rhs);
   }
 }
 
-auto HybridWENO::hybridize() const -> Poly2D<MAX_DEGREE> {
+WENOPoly HybridWENO::hybridize() const {
   return eno_hybridize();
 }
 
-auto HybridWENO::eno_hybridize() const -> Poly2D<MAX_DEGREE> {
+WENOPoly HybridWENO::eno_hybridize() const {
   double al_tot = 0.0;
-  auto p = Poly2D<MAX_DEGREE>{{0.0}, {0.0}};
+  auto p = WENOPoly{{0.0}, {0.0}};
   for (int_t k = 0; k < stencils.size(); ++k) {
     auto IS = smoothness_indicator(polys[k]);
 
@@ -58,7 +58,7 @@ auto HybridWENO::eno_hybridize() const -> Poly2D<MAX_DEGREE> {
   return p / al_tot;
 }
 
-auto HybridWENO::tau_hybridize() const -> Poly2D<MAX_DEGREE> {
+WENOPoly HybridWENO::tau_hybridize() const {
   LOG_ERR("Not implemented.");
   // auto k_high = stencils.highest_order_stencil();
 

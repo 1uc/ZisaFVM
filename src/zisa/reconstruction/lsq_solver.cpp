@@ -16,7 +16,7 @@ LSQSolver::LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil)
   qr.compute(A);
 }
 
-auto LSQSolver::solve(const array<double, 1> &rhs) const -> Poly2D<MAX_DEGREE> {
+WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
 
   if (order == 1) {
     return {{0.0}, {0.0}};
