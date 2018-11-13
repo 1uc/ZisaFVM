@@ -9,8 +9,7 @@
 #include <zisa/unit_test/grid/test_grid_factory.hpp>
 #include <zisa/unit_test/math/basic_functions.hpp>
 
-template <int deg>
-void check_convergence(double expected, double atol) {
+void check_convergence(double expected, double atol, zisa::int_t deg) {
   auto grid_names = zisa::TestGridFactory::unit_square();
 
   auto f = [](const zisa::XY &x) {
@@ -24,7 +23,7 @@ void check_convergence(double expected, double atol) {
   for (auto &&grid_name : grid_names) {
     auto grid = zisa::load_gmsh(grid_name);
 
-    error.push_back(zisa::abs(zisa::quadrature<deg>(f, *grid) - exact));
+    error.push_back(zisa::abs(zisa::quadrature(f, *grid, deg) - exact));
     resolution.push_back(zisa::largest_circum_radius(*grid));
   }
 
@@ -38,8 +37,8 @@ void check_convergence(double expected, double atol) {
 }
 
 TEST_CASE("Quadrature; smooth f", "[math]") {
-  SECTION("p == 1") { check_convergence<1>(2.0, 1e-14); }
-  SECTION("p == 2") { check_convergence<2>(3.0, 1e-14); }
-  SECTION("p == 3") { check_convergence<3>(4.0, 1e-14); }
-  SECTION("p == 4") { check_convergence<4>(5.0, 1e-14); }
+  SECTION("p == 1") { check_convergence(2.0, 1e-14, 1); }
+  SECTION("p == 2") { check_convergence(3.0, 1e-14, 2); }
+  SECTION("p == 3") { check_convergence(4.0, 1e-14, 3); }
+  SECTION("p == 4") { check_convergence(5.0, 1e-14, 4); }
 }

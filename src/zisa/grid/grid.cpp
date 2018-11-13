@@ -306,7 +306,7 @@ double largest_circum_radius(const Grid &grid) {
 }
 
 array<double, 1>
-normalized_moments(const Triangle &tri, int degree, int quad_deg) {
+normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
 
   auto m = array<double, 1>(shape_t<1>{poly_dof(degree)});
 

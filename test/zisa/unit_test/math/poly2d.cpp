@@ -151,7 +151,7 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
 
     auto tri = zisa::reference_triangle();
 
-    auto pbar = zisa::quadrature<4>(p, tri);
+    auto pbar = zisa::quadrature(p, tri, 4);
     REQUIRE(pbar > 0.0);
   }
 }

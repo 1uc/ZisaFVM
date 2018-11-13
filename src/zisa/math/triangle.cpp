@@ -13,7 +13,7 @@ Triangle::Triangle(const XY &A, const XY &B, const XY &C)
       c(zisa::norm(A - B)),
       volume(herons_formula(a, b, c)) {}
 
-double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg) {
+double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg) {
   auto center = barycenter(tri);
 
   auto f = [x_deg, y_deg, &center](const XY &xy) {
@@ -21,7 +21,7 @@ double avg_moment(const Triangle &tri, int x_deg, int y_deg, int quad_deg) {
     return zisa::pow(x[0], x_deg) * zisa::pow(x[1], y_deg);
   };
 
-  return 1.0 / tri.volume * quadrature(f, tri, quad_deg);
+  return quadrature(f, tri, quad_deg) / tri.volume;
 }
 
 double volume(const Triangle &tri) { return tri.volume; }

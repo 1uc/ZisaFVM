@@ -5,6 +5,15 @@
 #include <zisa/math/quadrature.hpp>
 
 namespace zisa {
+const QuadratureRule &cached_triangular_quadrature_rule(int_t n_points) {
+  static std::map<int_t, QuadratureRule> qr;
+
+  if (qr.find(n_points) == qr.end()) {
+    qr.insert({n_points, make_triangular_rule(n_points)});
+  }
+
+  return qr.at(n_points);
+}
 
 std::tuple<std::vector<double>, std::vector<std::vector<double>>>
 permutate(double w, const std::vector<double> &lambda) {
@@ -41,7 +50,7 @@ std::ostream &operator<<(std::ostream &os, const Barycentric &bc) {
   return os;
 }
 
-XY Barycentric::operator()(const Triangle &tri) const {
+XY coord(const Triangle &tri, const Barycentric &lambda) {
   return XY(tri.A * lambda[0] + tri.B * lambda[1] + tri.C * lambda[2]);
 }
 
@@ -62,7 +71,7 @@ QuadratureRule make_quadrature_rule(const std::vector<double> &w,
   return qr;
 }
 
-QuadratureRule make_triangular_rule(int deg) {
+QuadratureRule make_triangular_rule(int_t deg) {
   if (deg == 1) {
     auto [w, x] = permutate(1.0, {1.0 / 3.0});
     return make_quadrature_rule(std::move(w), std::move(x));
