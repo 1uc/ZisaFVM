@@ -4,7 +4,7 @@
 #include <zisa/opengl/tri_plot.hpp>
 
 int main() {
-
+#if ZISA_HAS_OPENGL == 1
   glewExperimental = true;
   if (!glfwInit()) {
     std::cerr << "Failed to initialize GLFW.\n";
@@ -47,4 +47,9 @@ int main() {
            && !glfwWindowShouldClose(window->ptr()));
 
   return 0;
+
+#else
+  std::cerr << "Compiled without OpenGL support. \n";
+  return -1;
+#endif
 }

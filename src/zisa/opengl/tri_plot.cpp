@@ -1,3 +1,5 @@
+#if ZISA_HAS_OPENGL == 1
+
 #include <array>
 #include <memory>
 #include <string>
@@ -128,3 +130,5 @@ void TriPlot::draw(const std::vector<std::array<float, 3>> &colors) const {
 }
 
 } // namespace zisa
+
+#endif

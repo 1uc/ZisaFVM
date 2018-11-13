@@ -1,3 +1,5 @@
+#if ZISA_HAS_OPENGL == 1
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -106,3 +108,5 @@ GLuint load_shaders(const std::string &vertex_file_path,
 }
 
 } // namespace zisa
+
+#endif

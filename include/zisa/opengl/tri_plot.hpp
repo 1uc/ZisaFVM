@@ -1,6 +1,8 @@
 #ifndef TRI_PLOT_H_Q21GL
 #define TRI_PLOT_H_Q21GL
 
+#if ZISA_HAS_OPENGL == 1
+
 #include <array>
 #include <memory>
 #include <string>
@@ -56,5 +58,6 @@ private:
 };
 
 } // namespace zisa
+#endif
 
 #endif /* end of include guard */

@@ -1,3 +1,4 @@
+#if ZISA_HAS_OPENGL == 1
 #include <string>
 
 // -- must come before all other GL stuff.
@@ -43,3 +44,4 @@ Window::~Window() { glfwDestroyWindow(window_); }
 GLFWwindow *Window::ptr() { return window_; }
 
 } // namespace zisa
+#endif
