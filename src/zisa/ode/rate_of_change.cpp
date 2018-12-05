@@ -49,8 +49,6 @@ std::string SumRatesOfChange::str() const {
 
 void SumRatesOfChange::remove_all_terms() { rates_of_change.clear(); }
 
-ZeroRateOfChange::ZeroRateOfChange(double dt_max) : dt_max(dt_max) {}
-
 void ZeroRateOfChange::compute(AllVariables &tendency,
                                const AllVariables &,
                                double) const {

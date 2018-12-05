@@ -9,6 +9,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/edge.hpp>
 
 namespace zisa {
 
@@ -36,6 +37,9 @@ struct euler_var_t : public Cartesian<5> {
 
   static std::string labels(int i);
 };
+
+void coord_transform(euler_var_t &u, const Edge &edge);
+void inv_coord_transform(euler_var_t &u, const Edge &edge);
 
 struct RhoE : public Cartesian<2> {
   using Cartesian<2>::Cartesian;

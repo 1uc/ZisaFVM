@@ -4,40 +4,81 @@
 #include <zisa/ode/time_keeper_factory.hpp>
 
 namespace zisa {
+PlottingStepsParameters::PlottingStepsParameters(const InputParameters &params)
+    : fps(-1.0), steps_per_frame(int_t(-1)) {
+
+  LOG_ERR_IF(!has_key(params, "io"), "Missing config section 'io'.");
+
+  const auto &params_plotting = params["io"];
+
+  if (has_key(params_plotting, "fps")) {
+    fps = params_plotting["fps"];
+  }
+
+  if (has_key(params_plotting, "steps_per_frame")) {
+    steps_per_frame = params_plotting["steps_per_frame"];
+  }
+}
+
 std::shared_ptr<PlottingSteps>
-make_plotting_steps(const TimeKeeperParameters &params, double t_zero) {
+make_plotting_steps(const PlottingStepsParameters &plotting_params,
+                    const TimeKeeperParameters &time_keeper_params) {
 
-  auto &plot_params = params.plotting_steps_params;
-  if (plot_params.mode == PlottingMode::fixed_time_steps) {
-    return std::make_shared<PlotAtFixedTimeSteps>(plot_params.frames);
-  } else if (plot_params.mode == PlottingMode::fixed_interval) {
+  double t_end = time_keeper_params.final_time;
 
-    double t_end = params.use_fixed_duration ? params.final_time : 1e+300;
-    return std::make_shared<PlotAtFixedInterval>(
-        t_zero, 1.0 / plot_params.fps, t_end);
-  } else if (plot_params.mode == PlottingMode::every_nth_step) {
-    return std::make_shared<PlotEveryNthStep>(plot_params.steps_per_frame);
-  } else {
-    LOG_ERR("Unrecognised mode.")
+  double fps = plotting_params.fps;
+  int_t steps_per_frame = plotting_params.steps_per_frame;
+
+  if (fps > 0.0 && std::isfinite(t_end)) {
+    double t0 = 0.0;
+    double dt = 1.0 / fps;
+
+    return std::make_shared<PlotAtFixedInterval>(t0, dt, t_end);
+
+  } else if (steps_per_frame != int_t(-1) /* which might be > 0 */) {
+    return std::make_shared<PlotEveryNthStep>(steps_per_frame);
+  }
+
+  LOG_ERR("Could not decide on a plotting mode.");
+}
+
+TimeKeeperParameters::TimeKeeperParameters(const InputParameters &params)
+    : final_time(std::numeric_limits<double>::max()),
+      total_steps(std::numeric_limits<int_t>::max()) {
+
+  LOG_ERR_IF(!has_key(params, "time"), "Failed to find section 'time'.");
+
+  const auto &params_time = params["time"];
+
+  final_time = std::numeric_limits<double>::infinity();
+  for (auto &&key : std::vector<std::string>{"t_end", "final_time"}) {
+    if (has_key(params_time, key)) {
+      final_time = params_time[key];
+    }
+  }
+
+  total_steps = std::numeric_limits<int_t>::max();
+  if (has_key(params_time, "n_steps")) {
+    total_steps = params_time["n_steps"];
+  }
+
+  if (has_key(params_time, "wall_clock")) {
+    wall_clock_time = params_time["wall_clock"];
   }
 }
 
 std::shared_ptr<TimeKeeper>
 make_time_keeper(const TimeKeeperParameters &params) {
-  if (!params.wall_clock_time.empty()) {
-    if (params.use_fixed_duration) {
-      return std::make_shared<FixedWallClock<FixedDuration>>(
-          params.wall_clock_time, params.final_time);
-    } else {
-      return std::make_shared<FixedWallClock<FixedTimeSteps>>(
-          params.wall_clock_time, params.total_steps);
-    }
+  auto final_time = params.final_time;
+  auto total_steps = params.total_steps;
+  auto wall_clock = params.wall_clock_time;
+
+  if (!wall_clock.empty()) {
+    using time_keeper_t = FixedWallClock<FixedDurationAndTimeSteps>;
+    return std::make_shared<time_keeper_t>(wall_clock, final_time, total_steps);
   } else {
-    if (params.use_fixed_duration) {
-      return std::make_shared<FixedDuration>(params.final_time);
-    } else {
-      return std::make_shared<FixedTimeSteps>(params.total_steps);
-    }
+    using time_keeper_t = FixedDurationAndTimeSteps;
+    return std::make_shared<time_keeper_t>(final_time, total_steps);
   }
 }
 

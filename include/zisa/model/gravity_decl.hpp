@@ -32,6 +32,12 @@ public:
     return zisa::norm(grad_phi(x));
   }
 
+  std::string str() const {
+    return string_format("%s with %s",
+                         type_name<GravityBase>().c_str(),
+                         type_name<Alignment>().c_str());
+  }
+
 protected:
   GravityBase gravity;
   Alignment alignment;

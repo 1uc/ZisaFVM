@@ -2,7 +2,10 @@ target_sources(zisa
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/datetime.cpp
 )
 
+add_subdirectory(boundary)
 add_subdirectory(cli)
+add_subdirectory(core)
+add_subdirectory(experiments)
 add_subdirectory(flux)
 add_subdirectory(grid)
 add_subdirectory(io)

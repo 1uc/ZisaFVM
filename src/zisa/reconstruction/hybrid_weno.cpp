@@ -26,6 +26,10 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
   }
 }
 
+int_t HybridWENO::combined_stencil_size() const {
+  return stencils.combined_stencil_size();
+}
+
 void HybridWENO::compute_polys(const array<double, 1> &qbar_local) const {
 
   auto p_avg = WENOPoly{{qbar_local(int_t(0))}, {0.0}};
@@ -39,9 +43,7 @@ void HybridWENO::compute_polys(const array<double, 1> &qbar_local) const {
   }
 }
 
-WENOPoly HybridWENO::hybridize() const {
-  return eno_hybridize();
-}
+WENOPoly HybridWENO::hybridize() const { return eno_hybridize(); }
 
 WENOPoly HybridWENO::eno_hybridize() const {
   double al_tot = 0.0;

@@ -63,16 +63,11 @@ private:
 /// Set the tendency buffer to zero.
 class ZeroRateOfChange : public RateOfChange {
 public:
-  ZeroRateOfChange(double dt_max);
-
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
                        double t) const override;
 
   virtual std::string str() const override;
-
-protected:
-  double dt_max;
 };
 
 } // namespace zisa

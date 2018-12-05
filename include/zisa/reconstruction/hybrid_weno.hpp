@@ -34,6 +34,7 @@ public:
 
   WENOPoly reconstruct(const array<double, 1> &qbar_local) const;
   auto local2global() const -> decltype(stencils.local2global());
+  int_t combined_stencil_size() const;
 
   /// Indistinguishable by calls to the public interface.
   bool operator==(const HybridWENO &other) const;

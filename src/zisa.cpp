@@ -7,11 +7,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <zisa/utils/logging.hpp>
-#include <zisa/cli/parse_command_line.hpp>
+#if ZISA_HAS_OPENGL == 1
+// -- must come before all other GL stuff.
+#include <GL/glew.h>
+// ---------------------------------------
 
-// TODO refactor
-#include <zisa/grid/grid.hpp>
+#include <GLFW/glfw3.h>
+#endif
+
+#include <zisa/cli/parse_command_line.hpp>
+#include <zisa/utils/logging.hpp>
+
+#include <zisa/experiments/numerical_experiment_factory.hpp>
 
 void handler(int sig) {
   void *array[10];
@@ -27,15 +34,20 @@ void handler(int sig) {
 
 void run_zisa(const zisa::InputParameters &params) {
 
-  std::string grid_file = params["grid"]["file"];
-  auto mesh = zisa::load_gmsh(grid_file);
-
-  return;
+  auto experiment = zisa::make_experiment(params);
+  experiment->run();
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   signal(SIGSEGV, handler); // install our handler
+
+#if ZISA_HAS_OPENGL == 1
+  glewExperimental = true;
+  if (!glfwInit()) {
+    std::cerr << "Failed to initialize GLFW.\n";
+    return -1;
+  }
+#endif
 
   run_zisa(zisa::parse_command_line(argc, argv));
   return EXIT_SUCCESS;

@@ -23,6 +23,24 @@ public:
     }
   }
 
+  template <class E>
+  void operator+=(const CartesianExpr<E, double> &e_) {
+    auto e = static_cast<const E &>(e_);
+
+    for (int_t k = 0; k < size(); ++k) {
+      (*this)[k] = (*this)[k] + e(k);
+    }
+  }
+
+  template <class E>
+  void operator-=(const CartesianExpr<E, double> &e_) {
+    auto e = static_cast<const E &>(e_);
+
+    for (int_t k = 0; k < size(); ++k) {
+      (*this)[k] = (*this)[k] - e(k);
+    }
+  }
+
   int_t size() const { return array.shape(1); }
 
 private:
