@@ -26,6 +26,8 @@ protected:
   double exponent;
 
 public:
+  HybridWENO() = default;
+
   HybridWENO(const std::shared_ptr<Grid> &grid,
              int_t i_cell,
              const HybridWENO_Params &params);

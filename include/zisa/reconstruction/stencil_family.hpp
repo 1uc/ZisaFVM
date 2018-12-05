@@ -12,6 +12,7 @@ private:
   array<Stencil, 1> stencils_;
 
 public:
+  StencilFamily() = default;
   StencilFamily(const std::shared_ptr<Grid> &grid,
                 int_t i_cell,
                 const StencilFamilyParams &params);

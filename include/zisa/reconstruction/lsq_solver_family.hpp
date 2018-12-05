@@ -15,6 +15,7 @@ private:
   std::vector<LSQSolver> solvers_;
 
 public:
+  LSQSolverFamily() = default;
   LSQSolverFamily(const std::shared_ptr<Grid> &grid,
                   const StencilFamily &stencils);
 

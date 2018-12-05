@@ -23,6 +23,7 @@ private:
   using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
 
 public:
+  LSQSolver() = default;
   LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil);
 
   /// Solve the LSQ problem with right-hand side `rhs`.
