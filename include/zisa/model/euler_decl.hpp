@@ -41,9 +41,6 @@ public:
    */
   ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u, double p) const;
 
-  /// Flow velocity.
-  ANY_DEVICE_INLINE XY velocity(const euler_var_t &u) const;
-
   /// Total energy.
   ANY_DEVICE_INLINE double
   energy(double rho, double v1, double v2, double p) const;

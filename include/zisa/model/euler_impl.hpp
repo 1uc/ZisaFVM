@@ -44,14 +44,6 @@ ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::flux(const euler_var_t &u,
 }
 
 template <class EOS, class Gravity>
-ANY_DEVICE_INLINE XY Euler<EOS, Gravity>::velocity(const euler_var_t &u) const {
-  XY v;
-  v[0] = u[1] / u[0];
-  v[1] = u[2] / u[0];
-  return v;
-}
-
-template <class EOS, class Gravity>
 ANY_DEVICE_INLINE double
 Euler<EOS, Gravity>::energy(double rho, double v1, double v2, double p) const {
   return eos.internal_energy__rho_p(rho, p) + 0.5 * rho * (v1 * v1 + v2 * v2);
