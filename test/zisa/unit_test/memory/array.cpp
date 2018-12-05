@@ -37,7 +37,7 @@ TEST_CASE("array; basics") {
 
 TEST_CASE("array; write to file") {
 
-  auto filename = "unit_test--array-to-hdf5.h5";
+  auto filename = "__unit_tests--array-to-hdf5.h5";
   auto label = "a";
 
   auto shape = zisa::shape_t<3>{3ul, 4ul, 2ul};

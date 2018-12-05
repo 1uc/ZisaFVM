@@ -16,8 +16,8 @@ private:
 public:
   InputParameters(const std::string &filename);
 
-  auto operator[](const std::string &key) const -> decltype(json_["key"]);
-  auto operator[](const std::string &key) -> decltype(json_["key"]);
+  inline decltype(auto) operator[](const std::string &key) const { return json_[key]; }
+  inline decltype(auto) operator[](const std::string &key) { return json_[key]; }
 
 };
 

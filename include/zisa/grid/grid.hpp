@@ -81,7 +81,8 @@ double largest_circum_radius(const Grid &grid);
 std::shared_ptr<Grid> load_gmsh(const std::string &filename);
 
 /// Generate all moment for a 2D poly of degree 'deg'.
-array<double, 1> normalized_moments(const Triangle &tri, int deg, int_t quad_deg);
+array<double, 1>
+normalized_moments(const Triangle &tri, int deg, int_t quad_deg);
 
 } // namespace zisa
 #endif /* end of include guard */
