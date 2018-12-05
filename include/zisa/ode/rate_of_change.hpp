@@ -45,8 +45,6 @@ public:
   SumRatesOfChange() = default;
   SumRatesOfChange(std::vector<std::shared_ptr<RateOfChange>> init_list);
 
-  virtual ~SumRatesOfChange() = default;
-
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
                        double t) const override;
