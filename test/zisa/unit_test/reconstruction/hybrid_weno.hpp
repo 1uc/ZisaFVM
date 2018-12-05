@@ -5,8 +5,8 @@
 #include <vector>
 
 #include <zisa/grid/grid.hpp>
-#include <zisa/io/to_string.hpp>
-#include <zisa/io/type_name.hpp>
+#include <zisa/utils/to_string.hpp>
+#include <zisa/utils/type_name.hpp>
 #include <zisa/utils/indent_block.hpp>
 #include <zisa/unit_test/math/basic_functions.hpp>
 #include <zisa/unit_test/reconstruction/compute_convergence.hpp>

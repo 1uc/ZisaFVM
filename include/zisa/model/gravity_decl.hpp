@@ -3,6 +3,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/utils/type_name.hpp>
 
 namespace zisa {
 
