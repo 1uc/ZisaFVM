@@ -194,4 +194,97 @@ TEST_CASE("Grid; moments", "[grid]") {
       }
     }
   }
+
+  SECTION("orientation normals") {
+    for (const auto &[e, edge] : zisa::interior_edges(*grid)) {
+      auto [iL, iR] = grid->left_right(e);
+
+      zisa::XY xL = zisa::barycenter(grid->triangle(iL));
+      zisa::XY xR = zisa::barycenter(grid->triangle(iR));
+
+      auto n = edge.normal();
+
+      // clang-format off
+      INFO(string_format("[%d, (%d, %d)] xL = (%.3e, %.3e) xR = (%.3e, %.3e), "
+                         "n = (%.3e, %.3e)",
+                         e, iL, iR,
+                         xL[0], xL[1],
+                         xR[0], xR[1],
+                         n[0], n[1]));
+      // clang-format on
+      REQUIRE(zisa::dot(n, xR - xL) > 0.0);
+    }
+  }
+}
+
+TEST_CASE("Grid; volume", "[grid]") {
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+
+  REQUIRE(zisa::almost_equal(volume(*grid), 1.0, 1e-12));
+
+  for (auto &&[i, tri] : triangles(*grid)) {
+    REQUIRE(volume(tri) > 0.0);
+  }
+}
+
+TEST_CASE("Grid; iterators", "[grid]") {
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+  auto n_edges = grid->n_edges;
+  auto n_cells = grid->n_cells;
+
+  SECTION("interior_edges") {
+    zisa::int_t count = 0;
+    for (const auto &[e, edge] : interior_edges(*grid)) {
+      ++count;
+    }
+
+    REQUIRE(count == n_edges);
+  }
+
+  SECTION("triangles") {
+    zisa::int_t count = 0;
+    for (const auto &[i, tri] : triangles(*grid)) {
+      ++count;
+    }
+
+    REQUIRE(count == n_cells);
+  }
+}
+
+TEST_CASE("Grid; incidence", "[grid]") {
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh");
+  zisa::int_t n_edges = grid->n_edges;
+  zisa::int_t n_cells = grid->n_cells;
+  zisa::int_t max_neighbours = grid->max_neighbours;
+
+  SECTION("(iL, iR) are neighbours") {
+    for (zisa::int_t e = 0; e < n_edges; ++e) {
+      auto [iL, iR] = grid->left_right(e);
+
+      REQUIRE((grid->neighbours(iL, 0) == iR || grid->neighbours(iL, 1) == iR
+               || grid->neighbours(iL, 2) == iR));
+    }
+  }
+
+  SECTION("edges of interior cells") {
+    auto count = zisa::array<zisa::int_t, 1>(zisa::shape_t<1>{n_cells});
+
+    for (const auto &[e, edge] : interior_edges(*grid)) {
+      auto [iL, iR] = grid->left_right(e);
+
+      count(iL) += 1;
+      count(iR) += 1;
+    }
+
+    for (zisa::int_t i = 0; i < n_cells; ++i) {
+      zisa::int_t expected = 0;
+      for (zisa::int_t k = 0; k < max_neighbours; ++k) {
+        if (grid->is_valid(i, k)) {
+          expected += 1;
+        }
+      }
+
+      REQUIRE(expected == count(i));
+    }
+  }
 }

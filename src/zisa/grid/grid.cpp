@@ -32,6 +32,22 @@ int_t count_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
   return n_edges;
 }
 
+int_t count_edges(const edge_indices_t edge_indices) {
+  int_t n_edges = 0;
+  int_t n_cells = edge_indices.shape(0);
+  int_t max_neighbours = edge_indices.shape(1);
+
+  for (int_t i = 0; i < n_cells; ++i) {
+    for (int_t k = 0; k < max_neighbours; ++k) {
+      if (edge_indices(i, k) != magic_index_value) {
+        ++n_edges;
+      }
+    }
+  }
+
+  return n_edges;
+}
+
 normals_t compute_normals(const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,
                           const neighbours_t &neighbours,
@@ -153,6 +169,31 @@ edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
   return edge_indices;
 }
 
+left_right_t compute_left_right(const edge_indices_t &edge_indices,
+                                const neighbours_t &neighbours) {
+  int_t n_cells = edge_indices.shape(0);
+  int_t max_neighbours = edge_indices.shape(1);
+  int_t n_edges = count_edges(edge_indices);
+
+  auto left_right = left_right_t(shape_t<1>{n_edges});
+
+  for (int_t i = 0; i < n_cells; ++i) {
+    for (int_t k = 0; k < max_neighbours; ++k) {
+      auto e = edge_indices(i, k);
+
+      if (e == magic_index_value) {
+        continue;
+      }
+
+      auto j = neighbours(i, k);
+      left_right(e).first = (i < j ? i : j);
+      left_right(e).second = (i < j ? j : i);
+    }
+  }
+
+  return left_right;
+}
+
 is_valid_t compute_valid_neighbours(const neighbours_t &neighbours) {
   auto is_valid = array<bool, 2>(neighbours.shape());
 
@@ -233,6 +274,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
 
   cell_centers = compute_cell_centers(this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
+  left_right = compute_left_right(edge_indices, neighbours);
 
   volumes = compute_volumes(this->vertices, this->vertex_indices);
 
@@ -257,6 +299,18 @@ Triangle Grid::triangle(int_t i) const {
   const auto &v2 = vertex(i, 2);
 
   return Triangle(v0, v1, v2);
+}
+
+Edge Grid::edge(int_t e) const {
+  int_t i = left_right(e).first;
+
+  for (int_t k = 0; k < max_neighbours - 1; ++k) {
+    if (edge_indices(i, k) == e) {
+      return Edge(vertex(i, k), vertex(i, k + 1));
+    }
+  }
+
+  return Edge(vertex(i, max_neighbours - 1), vertex(i, int_t(0)));
 }
 
 double volume(const Grid &grid) {

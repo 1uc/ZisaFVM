@@ -14,6 +14,7 @@ using vertex_indices_t = array<int_t, 2>;
 using neighbours_t = array<int_t, 2>;
 using edges_t = std::vector<std::map<int_t, int_t>>;
 using edge_indices_t = array<int_t, 2>;
+using left_right_t = array<std::pair<int_t, int_t>, 1>;
 using volumes_t = array<double, 1>;
 using normals_t = array<XY, 1>;
 using tangentials_t = array<XY, 1>;
@@ -26,6 +27,8 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices);
 is_valid_t compute_valid_neighbours(const neighbours_t &neighbours);
 edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
                                     const is_valid_t &is_valid);
+left_right_t compute_left_right(const edge_indices_t &edge_indices,
+                                const neighbours_t &neighbours);
 
 normals_t compute_normals(const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,

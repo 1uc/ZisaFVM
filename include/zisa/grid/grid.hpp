@@ -5,6 +5,7 @@
 #define GRID_H_RDTNK
 
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/edge.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
 
@@ -19,6 +20,7 @@ struct Grid {
 
   array<int_t, 2> vertex_indices;
   array<int_t, 2> edge_indices;
+  array<std::pair<int_t, int_t>, 1> left_right;
   array<int_t, 2> neighbours;
   array<bool, 2> is_valid;
 
@@ -32,9 +34,10 @@ struct Grid {
   array<array<double, 1>, 1> normalized_moments;
 
   Grid(array<XY, 1> vertices, array<int_t, 2> vertex_indices);
-  const XY &vertex(int_t i, int_t k) const;
 
+  const XY &vertex(int_t i, int_t k) const;
   Triangle triangle(int_t i) const;
+  Edge edge(int_t e) const;
 };
 
 class TriangleRange {
@@ -72,9 +75,47 @@ private:
   const Grid &grid;
 };
 
+class EdgeRange {
+private:
+  class EndIterator {};
+
+  class Iterator {
+  public:
+    inline Iterator(const Grid &grid) : grid(grid), e(0) {}
+
+    inline void operator++() { ++e; }
+
+    inline std::pair<int_t, Edge> operator*() const {
+      return {e, grid.edge(e)};
+    }
+
+    inline bool operator!=(const EndIterator &) const {
+      return e < grid.n_edges;
+    }
+    inline bool operator==(const EndIterator &it) const {
+      return !(*this != it);
+    }
+
+  private:
+    const Grid &grid;
+    int_t e;
+  };
+
+public:
+  inline EdgeRange(const Grid &grid) : grid(grid) {}
+
+  inline Iterator begin() const { return Iterator(grid); }
+  inline EndIterator end() const { return EndIterator(); }
+
+private:
+  const Grid &grid;
+};
+
 double volume(const Grid &grid);
 
 inline TriangleRange triangles(const Grid &grid) { return TriangleRange(grid); }
+
+inline EdgeRange interior_edges(const Grid &grid) { return EdgeRange(grid); }
 
 double largest_circum_radius(const Grid &grid);
 
