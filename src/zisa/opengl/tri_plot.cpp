@@ -17,6 +17,7 @@
 #include <zisa/opengl/window.hpp>
 
 namespace zisa {
+namespace opengl {
 
 TriPlot::TriPlot(std::shared_ptr<Window> window,
                  const Vertices &vertices,
@@ -31,6 +32,25 @@ TriPlot::TriPlot(std::shared_ptr<Window> window,
   init_vao();
   init_vbos();
   init_shaders();
+}
+
+void TriPlot::draw(const array<RGBColor, 1> &colors) const {
+  assert(colors.size() == vertices.size());
+
+  clear();
+
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+
+  bind_vertices();
+  bind_colors(colors);
+
+  glDrawArrays(GL_TRIANGLES, 0, int(colors.size()));
+
+  glDisableVertexAttribArray(0);
+  glDisableVertexAttribArray(1);
+
+  glfwSwapBuffers(window->ptr());
 }
 
 void TriPlot::init_vao() {
@@ -64,7 +84,7 @@ void TriPlot::compute_normalized_coordinates(
   std::array<float, 2> min_, max_;
   for (int_t k = 0; k < 2; ++k) {
     min_[k] = std::numeric_limits<float>::max();
-    max_[k] = std::numeric_limits<float>::min();
+    max_[k] = std::numeric_limits<float>::lowest();
   }
 
   for (const auto &v : vertices) {
@@ -82,7 +102,7 @@ void TriPlot::compute_normalized_coordinates(
 
       for (int_t kk = 0; kk < 2; ++kk) {
         this->vertices[jj][kk]
-            = float((vertices[j][kk] - min_[kk]) / (max_[kk] - min_[kk]));
+            = float(1.8 * (vertices[j][kk] - min_[kk]) / (max_[kk] - min_[kk]) - 0.9);
       }
       this->vertices[jj][2] = 0.0;
     }
@@ -99,36 +119,17 @@ void TriPlot::bind_vertices() const {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 }
 
-void TriPlot::bind_colors(
-    const std::vector<std::array<float, 3>> &colors) const {
+void TriPlot::bind_colors(const array<RGBColor, 1> &colors) const {
   glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
   glBufferData(GL_ARRAY_BUFFER,
                colors.size() * sizeof(colors[0]),
-               (void *)colors.data(),
+               (void *)colors.raw(),
                GL_STREAM_DRAW);
 
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
 }
 
-void TriPlot::draw(const std::vector<std::array<float, 3>> &colors) const {
-  assert(colors.size() == vertices.size());
-
-  clear();
-
-  glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
-
-  bind_vertices();
-  bind_colors(colors);
-
-  glDrawArrays(GL_TRIANGLES, 0, int(colors.size()));
-
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-
-  glfwSwapBuffers(window->ptr());
-}
-
+} // namespace opengl
 } // namespace zisa
 
 #endif

@@ -2,6 +2,7 @@
 #define WINDOW_H_KV5QN
 
 namespace zisa {
+namespace opengl {
 
 class Window {
 public:
@@ -14,5 +15,6 @@ private:
   GLFWwindow *window_;
 };
 
+} // namespace opengl
 } // namespace zisa
 #endif /* end of include guard */

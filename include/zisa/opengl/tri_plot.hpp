@@ -15,11 +15,13 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include <zisa/io/colors.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/opengl/window.hpp>
 
 namespace zisa {
+namespace opengl {
 
 class TriPlot {
 private:
@@ -28,10 +30,10 @@ private:
 
 public:
   TriPlot(std::shared_ptr<Window> window,
-          const Vertices &vertices,
-          const VertexIndices &vertex_indices);
+          const array<XY, 1> &vertices,
+          const array<int_t, 2> &vertex_indices);
 
-  void draw(const std::vector<std::array<float, 3>> &colors) const;
+  void draw(const array<RGBColor, 1> &colors) const;
 
 private:
   void init_vao();
@@ -44,7 +46,7 @@ private:
   void clear() const;
 
   void bind_vertices() const;
-  void bind_colors(const std::vector<std::array<float, 3>> &colors) const;
+  void bind_colors(const array<RGBColor, 1> &colors) const;
 
 private:
   std::vector<std::array<float, 3>> vertices;
@@ -57,6 +59,7 @@ private:
   GLuint color_buffer;
 };
 
+} // namespace opengl
 } // namespace zisa
 #endif
 

@@ -12,6 +12,8 @@
 #include <zisa/opengl/window.hpp>
 
 namespace zisa {
+namespace opengl {
+
 Window::Window(const std::string &title, int width, int height) {
 
   glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
@@ -43,5 +45,6 @@ Window::~Window() { glfwDestroyWindow(window_); }
 
 GLFWwindow *Window::ptr() { return window_; }
 
+} // namespace opengl
 } // namespace zisa
 #endif
