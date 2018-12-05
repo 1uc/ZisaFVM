@@ -54,23 +54,23 @@ ANY_DEVICE_INLINE double PolytropeGravityRadial::alpha() const {
 
 // ---  SphericalGravity  -----------------------------------------------
 ANY_DEVICE_INLINE double SphericalGravity::phi(double r) const {
-  int i = index(r);
+  int_t i = index(r);
 
   double alpha = (r - radii(i)) / dr;
   return (1 - alpha) * phi_points[i] + alpha * phi_points[i + 1];
 }
 
 ANY_DEVICE_INLINE double SphericalGravity::dphi_dx(double r) const {
-  int i = index(r);
+  int_t i = index(r);
   return (phi_points[i + 1] - phi_points[i]) / dr;
 }
 
-ANY_DEVICE_INLINE int SphericalGravity::index(double r) const {
-  return int((r - domain[0]) / dr);
+ANY_DEVICE_INLINE int_t SphericalGravity::index(double r) const {
+  return int_t((r - domain[0]) / dr);
 }
 
-ANY_DEVICE_INLINE double SphericalGravity::radii(int i) const {
-  return domain[0] + i * dr;
+ANY_DEVICE_INLINE double SphericalGravity::radii(int_t i) const {
+  return domain[0] + double(i) * dr;
 }
 
 } // namespace zisa

@@ -19,7 +19,7 @@ public:
     return gravity.phi(chi);
   }
 
-  ANY_DEVICE_INLINE double dphi_dx(const XY &x, int dir) const {
+  ANY_DEVICE_INLINE double dphi_dx(const XY &x, int_t dir) const {
     double chi = alignment.coordinate(x);
     return gravity.dphi_dx(chi) * alignment.dx(x, dir);
   }
@@ -43,7 +43,7 @@ public:
     return zisa::norm(xy);
   }
 
-  ANY_DEVICE_INLINE double dx(const XY &xy, int dir) const {
+  ANY_DEVICE_INLINE double dx(const XY &xy, int_t dir) const {
     double r = zisa::norm(xy);
     return xy[dir] / (r + epsilon);
   }
@@ -60,7 +60,7 @@ public:
   ANY_DEVICE_INLINE double coordinate(const XY &xy) const {
     return zisa::dot(xy, axis);
   }
-  ANY_DEVICE_INLINE double dx(const XY &, int dir) const { return axis[dir]; }
+  ANY_DEVICE_INLINE double dx(const XY &, int_t dir) const { return axis[dir]; }
 
 private:
   XY axis;
@@ -211,8 +211,8 @@ public:
   ANY_DEVICE_INLINE double dphi_dx(double r) const;
 
 private:
-  ANY_DEVICE_INLINE int index(double r) const;
-  ANY_DEVICE_INLINE double radii(int i) const;
+  ANY_DEVICE_INLINE int_t index(double r) const;
+  ANY_DEVICE_INLINE double radii(int_t i) const;
 
   ANY_DEVICE_INLINE Poly1D make_poly(double f_i,
                                      double df_i,
@@ -221,7 +221,7 @@ private:
 
 private:
   std::vector<double> domain;
-  int n_cells;
+  int_t n_cells;
   double dr;
 
   std::vector<double> phi_points;
