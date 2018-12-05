@@ -17,4 +17,8 @@ InputParameters::InputParameters(const std::string &filename) {
   is >> json_;
 }
 
+bool InputParameters::has_key(const std::string &key) const {
+  return json_.find(key) != json_.end();
+}
+
 } // namespace zisa

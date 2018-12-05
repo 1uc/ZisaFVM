@@ -4,8 +4,10 @@
 #ifndef INPUT_PARAMETERS_H_L08MP
 #define INPUT_PARAMETERS_H_L08MP
 
-#include <string>
 #include <nlohmann/json.hpp>
+#include <string>
+
+#include <zisa/utils/has_key.hpp>
 
 namespace zisa {
 
@@ -19,7 +21,12 @@ public:
   inline decltype(auto) operator[](const std::string &key) const { return json_[key]; }
   inline decltype(auto) operator[](const std::string &key) { return json_[key]; }
 
+  bool has_key(const std::string &key) const;
 };
+
+inline bool has_key(const InputParameters &params, const std::string &key) {
+  return params.has_key(key);
+}
 
 } // namespace zisa
 
