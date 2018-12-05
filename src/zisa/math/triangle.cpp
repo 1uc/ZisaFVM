@@ -34,6 +34,11 @@ double circum_radius(const Triangle &tri) {
       zisa::norm(tri.A - c), zisa::norm(tri.B - c), zisa::norm(tri.C - c));
 }
 
+double inradius(const Triangle &tri) {
+  double a = tri.a, b = tri.b, c = tri.c;
+  return 0.5 * zisa::sqrt((b + c - a) * (c + a - b) * (a + b - c) / (a + b + c));
+}
+
 Triangle reference_triangle() { return {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}}; }
 
 } // namespace zisa
