@@ -28,7 +28,8 @@ is_valid_t compute_valid_neighbours(const neighbours_t &neighbours);
 edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
                                     const is_valid_t &is_valid);
 left_right_t compute_left_right(const edge_indices_t &edge_indices,
-                                const neighbours_t &neighbours);
+                                const neighbours_t &neighbours,
+                                const is_valid_t &is_valid);
 
 normals_t compute_normals(const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,

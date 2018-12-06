@@ -32,21 +32,6 @@ int_t count_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
   return n_edges;
 }
 
-int_t count_edges(const edge_indices_t edge_indices) {
-  int_t n_edges = 0;
-  int_t n_cells = edge_indices.shape(0);
-  int_t max_neighbours = edge_indices.shape(1);
-
-  for (int_t i = 0; i < n_cells; ++i) {
-    for (int_t k = 0; k < max_neighbours; ++k) {
-      if (edge_indices(i, k) != magic_index_value) {
-        ++n_edges;
-      }
-    }
-  }
-
-  return n_edges;
-}
 
 normals_t compute_normals(const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,
@@ -170,10 +155,11 @@ edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
 }
 
 left_right_t compute_left_right(const edge_indices_t &edge_indices,
-                                const neighbours_t &neighbours) {
+                                const neighbours_t &neighbours,
+                                const is_valid_t &is_valid) {
   int_t n_cells = edge_indices.shape(0);
   int_t max_neighbours = edge_indices.shape(1);
-  int_t n_edges = count_edges(edge_indices);
+  int_t n_edges = count_edges(neighbours, is_valid);
 
   auto left_right = left_right_t(shape_t<1>{n_edges});
 
@@ -181,13 +167,10 @@ left_right_t compute_left_right(const edge_indices_t &edge_indices,
     for (int_t k = 0; k < max_neighbours; ++k) {
       auto e = edge_indices(i, k);
 
-      if (e == magic_index_value) {
-        continue;
-      }
-
       auto j = neighbours(i, k);
-      left_right(e).first = (i < j ? i : j);
-      left_right(e).second = (i < j ? j : i);
+      if (is_valid(i, k) && i < j) {
+        left_right(e) = std::pair<int_t, int_t>(i, j);
+      }
     }
   }
 
@@ -274,7 +257,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
 
   cell_centers = compute_cell_centers(this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
-  left_right = compute_left_right(edge_indices, neighbours);
+  left_right = compute_left_right(edge_indices, neighbours, is_valid);
 
   volumes = compute_volumes(this->vertices, this->vertex_indices);
 
