@@ -1,8 +1,8 @@
 #ifndef GRID_DECL_H_8IQQ7
 #define GRID_DECL_H_8IQQ7
 
-#include <utility>
 #include <string>
+#include <utility>
 
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/edge.hpp>
@@ -20,7 +20,9 @@ struct Grid {
 
   array<int_t, 2> vertex_indices;
   array<int_t, 2> edge_indices;
-  array<std::pair<int_t, int_t>, 1> left_right;
+  array<std::pair<int_t, int_t>, 1> left_right; ///< cell left & right of a edge
+  array<int_t, 1> inside_cell; ///< exterior edge index -> adjoining cell index
+
   array<int_t, 2> neighbours;
   array<bool, 2> is_valid;
 

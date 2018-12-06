@@ -80,13 +80,15 @@ TEST_CASE("Grid; small_example", "[grid]") {
     auto is_valid = zisa::compute_valid_neighbours(neighbours);
     auto edge_indices = zisa::compute_edge_indices(neighbours, is_valid);
 
-    REQUIRE(edge_indices(0, 0) == zisa::magic_index_value);
+    // Only interior (diagonal) edge.
     REQUIRE(edge_indices(0, 1) == 0);
-    REQUIRE(edge_indices(0, 2) == zisa::magic_index_value);
-
-    REQUIRE(edge_indices(1, 0) == zisa::magic_index_value);
-    REQUIRE(edge_indices(1, 1) == zisa::magic_index_value);
     REQUIRE(edge_indices(1, 2) == 0);
+
+    // Exterior edges.
+    REQUIRE(edge_indices(0, 0) == 0);
+    REQUIRE(edge_indices(0, 2) == 1);
+    REQUIRE(edge_indices(1, 0) == 2);
+    REQUIRE(edge_indices(1, 1) == 3);
   }
 
   SECTION("compute_normals") {
