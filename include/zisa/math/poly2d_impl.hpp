@@ -46,8 +46,12 @@ Poly2D<MAX_DEGREE>::Poly2D(void) : degree_(0) {
 
 template <int MAX_DEGREE>
 Poly2D<MAX_DEGREE>::Poly2D(const std::initializer_list<double> &coeffs_list,
-                           const std::initializer_list<double> &moments_list)
-    : degree_(poly_degree(coeffs_list.size())) {
+                           const std::initializer_list<double> &moments_list,
+                           const XY &x_center,
+                           double reference_length)
+    : degree_(poly_degree(coeffs_list.size())),
+      x_center_(x_center),
+      reference_length_(reference_length) {
 
   assert(coeffs_list.size() <= n_coeffs());
   assert(coeffs_list.size() == moments_list.size());
@@ -121,12 +125,15 @@ void Poly2D<MAX_DEGREE>::deep_copy(const PolynomialCRTP<E> &e_) {
       this->c(k, l) = e.c(k, l);
     }
   }
+
+  x_center_ = e.x_center();
+  reference_length_ = e.reference_length();
 }
 
 template <int MAX_DEGREE>
 double Poly2D<MAX_DEGREE>::operator()(const XY &xy) const {
-  auto x = xy[0];
-  auto y = xy[1];
+  auto x = (xy[0] - x_center_[0]) / reference_length_;
+  auto y = (xy[1] - x_center_[1]) / reference_length_;
 
   auto px = a(0, 0);
 
@@ -170,6 +177,16 @@ double Poly2D<MAX_DEGREE>::c(int i, int j) const {
   LOG_ERR_IF(i + j > degree(), "Don't have the moments for this.");
 
   return moments[idx(i, j)];
+}
+
+template <int MAX_DEGREE>
+const XY &Poly2D<MAX_DEGREE>::x_center() const {
+  return x_center_;
+}
+
+template <int MAX_DEGREE>
+double Poly2D<MAX_DEGREE>::reference_length() const {
+  return reference_length_;
 }
 
 template <int MAX_DEGREE>

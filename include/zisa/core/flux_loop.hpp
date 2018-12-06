@@ -37,13 +37,9 @@ public:
       auto [iL, iR] = grid->left_right(e);
 
       auto rc = [this, &edge = edge](int_t i, const XY &x) {
-        const auto &x_center = grid->cell_centers(i);
-        auto r = zisa::circum_radius(grid->triangle(i));
-        auto x_loc = XY((x - x_center) / r);
-
         cvars_t u;
         for (int_t k = 0; k < cvars_t::size(); ++k) {
-          u[k] = (*global_reconstruction)(i, k)(x_loc);
+          u[k] = (*global_reconstruction)(i, k)(x);
         }
         coord_transform(u, edge);
 

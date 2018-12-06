@@ -5,6 +5,7 @@
 #define POLYNOMIAL_EXPR_H_EFZLO
 
 #include <zisa/math/basic_functions.hpp>
+#include <zisa/math/cartesian.hpp>
 
 namespace zisa {
 
@@ -36,6 +37,16 @@ public:
                 : e2.c(std::forward<Indices>(indices)...));
   }
 
+  const XY &x_center() const {
+    return (e1.degree() > e2.degree() ? e1.x_center() : e2.x_center());
+  }
+
+  double reference_length() const {
+    return (e1.degree() > e2.degree() ? e1.reference_length()
+            : e2.reference_length());
+  }
+
+
 private:
   const E1 &e1;
   const E2 &e2;
@@ -55,8 +66,8 @@ public:
 
   template <class... Indices>
   double a(Indices &&... indices) const {
-    return this->e1.a(std::forward<Indices>(indices)...)
-           - this->e2.a(std::forward<Indices>(indices)...);
+    return e1.a(std::forward<Indices>(indices)...)
+           - e2.a(std::forward<Indices>(indices)...);
   }
 
   template <class... Indices>
@@ -64,6 +75,15 @@ public:
     return (e1.degree() > e2.degree()
                 ? e1.c(std::forward<Indices>(indices)...)
                 : e2.c(std::forward<Indices>(indices)...));
+  }
+
+  const XY &x_center() const {
+    return (e1.degree() > e2.degree() ? e1.x_center() : e2.x_center());
+  }
+
+  double reference_length() const {
+    return (e1.degree() > e2.degree() ? e1.reference_length()
+                                      : e2.reference_length());
   }
 
 private:
@@ -90,6 +110,9 @@ public:
   double c(Indices &&... indices) const {
     return e.c(std::forward<Indices>(indices)...);
   }
+
+  const XY &x_center() const { return e.x_center(); }
+  double reference_length() const { return e.reference_length(); }
 
 private:
   const E &e;

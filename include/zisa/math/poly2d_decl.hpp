@@ -46,7 +46,9 @@ public:
   Poly2D();
 
   Poly2D(const std::initializer_list<double> &coeffs_list,
-         const std::initializer_list<double> &moments_list);
+         const std::initializer_list<double> &moments_list,
+         const XY &x_center,
+         double reference_length);
 
   template <class E>
   Poly2D(const PolynomialCRTP<E> &e_);
@@ -77,10 +79,16 @@ public:
   double a(int i, int j) const;
   double c(int i, int j) const;
 
+  const XY &x_center() const;
+  double reference_length() const;
+
 protected:
   int degree_;
   double coeffs[n_coeffs()];
   double moments[n_coeffs()];
+
+  XY x_center_;
+  double reference_length_;
 
   template <int DEG>
   friend std::ostream &operator<<(std::ostream &os, const Poly2D<DEG> &poly2d);

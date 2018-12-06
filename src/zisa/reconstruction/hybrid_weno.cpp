@@ -32,7 +32,7 @@ int_t HybridWENO::combined_stencil_size() const {
 
 void HybridWENO::compute_polys(const array<double, 1> &qbar_local) const {
 
-  auto p_avg = WENOPoly{{qbar_local(int_t(0))}, {0.0}};
+  auto p_avg = WENOPoly({qbar_local(int_t(0))}, {0.0}, XY(XY::zeros()), 1.0);
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     for (int_t i = 0; i < stencils[k].size() - 1; ++i) {
@@ -47,7 +47,7 @@ WENOPoly HybridWENO::hybridize() const { return eno_hybridize(); }
 
 WENOPoly HybridWENO::eno_hybridize() const {
   double al_tot = 0.0;
-  auto p = WENOPoly{{0.0}, {0.0}};
+  auto p = WENOPoly{{0.0}, {0.0}, XY{0.0, 0.0}, 1.0};
   for (int_t k = 0; k < stencils.size(); ++k) {
     auto IS = smoothness_indicator(polys[k]);
 

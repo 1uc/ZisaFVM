@@ -313,6 +313,10 @@ Edge Grid::edge(int_t e) const {
   return Edge(vertex(i, max_neighbours - 1), vertex(i, int_t(0)));
 }
 
+double Grid::characteristic_length(int_t i) const {
+  return zisa::characteristic_length(triangle(i));
+}
+
 double volume(const Grid &grid) {
   double vol = 0.0;
 
@@ -364,7 +368,7 @@ normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
 
   auto m = array<double, 1>(shape_t<1>{poly_dof(degree)});
 
-  auto length = circum_radius(tri);
+  auto length = characteristic_length(tri);
   double length_d = 1.0;
 
   for (int d = 0; d <= degree; ++d) {

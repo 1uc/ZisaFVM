@@ -18,8 +18,12 @@ LSQSolver::LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil)
 
 WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
 
+  const auto &x_center = grid->cell_centers(i_cell);
+  double length = grid->characteristic_length(i_cell);
+
+
   if (order == 1) {
-    return {{0.0}, {0.0}};
+    return {{0.0}, {0.0}, x_center, length};
   }
 
   assert(rhs.size() > 0);
@@ -30,7 +34,7 @@ WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
   const auto &moments = grid->normalized_moments(i_cell);
 
   if (order == 2) {
-    return {{0.0, coeffs(0), coeffs(1)}, {0.0, 0.0, 0.0}};
+    return {{0.0, coeffs(0), coeffs(1)}, {0.0, 0.0, 0.0}, x_center, length};
   }
 
   if (order == 3) {
@@ -39,7 +43,9 @@ WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
     auto i02 = poly_index(0, 2);
 
     return {{0.0, coeffs(0), coeffs(1), coeffs(2), coeffs(3), coeffs(4)},
-            {0.0, 0.0, 0.0, moments(i20), moments(i11), moments(i02)}};
+            {0.0, 0.0, 0.0, moments(i20), moments(i11), moments(i02)},
+            x_center,
+            length};
   }
 
   if (order == 4) {
@@ -72,7 +78,10 @@ WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
              moments(i30),
              moments(i21),
              moments(i12),
-             moments(i03)}};
+             moments(i03)},
+
+            x_center,
+            length};
   }
 
   LOG_ERR("Implement first.");
@@ -100,7 +109,7 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   auto i0 = stencil.global(0);
   auto tri0 = grid.triangle(i0);
   auto x0 = grid.cell_centers(i0);
-  auto l0 = circum_radius(tri0);
+  auto l0 = grid.characteristic_length(i0);
   const auto &C0 = grid.normalized_moments(i0);
 
   assert(n_rows <= std::numeric_limits<Eigen::Index>::max());
@@ -115,7 +124,7 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
     auto trij = grid.triangle(j);
     XY xj = XY((grid.cell_centers(j) - x0) / l0);
 
-    auto lj = circum_radius(trij) / l0;
+    auto lj = grid.characteristic_length(j) / l0;
     const auto &Cj = grid.normalized_moments(j);
 
     if (order >= 2) {

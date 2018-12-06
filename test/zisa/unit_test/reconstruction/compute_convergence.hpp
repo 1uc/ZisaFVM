@@ -33,10 +33,8 @@ compute_errors(const zisa::Grid &grid, const F &f, const std::vector<RC> &rc) {
 
     auto p = rc[i].reconstruct(qbar_local);
 
-    auto diff = [tri = tri, &p, &f](const zisa::XY &x) {
-      auto x_center = zisa::barycenter(tri);
-      auto xx = zisa::XY((x - x_center) / zisa::circum_radius(tri));
-      return zisa::abs(p(xx) - f(x));
+    auto diff = [&p, &f](const zisa::XY &x) {
+      return zisa::abs(p(x) - f(x));
     };
 
     auto err = zisa::quadrature(diff, tri, 3);

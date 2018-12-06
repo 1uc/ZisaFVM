@@ -53,7 +53,9 @@ TEST_CASE("poly_degree", "[math][poly2d]") {
 
 TEST_CASE("Poly2D; examples", "[math][poly2d]") {
   auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                           {0.0, 0.0, 0.0, 1.0, 2.0, 3.0});
+                           {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
+                           zisa::XY{0.0, 0.0},
+                           1.0);
 
   SECTION("degree") { REQUIRE(p.degree() == 2); }
   SECTION("max_degree") { REQUIRE(p.max_degree() == 5); }
@@ -79,9 +81,12 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
 
   SECTION("saxpy-like") {
     auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0});
+                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
+                             zisa::XY{0.0, 0.0},
+                             1.0);
 
-    auto q = zisa::Poly2D<5>({1.0, 2.0, 3.0}, {0.0, 0.0, 0.0});
+    auto q = zisa::Poly2D<5>(
+        {1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XY{0.0, 0.0}, 1.0);
 
     auto x = zisa::XY{-3.4, 2.138};
 
@@ -96,9 +101,12 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
 
   SECTION("assignment") {
     auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0});
+                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
+                             zisa::XY{0.0, 0.0},
+                             1.0);
 
-    auto q = zisa::Poly2D<5>({1.0, 2.0, 3.0}, {0.0, 0.0, 0.0});
+    auto q = zisa::Poly2D<5>(
+        {1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XY{0.0, 0.0}, 1.0);
 
     auto x = zisa::XY{-3.4, 2.138};
 
@@ -137,7 +145,7 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
     SECTION("/=") {
       tmp /= 2.0;
 
-      auto exact = 0.5*p(x);
+      auto exact = 0.5 * p(x);
       auto approx = tmp(x);
 
       INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
@@ -147,7 +155,9 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
 
   SECTION("quadrature") {
     auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                             {0.0, 0.0, 0.0, -1.0, -2.0, -3.0});
+                             {0.0, 0.0, 0.0, -1.0, -2.0, -3.0},
+                             zisa::XY{0.0, 0.0},
+                             1.0);
 
     auto tri = zisa::reference_triangle();
 

@@ -38,6 +38,7 @@ struct Grid {
   const XY &vertex(int_t i, int_t k) const;
   Triangle triangle(int_t i) const;
   Edge edge(int_t e) const;
+  double characteristic_length(int_t i) const;
 };
 
 class TriangleRange {
