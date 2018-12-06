@@ -107,7 +107,6 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   auto A = Eigen::MatrixXd(n_rows, n_cols);
 
   auto i0 = stencil.global(0);
-  auto tri0 = grid.triangle(i0);
   auto x0 = grid.cell_centers(i0);
   auto l0 = grid.characteristic_length(i0);
   const auto &C0 = grid.normalized_moments(i0);
@@ -121,7 +120,6 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   for (int_t ii = 0; ii < n_rows; ++ii) {
     auto ii_ = eint(ii);
     auto j = stencil.global(ii + 1);
-    auto trij = grid.triangle(j);
     XY xj = XY((grid.cell_centers(j) - x0) / l0);
 
     auto lj = grid.characteristic_length(j) / l0;
