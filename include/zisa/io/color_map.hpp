@@ -18,7 +18,7 @@ public:
     auto current = min;
     for (int_t i = 0; i < n_bins / 2; ++i) {
       float dL = 100.0f - min.L;
-      current.L = min.L + 2.0f * float(i) / n_bins * dL;
+      current.L = min.L + 2.0f * float(i) / float(n_bins) * dL;
       colors[i] = lab2rgb(current);
     }
 
@@ -27,7 +27,7 @@ public:
     current = max;
     for (int_t i = n_bins / 2 + 1; i < n_bins; ++i) {
       float dL = max.L - 100.f;
-      current.L = 100.0f + 2.0f * float(i - n_bins/2) / n_bins * dL;
+      current.L = 100.0f + 2.0f * float(i - n_bins/2) / float(n_bins) * dL;
       colors[i] = lab2rgb(current);
     }
   }
@@ -44,7 +44,7 @@ private:
     assert(-1.0 <= y);
     assert(y <= 1.0);
 
-    return zisa::min(int_t(0.5 * (y + 1.0) * n_bins), n_bins-1);
+    return zisa::min(int_t(0.5 * (y + 1.0) * float(n_bins)), n_bins-1);
   }
 
 private:
