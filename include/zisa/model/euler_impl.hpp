@@ -28,6 +28,13 @@ Euler<EOS, Gravity>::max_eigen_value(const euler_var_t &u) const {
 }
 
 template <class EOS, class Gravity>
+ANY_DEVICE_INLINE euler_var_t
+Euler<EOS, Gravity>::flux(const euler_var_t &u) const {
+  double p = eos.pressure(u);
+  return flux(u, p);
+}
+
+template <class EOS, class Gravity>
 ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::flux(const euler_var_t &u,
                                                         double p) const {
   euler_var_t pf;

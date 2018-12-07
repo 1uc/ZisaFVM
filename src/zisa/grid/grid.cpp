@@ -293,6 +293,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
   is_valid = compute_valid_neighbours(neighbours);
 
   n_edges = count_edges(neighbours, is_valid);
+  n_exterior_edges = count_exterior_edges(is_valid);
 
   cell_centers = compute_cell_centers(this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
@@ -328,7 +329,19 @@ Edge Grid::edge(int_t e) const {
   int_t i = left_right(e).first;
 
   for (int_t k = 0; k < max_neighbours - 1; ++k) {
-    if (edge_indices(i, k) == e) {
+    if (is_valid(i, k) && edge_indices(i, k) == e) {
+      return Edge(vertex(i, k), vertex(i, k + 1));
+    }
+  }
+
+  return Edge(vertex(i, max_neighbours - 1), vertex(i, int_t(0)));
+}
+
+Edge Grid::exterior_edge(int_t e) const {
+  int_t i = inside_cell(e);
+
+  for (int_t k = 0; k < max_neighbours - 1; ++k) {
+    if (!is_valid(i, k) && edge_indices(i, k) == e) {
       return Edge(vertex(i, k), vertex(i, k + 1));
     }
   }

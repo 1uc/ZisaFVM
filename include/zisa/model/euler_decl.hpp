@@ -39,6 +39,7 @@ public:
   /** The convention is that the first component is normal to the surface
    *  through which the flux is computed.
    */
+  ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u) const;
   ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u, double p) const;
 
   /// Total energy.

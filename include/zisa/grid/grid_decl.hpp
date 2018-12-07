@@ -15,6 +15,7 @@ struct Grid {
   int_t n_cells;
   int_t n_vertices;
   int_t n_edges;
+  int_t n_exterior_edges;
 
   int_t max_neighbours;
 
@@ -40,6 +41,7 @@ struct Grid {
   const XY &vertex(int_t i, int_t k) const;
   Triangle triangle(int_t i) const;
   Edge edge(int_t e) const;
+  Edge exterior_edge(int_t e) const;
   double characteristic_length(int_t i) const;
 };
 
