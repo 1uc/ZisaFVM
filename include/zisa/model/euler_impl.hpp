@@ -9,10 +9,10 @@
 
 #include "euler_decl.hpp"
 
-#include <zisa/utils/indent_block.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/isreal.hpp>
 #include <zisa/model/equation_of_state.hpp>
+#include <zisa/utils/indent_block.hpp>
 
 namespace zisa {
 template <class EOS, class Gravity>
