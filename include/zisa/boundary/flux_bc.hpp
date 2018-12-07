@@ -26,7 +26,7 @@ public:
                        double /* t */) const override {
 
     for (auto &&[e, edge] : exterior_edges(*grid)) {
-      auto i = grid->inside_cell(e);
+      auto i = grid->left_right(e).first;
 
       auto flux = [this, i, &edge](const XY &x) -> cvars_t {
         cvars_t u;

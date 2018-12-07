@@ -6,7 +6,6 @@
 
 #include "grid_decl.hpp"
 #include "edge_range.hpp"
-#include "exterior_edge_range.hpp"
 #include "triangle_range.hpp"
 
 #endif /* end of include guard */

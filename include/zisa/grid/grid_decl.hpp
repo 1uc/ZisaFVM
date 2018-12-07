@@ -15,6 +15,7 @@ struct Grid {
   int_t n_cells;
   int_t n_vertices;
   int_t n_edges;
+  int_t n_interior_edges;
   int_t n_exterior_edges;
 
   int_t max_neighbours;
@@ -22,7 +23,6 @@ struct Grid {
   array<int_t, 2> vertex_indices;
   array<int_t, 2> edge_indices;
   array<std::pair<int_t, int_t>, 1> left_right; ///< cell left & right of a edge
-  array<int_t, 1> inside_cell; ///< exterior edge index -> adjoining cell index
 
   array<int_t, 2> neighbours;
   array<bool, 2> is_valid;
@@ -41,7 +41,6 @@ struct Grid {
   const XY &vertex(int_t i, int_t k) const;
   Triangle triangle(int_t i) const;
   Edge edge(int_t e) const;
-  Edge exterior_edge(int_t e) const;
   double characteristic_length(int_t i) const;
 };
 

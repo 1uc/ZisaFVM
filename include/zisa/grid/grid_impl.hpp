@@ -20,7 +20,6 @@ using normals_t = array<XY, 1>;
 using tangentials_t = array<XY, 1>;
 using cell_centers_t = array<XY, 1>;
 using is_valid_t = array<bool, 2>;
-using inside_cell_t = array<int_t, 1>;
 
 using edges_t = std::vector<std::map<int_t, int_t>>;
 edges_t compute_edges(const vertex_indices_t &vertex_indices);
@@ -31,9 +30,6 @@ edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
 left_right_t compute_left_right(const edge_indices_t &edge_indices,
                                 const neighbours_t &neighbours,
                                 const is_valid_t &is_valid);
-
-inside_cell_t compute_inside_cell(const edge_indices_t &edge_indices,
-                                  const is_valid_t &is_valid);
 
 normals_t compute_normals(const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,

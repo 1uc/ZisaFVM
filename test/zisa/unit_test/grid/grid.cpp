@@ -85,10 +85,10 @@ TEST_CASE("Grid; small_example", "[grid]") {
     REQUIRE(edge_indices(1, 2) == 0);
 
     // Exterior edges.
-    REQUIRE(edge_indices(0, 0) == 0);
-    REQUIRE(edge_indices(0, 2) == 1);
-    REQUIRE(edge_indices(1, 0) == 2);
-    REQUIRE(edge_indices(1, 1) == 3);
+    REQUIRE(edge_indices(0, 0) == 1);
+    REQUIRE(edge_indices(0, 2) == 2);
+    REQUIRE(edge_indices(1, 0) == 3);
+    REQUIRE(edge_indices(1, 1) == 4);
   }
 
   SECTION("compute_normals") {
@@ -98,7 +98,7 @@ TEST_CASE("Grid; small_example", "[grid]") {
     auto normals = zisa::compute_normals(
         vertices, vertex_indices, neighbours, is_valid, edge_indices);
 
-    REQUIRE(normals.shape(0) == 1);
+    REQUIRE(normals.shape(0) == 5);
 
     auto exact = zisa::XY{0.5 / std::sqrt(0.5), 0.5 / std::sqrt(0.5)};
     REQUIRE(zisa::almost_equal(normals(0), exact, 1e-12));
@@ -231,7 +231,7 @@ TEST_CASE("Grid; volume", "[grid]") {
 
 TEST_CASE("Grid; iterators", "[grid]") {
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
-  auto n_edges = grid->n_edges;
+  auto n_interior_edges = grid->n_interior_edges;
   auto n_cells = grid->n_cells;
 
   SECTION("interior_edges") {
@@ -240,7 +240,7 @@ TEST_CASE("Grid; iterators", "[grid]") {
       ++count;
     }
 
-    REQUIRE(count == n_edges);
+    REQUIRE(count == n_interior_edges);
   }
 
   SECTION("triangles") {
@@ -255,12 +255,11 @@ TEST_CASE("Grid; iterators", "[grid]") {
 
 TEST_CASE("Grid; incidence", "[grid]") {
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh");
-  zisa::int_t n_edges = grid->n_edges;
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t max_neighbours = grid->max_neighbours;
 
   SECTION("(iL, iR) are neighbours") {
-    for (zisa::int_t e = 0; e < n_edges; ++e) {
+    for (const auto &[e, edge] : interior_edges(*grid)) {
       auto [iL, iR] = grid->left_right(e);
 
       REQUIRE((grid->neighbours(iL, 0) == iR || grid->neighbours(iL, 1) == iR
@@ -278,7 +277,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
       count(iR) += 1;
     }
 
-    for (zisa::int_t i = 0; i < n_cells; ++i) {
+    for (auto &&[i, tri] : triangles(*grid)) {
       zisa::int_t expected = 0;
       for (zisa::int_t k = 0; k < max_neighbours; ++k) {
         if (grid->is_valid(i, k)) {

@@ -12,8 +12,8 @@
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
-int_t count_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
-  int_t n_edges = 0;
+int_t count_interior_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
+  int_t n_interior_edges = 0;
   int_t n_cells = neighbours.shape(0);
   int_t max_neighbours = neighbours.shape(1);
 
@@ -25,11 +25,11 @@ int_t count_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
         continue;
       }
 
-      ++n_edges;
+      ++n_interior_edges;
     }
   }
 
-  return n_edges;
+  return n_interior_edges;
 }
 
 int_t count_exterior_edges(const is_valid_t &is_valid) {
@@ -54,7 +54,10 @@ normals_t compute_normals(const vertices_t &vertices,
                           const is_valid_t &is_valid,
                           const edge_indices_t &edge_indices) {
 
-  auto n_edges = count_edges(neighbours, is_valid);
+  auto n_interior_edges = count_interior_edges(neighbours, is_valid);
+  auto n_exterior_edges = count_exterior_edges(is_valid);
+  auto n_edges = n_interior_edges + n_exterior_edges;
+
   auto n_cells = vertex_indices.shape(0);
   auto max_neighbours = vertex_indices.shape(1);
 
@@ -147,7 +150,7 @@ edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
   auto edge_indices = empty_like(neighbours);
 
   int_t n_interior_edges = 0;
-  int_t n_exterior_edges = 0;
+  int_t n_exterior_edges = count_interior_edges(neighbours, is_valid);
 
   auto n_cells = neighbours.shape(0);
   auto max_neighbours = neighbours.shape(1);
@@ -177,43 +180,28 @@ left_right_t compute_left_right(const edge_indices_t &edge_indices,
                                 const is_valid_t &is_valid) {
   int_t n_cells = edge_indices.shape(0);
   int_t max_neighbours = edge_indices.shape(1);
-  int_t n_edges = count_edges(neighbours, is_valid);
+  int_t n_interior_edges = count_interior_edges(neighbours, is_valid);
+  int_t n_exterior_edges = count_exterior_edges(is_valid);
+  int_t n__edges = n_interior_edges + n_exterior_edges;
 
-  auto left_right = left_right_t(shape_t<1>{n_edges});
+  auto left_right = left_right_t(shape_t<1>{n__edges});
 
   for (int_t i = 0; i < n_cells; ++i) {
     for (int_t k = 0; k < max_neighbours; ++k) {
       auto e = edge_indices(i, k);
 
       auto j = neighbours(i, k);
-      if (is_valid(i, k) && i < j) {
-        left_right(e) = std::pair<int_t, int_t>(i, j);
+      if (is_valid(i, k)) {
+        if (i < j) {
+          left_right(e) = std::pair<int_t, int_t>(i, j);
+        }
+      } else {
+        left_right(e) = std::pair<int_t, int_t>(i, magic_index_value);
       }
     }
   }
 
   return left_right;
-}
-
-inside_cell_t compute_inside_cell(const edge_indices_t &edge_indices,
-                                  const is_valid_t &is_valid) {
-
-  auto n_exterior_edges = count_exterior_edges(is_valid);
-  auto inside_cell = inside_cell_t(shape_t<1>{n_exterior_edges});
-
-  auto n_cells = is_valid.shape(0);
-  auto max_neighbours = is_valid.shape(1);
-
-  for (int_t i = 0; i < n_cells; ++i) {
-    for (int_t k = 0; k < max_neighbours; ++k) {
-      if (!is_valid(i, k)) {
-        auto e = edge_indices(i, k);
-        inside_cell(e) = i;
-      }
-    }
-  }
-
-  return inside_cell;
 }
 
 is_valid_t compute_valid_neighbours(const neighbours_t &neighbours) {
@@ -292,13 +280,13 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
   neighbours = compute_neighbours(this->vertex_indices);
   is_valid = compute_valid_neighbours(neighbours);
 
-  n_edges = count_edges(neighbours, is_valid);
+  n_interior_edges = count_interior_edges(neighbours, is_valid);
   n_exterior_edges = count_exterior_edges(is_valid);
+  n_edges = n_interior_edges + n_exterior_edges;
 
   cell_centers = compute_cell_centers(this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
   left_right = compute_left_right(edge_indices, neighbours, is_valid);
-  inside_cell = compute_inside_cell(edge_indices, is_valid);
 
   volumes = compute_volumes(this->vertices, this->vertex_indices);
 
@@ -329,19 +317,7 @@ Edge Grid::edge(int_t e) const {
   int_t i = left_right(e).first;
 
   for (int_t k = 0; k < max_neighbours - 1; ++k) {
-    if (is_valid(i, k) && edge_indices(i, k) == e) {
-      return Edge(vertex(i, k), vertex(i, k + 1));
-    }
-  }
-
-  return Edge(vertex(i, max_neighbours - 1), vertex(i, int_t(0)));
-}
-
-Edge Grid::exterior_edge(int_t e) const {
-  int_t i = inside_cell(e);
-
-  for (int_t k = 0; k < max_neighbours - 1; ++k) {
-    if (!is_valid(i, k) && edge_indices(i, k) == e) {
+    if (edge_indices(i, k) == e) {
       return Edge(vertex(i, k), vertex(i, k + 1));
     }
   }
