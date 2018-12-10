@@ -12,7 +12,8 @@
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
-int_t count_interior_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
+int_t count_interior_edges(const neighbours_t &neighbours,
+                           const is_valid_t &is_valid) {
   int_t n_interior_edges = 0;
   int_t n_cells = neighbours.shape(0);
   int_t max_neighbours = neighbours.shape(1);
