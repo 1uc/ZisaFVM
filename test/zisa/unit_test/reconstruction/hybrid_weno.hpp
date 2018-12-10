@@ -5,20 +5,23 @@
 #include <vector>
 
 #include <zisa/grid/grid.hpp>
-#include <zisa/utils/to_string.hpp>
-#include <zisa/utils/type_name.hpp>
-#include <zisa/utils/indent_block.hpp>
+#include <zisa/reconstruction/global_reconstruction.hpp>
 #include <zisa/unit_test/math/basic_functions.hpp>
 #include <zisa/unit_test/reconstruction/compute_convergence.hpp>
+#include <zisa/utils/indent_block.hpp>
+#include <zisa/utils/to_string.hpp>
+#include <zisa/utils/type_name.hpp>
+
+namespace zisa {
 
 template <class RC>
 void test_hybrid_weno_convergence(
     const std::vector<std::string> &grid_names,
     const std::tuple<double, double> &expected_rate,
-    const zisa::HybridWENO_Params &params) {
+    const HybridWENO_Params &params) {
 
-  auto f = [](const zisa::XY &x) {
-    auto d = zisa::norm(x - zisa::XY{0.5, 0.5});
+  auto f = [](const XY &x) {
+    auto d = zisa::norm(x - XY{0.5, 0.5});
     double sigma = 0.2;
     return zisa::exp(-zisa::pow<2>(d / sigma));
   };
@@ -28,7 +31,7 @@ void test_hybrid_weno_convergence(
   std::vector<double> linf_errors;
 
   for (auto &&grid_name : grid_names) {
-    auto grid = zisa::load_gmsh(grid_name);
+    auto grid = load_gmsh(grid_name);
 
     auto rc = std::vector<RC>();
     for (const auto &[i, tri] : triangles(*grid)) {
@@ -37,14 +40,14 @@ void test_hybrid_weno_convergence(
 
     auto [l1_err, linf_err] = compute_errors(*grid, f, rc);
 
-    resolution.push_back(zisa::largest_circum_radius(*grid));
+    resolution.push_back(largest_circum_radius(*grid));
     l1_errors.push_back(l1_err);
     linf_errors.push_back(linf_err);
   }
 
   auto rates = convergence_rates(resolution, l1_errors);
 
-  for (zisa::int_t i = 0; i < rates.size(); ++i) {
+  for (int_t i = 0; i < rates.size(); ++i) {
     auto title = string_format("RC = %s", type_name<RC>().c_str());
     auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e",
                                  i,
@@ -52,12 +55,89 @@ void test_hybrid_weno_convergence(
                                  i,
                                  rates[i],
                                  resolution[i]);
-    err_str = zisa::indent_block(1, err_str);
+    err_str = indent_block(1, err_str);
 
-    auto desc_params = zisa::indent_block(1, zisa::to_string(params));
-    INFO(string_format("%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
-    CHECK(zisa::is_inside_interval(rates[i], expected_rate));
+    auto desc_params = indent_block(1, zisa::to_string(params));
+    INFO(string_format(
+        "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
+    CHECK(is_inside_interval(rates[i], expected_rate));
   }
 }
 
+template <class RC>
+void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
+                                const HybridWENO_Params &params) {
+
+  double tol = 5e-5;
+
+  auto f = [](const XY &x) {
+    auto d = zisa::norm(x - XY{0.5, 0.5});
+    return (d < 0.3 ? 10.0 : 1.0);
+  };
+
+  auto make_points = [](const Grid &grid, int_t i) {
+    auto edge_rules = std::vector<EdgeRule>();
+    auto volume_rules = std::vector<TriangularRule>();
+
+    for (int_t deg = 1; deg <= 4; ++deg) {
+      edge_rules.push_back(EdgeRule(deg));
+      volume_rules.push_back(make_triangular_rule(deg));
+    }
+
+    auto points = std::vector<XY>();
+
+    for (int_t k = 0; k < grid.max_neighbours; ++k) {
+      auto edge = grid.edge(i, k);
+
+      for (auto &&edge_rule : edge_rules) {
+        for (auto &&x : edge_rule.points) {
+          points.push_back(coord(edge, x));
+        }
+      }
+    }
+
+    auto tri = grid.triangle(i);
+    for (auto &&volume_rule : volume_rules) {
+      for (auto &&x : volume_rule.points) {
+        points.push_back(coord(tri, x));
+      }
+    }
+
+    return points;
+  };
+
+  for (auto &&grid_name : grid_names) {
+    auto grid = load_gmsh(grid_name);
+    auto rc = GlobalReconstruction<RC>(grid, params, 1);
+
+    auto u = AllVariables({grid->n_cells, int_t(1), int_t(0)});
+    for (auto &&[i, tri] : triangles(*grid)) {
+      u.cvars(i, 0) = f(barycenter(tri));
+    }
+
+    rc.compute(u);
+
+    for (auto &&[i, tri] : triangles(*grid)) {
+      auto points = make_points(*grid, i);
+      for (auto &&x : points) {
+        auto approx = rc(i, 0)(x);
+        auto exact = u.cvars(i, 0);
+
+        // clang-format off
+        INFO(string_format("[%d] (%.3e, %.3e) %e - %e = %e\n%s\n%s",
+                           i,
+                           x[0], x[1],
+                           approx, exact, approx - exact,
+                           type_name<RC>().c_str(),
+                           zisa::to_string(params).c_str()
+                           ));
+        // clang-format on
+
+        REQUIRE(almost_equal(approx, exact, tol));
+      }
+    }
+  }
+}
+
+} // namespace zisa
 #endif /* end of include guard */
