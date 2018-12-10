@@ -10,33 +10,13 @@ EdgeRule::EdgeRule(int_t deg)
   int_t n_points = (deg + 1) / 2;
 
   if (n_points == 1) {
-    auto qr = make_gauss_legendre<1>();
-
-    for (int_t k = 0; k < n_points; ++k) {
-      weights[k] = 0.5 * qr.weights[k];
-      points[k] = qr.points[k];
-    }
+    init<1>();
   } else if (n_points == 2) {
-    auto qr = make_gauss_legendre<2>();
-
-    for (int_t k = 0; k < n_points; ++k) {
-      weights[k] = 0.5 * qr.weights[k];
-      points[k] = qr.points[k];
-    }
+    init<2>();
   } else if (n_points == 3) {
-    auto qr = make_gauss_legendre<3>();
-
-    for (int_t k = 0; k < n_points; ++k) {
-      weights[k] = 0.5 * qr.weights[k];
-      points[k] = qr.points[k];
-    }
+    init<3>();
   } else if (n_points == 4) {
-    auto qr = make_gauss_legendre<4>();
-
-    for (int_t k = 0; k < n_points; ++k) {
-      weights[k] = 0.5 * qr.weights[k];
-      points[k] = qr.points[k];
-    }
+    init<4>();
   } else {
     LOG_ERR(string_format("Implement case. [%d]", deg));
   }
