@@ -325,6 +325,8 @@ Edge Grid::edge(int_t e) const {
   return Edge(vertex(i, max_neighbours - 1), vertex(i, int_t(0)));
 }
 
+Edge Grid::edge(int_t i, int_t k) const { return edge(edge_indices(i, k)); }
+
 double Grid::characteristic_length(int_t i) const {
   return zisa::characteristic_length(triangle(i));
 }
