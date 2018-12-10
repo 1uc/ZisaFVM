@@ -13,6 +13,7 @@ TriPlot::TriPlot(const array<XY, 1> &vertices,
   LOG_ERR("Compiled without OpenGL support.");
   ZISA_UNUSED(vertices);
   ZISA_UNUSED(vertex_indices);
+  ZISA_UNUSED(title);
 #else
 
   auto window = std::make_shared<opengl::Window>(title, 600, 600);
