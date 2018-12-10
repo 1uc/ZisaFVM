@@ -29,7 +29,7 @@ public:
   double exponent;
 };
 
-std::ostream& operator<<(std::ostream &os, const HybridWENO_Params &params);
+std::ostream &operator<<(std::ostream &os, const HybridWENO_Params &params);
 
 } // namespace zisa
 #endif /* end of include guard */

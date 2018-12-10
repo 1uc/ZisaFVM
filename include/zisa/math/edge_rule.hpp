@@ -1,7 +1,7 @@
 #ifndef EDGE_RULE_H_EFB8F
 #define EDGE_RULE_H_EFB8F
 
-#include<map>
+#include <map>
 
 #include <zisa/config.hpp>
 #include <zisa/math/gauss_legendre.hpp>

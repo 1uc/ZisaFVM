@@ -47,8 +47,11 @@ std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
   auto visualization = choose_visualization();
   auto cfl_condition = choose_cfl_condition();
 
-  return std::make_shared<TimeLoop>(
-      time_integration, simulation_clock, cfl_condition, sanity_check, visualization);
+  return std::make_shared<TimeLoop>(time_integration,
+                                    simulation_clock,
+                                    cfl_condition,
+                                    sanity_check,
+                                    visualization);
 }
 
 std::shared_ptr<BoundaryCondition>

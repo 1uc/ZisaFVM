@@ -56,6 +56,7 @@ public:
       auto nf = quadrature(edge_rule, flux, edge);
       inv_coord_transform(nf, edge);
 
+
       tendency.cvars(iL) -= nf / grid->volumes(iL);
       tendency.cvars(iR) += nf / grid->volumes(iR);
     }
