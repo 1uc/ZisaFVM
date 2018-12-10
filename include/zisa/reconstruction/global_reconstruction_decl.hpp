@@ -6,6 +6,7 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/hybrid_weno_params.hpp>
 #include <zisa/reconstruction/weno_poly.hpp>
+#include <zisa/model/all_variables_fwd.hpp>
 
 namespace zisa {
 

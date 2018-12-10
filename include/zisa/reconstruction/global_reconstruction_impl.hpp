@@ -2,6 +2,7 @@
 #define GLOBAL_RECONSTRUCTION_IMPL_H_1EKED
 
 #include "global_reconstruction_decl.hpp"
+#include <zisa/model/all_variables.hpp>
 #include <zisa/utils/indent_block.hpp>
 #include <zisa/utils/to_string.hpp>
 #include <zisa/utils/type_name.hpp>
