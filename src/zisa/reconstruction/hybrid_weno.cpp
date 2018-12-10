@@ -15,8 +15,8 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       lsq_solvers(grid, stencils),
       polys(stencils.size()),
       linear_weights(stencils.size()),
-      epsilon(1e-6),
-      exponent(4) {
+      epsilon(params.epsilon),
+      exponent(params.exponent) {
   rhs = array<double, 1>(shape_t<1>{stencils.combined_stencil_size()});
 
   auto tot = std::accumulate(

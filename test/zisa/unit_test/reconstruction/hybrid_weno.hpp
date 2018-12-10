@@ -68,7 +68,7 @@ template <class RC>
 void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
                                 const HybridWENO_Params &params) {
 
-  double tol = 5e-5;
+  double tol = 1e-8;
 
   auto f = [](const XY &x) {
     auto d = zisa::norm(x - XY{0.5, 0.5});

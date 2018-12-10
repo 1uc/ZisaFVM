@@ -81,7 +81,9 @@ NumericalExperiment::choose_reconstruction() {
       = HybridWENO_Params(StencilFamilyParams(rc_params["orders"],
                                               rc_params["biases"],
                                               rc_params["overfit_factors"]),
-                          rc_params["linear_weights"]);
+                          rc_params["linear_weights"],
+                          rc_params["smoothness_indicator"]["epsilon"],
+                          rc_params["smoothness_indicator"]["exponent"]);
 
   auto dims = choose_all_variable_dims();
 

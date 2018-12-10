@@ -11,7 +11,7 @@ TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
     SECTION("push_back") {
 
       auto grid = zisa::load_gmsh("grids/small.msh");
-      auto params = zisa::HybridWENO_Params({{{1}, {"c"}, {2.0}}, {1.0}});
+      auto params = zisa::HybridWENO_Params({{{1}, {"c"}, {2.0}}, {1.0}, 1e-6, 4});
 
       auto rc = std::vector<zisa::CWENO_AO>();
       for (const auto &[i, tri] : triangles(*grid)) {
@@ -38,19 +38,22 @@ TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
   using interval_t = std::tuple<double, double>;
   auto cases = std::vector<std::tuple<interval_t, zisa::HybridWENO_Params>>{};
 
-  cases.push_back({{2.8, 3.25},
+  double eps = 1e-10;
+  double s = 4.0;
+
+  cases.push_back({{2.8, 3.35},
                    {{{2, 2, 2, 3}, {"b", "b", "b", "c"}, {1.5, 1.5, 1.5, 2.0}},
-                    {1.0, 1.0, 1.0, 100.0}}});
+                    {1.0, 1.0, 1.0, 100.0}, eps, s}});
 
   // CWENO is expected to be high-order even for small weights of the central
   // stencil.
-  cases.push_back({{3.8, 4.4},
+  cases.push_back({{3.8, 5.4},
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-                    {10.0, 1.0, 1.0, 1.0}}});
+                    {10.0, 1.0, 1.0, 1.0}, eps, s}});
 
-  cases.push_back({{3.8, 4.4},
+  cases.push_back({{3.8, 4.7},
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-                    {100.0, 1.0, 1.0, 1.0}}});
+                    {100.0, 1.0, 1.0, 1.0}, eps, s}});
 
   for (auto &[expected_rate, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::CWENO_AO>(

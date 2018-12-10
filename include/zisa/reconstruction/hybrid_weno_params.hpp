@@ -15,7 +15,9 @@ struct HybridWENO_Params {
   HybridWENO_Params(HybridWENO_Params &&) = default;
 
   HybridWENO_Params(StencilFamilyParams stencil_family_params,
-                 std::vector<double> linear_weights);
+                    std::vector<double> linear_weights,
+                    double epsilon,
+                    double exponent);
 
   HybridWENO_Params &operator=(const HybridWENO_Params &) = default;
   HybridWENO_Params &operator=(HybridWENO_Params &&) = default;
@@ -23,6 +25,8 @@ struct HybridWENO_Params {
 public:
   StencilFamilyParams stencil_family_params;
   std::vector<double> linear_weights;
+  double epsilon;
+  double exponent;
 };
 
 std::ostream& operator<<(std::ostream &os, const HybridWENO_Params &params);
