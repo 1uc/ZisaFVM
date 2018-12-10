@@ -28,7 +28,7 @@ public:
     for (auto &&[e, edge] : exterior_edges(*grid)) {
       auto i = grid->left_right(e).first;
 
-      auto flux = [this, i, &edge](const XY &x) -> cvars_t {
+      auto flux = [this, i, &edge = edge](const XY &x) -> cvars_t {
         cvars_t u;
         for (int_t k = 0; k < cvars_t::size(); ++k) {
           u[k] = (*global_reconstruction)(i, k)(x);
