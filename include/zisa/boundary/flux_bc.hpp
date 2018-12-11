@@ -22,17 +22,18 @@ public:
         global_reconstruction(global_reconstruction) {}
 
   virtual void compute(AllVariables &tendency,
-                       const AllVariables & /* current_state */,
+                       const AllVariables &current_state,
                        double /* t */) const override {
 
     for (auto &&[e, edge] : exterior_edges(*grid)) {
       auto i = grid->left_right(e).first;
 
-      auto flux = [this, i, &edge = edge](const XY &x) -> cvars_t {
-        cvars_t u;
-        for (int_t k = 0; k < cvars_t::size(); ++k) {
-          u[k] = (*global_reconstruction)(i, k)(x);
-        }
+      auto flux
+          = [this, i, &edge = edge, &current_state](const XY &x) -> cvars_t {
+        auto u = cvars_t(current_state.cvars(i));
+        // for (int_t k = 0; k < cvars_t::size(); ++k) {
+        //   u[k] = (*global_reconstruction)(i, k)(x);
+        // }
         coord_transform(u, edge);
 
         return model.flux(u);
