@@ -28,21 +28,13 @@ public:
     for (auto &&[e, edge] : exterior_edges(*grid)) {
       auto i = grid->left_right(e).first;
 
-      auto flux
-          = [this, i, &edge = edge, &current_state](const XY &x) -> cvars_t {
-        auto u = cvars_t(current_state.cvars(i));
-        // for (int_t k = 0; k < cvars_t::size(); ++k) {
-        //   u[k] = (*global_reconstruction)(i, k)(x);
-        // }
-        coord_transform(u, edge);
+      auto u = cvars_t(current_state.cvars(i));
+      coord_transform(u, edge);
 
-        return model.flux(u);
-      };
-
-      auto f = quadrature(edge_rule, flux, edge);
+      auto f = model.flux(u);
       inv_coord_transform(f, edge);
 
-      tendency.cvars(i) -= f / grid->volumes(i);
+      tendency.cvars(i) -= volume(edge) / grid->volumes(i) * f;
     }
   }
 
