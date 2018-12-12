@@ -78,3 +78,4 @@ if __name__ == "__main__":
     add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
 
     recurse("test/", "unit_tests")
+    recurse("benchmarks/", "micro_benchmarks")
