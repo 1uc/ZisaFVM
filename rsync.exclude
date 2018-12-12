@@ -1,0 +1,17 @@
+# don't copy these
+archive
+bin/*
+build
+build-*
+third_party/*
+doc/*
+data/*
+junk
+lib/*
+
+# archives
+*.tar
+*.tar.*
+*.tgz
+*.zip
+*.out
