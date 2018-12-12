@@ -138,13 +138,19 @@ double Poly2D<MAX_DEGREE>::operator()(const XY &xy) const {
   auto x = (xy[0] - x_center_[0]) / reference_length_;
   auto y = (xy[1] - x_center_[1]) / reference_length_;
 
-  auto px = a(0, 0);
+  auto d = degree();
+  auto px = 0.0;
 
-  for (int d = 1; d <= degree(); ++d) {
-    for (int k = 0; k <= d; ++k) {
-      int l = d - k;
-      px += a(k, l) * (std::pow(x, k) * std::pow(y, l) - c(k, l));
+  double xk = 1.0;
+  for (int k = 0; k <= d; ++k) {
+    double yl = 1.0;
+
+    for (int l = 0; l <= d - k; ++l) {
+      px += a(k, l) * (xk * yl - c(k, l));
+      yl *= y;
     }
+
+    xk *= x;
   }
 
   return px;
