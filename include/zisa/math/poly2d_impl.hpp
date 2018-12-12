@@ -168,9 +168,6 @@ double &Poly2D<MAX_DEGREE>::c(int i, int j) {
 
 template <int MAX_DEGREE>
 double Poly2D<MAX_DEGREE>::a(int i, int j) const {
-  assert(i >= 0);
-  assert(j >= 0);
-
   if (i + j <= degree()) {
     return coeffs[idx(i, j)];
   } else {
@@ -180,11 +177,6 @@ double Poly2D<MAX_DEGREE>::a(int i, int j) const {
 
 template <int MAX_DEGREE>
 double Poly2D<MAX_DEGREE>::c(int i, int j) const {
-  assert(i >= 0);
-  assert(j >= 0);
-
-  LOG_ERR_IF(i + j > degree(), "Don't have the moments for this.");
-
   return moments[idx(i, j)];
 }
 
