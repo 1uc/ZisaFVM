@@ -33,8 +33,14 @@ public:
 
     (*global_reconstruction).compute(current_state);
 
-    for (const auto &[e, edge] : interior_edges(*grid)) {
-      auto [iL, iR] = grid->left_right(e);
+    auto n_interior_edges = grid->n_interior_edges;
+
+#pragma omp parallel for schedule(guided)
+    for (int_t e = 0; e < n_interior_edges; ++e) {
+      auto edge = grid->edge(e);
+
+      int_t iL, iR;
+      std::tie<int_t, int_t>(iL, iR) = grid->left_right(e);
 
       auto rc = [this, &edge = edge](int_t i, const XY &x) {
         cvars_t u;
@@ -56,9 +62,15 @@ public:
       auto nf = quadrature(edge_rule, flux, edge);
       inv_coord_transform(nf, edge);
 
+      for (int_t k = 0; k < cvars_t::size(); ++k) {
+        auto nfL = nf(k) / grid->volumes(iL);
+#pragma omp atomic
+        tendency.cvars(iL, k) -= nfL;
 
-      tendency.cvars(iL) -= nf / grid->volumes(iL);
-      tendency.cvars(iR) += nf / grid->volumes(iR);
+        auto nfR = nf(k) / grid->volumes(iR);
+#pragma omp atomic
+        tendency.cvars(iR, k) += nfR;
+      }
     }
   }
 

@@ -114,6 +114,7 @@ void runge_kutta_sum(AllVariables &u1,
   int_t N = u0.size();
   int_t n_stages = coeffs.shape(0);
 
+  #pragma omp parallel for schedule(dynamic, 128)
   for (int_t i = 0; i < N; ++i) {
     double dudt = 0.0;
 

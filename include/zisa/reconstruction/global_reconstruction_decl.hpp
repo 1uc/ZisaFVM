@@ -31,7 +31,7 @@ private:
   array<RC, 1> rc;
   array<WENOPoly, 2> polys;
 
-  mutable array<double, 1> qbar_local;
+  mutable std::vector<array<double, 1>> qbar_local;
 };
 
 } // namespace zisa
