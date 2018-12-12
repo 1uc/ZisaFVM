@@ -3,6 +3,8 @@
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/ode/rate_of_change.hpp>
+#include <zisa/math/edge_rule.hpp>
+#include <zisa/reconstruction/global_reconstruction.hpp>
 
 namespace zisa {
 
