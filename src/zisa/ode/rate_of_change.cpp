@@ -52,6 +52,8 @@ void SumRatesOfChange::remove_all_terms() { rates_of_change.clear(); }
 void ZeroRateOfChange::compute(AllVariables &tendency,
                                const AllVariables &,
                                double) const {
+
+  #pragma omp parallel for
   for (int_t i = 0; i < tendency.size(); ++i) {
     tendency[i] = 0.0;
   }
