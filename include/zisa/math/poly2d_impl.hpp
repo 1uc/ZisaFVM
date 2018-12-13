@@ -129,8 +129,35 @@ void Poly2D<MAX_DEGREE>::deep_copy(const PolynomialCRTP<E> &e_) {
     }
   }
 
+  offset.reset();
+
   x_center_ = e.x_center();
   reference_length_ = e.reference_length();
+}
+
+template <class Coeffs>
+double horners_method(const Coeffs &coeffs, double x, int n) {
+  double px = coeffs(n);
+  for (int k = n - 1; k >= 0; --k) {
+    px = x * px + coeffs(k);
+  }
+
+  return px;
+}
+
+template <int MAX_DEGREE>
+void Poly2D<MAX_DEGREE>::cache_offset() const {
+
+  auto d = degree();
+
+  double tmp = 0.0;
+  for (int k = 0; k <= d; ++k) {
+    for (int l = 0; l <= d - k; ++l) {
+      tmp += a(k, l) * c(k, l);
+    }
+  }
+
+  offset = tmp;
 }
 
 template <int MAX_DEGREE>
@@ -139,21 +166,19 @@ double Poly2D<MAX_DEGREE>::operator()(const XY &xy) const {
   auto y = (xy[1] - x_center_[1]) / reference_length_;
 
   auto d = degree();
-  auto px = 0.0;
 
-  double xk = 1.0;
-  for (int k = 0; k <= d; ++k) {
-    double yl = 1.0;
-
-    for (int l = 0; l <= d - k; ++l) {
-      px += a(k, l) * (xk * yl - c(k, l));
-      yl *= y;
-    }
-
-    xk *= x;
+  if (!offset) {
+    cache_offset();
   }
 
-  return px;
+  auto px = horners_method(
+      [this, d, y](int k) {
+        return horners_method([this, k](int l) { return a(k, l); }, y, d - k);
+      },
+      x,
+      d);
+
+  return px - offset.value();
 }
 
 template <int MAX_DEGREE>

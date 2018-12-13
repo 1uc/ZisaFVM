@@ -165,3 +165,14 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
     REQUIRE(pbar > 0.0);
   }
 }
+
+TEST_CASE("horners_method", "[math]") {
+
+  auto f = [](int i) { return double(i + 1); };
+
+  double x = 2.0;
+  auto approx = zisa::horners_method(f, x, 3);
+  auto exact = f(0) + f(1) * x + f(2) * x * x + f(3) * x * x * x;
+
+  REQUIRE(zisa::almost_equal(exact, approx, 1e-12));
+}
