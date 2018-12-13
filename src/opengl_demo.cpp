@@ -14,10 +14,6 @@ int main() {
     return -1;
   }
 
-  std::random_device rd;
-  std::mt19937 e(rd());
-  std::uniform_real_distribution<float> dist(0, 1.0);
-
   auto window = std::make_shared<zisa::opengl::Window>("OpenGL demo", 600, 600);
 
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
