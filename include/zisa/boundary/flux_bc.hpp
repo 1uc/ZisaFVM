@@ -3,25 +3,17 @@
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/ode/rate_of_change.hpp>
-#include <zisa/math/edge_rule.hpp>
-#include <zisa/reconstruction/global_reconstruction.hpp>
 
 namespace zisa {
 
-template <class Model, class RC>
+template <class Model>
 class FluxBC : public RateOfChange {
 private:
   using cvars_t = typename Model::cvars_t;
 
 public:
-  FluxBC(const Model &model,
-         const EdgeRule &edge_rule,
-         const std::shared_ptr<Grid> &grid,
-         const std::shared_ptr<GlobalReconstruction<RC>> &global_reconstruction)
-      : model(model),
-        edge_rule(edge_rule),
-        grid(grid),
-        global_reconstruction(global_reconstruction) {}
+  FluxBC(const Model &model, const std::shared_ptr<Grid> &grid)
+      : model(model), grid(grid) {}
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
@@ -46,10 +38,7 @@ public:
 
 private:
   Model model;
-  EdgeRule edge_rule;
-
   std::shared_ptr<Grid> grid;
-  std::shared_ptr<GlobalReconstruction<RC>> global_reconstruction;
 };
 
 } // namespace zisa
