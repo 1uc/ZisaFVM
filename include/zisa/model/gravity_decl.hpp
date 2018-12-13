@@ -255,6 +255,8 @@ public:
   double dphi_dx(const Args &... /* args */) const {
     return 0.0;
   }
+
+  inline std::string str() const { return "No gravity."; }
 };
 
 } // namespace zisa
