@@ -3,8 +3,6 @@
 #ifndef POLY2D_DECL_H_83W71
 #define POLY2D_DECL_H_83W71
 
-#include <optional>
-
 #include <zisa/config.hpp>
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/math/cartesian.hpp>
@@ -91,7 +89,8 @@ protected:
   int degree_;
   double coeffs[n_coeffs()];
   double moments[n_coeffs()];
-  mutable std::optional<double> offset;
+  mutable double offset;
+  mutable bool offset_cached = false;
 
   XY x_center_;
   double reference_length_;

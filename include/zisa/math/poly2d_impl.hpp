@@ -129,7 +129,7 @@ void Poly2D<MAX_DEGREE>::deep_copy(const PolynomialCRTP<E> &e_) {
     }
   }
 
-  offset.reset();
+  offset_cached = false;
 
   x_center_ = e.x_center();
   reference_length_ = e.reference_length();
@@ -158,6 +158,7 @@ void Poly2D<MAX_DEGREE>::cache_offset() const {
   }
 
   offset = tmp;
+  offset_cached = true;
 }
 
 template <int MAX_DEGREE>
@@ -167,7 +168,7 @@ double Poly2D<MAX_DEGREE>::operator()(const XY &xy) const {
 
   auto d = degree();
 
-  if (!offset) {
+  if (!offset_cached) {
     cache_offset();
   }
 
@@ -178,7 +179,7 @@ double Poly2D<MAX_DEGREE>::operator()(const XY &xy) const {
       x,
       d);
 
-  return px - offset.value();
+  return px - offset;
 }
 
 template <int MAX_DEGREE>
