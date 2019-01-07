@@ -30,7 +30,7 @@ int poly_degree(int_t n_coeffs);
  *    @param l  -- fast index, i.e. for fixed (k+l) consecutive values of l
  *                 result in consecutive values of the linear index.
  **/
-constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b);
+constexpr ANY_DEVICE_INLINE int_t poly_index(int k, int l);
 
 template <int MAX_DEGREE>
 class Poly2D : public PolynomialCRTP<Poly2D<MAX_DEGREE>> {
