@@ -85,7 +85,10 @@ public:
 protected:
   void cache_offset() const;
 
-protected:
+  template <int DEG>
+  friend std::ostream &operator<<(std::ostream &os, const Poly2D<DEG> &poly2d);
+
+private:
   int degree_;
   double coeffs[n_coeffs()];
   double moments[n_coeffs()];
@@ -94,9 +97,6 @@ protected:
 
   XY x_center_;
   double reference_length_;
-
-  template <int DEG>
-  friend std::ostream &operator<<(std::ostream &os, const Poly2D<DEG> &poly2d);
 };
 
 /// Value that represents the smoothness of the polynomial.
