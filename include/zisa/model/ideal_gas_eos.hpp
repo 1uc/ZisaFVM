@@ -41,19 +41,26 @@ public:
   }
 
   ANY_DEVICE_INLINE RhoE rhoE(const EnthalpyEntropy &theta,
-                              const RhoT &guess) const {
+                              const RhoT &) const {
+    return rhoE(theta);
+  }
 
+  ANY_DEVICE_INLINE RhoE rhoE(const EnthalpyEntropy &theta) const {
     auto rho = this->rho(theta);
-    auto E = this->internal_energy(theta, guess);
+    auto E = this->internal_energy(theta);
 
     return RhoE{rho, E};
   }
 
   ANY_DEVICE_INLINE RhoE rhoE(const PressureEntropy &theta,
-                              const RhoT &guess) const {
+                              const RhoT &) const {
 
-    auto rho = this->rho(theta, guess);
-    auto E = this->internal_energy(theta, guess);
+    return rhoE(theta);
+  }
+
+  ANY_DEVICE_INLINE RhoE rhoE(const PressureEntropy &theta) const {
+    auto rho = this->rho(theta);
+    auto E = this->internal_energy(theta);
 
     return RhoE{rho, E};
   }
@@ -114,8 +121,7 @@ public:
     return rho__h_K(theta.h(), theta.K());
   }
 
-  ANY_DEVICE_INLINE double rho(const PressureEntropy &theta,
-                               const RhoT &) const {
+  ANY_DEVICE_INLINE double rho(const PressureEntropy &theta) const {
     return rho__p_K(theta.p(), theta.s());
   }
 
@@ -181,14 +187,11 @@ public:
   }
 
   /// Internal energy.
-  ANY_DEVICE_INLINE double internal_energy(const EnthalpyEntropy &theta,
-                                           const RhoT &) const {
-
+  ANY_DEVICE_INLINE double internal_energy(const EnthalpyEntropy &theta) const {
     return internal_energy__h_K(theta.h(), theta.K());
   }
 
-  ANY_DEVICE_INLINE double internal_energy(const PressureEntropy &theta,
-                                           const RhoT &) const {
+  ANY_DEVICE_INLINE double internal_energy(const PressureEntropy &theta) const {
     return internal_energy__p(theta.p());
   }
 
