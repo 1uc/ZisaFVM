@@ -40,7 +40,7 @@ constexpr int_t Poly2D<MAX_DEGREE>::n_coeffs() {
 }
 
 template <int MAX_DEGREE>
-Poly2D<MAX_DEGREE>::Poly2D(void) : degree_(0) {
+Poly2D<MAX_DEGREE>::Poly2D() : degree_(0) {
   std::fill(coeffs, coeffs + n_coeffs(), 0.0);
   std::fill(moments, moments + n_coeffs(), 0.0);
   x_center_ = XY{0.0, 0.0};

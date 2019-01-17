@@ -8,8 +8,10 @@ TEST_CASE("array; STL allocator") {
   int n_elements = 15;
 
   auto alloc = std::allocator<double>();
-  auto a = zisa::contiguous_memory_base<double, decltype(alloc)>(n_elements, alloc);
-  auto b = zisa::contiguous_memory_base<double, decltype(alloc)>(n_elements, alloc);
+  auto a = zisa::contiguous_memory_base<double, decltype(alloc)>(n_elements,
+                                                                 alloc);
+  auto b = zisa::contiguous_memory_base<double, decltype(alloc)>(n_elements,
+                                                                 alloc);
 
   a[2] = 42;
 

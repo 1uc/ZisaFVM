@@ -53,7 +53,5 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
       //   REQUIRE(approx == exact);
       // }
     }
-
-
   }
 }

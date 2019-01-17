@@ -13,7 +13,8 @@
 #include <zisa/model/all_variables.hpp>
 
 namespace zisa {
-template <class cvars_t> std::vector<std::string> all_labels(void) {
+template <class cvars_t>
+std::vector<std::string> all_labels(void) {
   std::vector<std::string> ret(cvars_t::size());
   for (int k = 0; k < cvars_t::size(); ++k) {
     ret[k] = cvars_t::labels(k);
@@ -23,8 +24,11 @@ template <class cvars_t> std::vector<std::string> all_labels(void) {
 }
 
 // template <class Model>
-// void save_state(HDF5Writer &writer, const Model &model, const AllVariables &u,
-//                 double t, int n_steps) {
+// void save_state(HDF5Writer &writer,
+//                 const Model &model,
+//                 const AllVariables &u,
+//                 double t,
+//                 int n_steps) {
 //   model.save_parameters(writer);
 
 //   writer.write_scalar(t, "time");
@@ -32,5 +36,5 @@ template <class cvars_t> std::vector<std::string> all_labels(void) {
 
 //   u.save(writer, all_labels<typename Model::cvars_t>());
 // }
-} // namespace tyr
+} // namespace zisa
 #endif /* end of include guard: MODELS_H_KL3BI6CZ */

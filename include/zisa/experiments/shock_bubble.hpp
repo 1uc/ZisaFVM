@@ -3,9 +3,9 @@
 
 #include <zisa/config.hpp>
 #include <zisa/experiments/numerical_experiment.hpp>
-#include <zisa/model/euler_factory.hpp>
 #include <zisa/flux/hllc.hpp>
 #include <zisa/model/cfl_condition.hpp>
+#include <zisa/model/euler_factory.hpp>
 
 namespace zisa {
 
@@ -17,8 +17,8 @@ private:
   using flux_t = HLLCBatten<euler_t>;
 
 public:
-  ShockBubble(const InputParameters &params) : super(params) {
-    euler = make_euler<euler_t>(params);
+  ShockBubble(const InputParameters &params)
+      : super(params), euler(make_euler<euler_t>(params)) {
   }
 
 protected:
