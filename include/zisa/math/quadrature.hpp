@@ -82,6 +82,18 @@ auto quadrature(const F &f, const Grid &grid, int_t deg)
   return ret;
 }
 
+// -----------------
+// -- average
+template <class F, class Domain>
+auto average(const F &f, const Domain &domain, int_t deg)
+    -> decltype(f(std::declval<XY>())) {
+
+  using return_t = decltype(f(std::declval<XY>()));
+
+  auto vol = volume(domain);
+  return return_t(1.0 / vol * quadrature(f, domain, deg));
+}
+
 } // namespace zisa
 
 #endif /* end of include guard */
