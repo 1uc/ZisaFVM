@@ -7,6 +7,8 @@
 #ifndef EULER_VARIABLES_H_4B77E
 #define EULER_VARIABLES_H_4B77E
 
+#include <tuple>
+
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/edge.hpp>
@@ -102,4 +104,33 @@ struct EnthalpyEntropy : public Cartesian<2> {
 };
 
 } // namespace zisa
+
+#define ZISA_ENABLE_STRUCTRED_BINDINGS(ClassName)                              \
+  namespace std {                                                              \
+  template <size_t i>                                                          \
+  struct tuple_element<i, zisa::ClassName> {                                   \
+    using type = double;                                                       \
+  };                                                                           \
+                                                                               \
+  template <>                                                                  \
+  struct tuple_size<zisa::ClassName>                                           \
+      : public integral_constant<size_t, zisa::ClassName::size()> {};          \
+  }                                                                            \
+                                                                               \
+  namespace zisa {                                                             \
+  template <int i>                                                             \
+  auto get(const ClassName &cls) {                                             \
+    return cls[i];                                                             \
+  }                                                                            \
+  }
+
+ZISA_ENABLE_STRUCTRED_BINDINGS(euler_var_t);
+ZISA_ENABLE_STRUCTRED_BINDINGS(RhoE);
+ZISA_ENABLE_STRUCTRED_BINDINGS(RhoT);
+ZISA_ENABLE_STRUCTRED_BINDINGS(RhoP);
+ZISA_ENABLE_STRUCTRED_BINDINGS(RhoEntropy);
+ZISA_ENABLE_STRUCTRED_BINDINGS(PressureEntropy);
+ZISA_ENABLE_STRUCTRED_BINDINGS(EnthalpyEntropy);
+
+#undef ZISA_ENABLE_STRUCTRED_BINDINGS
 #endif /* end of include guard */

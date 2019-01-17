@@ -3,6 +3,8 @@
 #ifndef COORDINATES_DECL_HPP_PCND3ABZ
 #define COORDINATES_DECL_HPP_PCND3ABZ
 
+#include <tuple>
+
 #include <zisa/config.hpp>
 
 #include <zisa/math/cartesian_expr.hpp>
@@ -293,5 +295,24 @@ XY rotate_left(const CartesianExpr<E, double> &e_) {
 // }
 
 } // namespace zisa
+
+// Enable structured bindings.
+namespace std {
+  template <size_t i, zisa::int_t n>
+  struct tuple_element<i, zisa::Cartesian<n>> {
+    using type = double;
+  };
+
+  template <zisa::int_t n>
+  struct tuple_size<zisa::Cartesian<n>> : public integral_constant<size_t, n> {};
+} // namespace std
+
+namespace zisa {
+  template <int_t i, int_t n>
+  auto get(const Cartesian<n> &x) {
+    return x[i];
+  }
+} // namespace zisa
+
 
 #endif /* end of include guard: COORDINATES_H_PCND3ABZ */
