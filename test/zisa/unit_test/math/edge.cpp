@@ -1,4 +1,4 @@
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/edge.hpp>

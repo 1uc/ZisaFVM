@@ -1,4 +1,4 @@
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/math/triangle.hpp>
 #include <zisa/math/basic_functions.hpp>

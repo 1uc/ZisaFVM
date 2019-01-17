@@ -1,4 +1,4 @@
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/flux/hllc.hpp>
 #include <zisa/model/euler.hpp>

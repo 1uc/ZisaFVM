@@ -2,7 +2,7 @@
 #include <zisa/math/basic_functions.hpp>
 
 #include <cassert>
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 #include <cmath>
 
 std::vector<double> convergence_rates(const std::vector<double> &dx,

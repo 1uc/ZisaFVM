@@ -1,6 +1,6 @@
-#include <catch/catch.hpp>
 #include <numeric>
 
+#include <zisa/testing/testing_framework.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/cweno_ao.hpp>
 #include <zisa/unit_test/reconstruction/hybrid_weno.hpp>

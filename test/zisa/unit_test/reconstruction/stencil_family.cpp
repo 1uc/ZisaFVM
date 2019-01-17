@@ -1,6 +1,5 @@
-#include <catch/catch.hpp>
-
 #include <zisa/reconstruction/stencil_family.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("StencilFamily", "[weno_ao]") {
 

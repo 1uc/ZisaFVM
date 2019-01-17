@@ -1,8 +1,8 @@
-#include <catch/catch.hpp>
 
 #include <chrono>
 #include <vector>
 
+#include <zisa/testing/testing_framework.hpp>
 #include <zisa/utils/parse_duration.hpp>
 
 TEST_CASE("parse_duration", "[utils]") {

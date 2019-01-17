@@ -1,9 +1,8 @@
-#include <catch/catch.hpp>
-
 #include <iostream>
 #include <memory>
 
 #include "zisa/memory/contiguous_memory_base.hpp"
+#include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("array; STL allocator") {
   int n_elements = 15;

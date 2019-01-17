@@ -1,11 +1,10 @@
-#include <catch/catch.hpp>
-
 #include <algorithm>
 #include <iostream>
 #include <memory>
 
-#include "zisa/memory/contiguous_memory.hpp"
-#include "zisa/memory/host_contiguous_memory.hpp"
+#include <zisa/memory/contiguous_memory.hpp>
+#include <zisa/memory/host_contiguous_memory.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 template <class T>
 zisa::contiguous_memory<bool> check_equal(const zisa::contiguous_memory<T> &a,

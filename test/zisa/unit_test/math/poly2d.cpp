@@ -1,4 +1,4 @@
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/quadrature.hpp>

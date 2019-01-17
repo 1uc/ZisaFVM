@@ -1,9 +1,8 @@
-#include <catch/catch.hpp>
-
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_view.hpp>
 #include <zisa/memory/column_major.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 using namespace zisa;
 

@@ -4,7 +4,7 @@
  *    Date: 2017-07-24
  */
 
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 #include "zisa/math/gauss_legendre.hpp"
 

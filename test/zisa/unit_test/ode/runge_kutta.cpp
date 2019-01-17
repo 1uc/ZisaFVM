@@ -5,7 +5,7 @@
  */
 #include <numeric>
 
-#include <catch/catch.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/model/all_variables.hpp>

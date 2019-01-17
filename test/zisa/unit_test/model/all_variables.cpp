@@ -1,7 +1,6 @@
-#include <catch/catch.hpp>
-
 #include <zisa/model/all_variables.hpp>
 #include <zisa/model/euler.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("GridVariables") {
   zisa::int_t n_cells = 10;
