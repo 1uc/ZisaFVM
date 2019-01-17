@@ -25,8 +25,8 @@ public:
   using cvars_t = euler_var_t;
 
 public:
-  eos_t eos;
-  gravity_t gravity;
+  const eos_t eos;
+  const gravity_t gravity;
 
 public:
   Euler() = default;
