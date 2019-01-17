@@ -49,11 +49,19 @@ public:
     }
   }
 
-  ANY_DEVICE_INLINE const scalar_t &operator()(int_t i) const { return data[i]; }
+  explicit ANY_DEVICE_INLINE Cartesian(double value) {
+    assign_constant(value);
+  }
+
+  ANY_DEVICE_INLINE const scalar_t &operator()(int_t i) const {
+    return data[i];
+  }
 
   ANY_DEVICE_INLINE scalar_t &operator()(int_t i) { return data[i]; }
 
-  ANY_DEVICE_INLINE const scalar_t &operator[](int_t i) const { return data[i]; }
+  ANY_DEVICE_INLINE const scalar_t &operator[](int_t i) const {
+    return data[i];
+  }
 
   ANY_DEVICE_INLINE scalar_t &operator[](int_t i) { return data[i]; }
 
