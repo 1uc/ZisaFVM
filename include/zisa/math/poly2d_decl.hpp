@@ -92,7 +92,7 @@ private:
   int degree_;
   double coeffs[n_coeffs()];
   double moments[n_coeffs()];
-  mutable double offset;
+  mutable double offset = 0.0;
   mutable bool offset_cached = false;
 
   XY x_center_;
