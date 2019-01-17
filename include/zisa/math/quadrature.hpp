@@ -31,7 +31,7 @@ auto quadrature(const QR &qr, const F &f, const Domain &domain)
 
   // starts at --v
   for (int_t i = 1; i < qr.weights.size(); ++i) {
-    ret = ret + w[i] * f(coord(domain, x[i]));
+    ret = return_t(ret + w[i] * f(coord(domain, x[i])));
   }
 
   return return_t(volume(domain) * ret);
