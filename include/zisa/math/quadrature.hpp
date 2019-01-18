@@ -21,20 +21,20 @@ template <class QR, class F, class Domain>
 auto quadrature(const QR &qr, const F &f, const Domain &domain)
     -> decltype(f(std::declval<XY>())) {
 
-  using return_t = decltype(f(std::declval<XY>()));
+  using fx_t = decltype(f(std::declval<XY>()));
 
   const auto &w = qr.weights;
   const auto &x = qr.points;
 
   // avoids assigning 'zero' to `ret`.
-  return_t ret = static_cast<return_t>(w[0] * f(coord(domain, x[0])));
+  auto ret = fx_t(w[0] * f(coord(domain, x[0])));
 
   // starts at --v
   for (int_t i = 1; i < qr.weights.size(); ++i) {
-    ret = return_t(ret + w[i] * f(coord(domain, x[i])));
+    ret = fx_t(ret + w[i] * f(coord(domain, x[i])));
   }
 
-  return return_t(volume(domain) * ret);
+  return fx_t(volume(domain) * ret);
 }
 
 // -----------------
@@ -88,10 +88,8 @@ template <class F, class Domain>
 auto average(const F &f, const Domain &domain, int_t deg)
     -> decltype(f(std::declval<XY>())) {
 
-  using return_t = decltype(f(std::declval<XY>()));
-
-  auto vol = volume(domain);
-  return return_t(1.0 / vol * quadrature(f, domain, deg));
+  using fx_t = decltype(f(std::declval<XY>()));
+  return fx_t(quadrature(f, domain, deg) / volume(domain));
 }
 
 } // namespace zisa

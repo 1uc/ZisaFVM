@@ -16,7 +16,7 @@ compute_errors(const zisa::Grid &grid, const F &f, const std::vector<RC> &rc) {
   auto qbar = zisa::array<double, 1>(zisa::shape_t<1>{grid.n_cells});
 
   for (const auto &[i, tri] : triangles(grid)) {
-    qbar(i) = zisa::quadrature(f, tri, 4) / tri.volume;
+    qbar(i) = zisa::average(f, tri, 4);
   }
 
   double l1_err = 0.0;

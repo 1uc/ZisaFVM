@@ -40,7 +40,7 @@ public:
       auto edge = grid->edge(e);
 
       int_t iL, iR;
-      std::tie<int_t, int_t>(iL, iR) = grid->left_right(e);
+      std::tie(iL, iR) = grid->left_right(e);
 
       auto rc = [this, &edge = edge](int_t i, const XY &x) {
         cvars_t u;
