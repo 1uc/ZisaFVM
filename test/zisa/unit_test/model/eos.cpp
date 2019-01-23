@@ -1,7 +1,7 @@
 #include <zisa/model/ideal_gas_eos.hpp>
 #include <zisa/testing/testing_framework.hpp>
 
-TEST_CASE("LocalEquilibrium", "[equilibrium]") {
+TEST_CASE("EoS", "[equilibrium]") {
   auto eos = zisa::IdealGasEOS(1.2, 0.9);
 
   SECTION("rhoE -> hK -> rhoE") {
