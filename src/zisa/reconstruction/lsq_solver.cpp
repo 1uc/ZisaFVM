@@ -21,70 +21,19 @@ WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
   const auto &x_center = grid->cell_centers(i_cell);
   double length = grid->characteristic_length(i_cell);
 
-
   if (order == 1) {
     return {{0.0}, {0.0}, x_center, length};
   }
 
   assert(rhs.size() > 0);
 
-  Eigen::VectorXd coeffs
-      = qr.solve(Eigen::Map<const Eigen::VectorXd>(rhs.raw(), qr.rows()));
-
   const auto &moments = grid->normalized_moments(i_cell);
+  WENOPoly poly(order-1, moments, x_center, length);
+  Eigen::Map<Eigen::VectorXd> coeffs(poly.coeffs_ptr() + 1, poly.dof(order-1) - 1);
 
-  if (order == 2) {
-    return {{0.0, coeffs(0), coeffs(1)}, {0.0, 0.0, 0.0}, x_center, length};
-  }
+  coeffs = qr.solve(Eigen::Map<const Eigen::VectorXd>(rhs.raw(), qr.rows()));
 
-  if (order == 3) {
-    auto i20 = poly_index(2, 0);
-    auto i11 = poly_index(1, 1);
-    auto i02 = poly_index(0, 2);
-
-    return {{0.0, coeffs(0), coeffs(1), coeffs(2), coeffs(3), coeffs(4)},
-            {0.0, 0.0, 0.0, moments(i20), moments(i11), moments(i02)},
-            x_center,
-            length};
-  }
-
-  if (order == 4) {
-    auto i20 = poly_index(2, 0);
-    auto i11 = poly_index(1, 1);
-    auto i02 = poly_index(0, 2);
-
-    auto i30 = poly_index(3, 0);
-    auto i21 = poly_index(2, 1);
-    auto i12 = poly_index(1, 2);
-    auto i03 = poly_index(0, 3);
-
-    return {{0.0,
-             coeffs(0),
-             coeffs(1),
-             coeffs(2),
-             coeffs(3),
-             coeffs(4),
-             coeffs(5),
-             coeffs(6),
-             coeffs(7),
-             coeffs(8)},
-
-            {0.0,
-             0.0,
-             0.0,
-             moments(i20),
-             moments(i11),
-             moments(i02),
-             moments(i30),
-             moments(i21),
-             moments(i12),
-             moments(i03)},
-
-            x_center,
-            length};
-  }
-
-  LOG_ERR("Implement first.");
+  return poly;
 }
 
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,

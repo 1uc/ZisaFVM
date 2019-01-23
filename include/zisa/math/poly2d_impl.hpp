@@ -48,6 +48,21 @@ Poly2D<MAX_DEGREE>::Poly2D() : degree_(0) {
 }
 
 template <int MAX_DEGREE>
+Poly2D<MAX_DEGREE>::Poly2D(int degree,
+                           const array<double, 1> &moments,
+                           const XY &x_center,
+                           double reference_length)
+    : degree_(degree),
+      x_center_(x_center),
+      reference_length_(reference_length) {
+
+  std::fill(this->coeffs, this->coeffs + n_coeffs(), 0.0);
+
+  this->moments[0] = this->moments[1] = this->moments[2] = 0.0;
+  std::copy(moments.begin() + 3, moments.end(), this->moments + 3);
+}
+
+template <int MAX_DEGREE>
 Poly2D<MAX_DEGREE>::Poly2D(const std::initializer_list<double> &coeffs_list,
                            const std::initializer_list<double> &moments_list,
                            const XY &x_center,
@@ -112,6 +127,11 @@ void Poly2D<MAX_DEGREE>::operator/=(double alpha) {
 }
 
 template <int MAX_DEGREE>
+double *Poly2D<MAX_DEGREE>::coeffs_ptr() {
+  return coeffs;
+}
+
+template <int MAX_DEGREE>
 template <class E>
 void Poly2D<MAX_DEGREE>::deep_copy(const PolynomialCRTP<E> &e_) {
   const E &e = static_cast<const E &>(e_);
@@ -120,13 +140,10 @@ void Poly2D<MAX_DEGREE>::deep_copy(const PolynomialCRTP<E> &e_) {
 
   degree_ = e.degree();
 
-  int deg = degree();
-  for (int d = 0; d <= deg; ++d) {
-    for (int k = 0; k <= d; ++k) {
-      int l = d - k;
-      this->a(k, l) = e.a(k, l);
-      this->c(k, l) = e.c(k, l);
-    }
+  int n = n_coeffs();
+  for (int i = 0; i < n; ++i) {
+    coeffs[i] = e.a(i);
+    moments[i] = e.c(i);
   }
 
   offset_cached = false;
@@ -204,6 +221,16 @@ double Poly2D<MAX_DEGREE>::a(int i, int j) const {
 template <int MAX_DEGREE>
 double Poly2D<MAX_DEGREE>::c(int i, int j) const {
   return moments[idx(i, j)];
+}
+
+template <int MAX_DEGREE>
+double Poly2D<MAX_DEGREE>::a(int i) const {
+  return coeffs[i];
+}
+
+template <int MAX_DEGREE>
+double Poly2D<MAX_DEGREE>::c(int i) const {
+  return moments[i];
 }
 
 template <int MAX_DEGREE>

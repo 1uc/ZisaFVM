@@ -7,6 +7,7 @@
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/polynomial_expr.hpp>
+#include <zisa/memory/array.hpp>
 
 namespace zisa {
 
@@ -45,6 +46,11 @@ public:
 public:
   Poly2D();
 
+  Poly2D(int degree,
+         const array<double, 1> &moments,
+         const XY &x_center,
+         double reference_length);
+
   Poly2D(const std::initializer_list<double> &coeffs_list,
          const std::initializer_list<double> &moments_list,
          const XY &x_center,
@@ -79,8 +85,13 @@ public:
   double a(int i, int j) const;
   double c(int i, int j) const;
 
+  double a(int i) const;
+  double c(int i) const;
+
   const XY &x_center() const;
   double reference_length() const;
+
+  double *coeffs_ptr();
 
 protected:
   void cache_offset() const;
@@ -89,9 +100,10 @@ protected:
   friend std::ostream &operator<<(std::ostream &os, const Poly2D<DEG> &poly2d);
 
 private:
-  int degree_;
   double coeffs[n_coeffs()];
   double moments[n_coeffs()];
+
+  int degree_;
   mutable double offset = 0.0;
   mutable bool offset_cached = false;
 
