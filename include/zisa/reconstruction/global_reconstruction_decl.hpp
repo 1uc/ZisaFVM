@@ -17,21 +17,21 @@ public:
                        const HybridWENO_Params &params,
                        int_t n_vars);
 
-  const WENOPoly &operator()(int_t i, int_t k) const;
+  const WENOPoly &operator()(int_t i) const;
   void compute(const AllVariables &current_state);
 
   std::string str() const;
 
 private:
-  void set_qbar_local(const AllVariables &current_state, int_t i, int_t k);
+  void set_qbar_local(const AllVariables &current_state, int_t i);
 
 private:
   HybridWENO_Params params;
 
   array<RC, 1> rc;
-  array<WENOPoly, 2> polys;
+  array<WENOPoly, 1> polys;
 
-  mutable std::vector<array<double, 1>> qbar_local;
+  mutable std::vector<array<double, 2>> qbar_local;
 };
 
 } // namespace zisa

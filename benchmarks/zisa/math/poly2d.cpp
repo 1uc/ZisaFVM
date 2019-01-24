@@ -11,7 +11,8 @@ static void bm_poly2d_eval(benchmark::State &state) {
   auto rand = [&e, &dist]() { return dist(e); };
 
   // clang-format off
-  auto p = zisa::Poly2D<4>({rand(),
+  auto p = zisa::Poly2D<4, 1>(
+                           {rand(),
                             rand(), rand(),
                             rand(), rand(), rand(),
                             rand(), rand(), rand(), rand(),

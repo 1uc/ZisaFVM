@@ -33,8 +33,8 @@ int poly_degree(int_t n_coeffs);
  **/
 constexpr ANY_DEVICE_INLINE int_t poly_index(int k, int l);
 
-template <int MAX_DEGREE>
-class Poly2D : public PolynomialCRTP<Poly2D<MAX_DEGREE>> {
+template <int MAX_DEGREE, int NVARS>
+class Poly2D : public PolynomialCRTP<Poly2D<MAX_DEGREE, NVARS>> {
 public:
   static constexpr int max_degree();
   int degree() const;
@@ -42,12 +42,18 @@ public:
   static constexpr int_t idx(int k, int l);
   static constexpr int_t dof(int deg);
   static constexpr int_t n_coeffs();
+  static constexpr int_t n_vars();
 
 public:
   Poly2D();
 
   Poly2D(int degree,
          const array<double, 1> &moments,
+         const XY &x_center,
+         double reference_length);
+
+  Poly2D(int degree,
+         const std::initializer_list<double> &moments_list,
          const XY &x_center,
          double reference_length);
 
@@ -58,9 +64,6 @@ public:
 
   template <class E>
   Poly2D(const PolynomialCRTP<E> &e_);
-
-  template <int D>
-  void operator=(const Poly2D<D> &other);
 
   template <class E>
   void operator=(const PolynomialCRTP<E> &e_);
@@ -77,16 +80,13 @@ public:
   template <class E>
   void deep_copy(const PolynomialCRTP<E> &e_);
 
-  double operator()(const XY &xy) const;
+  Cartesian<NVARS> operator()(const XY &xy) const;
 
-  double &a(int i, int j);
-  double &c(int i, int j);
+  double a(int i, int j, int_t k) const;
+  double &a(int i, int j, int_t k);
 
-  double a(int i, int j) const;
-  double c(int i, int j) const;
-
-  double a(int i) const;
-  double c(int i) const;
+  double a(int_t i) const;
+  double c(int_t i) const;
 
   const XY &x_center() const;
   double reference_length() const;
@@ -94,29 +94,27 @@ public:
   double *coeffs_ptr();
 
 protected:
-  void cache_offset() const;
-
-  template <int DEG>
-  friend std::ostream &operator<<(std::ostream &os, const Poly2D<DEG> &poly2d);
+  template <int DEG, int VARS>
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const Poly2D<DEG, VARS> &poly2d);
 
 private:
-  double coeffs[n_coeffs()];
-  double moments[n_coeffs()];
+  double coeffs[n_vars() * n_coeffs()];
+  double moments[n_vars() * n_coeffs()];
 
   int degree_;
-  mutable double offset = 0.0;
-  mutable bool offset_cached = false;
 
   XY x_center_;
   double reference_length_;
 };
 
 /// Value that represents the smoothness of the polynomial.
-template <int MAX_DEGREE>
-double smoothness_indicator(const Poly2D<MAX_DEGREE> &p);
+template <int MAX_DEGREE, int NVARS>
+Cartesian<NVARS> smoothness_indicator(const Poly2D<MAX_DEGREE, NVARS> &p);
 
-template <int MAX_DEGREE>
-std::ostream &operator<<(std::ostream &os, const Poly2D<MAX_DEGREE> &poly2d);
+template <int MAX_DEGREE, int NVARS>
+std::ostream &operator<<(std::ostream &os,
+                         const Poly2D<MAX_DEGREE, NVARS> &poly2d);
 
 } // namespace zisa
 #endif /* end of include guard */

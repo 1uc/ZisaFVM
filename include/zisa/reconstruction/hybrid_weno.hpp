@@ -19,7 +19,7 @@ protected:
   LSQSolverFamily lsq_solvers;
 
   mutable array<WENOPoly, 1> polys;
-  mutable array<double, 1> rhs;
+  mutable array<double, 2, row_major> rhs;
 
   array<double, 1> linear_weights;
   double epsilon;
@@ -32,7 +32,6 @@ public:
              int_t i_cell,
              const HybridWENO_Params &params);
 
-  WENOPoly reconstruct(const array<double, 1> &qbar_local) const;
   auto local2global() const -> decltype(stencils.local2global());
   int_t combined_stencil_size() const;
 
@@ -43,7 +42,7 @@ public:
   bool operator!=(const HybridWENO &other) const;
 
 protected:
-  void compute_polys(const array<double, 1> &qbar) const;
+  void compute_polys(const array<double, 2> &qbar) const;
   WENOPoly hybridize() const;
   WENOPoly eno_hybridize() const;
   WENOPoly tau_hybridize() const;

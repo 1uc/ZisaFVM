@@ -17,7 +17,9 @@ GlobalReconstruction<RC>::GlobalReconstruction(std::shared_ptr<Grid> grid,
                                                int_t n_vars)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
-      polys(shape_t<2>{grid->n_cells, n_vars}) {
+      polys(shape_t<1>{grid->n_cells}) {
+
+  assert(n_vars == 5);
 
   int_t max_stencil_size = 0;
 
@@ -30,40 +32,39 @@ GlobalReconstruction<RC>::GlobalReconstruction(std::shared_ptr<Grid> grid,
 
   int_t n_threads = int_t(omp_get_max_threads());
   for (int_t i = 0; i < n_threads; ++i) {
-    qbar_local.push_back(array<double, 1>(shape_t<1>{max_stencil_size}));
+    qbar_local.push_back(
+        array<double, 2>(shape_t<2>{max_stencil_size, n_vars}));
   }
 }
 
 template <class RC>
-const WENOPoly &GlobalReconstruction<RC>::operator()(int_t i, int_t k) const {
-  return polys(i, k);
+const WENOPoly &GlobalReconstruction<RC>::operator()(int_t i) const {
+  return polys(i);
 }
 
 template <class RC>
 void GlobalReconstruction<RC>::compute(const AllVariables &current_state) {
   auto n_cells = current_state.cvars.shape(0);
-  auto n_vars = current_state.cvars.shape(1);
 
-  #pragma omp parallel for schedule(guided)
+#pragma omp parallel for schedule(guided)
   for (int_t i = 0; i < n_cells; ++i) {
     auto thread_id = int_t(omp_get_thread_num());
-    for (int_t k = 0; k < n_vars; ++k) {
-      set_qbar_local(current_state, i, k);
-      polys(i, k) = rc[i].reconstruct(qbar_local[thread_id]);
-    }
+    set_qbar_local(current_state, i);
+    polys(i) = rc[i].reconstruct(qbar_local[thread_id]);
   }
 }
 
 template <class RC>
 void GlobalReconstruction<RC>::set_qbar_local(const AllVariables &current_state,
-                                              int_t i,
-                                              int_t k) {
+                                              int_t i) {
   const auto &l2g = rc[i].local2global();
   auto thread_id = int_t(omp_get_thread_num());
   auto &qbar_local = this->qbar_local[thread_id];
 
   for (int_t ii = 0; ii < l2g.size(); ++ii) {
-    qbar_local[ii] = current_state.cvars(l2g[ii], k);
+    for (int_t k = 0; k < qbar_local.shape(1); ++k) {
+      qbar_local(ii, k) = current_state.cvars(l2g[ii], k);
+    }
   }
 }
 

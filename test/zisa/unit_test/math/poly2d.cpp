@@ -52,20 +52,24 @@ TEST_CASE("poly_degree", "[math][poly2d]") {
 }
 
 TEST_CASE("Poly2D; examples", "[math][poly2d]") {
-  auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                           {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
-                           zisa::XY{0.0, 0.0},
-                           1.0);
+  auto p = zisa::Poly2D<5, 1>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+                              {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
+                              zisa::XY{0.0, 0.0},
+                              1.0);
+
+  auto q = zisa::Poly2D<5, 1>(
+      {1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XY{0.0, 0.0}, 1.0);
 
   SECTION("degree") { REQUIRE(p.degree() == 2); }
   SECTION("max_degree") { REQUIRE(p.max_degree() == 5); }
+  SECTION("n_vars") { REQUIRE(p.n_vars() == 1); }
 
   SECTION("x == 0") {
     auto approx = p(zisa::XY{0.0, 0.0});
     auto exact = 1.0 - 4.0 - 10.0 - 18.0;
 
-    INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-    REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    INFO(string_format("%e != %e [%e]\n", approx[0], exact, approx - exact));
+    REQUIRE(zisa::almost_equal(approx[0], exact, 1e-14));
   }
 
   SECTION("x != 0") {
@@ -75,104 +79,138 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
     auto exact = 1.0 + 2.0 * x + 3.0 * y + 4.0 * (x * x - 1.0)
                  + 5.0 * (x * y - 2.0) + 6.0 * (y * y - 3.0);
 
-    INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-    REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    INFO(string_format("%e != %e [%e]\n", approx[0], exact, approx - exact));
+    REQUIRE(zisa::almost_equal(approx[0], exact, 1e-14));
   }
 
   SECTION("saxpy-like") {
-    auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
-                             zisa::XY{0.0, 0.0},
-                             1.0);
-
-    auto q = zisa::Poly2D<5>(
-        {1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XY{0.0, 0.0}, 1.0);
-
     auto x = zisa::XY{-3.4, 2.138};
 
-    auto pq = zisa::Poly2D<5>(0.2 * p + q - 0.4 * p);
+    auto pq = zisa::Poly2D<5, 1>(0.2 * p + q - 0.4 * p);
 
-    auto exact = 0.2 * p(x) + q(x) - 0.4 * p(x);
+    auto exact = zisa::Cartesian<1>{0.2 * p(x) + q(x) - 0.4 * p(x)};
     auto approx = pq(x);
 
-    INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-    REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+    INFO(string_format("%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+    REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
   }
 
   SECTION("assignment") {
-    auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                             {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
-                             zisa::XY{0.0, 0.0},
-                             1.0);
-
-    auto q = zisa::Poly2D<5>(
-        {1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XY{0.0, 0.0}, 1.0);
-
     auto x = zisa::XY{-3.4, 2.138};
 
-    auto tmp = zisa::Poly2D<5>(p);
+    auto tmp = zisa::Poly2D<5, 1>(p);
 
     SECTION("+=") {
       tmp += q;
 
-      auto exact = p(x) + q(x);
+      auto exact = zisa::Cartesian<1>{p(x) + q(x)};
       auto approx = tmp(x);
 
-      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+      INFO(string_format(
+          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
 
     SECTION("+=") {
       tmp -= q;
 
-      auto exact = p(x) - q(x);
-      auto approx = tmp(x);
+      auto exact = zisa::Cartesian<1>{p(x) - q(x)};
+      auto approx = zisa::Cartesian<1>{tmp(x)};
 
-      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+      INFO(string_format(
+          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
 
     SECTION("*=") {
       tmp *= 2.0;
 
-      auto exact = 2.0 * p(x);
-      auto approx = tmp(x);
+      auto exact = zisa::Cartesian<1>{2.0 * p(x)};
+      auto approx = zisa::Cartesian<1>{tmp(x)};
 
-      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+      INFO(string_format(
+          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
 
     SECTION("/=") {
       tmp /= 2.0;
 
-      auto exact = 0.5 * p(x);
-      auto approx = tmp(x);
+      auto exact = zisa::Cartesian<1>{0.5 * p(x)};
+      auto approx = zisa::Cartesian<1>{tmp(x)};
 
-      INFO(string_format("%e != %e [%e]\n", approx, exact, approx - exact));
-      REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+      INFO(string_format(
+          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
   }
 
   SECTION("quadrature") {
-    auto p = zisa::Poly2D<5>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                             {0.0, 0.0, 0.0, -1.0, -2.0, -3.0},
-                             zisa::XY{0.0, 0.0},
-                             1.0);
-
     auto tri = zisa::reference_triangle();
 
     auto pbar = zisa::quadrature(p, tri, 4);
-    REQUIRE(pbar > 0.0);
+    REQUIRE(pbar[0] < 0.0);
   }
 }
 
-TEST_CASE("horners_method", "[math]") {
+TEST_CASE("Poly2D<., 2>; examples", "[math][poly2d]") {
+  constexpr int n_vars = 2;
+  auto p = zisa::Poly2D<5, n_vars>(
+      2, {0.0, 0.0, 0.0, 1.0, 2.0, 3.0}, zisa::XY{0.0, 0.0}, 1.0);
 
-  auto f = [](int i) { return double(i + 1); };
+  auto p00 = zisa::Cartesian<n_vars>{1.0, -1.0};
+  auto p01 = zisa::Cartesian<n_vars>{-1.0, -1.0};
+  auto p10 = zisa::Cartesian<n_vars>{2.0, -1.0};
+  auto p02 = zisa::Cartesian<n_vars>{1.0, -3.0};
+  auto p11 = zisa::Cartesian<n_vars>{4.0, -1.0};
+  auto p20 = zisa::Cartesian<n_vars>{0.2, -0.1};
 
-  double x = 2.0;
-  auto approx = zisa::horners_method(f, x, 3);
-  auto exact = f(0) + f(1) * x + f(2) * x * x + f(3) * x * x * x;
+  auto p_coeffs
+      = std::vector<zisa::Cartesian<n_vars>>{p00, p10, p01, p20, p11, p02};
 
-  REQUIRE(zisa::almost_equal(exact, approx, 1e-12));
+  std::copy((double *)&p_coeffs[0],
+            (double *)&p_coeffs[0] + p.n_vars() * p.dof(p.degree()),
+            p.coeffs_ptr());
+
+  auto q = zisa::Poly2D<5, n_vars>(1, {0.0, 0.0, 0.0}, zisa::XY{0.0, 0.0}, 1.0);
+
+  auto q00 = zisa::Cartesian<n_vars>{1.0, -1.0};
+  auto q01 = zisa::Cartesian<n_vars>{-1.0, -1.0};
+  auto q10 = zisa::Cartesian<n_vars>{2.0, -1.0};
+
+  auto q_coeffs = std::vector<zisa::Cartesian<n_vars>>{q00, q10, q01};
+  std::copy((double *)&q_coeffs[0],
+            (double *)&q_coeffs[0] + q.n_vars() * q.dof(q.degree()),
+            q.coeffs_ptr());
+
+  SECTION("degree") { REQUIRE(p.degree() == 2); }
+  SECTION("max_degree") { REQUIRE(p.max_degree() == 5); }
+  SECTION("n_vars") { REQUIRE(p.n_vars() == n_vars); }
+
+  SECTION("p{} == 0") {
+    auto p = std::make_shared<zisa::Poly2D<5, 2>>();
+    REQUIRE((*p)(zisa::XY{2.0, -1.0}) == zisa::Cartesian<2>{0.0, 0.0});
+  }
+
+  SECTION("p(x)") {
+    double x = -3.0, y = 2.0;
+
+    auto approx = p(zisa::XY{x, y});
+    auto exact
+        = zisa::Cartesian<n_vars>(p00 + p10 * x + p01 * y + p20 * (x * x - 1.0)
+                                  + p11 * (x * y - 2.0) + p02 * (y * y - 3.0));
+
+    REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+  }
+
+  SECTION("saxpy-like") {
+    auto x = zisa::XY{-3.4, 2.138};
+
+    auto pq = zisa::Poly2D<5, n_vars>(0.2 * p + q - 0.4 * p);
+
+    auto exact = zisa::Cartesian<n_vars>{0.2 * p(x) + q(x) - 0.4 * p(x)};
+    auto approx = pq(x);
+
+    REQUIRE(zisa::almost_equal(approx, exact, 1e-14));
+  }
 }

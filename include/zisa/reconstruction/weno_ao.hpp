@@ -19,7 +19,7 @@ private:
 public:
   using super::super;
 
-  auto reconstruct(const array<double, 1> &qbar) const -> decltype(hybridize());
+  auto reconstruct(const array<double, 2> &qbar) const -> decltype(hybridize());
 };
 
 } // namespace zisa

@@ -17,7 +17,8 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       linear_weights(stencils.size()),
       epsilon(params.epsilon),
       exponent(params.exponent) {
-  rhs = array<double, 1>(shape_t<1>{stencils.combined_stencil_size()});
+  rhs = array<double, 2, row_major>(
+      shape_t<2>{stencils.combined_stencil_size(), WENOPoly::n_vars()});
 
   auto tot = std::accumulate(
       params.linear_weights.begin(), params.linear_weights.end(), 0.0);
@@ -30,16 +31,21 @@ int_t HybridWENO::combined_stencil_size() const {
   return stencils.combined_stencil_size();
 }
 
-void HybridWENO::compute_polys(const array<double, 1> &qbar_local) const {
-
-  auto p_avg = WENOPoly({qbar_local(int_t(0))}, {0.0}, XY(XY::zeros()), 1.0);
+void HybridWENO::compute_polys(const array<double, 2> &qbar_local) const {
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     for (int_t i = 0; i < stencils[k].size() - 1; ++i) {
-      rhs(i) = qbar_local(stencils[k].local(i + 1)) - qbar_local(int_t(0));
+      for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
+        rhs(i, k_var) = qbar_local(stencils[k].local(i + 1), k_var)
+                        - qbar_local(int_t(0), k_var);
+      }
     }
 
-    polys[k] = p_avg + lsq_solvers[k].solve(rhs);
+    polys[k] = lsq_solvers[k].solve(rhs);
+
+    for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
+      polys[k].a(0, 0, k_var) = qbar_local(int_t(0), k_var);
+    }
   }
 }
 
@@ -47,9 +53,9 @@ WENOPoly HybridWENO::hybridize() const { return eno_hybridize(); }
 
 WENOPoly HybridWENO::eno_hybridize() const {
   double al_tot = 0.0;
-  auto p = WENOPoly{{0.0}, {0.0}, XY{0.0, 0.0}, 1.0};
+  auto p = WENOPoly{0, {0.0}, XY{0.0, 0.0}, 1.0};
   for (int_t k = 0; k < stencils.size(); ++k) {
-    auto IS = smoothness_indicator(polys[k]);
+    auto IS = zisa::maximum(smoothness_indicator(polys[k]));
 
     auto al = linear_weights[k] / (epsilon + zisa::pow(IS, exponent));
     al_tot += al;

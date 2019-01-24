@@ -43,10 +43,7 @@ public:
       std::tie(iL, iR) = grid->left_right(e);
 
       auto rc = [this, &edge = edge](int_t i, const XY &x) {
-        cvars_t u;
-        for (int_t k = 0; k < cvars_t::size(); ++k) {
-          u[k] = (*global_reconstruction)(i, k)(x);
-        }
+        auto u = cvars_t((*global_reconstruction)(i)(x));
         coord_transform(u, edge);
 
         return u;

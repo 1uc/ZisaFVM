@@ -23,7 +23,9 @@ void test_hybrid_weno_convergence(
   auto f = [](const XY &x) {
     auto d = zisa::norm(x - XY{0.5, 0.5});
     double sigma = 0.2;
-    return zisa::exp(-zisa::pow<2>(d / sigma));
+    double g = zisa::exp(-zisa::pow<2>(d / sigma));
+
+    return euler_var_t{g, 0.5 * g, 0.25 * g, 0.4 * g, 0.35 * g};
   };
 
   std::vector<double> resolution;
@@ -38,7 +40,7 @@ void test_hybrid_weno_convergence(
       rc.push_back(RC(grid, i, params));
     }
 
-    auto [l1_err, linf_err] = compute_errors(*grid, f, rc);
+    auto [l1_err, linf_err] = zisa::compute_errors(*grid, f, rc);
 
     resolution.push_back(largest_circum_radius(*grid));
     l1_errors.push_back(l1_err);
@@ -107,12 +109,17 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
   };
 
   for (auto &&grid_name : grid_names) {
-    auto grid = load_gmsh(grid_name);
-    auto rc = GlobalReconstruction<RC>(grid, params, 1);
 
-    auto u = AllVariables({grid->n_cells, int_t(1), int_t(0)});
+    constexpr int_t n_vars = 5;
+
+    auto grid = load_gmsh(grid_name);
+    auto rc = GlobalReconstruction<RC>(grid, params, n_vars);
+
+    auto u = AllVariables({grid->n_cells, int_t(n_vars), int_t(0)});
     for (auto &&[i, tri] : triangles(*grid)) {
-      u.cvars(i, 0) = f(barycenter(tri));
+      for (int_t k = 0; k < n_vars; ++k) {
+        u.cvars(i, k) = f(barycenter(tri));
+      }
     }
 
     rc.compute(u);
@@ -120,14 +127,12 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
     for (auto &&[i, tri] : triangles(*grid)) {
       auto points = make_points(*grid, i);
       for (auto &&x : points) {
-        auto approx = rc(i, 0)(x);
-        auto exact = u.cvars(i, 0);
+        auto approx = rc(i)(x);
+        auto exact = Cartesian<n_vars>(u.cvars(i));
 
         // clang-format off
-        INFO(string_format("[%d] (%.3e, %.3e) %e - %e = %e\n%s\n%s",
+        INFO(string_format("[%d] %s\n%s",
                            i,
-                           x[0], x[1],
-                           approx, exact, approx - exact,
                            type_name<RC>().c_str(),
                            zisa::to_string(params).c_str()
                            ));

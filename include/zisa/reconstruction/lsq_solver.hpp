@@ -27,7 +27,7 @@ public:
   LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil);
 
   /// Solve the LSQ problem with right-hand side `rhs`.
-  WENOPoly solve(const array<double, 1> &rhs) const;
+  WENOPoly solve(const array<double, 2, row_major> &rhs) const;
 
   /// Indistinguishable by calls to the public interface.
   bool operator==(const LSQSolver &other) const;

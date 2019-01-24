@@ -7,13 +7,18 @@
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/quadrature.hpp>
+#include <zisa/model/euler_variables.hpp>
+
+namespace zisa {
 
 template <class F, class RC>
 std::tuple<double, double>
-compute_errors(const zisa::Grid &grid, const F &f, const std::vector<RC> &rc) {
+compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
 
-  auto qbar_local = zisa::array<double, 1>{zisa::shape_t<1>{1024ul}};
-  auto qbar = zisa::array<double, 1>(zisa::shape_t<1>{grid.n_cells});
+  constexpr int_t n_vars = 5;
+
+  auto qbar_local = array<double, 2>{shape_t<2>{1024ul, n_vars}};
+  auto qbar = array<euler_var_t, 1>(shape_t<1>{grid.n_cells});
 
   for (const auto &[i, tri] : triangles(grid)) {
     qbar(i) = zisa::average(f, tri, 4);
@@ -26,18 +31,20 @@ compute_errors(const zisa::Grid &grid, const F &f, const std::vector<RC> &rc) {
   for (const auto &[i, tri] : triangles(grid)) {
     const auto &l2g = rc[i].local2global();
 
-    for (zisa::int_t ii = 0; ii < l2g.size(); ++ii) {
+    for (int_t ii = 0; ii < l2g.size(); ++ii) {
       assert(ii < qbar_local.size());
-      qbar_local(ii) = qbar(l2g[ii]);
+      for (int_t kk = 0; kk < n_vars; ++kk) {
+        qbar_local(ii, kk) = qbar(l2g[ii])[kk];
+      }
     }
 
     auto p = rc[i].reconstruct(qbar_local);
 
-    auto diff = [&p, &f](const zisa::XY &x) {
-      return zisa::abs(p(x) - f(x));
+    auto diff = [&p, &f](const XY &x) {
+      return Cartesian<n_vars>{zisa::abs(p(x) - f(x))};
     };
 
-    auto err = zisa::quadrature(diff, tri, 3);
+    auto err = zisa::norm(quadrature(diff, tri, 3));
 
     l1_err += err;
     linf_err = zisa::max(linf_err, err);
@@ -45,5 +52,6 @@ compute_errors(const zisa::Grid &grid, const F &f, const std::vector<RC> &rc) {
 
   return {l1_err, linf_err};
 }
+} // namespace zisa
 
 #endif /* end of include guard */

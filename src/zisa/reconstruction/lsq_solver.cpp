@@ -16,22 +16,30 @@ LSQSolver::LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil)
   qr.compute(A);
 }
 
-WENOPoly LSQSolver::solve(const array<double, 1> &rhs) const {
+WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
 
   const auto &x_center = grid->cell_centers(i_cell);
   double length = grid->characteristic_length(i_cell);
 
   if (order == 1) {
-    return {{0.0}, {0.0}, x_center, length};
+    return WENOPoly{0, {0.0}, x_center, length};
   }
 
   assert(rhs.size() > 0);
 
   const auto &moments = grid->normalized_moments(i_cell);
-  WENOPoly poly(order-1, moments, x_center, length);
-  Eigen::Map<Eigen::VectorXd> coeffs(poly.coeffs_ptr() + 1, poly.dof(order-1) - 1);
+  WENOPoly poly(order - 1, moments, x_center, length);
+  constexpr int_t n_vars = WENOPoly::n_vars();
 
-  coeffs = qr.solve(Eigen::Map<const Eigen::VectorXd>(rhs.raw(), qr.rows()));
+  using RowMajorMatrix
+      = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
+  Eigen::Index n_coeffs = Eigen::Index(poly.dof(order - 1) - 1);
+  Eigen::Map<RowMajorMatrix> coeffs(
+      poly.coeffs_ptr() + n_vars, n_coeffs, n_vars);
+
+  coeffs = qr.solve(
+      Eigen::Map<const RowMajorMatrix>(rhs.raw(), qr.rows(), n_vars));
 
   return poly;
 }
