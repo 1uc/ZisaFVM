@@ -8,7 +8,7 @@
 
 namespace zisa {
 
-auto CWENO_AO::reconstruct(const array<double, 2> &qbar) const
+auto CWENO_AO::reconstruct(const array<cvars_t, 1> &qbar) const
     -> decltype(hybridize()) {
 
   compute_polys(qbar);

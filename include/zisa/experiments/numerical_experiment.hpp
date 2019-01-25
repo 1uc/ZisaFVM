@@ -12,8 +12,6 @@
 #include <zisa/ode/rate_of_change.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration.hpp>
-#include <zisa/reconstruction/global_reconstruction.hpp>
-#include <zisa/reconstruction/cweno_ao.hpp>
 #include <zisa/model/cfl_condition.hpp>
 
 namespace zisa {
@@ -39,8 +37,6 @@ protected:
   virtual EdgeRule choose_edge_rule();
   virtual TriangularRule choose_volume_rule();
 
-  virtual std::shared_ptr<GlobalReconstruction<CWENO_AO>>
-  choose_reconstruction();
   virtual std::shared_ptr<TimeIntegration> choose_time_integration();
   virtual std::shared_ptr<SimulationClock> choose_simulation_clock();
   virtual std::shared_ptr<BoundaryCondition> choose_boundary_condition();

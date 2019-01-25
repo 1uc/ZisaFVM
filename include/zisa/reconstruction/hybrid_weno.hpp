@@ -7,6 +7,7 @@
 #include <zisa/config.hpp>
 
 #include <zisa/math/poly2d.hpp>
+#include <zisa/model/euler_variables.hpp>
 #include <zisa/reconstruction/hybrid_weno_params.hpp>
 #include <zisa/reconstruction/lsq_solver_family.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
@@ -14,6 +15,9 @@
 
 namespace zisa {
 class HybridWENO {
+protected:
+  using cvars_t = euler_var_t;
+
 protected:
   StencilFamily stencils;
   LSQSolverFamily lsq_solvers;
@@ -42,7 +46,7 @@ public:
   bool operator!=(const HybridWENO &other) const;
 
 protected:
-  void compute_polys(const array<double, 2> &qbar) const;
+  void compute_polys(const array<cvars_t, 1> &qbar) const;
   WENOPoly hybridize() const;
   WENOPoly eno_hybridize() const;
   WENOPoly tau_hybridize() const;

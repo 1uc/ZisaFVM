@@ -21,6 +21,7 @@ public:
   double volume;
 
 public:
+  Triangle() = default;
   Triangle(const XY &A, const XY &B, const XY &C);
 };
 

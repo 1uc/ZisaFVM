@@ -74,26 +74,6 @@ TriangularRule NumericalExperiment::choose_volume_rule() {
   return cached_triangular_quadrature_rule(params["quadrature"]["volume"]);
 }
 
-std::shared_ptr<GlobalReconstruction<CWENO_AO>>
-NumericalExperiment::choose_reconstruction() {
-  LOG_ERR_IF(!has_key(params, "reconstruction"),
-             "Missing section 'reconstruction'.");
-  auto rc_params = params["reconstruction"];
-
-  auto hybrid_weno_params
-      = HybridWENO_Params(StencilFamilyParams(rc_params["orders"],
-                                              rc_params["biases"],
-                                              rc_params["overfit_factors"]),
-                          rc_params["linear_weights"],
-                          rc_params["smoothness_indicator"]["epsilon"],
-                          rc_params["smoothness_indicator"]["exponent"]);
-
-  auto dims = choose_all_variable_dims();
-
-  return std::make_shared<GlobalReconstruction<CWENO_AO>>(
-      grid, hybrid_weno_params, dims.n_cvars);
-}
-
 std::shared_ptr<TimeIntegration>
 NumericalExperiment::choose_time_integration() {
   LOG_ERR_IF(!has_key(params, "ode"),

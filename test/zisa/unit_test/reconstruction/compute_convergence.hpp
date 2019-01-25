@@ -17,7 +17,7 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
 
   constexpr int_t n_vars = 5;
 
-  auto qbar_local = array<double, 2>{shape_t<2>{1024ul, n_vars}};
+  auto qbar_local = array<euler_var_t, 1>{shape_t<1>{1024ul}};
   auto qbar = array<euler_var_t, 1>(shape_t<1>{grid.n_cells});
 
   for (const auto &[i, tri] : triangles(grid)) {
@@ -34,7 +34,7 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
     for (int_t ii = 0; ii < l2g.size(); ++ii) {
       assert(ii < qbar_local.size());
       for (int_t kk = 0; kk < n_vars; ++kk) {
-        qbar_local(ii, kk) = qbar(l2g[ii])[kk];
+        qbar_local(ii)[kk] = qbar(l2g[ii])[kk];
       }
     }
 

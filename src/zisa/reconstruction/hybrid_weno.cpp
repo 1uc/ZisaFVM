@@ -31,20 +31,23 @@ int_t HybridWENO::combined_stencil_size() const {
   return stencils.combined_stencil_size();
 }
 
-void HybridWENO::compute_polys(const array<double, 2> &qbar_local) const {
+void HybridWENO::compute_polys(const array<cvars_t, 1> &qbar_local) const {
+
+  const auto &qbar_cell = qbar_local(int_t(0));
 
   for (int_t k = 0; k < stencils.size(); ++k) {
-    for (int_t i = 0; i < stencils[k].size() - 1; ++i) {
+    for (int_t ig = 0; ig < stencils[k].size() - 1; ++ig) {
+      int_t il = stencils[k].local(ig + 1);
+
       for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
-        rhs(i, k_var) = qbar_local(stencils[k].local(i + 1), k_var)
-                        - qbar_local(int_t(0), k_var);
+        rhs(ig, k_var) = qbar_local(il)[k_var] - qbar_cell[k_var];
       }
     }
 
     polys[k] = lsq_solvers[k].solve(rhs);
 
     for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
-      polys[k].a(0, 0, k_var) = qbar_local(int_t(0), k_var);
+      polys[k].a(0, 0, k_var) = qbar_cell[k_var];
     }
   }
 }

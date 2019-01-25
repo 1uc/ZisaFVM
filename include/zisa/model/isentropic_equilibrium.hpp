@@ -9,6 +9,7 @@ namespace zisa {
 
 template <class EOS, class Gravity>
 struct IsentropicEquilibrium {
+  IsentropicEquilibrium() = default;
   IsentropicEquilibrium(const EOS &eos, const Gravity &gravity, int_t quad_deg)
       : eos(eos), gravity(gravity), quad_deg(quad_deg) {}
 

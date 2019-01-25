@@ -17,9 +17,10 @@ namespace euler_high_order {
 
 namespace types {
 using euler_t = Euler<IdealGasEOS, NoGravity>;
+using eq_t = NoEquilibrium;
 using rc_t = CWENO_AO;
-using global_reconstruction_t = GlobalReconstruction<rc_t>;
-using flux_loop_t = FluxLoop<rc_t, euler_t, HLLCBatten<euler_t>>;
+using global_reconstruction_t = GlobalReconstruction<eq_t, rc_t>;
+using flux_loop_t = FluxLoop<eq_t, rc_t, euler_t, HLLCBatten<euler_t>>;
 
 } // namespace types
 
@@ -29,6 +30,11 @@ inline std::shared_ptr<Grid> load_grid() {
 
 inline types::euler_t make_model() {
   return {IdealGasEOS(/* gamma = */ 1.2, /* R = */ 1.1), NoGravity()};
+}
+
+inline types::eq_t make_equilibrium() {
+  auto euler = make_model();
+  return types::eq_t(euler.eos, euler.gravity);
 }
 
 inline std::shared_ptr<types::global_reconstruction_t>
@@ -44,7 +50,7 @@ make_global_reconstruction(std::shared_ptr<Grid> &grid) {
       eps,
       s};
 
-  return std::make_shared<types::global_reconstruction_t>(grid, params, n_vars);
+  return std::make_shared<types::global_reconstruction_t>(grid, params, make_equilibrium());
 }
 
 inline std::shared_ptr<types::flux_loop_t> make_flux_loop(
