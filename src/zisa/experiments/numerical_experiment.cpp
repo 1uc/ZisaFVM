@@ -91,4 +91,23 @@ NumericalExperiment::choose_time_integration() {
   return make_time_integration(desc, rate_of_change, bc, dims);
 }
 
+std::shared_ptr<RateOfChange> NumericalExperiment::aggregate_rates_of_change(
+    const std::vector<std::shared_ptr<RateOfChange>>
+        &physical_rates_of_change) {
+
+  auto zero_change = std::make_shared<ZeroRateOfChange>();
+  auto flux_bc = choose_flux_bc();
+
+  auto roc = std::make_shared<SumRatesOfChange>();
+  roc->add_term(zero_change);
+
+  for (const auto &phys_roc : physical_rates_of_change) {
+    roc->add_term(phys_roc);
+  }
+
+  roc->add_term(flux_bc);
+
+  return roc;
+}
+
 } // namespace zisa

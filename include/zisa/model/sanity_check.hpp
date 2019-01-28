@@ -17,17 +17,6 @@ public:
   virtual bool operator()(const AllVariables &all_variables) const = 0;
 };
 
-template <class Model>
-class SanityCheckFor : public SanityCheck {
-public:
-  SanityCheckFor(const Model &model);
-
-  virtual bool operator()(const AllVariables &all_variables) const override;
-
-private:
-  Model model;
-};
-
 } // namespace zisa
 
 #endif /* end of include guard: SANITY_CHECK_H_LPN4SI6H */
