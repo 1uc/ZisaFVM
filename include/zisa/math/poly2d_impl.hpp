@@ -157,9 +157,12 @@ void Poly2D<MAX_DEGREE, NVARS>::deep_copy(const PolynomialCRTP<E> &e_) {
 
   degree_ = e.degree();
 
-  int_t n = n_coeffs() * n_vars();
+  constexpr int_t n = n_coeffs() * n_vars();
   for (int_t i = 0; i < n; ++i) {
     coeffs[i] = e.a(i);
+  }
+
+  for (int_t i = 0; i < n_coeffs(); ++i) {
     moments[i] = e.c(i);
   }
 

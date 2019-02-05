@@ -100,7 +100,7 @@ protected:
 
 private:
   double coeffs[n_vars() * n_coeffs()];
-  double moments[n_vars() * n_coeffs()];
+  double moments[n_coeffs()];
 
   int degree_;
 
