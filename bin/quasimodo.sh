@@ -73,7 +73,7 @@ case $remote in
     dest='lucg@ela.cscs.ch:~'
     ;;
   ada-*)
-    dest="lucg@${remote}:~"
+    dest="lucg@${remote}:/userdata/lucg/"
     ;;
   euler)
     dest="lucg@euler.ethz.ch:~"
