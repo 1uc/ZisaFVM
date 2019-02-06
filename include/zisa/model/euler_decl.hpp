@@ -49,22 +49,6 @@ public:
   /// Kinetic energy of the fluid parcel.
   ANY_DEVICE_INLINE double kinetic_energy(const euler_var_t &u) const;
 
-  /// Convert primitive to conserved variables.
-  __host__ __inline__ euler_var_t
-  natural_variables(double rho, double v1, double v2, double p) const;
-
-  /// Convert primitive to conserved variables.
-  __host__ __inline__ euler_var_t
-  natural_variables(double rho, const XY &v, double p) const;
-
-  /// Convert conserved to primitive variables.
-  ANY_DEVICE_INLINE euler_var_t
-  primitive_variables(const euler_var_t &u_in) const;
-
-  /// Convert primitive to conserved variables.
-  ANY_DEVICE_INLINE euler_var_t
-  conserved_variables(const euler_var_t &u_in) const;
-
   /// Write the parameters of this model to disk.
   void save_parameters(HDF5Writer &writer) const;
 

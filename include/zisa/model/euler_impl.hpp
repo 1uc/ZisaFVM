@@ -56,47 +56,6 @@ Euler<EOS, Gravity>::energy(double rho, double v1, double v2, double p) const {
   return eos.internal_energy__rho_p(rho, p) + 0.5 * rho * (v1 * v1 + v2 * v2);
 }
 
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::natural_variables(
-    double rho, double v1, double v2, double p) const {
-  euler_var_t ret;
-
-  ret(0) = rho;
-  ret(1) = rho * v1;
-  ret(2) = rho * v2;
-  ret(3) = 0.0;
-  ret(4) = energy(rho, v1, v2, p);
-
-  return ret;
-}
-
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::natural_variables(
-    double rho, const XY &v, double p) const {
-  return natural_variables(rho, v[0], v[1], p);
-}
-
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE euler_var_t
-Euler<EOS, Gravity>::primitive_variables(const euler_var_t &u_in) const {
-  euler_var_t u_out;
-
-  double p = eos.pressure(u_in);
-
-  // rho (unchanged)
-  u_out(0) = u_in(0);
-
-  // momentum --> velocity
-  u_out(1) = u_in(1) / u_in(0);
-  u_out(2) = u_in(2) / u_in(0);
-  u_out(3) = 0.0;
-
-  // energy --> pressure
-  u_out(4) = p;
-
-  return u_out;
-}
-
 namespace detail {
 
 inline void save_parameters(const IdealGasEOS &eos, HDF5Writer &writer) {
