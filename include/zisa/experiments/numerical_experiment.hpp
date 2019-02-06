@@ -8,11 +8,11 @@
 #include <zisa/io/visualization.hpp>
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/math/triangular_rule.hpp>
+#include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/sanity_check.hpp>
 #include <zisa/ode/rate_of_change.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration.hpp>
-#include <zisa/model/cfl_condition.hpp>
 
 namespace zisa {
 

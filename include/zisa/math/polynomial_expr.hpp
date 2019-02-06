@@ -50,7 +50,7 @@ public:
 private:
   const E1 &e1;
   const E2 &e2;
-}; // namespace zisa
+};
 
 template <class E1, class E2>
 class PointwiseSubtract : public PolynomialCRTP<PointwiseSubtract<E1, E2>> {

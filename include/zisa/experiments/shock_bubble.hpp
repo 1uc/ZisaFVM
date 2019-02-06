@@ -3,9 +3,8 @@
 
 #include <zisa/config.hpp>
 #include <zisa/experiments/euler_experiment.hpp>
-#include <zisa/model/ideal_gas_eos.hpp>
 #include <zisa/model/gravity.hpp>
-#include <zisa/reconstruction/global_reconstruction.hpp>
+#include <zisa/model/ideal_gas_eos.hpp>
 
 namespace zisa {
 

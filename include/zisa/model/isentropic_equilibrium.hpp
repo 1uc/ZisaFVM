@@ -15,7 +15,7 @@ struct IsentropicEquilibrium {
 
   EOS eos;
   Gravity gravity;
-  int_t quad_deg;
+  int_t quad_deg; // FIXME this is wrong / unneeded.
 };
 
 template <class Gravity>

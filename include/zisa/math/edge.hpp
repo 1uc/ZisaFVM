@@ -11,7 +11,8 @@ public:
   Edge(const XY &a, const XY &b)
       : a(a), b(b), n(rotate_right(normalize(b - a))), t(normalize(b - a)) {}
 
-  Edge(const XY &a, const XY &b, const XY &n, const XY &t) : a(a), b(b), n(n), t(t) {}
+  Edge(const XY &a, const XY &b, const XY &n, const XY &t)
+      : a(a), b(b), n(n), t(t) {}
   Edge(const Edge &other) = default;
 
   inline double volume() const { return zisa::norm(a - b); }

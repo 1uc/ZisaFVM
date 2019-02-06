@@ -7,8 +7,8 @@
 using std::declval;
 
 #include <zisa/cli/input_parameters.hpp>
-#include <zisa/utils/type_name.hpp>
 #include <zisa/model/euler.hpp>
+#include <zisa/utils/type_name.hpp>
 
 namespace zisa {
 
