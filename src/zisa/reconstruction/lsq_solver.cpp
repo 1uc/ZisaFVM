@@ -77,14 +77,15 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   for (int_t ii = 0; ii < n_rows; ++ii) {
     auto ii_ = eint(ii);
     auto j = stencil.global(ii + 1);
-    XY xj = XY((grid.cell_centers(j) - x0) / l0);
+    auto [x_10, x_01] = XY((grid.cell_centers(j) - x0) / l0);
+
 
     auto lj = grid.characteristic_length(j) / l0;
     const auto &Cj = grid.normalized_moments(j);
 
     if (order >= 2) {
-      A(ii_, 0) = xj(0);
-      A(ii_, 1) = xj(1);
+      A(ii_, 0) = x_10;
+      A(ii_, 1) = x_01;
     }
 
     if (order >= 3) {
@@ -92,15 +93,15 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
       auto i_11 = poly_index(1, 1);
       auto i_02 = poly_index(0, 2);
 
-      auto xj_00 = xj(0) * xj(0);
-      auto xj_01 = xj(0) * xj(1);
-      auto xj_11 = xj(1) * xj(1);
+      auto x_20 = x_10 * x_10;
+      auto x_11 = x_10 * x_01;
+      auto x_02 = x_01 * x_01;
 
       auto lj_2 = lj * lj;
 
-      A(ii_, eint(i_20 - 1)) = xj_00 - C0(i_20) + lj_2 * Cj(i_20);
-      A(ii_, eint(i_11 - 1)) = xj_01 - C0(i_11) + lj_2 * Cj(i_11);
-      A(ii_, eint(i_02 - 1)) = xj_11 - C0(i_02) + lj_2 * Cj(i_02);
+      A(ii_, eint(i_20 - 1)) = x_20 - C0(i_20) + lj_2 * Cj(i_20);
+      A(ii_, eint(i_11 - 1)) = x_11 - C0(i_11) + lj_2 * Cj(i_11);
+      A(ii_, eint(i_02 - 1)) = x_02 - C0(i_02) + lj_2 * Cj(i_02);
 
       if (order >= 4) {
         auto i_30 = poly_index(3, 0);
@@ -108,34 +109,69 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
         auto i_12 = poly_index(1, 2);
         auto i_03 = poly_index(0, 3);
 
-        auto xj_000 = xj_00 * xj(0);
-        auto xj_001 = xj_00 * xj(1);
-        auto xj_011 = xj_01 * xj(1);
-        auto xj_111 = xj_11 * xj(1);
+        auto x_30 = x_20 * x_10;
+        auto x_21 = x_20 * x_01;
+        auto x_12 = x_11 * x_01;
+        auto x_03 = x_02 * x_01;
 
         auto lj_3 = lj_2 * lj;
 
-        A(ii_, eint(i_30 - 1)) = xj_000 - C0(i_30)
-                                 + 3.0 * xj(0) * lj_2 * Cj(i_20)
-                                 + lj_3 * Cj(i_30);
+        A(ii_, eint(i_30 - 1))
+            = x_30 - C0(i_30) + 3.0 * x_10 * lj_2 * Cj(i_20) + lj_3 * Cj(i_30);
 
-        A(ii_, eint(i_21 - 1)) = xj_001 - C0(i_21) + xj(1) * lj_2 * Cj(i_20)
-                                 + 2.0 * xj(0) * lj_2 * Cj(i_11)
+        A(ii_, eint(i_21 - 1)) = x_21 - C0(i_21) + x_01 * lj_2 * Cj(i_20)
+                                 + 2.0 * x_10 * lj_2 * Cj(i_11)
                                  + lj_3 * Cj(i_21);
 
-        A(ii_, eint(i_12 - 1)) = xj_011 - C0(i_12) + xj(0) * lj_2 * Cj(i_02)
-                                 + 2.0 * xj(1) * lj_2 * Cj(i_11)
+        A(ii_, eint(i_12 - 1)) = x_12 - C0(i_12) + x_10 * lj_2 * Cj(i_02)
+                                 + 2.0 * x_01 * lj_2 * Cj(i_11)
                                  + lj_3 * Cj(i_12);
 
-        A(ii_, eint(i_03 - 1)) = xj_111 - C0(i_03)
-                                 + 3.0 * xj(1) * lj_2 * Cj(i_02)
-                                 + lj_3 * Cj(i_03);
+        A(ii_, eint(i_03 - 1))
+            = x_03 - C0(i_03) + 3.0 * x_01 * lj_2 * Cj(i_02) + lj_3 * Cj(i_03);
+
+        if (order >= 5) {
+          auto i_40 = poly_index(4, 0);
+          auto i_31 = poly_index(3, 1);
+          auto i_22 = poly_index(2, 2);
+          auto i_13 = poly_index(1, 3);
+          auto i_04 = poly_index(0, 4);
+
+          auto x_40 = x_30 * x_10;
+          auto x_31 = x_30 * x_01;
+          auto x_22 = x_21 * x_01;
+          auto x_13 = x_12 * x_01;
+          auto x_04 = x_03 * x_01;
+
+          auto lj_4 = lj_3 * lj;
+
+          A(ii_, eint(i_40 - 1)) = x_40 - C0(i_40) + 6.0 * x_20 * lj_2 * Cj(i_20)
+                                   + 4.0 * x_10 * lj_3 * Cj(i_30)
+                                   + lj_4 * Cj(i_40);
+
+          A(ii_, eint(i_31 - 1))
+              = x_31 - C0(i_31) + 3 * x_11 * lj_2 * Cj(i_20)
+                + 3.0 * x_20 * lj_2 * Cj(i_11) + x_01 * lj_3 * Cj(i_30)
+                + 3.0 * x_10 * lj_3 * Cj(i_21) + lj_4 * Cj(i_31);
+
+          A(ii_, eint(i_22 - 1))
+              = x_22 - C0(i_22) + x_02 * lj_2 * Cj(i_20)
+                + x_20 * lj_2 * Cj(i_02) + 4 * x_11 * lj_2 * Cj(i_11)
+                + 2.0 * x_01 * lj_3 * Cj(i_21) + 2 * x_10 * lj_3 * Cj(i_12)
+                + lj_4 * Cj(i_22);
+
+          A(ii_, eint(i_13 - 1))
+            = x_13 - C0(i_13) + 3 * x_11 * lj_2 * Cj(i_02)
+            + 3.0 * x_02 * lj_2 * Cj(i_11) + x_10 * lj_3 * Cj(i_03)
+            + 3.0 * x_01 * lj_3 * Cj(i_12) + lj_4 * Cj(i_13);
+
+          A(ii_, eint(i_04 - 1)) = x_04 - C0(i_04) + 6.0 * x_02 * lj_2 * Cj(i_02)
+                                   + 4.0 * x_01 * lj_3 * Cj(i_03)
+                                   + lj_4 * Cj(i_04);
+        }
       }
     }
 
-    if (order == 5) {
-      LOG_ERR("Derive & implement first.");
-    }
     if (order >= 6) {
       LOG_ERR("Good luck. :) ");
     }
