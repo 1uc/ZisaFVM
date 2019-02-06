@@ -296,7 +296,7 @@ XY rotate_left(const CartesianExpr<E, double> &e_) {
 
 } // namespace zisa
 
-// Enable structured bindings.
+// Enable structured bindings for Cartesian<n>
 namespace std {
   template <size_t i, zisa::int_t n>
   struct tuple_element<i, zisa::Cartesian<n>> {
@@ -310,6 +310,24 @@ namespace std {
 namespace zisa {
   template <int_t i, int_t n>
   auto get(const Cartesian<n> &x) {
+    return x[i];
+  }
+} // namespace zisa
+
+// Enable structured bindings for XY.
+namespace std {
+  template <size_t i>
+  struct tuple_element<i, zisa::XY> {
+    using type = double;
+  };
+
+  template <>
+  struct tuple_size<zisa::XY> : public integral_constant<size_t, 2> {};
+} // namespace std
+
+namespace zisa {
+  template <int_t i>
+  auto get(const XY &x) {
     return x[i];
   }
 } // namespace zisa
