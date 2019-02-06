@@ -40,6 +40,14 @@ struct euler_var_t : public Cartesian<5> {
   static std::string labels(int i);
 };
 
+ANY_DEVICE_INLINE double kinetic_energy(const euler_var_t &u) {
+  return 0.5 * (u[1] * u[1] + u[2] * u[2] + u[3] * u[3]) / u[0];
+}
+
+ANY_DEVICE_INLINE double internal_energy(const euler_var_t &u) {
+  return u[4] - kinetic_energy(u);
+}
+
 void coord_transform(euler_var_t &u, const Edge &edge);
 void inv_coord_transform(euler_var_t &u, const Edge &edge);
 
@@ -103,6 +111,14 @@ struct EnthalpyEntropy : public Cartesian<2> {
   ANY_DEVICE_INLINE double K() const { return (*this)[1]; }
 };
 
+struct Momentum : public Cartesian<3> {
+  using Cartesian<3>::Cartesian;
+};
+
+inline Momentum momentum(const euler_var_t &u) {
+  return Momentum{u[1], u[2], u[3]};
+}
+
 } // namespace zisa
 
 #define ZISA_ENABLE_STRUCTRED_BINDINGS(ClassName)                              \
@@ -131,6 +147,7 @@ ZISA_ENABLE_STRUCTRED_BINDINGS(RhoP);
 ZISA_ENABLE_STRUCTRED_BINDINGS(RhoEntropy);
 ZISA_ENABLE_STRUCTRED_BINDINGS(PressureEntropy);
 ZISA_ENABLE_STRUCTRED_BINDINGS(EnthalpyEntropy);
+ZISA_ENABLE_STRUCTRED_BINDINGS(Momentum);
 
 #undef ZISA_ENABLE_STRUCTRED_BINDINGS
 #endif /* end of include guard */
