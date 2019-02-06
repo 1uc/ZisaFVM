@@ -92,6 +92,13 @@ auto average(const F &f, const Domain &domain, int_t deg)
   return fx_t(quadrature(f, domain, deg) / volume(domain));
 }
 
-} // namespace zisa
+template <class QR, class F, class Domain>
+auto average(const QR &qr, const F &f, const Domain &domain)
+    -> decltype(f(std::declval<XY>())) {
 
+  using fx_t = decltype(f(std::declval<XY>()));
+  return fx_t(quadrature(qr, f, domain) / volume(domain));
+}
+
+} // namespace zisa
 #endif /* end of include guard */
