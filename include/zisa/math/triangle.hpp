@@ -5,6 +5,7 @@
 #define TRIANGLE_H_ONON1
 
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/edge.hpp>
 
 namespace zisa {
 

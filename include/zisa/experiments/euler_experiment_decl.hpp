@@ -36,7 +36,20 @@ protected:
   virtual AllVariablesDimensions choose_all_variable_dims() override;
 
 private:
-  template<class Equilibrium>
+  template <class Equilibrium, class RC>
+  std::shared_ptr<RateOfChange> choose_physical_rate_of_change();
+
+  template <class Equilibrium, class RC>
+  std::shared_ptr<RateOfChange>
+  choose_flux_loop(const std::shared_ptr<GlobalReconstruction<Equilibrium, RC>>
+                       &global_reconstruction);
+
+  template <class Equilibrium, class RC>
+  std::shared_ptr<RateOfChange> choose_gravity_source_loop(
+      const std::shared_ptr<GlobalReconstruction<Equilibrium, RC>>
+          &global_reconstruction);
+
+  template <class Equilibrium>
   std::shared_ptr<RateOfChange> deduce_reconstruction();
 
   template <class Equilibrium, class RC>

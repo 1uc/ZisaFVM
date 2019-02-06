@@ -1,6 +1,8 @@
 #ifndef GRAVITY_H_WB0OY
 #define GRAVITY_H_WB0OY
 
+#include <limits>
+
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/utils/type_name.hpp>
@@ -167,7 +169,7 @@ private:
   double rhoC = 1.0;
   double K = 1.0;
   double G = 1.0;
-  double eps = 1e-50;
+  double eps = std::numeric_limits<double>::min();
 };
 
 class PolytropeGravityRadial

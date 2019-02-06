@@ -34,10 +34,16 @@ private:
 
   XY n; // normal
   XY t; // tangential
+
+private:
+  friend XY unit_outward_normal(const Edge &edge, XY point_inside);
 };
 
 inline XY coord(const Edge &edge, double x_rel) { return edge.coord(x_rel); }
 inline double volume(const Edge &edge) { return edge.volume(); }
+inline XY unit_outward_normal(const Edge &edge, XY point_inside) {
+  return XY(zisa::sign(zisa::dot(edge.normal(), edge.a - point_inside)) * edge.normal());
+}
 
 } // namespace zisa
 

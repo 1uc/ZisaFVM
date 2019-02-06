@@ -55,6 +55,10 @@ TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
                     {100.0, 1.0, 1.0, 1.0}, eps, s}});
 
+  cases.push_back({{4.8, 5.7},
+                   {{{5, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+                    {100.0, 1.0, 1.0, 1.0}, eps, s}});
+
   for (auto &[expected_rate, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::CWENO_AO>(
         grid_names, expected_rate, params);

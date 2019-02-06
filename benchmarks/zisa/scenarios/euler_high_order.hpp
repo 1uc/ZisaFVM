@@ -4,6 +4,7 @@
 #include <zisa/boundary/flux_bc.hpp>
 #include <zisa/boundary/no_boundary_condition.hpp>
 #include <zisa/core/flux_loop.hpp>
+#include <zisa/core/gravity_source_loop.hpp>
 #include <zisa/flux/hllc.hpp>
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/model/euler.hpp>
@@ -16,11 +17,13 @@ namespace scenarios {
 namespace euler_high_order {
 
 namespace types {
-using euler_t = Euler<IdealGasEOS, NoGravity>;
+
+using euler_t = Euler<IdealGasEOS, PolytropeGravityRadial>;
 using eq_t = NoEquilibrium;
 using rc_t = CWENO_AO;
 using global_reconstruction_t = GlobalReconstruction<eq_t, rc_t>;
 using flux_loop_t = FluxLoop<eq_t, rc_t, euler_t, HLLCBatten<euler_t>>;
+using source_loop_t = GravitySourceLoop<eq_t, rc_t, euler_t>;
 
 } // namespace types
 
@@ -29,7 +32,7 @@ inline std::shared_ptr<Grid> load_grid() {
 }
 
 inline types::euler_t make_model() {
-  return {IdealGasEOS(/* gamma = */ 1.2, /* R = */ 1.1), NoGravity()};
+  return {IdealGasEOS(/* gamma = */ 1.2, /* R = */ 1.1), PolytropeGravityRadial()};
 }
 
 inline types::eq_t make_equilibrium() {
@@ -50,7 +53,8 @@ make_global_reconstruction(std::shared_ptr<Grid> &grid) {
       eps,
       s};
 
-  return std::make_shared<types::global_reconstruction_t>(grid, params, make_equilibrium());
+  return std::make_shared<types::global_reconstruction_t>(
+      grid, params, make_equilibrium());
 }
 
 inline std::shared_ptr<types::flux_loop_t> make_flux_loop(
@@ -68,6 +72,24 @@ inline std::shared_ptr<types::flux_loop_t>
 make_flux_loop(std::shared_ptr<Grid> grid) {
   auto global_reconstruction = make_global_reconstruction(grid);
   return make_flux_loop(grid, global_reconstruction);
+}
+
+inline std::shared_ptr<types::source_loop_t> make_source_loop(
+    std::shared_ptr<Grid> grid,
+    std::shared_ptr<types::global_reconstruction_t> global_reconstruction) {
+
+  auto model = make_model();
+  int_t edge_deg = 4;
+  int_t volume_deg = 4;
+
+  return std::make_shared<types::source_loop_t>(
+      grid, model, global_reconstruction, edge_deg, volume_deg);
+}
+
+inline std::shared_ptr<types::source_loop_t>
+make_source_loop(std::shared_ptr<Grid> grid) {
+  auto global_reconstruction = make_global_reconstruction(grid);
+  return make_source_loop(grid, global_reconstruction);
 }
 
 inline std::shared_ptr<AllVariables> make_all_variables(int_t n_cells) {

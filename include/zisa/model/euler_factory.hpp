@@ -45,6 +45,10 @@ template <>
 ConstantGravityRadial
 make_gravity<ConstantGravityRadial>(const InputParameters &params);
 
+template <>
+PolytropeGravityRadial
+make_gravity<PolytropeGravityRadial>(const InputParameters &params);
+
 template <class Model>
 Model make_euler(const InputParameters &params) {
   using EOS = typename Model::eos_t;

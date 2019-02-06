@@ -31,9 +31,9 @@ public:
    *  @param[in] t
    *     Current time of the simulation.
    */
-  virtual void
-  compute(AllVariables &tendency, const AllVariables &current_state, double t)
-     const = 0;
+  virtual void compute(AllVariables &tendency,
+                       const AllVariables &current_state,
+                       double t) const = 0;
 
   /// Short self-documenting string.
   virtual std::string str() const = 0;
@@ -41,9 +41,23 @@ public:
 
 /// Convenient way to sum individual terms of the rate of change.
 class SumRatesOfChange : public RateOfChange {
+private:
+  template <class... Args>
+  void push_back_all(std::shared_ptr<RateOfChange> roc, Args &&... args) {
+    rates_of_change.push_back(roc);
+    push_back_all(std::forward<Args>(args)...);
+  }
+
+  void push_back_all() {}
+
 public:
   SumRatesOfChange() = default;
   SumRatesOfChange(std::vector<std::shared_ptr<RateOfChange>> init_list);
+
+  template <class... Args>
+  SumRatesOfChange(Args &&... args) {
+    push_back_all(std::forward<Args>(args)...);
+  }
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,

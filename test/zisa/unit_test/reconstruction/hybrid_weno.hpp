@@ -36,6 +36,8 @@ void test_hybrid_weno_convergence(
     auto grid = load_gmsh(grid_name);
 
     auto rc = std::vector<RC>();
+    rc.reserve(grid->n_cells);
+
     for (const auto &[i, tri] : triangles(*grid)) {
       rc.push_back(RC(grid, i, params));
     }
@@ -70,7 +72,7 @@ template <class RC>
 void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
                                 const HybridWENO_Params &params) {
 
-  double tol = 1e-8;
+  double tol = 5e-7;
 
   auto f = [](const XY &x) {
     auto d = zisa::norm(x - XY{0.5, 0.5});
@@ -131,8 +133,11 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
         auto exact = Cartesian<n_vars>(u.cvars(i));
 
         // clang-format off
-        INFO(string_format("[%d] %s\n%s",
+        INFO(string_format("[%d] %s - %s = %s\n%s\n%s",
                            i,
+                           zisa::to_string(approx).c_str(),
+                           zisa::to_string(exact).c_str(),
+                           zisa::to_string(zisa::Cartesian<n_vars>(approx - exact)).c_str(),
                            type_name<RC>().c_str(),
                            zisa::to_string(params).c_str()
                            ));

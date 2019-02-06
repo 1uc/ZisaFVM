@@ -26,8 +26,11 @@ protected:
   mutable array<double, 2, row_major> rhs;
 
   array<double, 1> linear_weights;
+  mutable array<double, 1> non_linear_weights;
   double epsilon;
   double exponent;
+
+  int_t i_cell;
 
 public:
   HybridWENO() = default;

@@ -64,9 +64,7 @@ void GlobalReconstruction<Equilibrium, RC>::set_qbar_local(
   const auto &cvars = current_state.cvars;
 
   for (int_t ii = 0; ii < l2g.size(); ++ii) {
-    for (int_t k = 0; k < cvars.shape(1); ++k) {
-      qbar_local(ii)[k] = cvars(l2g[ii], k);
-    }
+    qbar_local(ii) = cvars(l2g[ii]);
   }
 }
 

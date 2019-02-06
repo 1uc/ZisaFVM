@@ -22,13 +22,15 @@ public:
       : grid(grid), eq(eq), rc(rc) {}
 
   void compute(array<cvars_t, 1> &u_local) {
-    eq.solve(RhoE{u_local(int_t(0))[int_t(0)], u_local(int_t(0))[int_t(4)]});
+    const auto &u0 = u_local(int_t(0));
+    eq.solve(RhoE{u0[0], internal_energy(u0)});
 
     auto &l2g = rc.local2global();
     for (int_t il = 0; il < l2g.size(); ++il) {
-      int_t ig = l2g[il];
+      auto [rho_eq_bar, E_eq_bar] = eq.extrapolate(grid->triangle(l2g[il]));
 
-      u_local(il) -= eq.extrapolate(grid->triangle(ig));
+      u_local(il)[0] -= rho_eq_bar;
+      u_local(il)[4] -= E_eq_bar;
     }
 
     weno_poly = rc.reconstruct(u_local);
@@ -38,7 +40,7 @@ public:
     return cvars_t(background(x) + delta(x));
   }
 
-  cvars_t delta(const XY &x) const { return cvars_t{weno_poly(x)}; }
+  cvars_t delta(const XY &x) const { return cvars_t(weno_poly(x)); }
 
   cvars_t background(const XY &x) const {
     auto [rho, E] = eq.extrapolate(x);
