@@ -63,8 +63,12 @@ Poly2D<MAX_DEGREE, NVARS>::Poly2D(int degree,
 
   std::fill(this->coeffs, this->coeffs + n_coeffs() * n_vars(), 0.0);
 
+  static_assert(n_coeffs() >= 3, "Unusually low degree; fix code below.");
   this->moments[0] = this->moments[1] = this->moments[2] = 0.0;
-  std::copy(moments.begin() + 3, moments.end(), this->moments + 3);
+
+  if (std::distance(moments.begin(), moments.end()) > 3) {
+    std::copy(moments.begin() + 3, moments.end(), this->moments + 3);
+  }
 }
 
 template <int MAX_DEGREE, int NVARS>
@@ -79,8 +83,12 @@ Poly2D<MAX_DEGREE, NVARS>::Poly2D(
 
   std::fill(this->coeffs, this->coeffs + n_coeffs() * n_vars(), 0.0);
 
+  static_assert(n_coeffs() >= 3, "Unusually low degree; fix code below.");
   this->moments[0] = this->moments[1] = this->moments[2] = 0.0;
-  std::copy(moments_list.begin() + 3, moments_list.end(), moments + 3);
+
+  if (std::distance(moments_list.begin(), moments_list.end()) > 3) {
+    std::copy(moments_list.begin() + 3, moments_list.end(), moments + 3);
+  }
 }
 
 template <int MAX_DEGREE, int NVARS>
