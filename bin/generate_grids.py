@@ -4,12 +4,17 @@
 import argparse
 import subprocess
 import glob
+import multiprocessing
 
 gmsh = "bin/gmsh"
 
 def run_gmesh(geo):
     cmd = [gmsh, "-2", geo]
-    subprocess.check_call(cmd)
+    output = subprocess.run(cmd,
+                            check=True,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
+    print("{} done.".format(geo))
 
 def minimal_geo_files(path):
     return [
@@ -37,5 +42,5 @@ if __name__ == "__main__":
     else:
         geos = all_geo_files("grids")
 
-    for geo in geos:
-        run_gmesh(geo)
+    with multiprocessing.Pool() as pool:
+        pool.map(run_gmesh, geos)
