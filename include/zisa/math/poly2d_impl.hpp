@@ -106,8 +106,10 @@ Poly2D<MAX_DEGREE, NVARS>::Poly2D(
   assert(coeffs_list.size() == moments_list.size());
   assert(poly_dof(degree()) == coeffs_list.size());
 
-  std::fill(coeffs, coeffs + n_coeffs(), 0.0);
+  std::fill(coeffs, coeffs + n_vars() * n_coeffs(), 0.0);
   std::copy(coeffs_list.begin(), coeffs_list.end(), coeffs);
+
+  std::fill(moments, moments + n_coeffs(), 0.0);
   std::copy(moments_list.begin(), moments_list.end(), moments);
 }
 
