@@ -43,6 +43,8 @@ struct Grid {
   Edge edge(int_t e) const;
   Edge edge(int_t i, int_t k) const;
   double characteristic_length(int_t i) const;
+
+  std::string str() const;
 };
 
 double volume(const Grid &grid);

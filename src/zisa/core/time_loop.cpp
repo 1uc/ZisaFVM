@@ -81,9 +81,8 @@ void TimeLoop::print_welcome_message(void) const {
     std::cout << "-------- Continued run --------- \n";
   }
   std::cout << "     Date: " << date << "\n";
-
   std::cout << "-------- Solver --------\n";
-  std::cout << (*this).str() << "\n";
+  std::cout << str() << "\n";
   std::cout << "------------------------\n";
 }
 

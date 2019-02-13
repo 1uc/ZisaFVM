@@ -21,6 +21,9 @@ std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
 void NumericalExperiment::do_run() {
   grid = choose_grid();
 
+  std::cout << " --- Grid ---------- \n";
+  std::cout << grid->str() << "\n";
+
   auto u0 = choose_initial_conditions();
   auto time_loop = choose_time_loop();
 

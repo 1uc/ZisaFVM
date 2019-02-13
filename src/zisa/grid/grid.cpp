@@ -332,6 +332,8 @@ double Grid::characteristic_length(int_t i) const {
   return zisa::characteristic_length(triangle(i));
 }
 
+std::string Grid::str() const { return string_format("n_cells : %d", n_cells); }
+
 double volume(const Grid &grid) {
   double vol = 0.0;
 
