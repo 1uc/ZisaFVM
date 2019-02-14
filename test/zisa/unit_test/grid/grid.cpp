@@ -224,7 +224,7 @@ TEST_CASE("Grid; volume", "[grid]") {
 
   REQUIRE(zisa::almost_equal(volume(*grid), 1.0, 1e-12));
 
-  for (auto &&[i, tri] : triangles(*grid)) {
+  for (const auto &[i, tri] : triangles(*grid)) {
     REQUIRE(volume(tri) > 0.0);
   }
 }
@@ -277,7 +277,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
       count(iR) += 1;
     }
 
-    for (auto &&[i, tri] : triangles(*grid)) {
+    for (const auto &[i, tri] : triangles(*grid)) {
       zisa::int_t expected = 0;
       for (zisa::int_t k = 0; k < max_neighbours; ++k) {
         if (grid->is_valid(i, k)) {
