@@ -73,7 +73,7 @@ void TimeLoop::post_update(AllVariables &u0) {
 }
 
 void TimeLoop::print_welcome_message(void) const {
-  std::string date = date_format(time(0));
+  std::string date = date_format(time(nullptr));
 
   if (simulation_clock->current_time() == 0.0) {
     std::cout << "-------- New run --------- \n";
@@ -96,7 +96,7 @@ void TimeLoop::print_goodbye_message(void) const {
   std::cout << "total steps: " << simulation_clock->current_step() << "\n";
   std::cout << " final time: " << simulation_clock->current_time() << "\n";
 
-  std::string date = date_format(time(0));
+  std::string date = date_format(time(nullptr));
 
   auto elapsed = elapsed_seconds(end_time, start_time);
   std::string duration = duration_format(elapsed);
