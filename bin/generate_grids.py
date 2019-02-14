@@ -10,11 +10,11 @@ gmsh = "bin/gmsh"
 
 def run_gmesh(geo):
     cmd = [gmsh, "-2", geo]
-    output = subprocess.run(cmd,
-                            check=True,
-                            stdout=subprocess.DEVNULL,
-                            stderr=subprocess.DEVNULL)
-    print("{} done.".format(geo))
+    output = subprocess.check_call(cmd,
+                                   stdout=subprocess.DEVNULL,
+                                   stderr=subprocess.DEVNULL)
+
+    return geo
 
 def minimal_geo_files(path):
     return [
@@ -43,4 +43,5 @@ if __name__ == "__main__":
         geos = all_geo_files("grids")
 
     with multiprocessing.Pool() as pool:
-        pool.map(run_gmesh, geos)
+        for i, geo in enumerate(pool.imap_unordered(run_gmesh, geos)):
+            print("[{:2d}/{}] {}".format(i, len(geos), geo))
