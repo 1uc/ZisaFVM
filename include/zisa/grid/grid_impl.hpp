@@ -4,7 +4,12 @@
 #ifndef GRID_IMPL_H_8WPAM
 #define GRID_IMPL_H_8WPAM
 
+#include <limits>
 #include <map>
+
+#include <zisa/grid/grid_decl.hpp>
+#include <zisa/math/cartesian.hpp>
+#include <zisa/memory/array.hpp>
 
 namespace zisa {
 constexpr int_t magic_index_value = std::numeric_limits<int_t>::max();

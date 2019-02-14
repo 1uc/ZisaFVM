@@ -1,6 +1,9 @@
 #ifndef POLYTROPE_IC_H_PK11F
 #define POLYTROPE_IC_H_PK11F
 
+#include <zisa/math/cartesian.hpp>
+#include <zisa/model/euler_variables.hpp>
+
 namespace zisa {
 
 template <class EULER>
