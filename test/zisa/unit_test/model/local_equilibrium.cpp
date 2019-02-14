@@ -21,7 +21,6 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
     return extrapolate(eq, theta_ref, x_ref, xy);
   };
 
-  auto vol = volume(tri_ref);
   auto rhoE_bar = average(rhoE_eq, tri_ref, quad_deg);
 
   auto eq_loc = zisa::LocalEquilibrium(eq, tri_ref);
@@ -39,7 +38,6 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   SECTION("extrapolate to triangle") {
     auto tri =
         zisa::Triangle{{1.2, 1.1, 0.0}, {1.21, 1.1, 0.0}, {1.2, 1.11, 0.0}};
-    auto vol = zisa::volume(tri);
 
     auto approx = eq_loc.extrapolate(tri);
     auto exact = average(rhoE_eq, tri, quad_deg);
