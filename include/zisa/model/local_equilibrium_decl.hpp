@@ -19,8 +19,8 @@ public:
   RhoE extrapolate(const Triangle &tri) const;
 
 private:
-  EnthalpyEntropy theta;
-  bool found_equilibrium;
+  EnthalpyEntropy theta = EnthalpyEntropy{};
+  bool found_equilibrium = false;
 
   Triangle tri_ref;
   Equilibrium equilibrium;
