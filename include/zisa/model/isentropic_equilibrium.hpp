@@ -22,8 +22,8 @@ template <class Gravity>
 RhoE extrapolate(const IsentropicEquilibrium<IdealGasEOS, Gravity> &eq,
                  const IdealGasEOS &eos,
                  const EnthalpyEntropy &theta,
-                 const XY &xy_ref,
-                 const XY &xy) {
+                 const XYZ &xy_ref,
+                 const XYZ &xy) {
   const auto &gravity = eq.gravity;
 
   double phi_ref = gravity.phi(xy_ref);

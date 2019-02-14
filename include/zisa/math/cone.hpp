@@ -7,14 +7,14 @@ namespace zisa {
 
 class Cone {
 public:
-  /// Cone AXB
-  Cone(const XY &A, const XY &X, const XY &B);
-  Cone(const XY &x, const XY &dir, double cos_angle);
-  bool is_inside(const XY &y) const;
+  /// A 3D code with orgin X and A, B on opposing sides of the cone.
+  Cone(const XYZ &A, const XYZ &X, const XYZ &B);
+  Cone(const XYZ &x, const XYZ &dir, double cos_angle);
+  bool is_inside(const XYZ &y) const;
 
 private:
-  XY x;
-  XY dir;
+  XYZ x;
+  XYZ dir;
   double cos_angle;
 };
 

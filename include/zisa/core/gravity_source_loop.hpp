@@ -44,7 +44,7 @@ public:
       for (int_t k = 0; k < grid->max_neighbours; ++k) {
         auto edge = grid->edge(i, k);
 
-        auto s_eq = [&x_cell, &rc, &eos, &edge = edge](XY x) {
+        auto s_eq = [&x_cell, &rc, &eos, &edge = edge](XYZ x) {
           auto u_eq = rc.background(x);
           auto p_eq = eos.pressure(RhoE{u_eq[0], u_eq[4]});
 
@@ -58,8 +58,8 @@ public:
       }
 
       // delta terms
-      auto s_delta = [&rc, &gravity](XY x) {
-        static_assert(XY::size() == 2);
+      auto s_delta = [&rc, &gravity](XYZ x) {
+        static_assert(XYZ::size() == 3);
 
         auto u_eq = rc.background(x);
         auto du = rc.delta(x);
@@ -68,13 +68,13 @@ public:
         auto drho = du[0];
         auto mv = momentum(u);
         auto grad_phi = gravity.grad_phi(x);
-        static_assert(decltype(grad_phi)::size() == 2);
+        static_assert(decltype(grad_phi)::size() == 3);
 
         auto s = cvars_t{0.0,
                          -drho * grad_phi[0],
                          -drho * grad_phi[1],
-                         0.0,
-                         -(mv[0] * grad_phi[0] + mv[1] * grad_phi[1])};
+                         -drho * grad_phi[2],
+                         -zisa::dot(mv, grad_phi)};
 
         return s;
       };

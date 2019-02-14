@@ -37,7 +37,7 @@ public:
                 : e2.c(std::forward<Indices>(indices)...));
   }
 
-  const XY &x_center() const {
+  const XYZ &x_center() const {
     return (e1.degree() > e2.degree() ? e1.x_center() : e2.x_center());
   }
 
@@ -77,7 +77,7 @@ public:
                 : e2.c(std::forward<Indices>(indices)...));
   }
 
-  const XY &x_center() const {
+  const XYZ &x_center() const {
     return (e1.degree() > e2.degree() ? e1.x_center() : e2.x_center());
   }
 
@@ -111,7 +111,7 @@ public:
     return e.c(std::forward<Indices>(indices)...);
   }
 
-  const XY &x_center() const { return e.x_center(); }
+  const XYZ &x_center() const { return e.x_center(); }
   double reference_length() const { return e.reference_length(); }
 
 private:

@@ -15,7 +15,7 @@ public:
   LocalEquilibrium(const Equilibrium &equilibrium, const Triangle &tri_ref);
 
   void solve(const RhoE &rhoE_bar);
-  RhoE extrapolate(const XY &xy) const;
+  RhoE extrapolate(const XYZ &xy) const;
   RhoE extrapolate(const Triangle &tri) const;
 
 private:
@@ -35,7 +35,7 @@ public:
   LocalEquilibrium(Args &&... /* args */) {}
 
   inline void solve(const RhoE &/* rhoE_bar */) { return; }
-  inline RhoE extrapolate(const XY &/* xy */) const { return {0.0, 0.0}; }
+  inline RhoE extrapolate(const XYZ & /* xy */) const { return {0.0, 0.0}; }
   inline RhoE extrapolate(const Triangle &/* tri */) const { return {0.0, 0.0}; }
 };
 

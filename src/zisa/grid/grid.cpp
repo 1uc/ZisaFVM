@@ -270,7 +270,7 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
   return neighbours;
 }
 
-Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
+Grid::Grid(array<XYZ, 1> vertices_, array<int_t, 2> vertex_indices_)
     : vertex_indices(std::move(vertex_indices_)),
       vertices(std::move(vertices_)) {
 
@@ -302,7 +302,7 @@ Grid::Grid(array<XY, 1> vertices_, array<int_t, 2> vertex_indices_)
   }
 }
 
-const XY &Grid::vertex(int_t i, int_t k) const {
+const XYZ &Grid::vertex(int_t i, int_t k) const {
   return vertices(vertex_indices(i, k));
 }
 
@@ -352,12 +352,12 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
   auto n_vertices = gmsh.vertices.size();
   auto n_cells = gmsh.vertex_indices.size();
 
-  auto vertices = array<XY, 1>(shape_t<1>{n_vertices});
+  auto vertices = array<XYZ, 1>(shape_t<1>{n_vertices});
   auto vertex_indices = array<int_t, 2>(shape_t<2>{n_cells, max_neighbours});
 
   for (int_t i = 0; i < n_vertices; ++i) {
     const auto &v = gmsh.vertices[i];
-    vertices(i) = {v[0], v[1]};
+    vertices(i) = {v[0], v[1], v[2]};
   }
 
   for (int_t i = 0; i < n_cells; ++i) {

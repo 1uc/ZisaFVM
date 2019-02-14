@@ -11,7 +11,7 @@ private:
 public:
   PolytropeIC(const euler_t &euler) : euler(euler) {}
 
-  RhoP operator()(const XY &x) const {
+  RhoP operator()(const XYZ &x) const {
 
     double alpha = this->euler.gravity.alpha();
     double eps = std::numeric_limits<double>::min();

@@ -2,7 +2,7 @@
 
 namespace zisa {
 
-ScalarPlot::ScalarPlot(const array<XY, 1> &vertices,
+ScalarPlot::ScalarPlot(const array<XYZ, 1> &vertices,
                        const array<int_t, 2> &vertex_indices,
                        const std::string &title)
     : tri_plot(vertices, vertex_indices, title),

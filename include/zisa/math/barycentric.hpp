@@ -17,7 +17,7 @@ private:
   double lambda[3];
 };
 
-XY coord(const Triangle &tri, const Barycentric &x);
+XYZ coord(const Triangle &tri, const Barycentric &x);
 
 std::ostream &operator<<(std::ostream &os, const Barycentric &bc);
 

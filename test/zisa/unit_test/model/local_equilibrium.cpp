@@ -12,11 +12,12 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   zisa::int_t quad_deg = 2;
   auto eq = zisa::IsentropicEquilibrium(eos, gravity, quad_deg);
 
-  auto tri_ref = zisa::Triangle{{1.0, 1.0}, {1.01, 1.0}, {1.0, 1.01}};
-  auto x_ref = zisa::XY{0.5, 0.6};
+  auto tri_ref =
+      zisa::Triangle{{1.0, 1.0, 0.0}, {1.01, 1.0, 0.0}, {1.0, 1.01, 0.0}};
+  auto x_ref = zisa::XYZ{0.5, 0.6, 0.0};
   auto theta_ref = zisa::EnthalpyEntropy{10.0, 3.0};
 
-  auto rhoE_eq = [&eq, &theta_ref, &x_ref](const zisa::XY &xy) {
+  auto rhoE_eq = [&eq, &theta_ref, &x_ref](const zisa::XYZ &xy) {
     return extrapolate(eq, theta_ref, x_ref, xy);
   };
 
@@ -27,7 +28,7 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   eq_loc.solve(rhoE_bar);
 
   SECTION("extrapolate to point") {
-    auto xy = zisa::XY{1.1, 2.1};
+    auto xy = zisa::XYZ{1.1, 2.1, 0.0};
 
     auto approx = eq_loc.extrapolate(xy);
     auto exact = rhoE_eq(xy);
@@ -36,7 +37,8 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   }
 
   SECTION("extrapolate to triangle") {
-    auto tri = zisa::Triangle{{1.2, 1.1}, {1.21, 1.1}, {1.2, 1.11}};
+    auto tri =
+        zisa::Triangle{{1.2, 1.1, 0.0}, {1.21, 1.1, 0.0}, {1.2, 1.11, 0.0}};
     auto vol = zisa::volume(tri);
 
     auto approx = eq_loc.extrapolate(tri);

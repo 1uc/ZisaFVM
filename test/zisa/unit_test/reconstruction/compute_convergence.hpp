@@ -40,7 +40,7 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
 
     auto p = rc[i].reconstruct(qbar_local);
 
-    auto diff = [&p, &f](const XY &x) {
+    auto diff = [&p, &f](const XYZ &x) {
       return Cartesian<n_vars>{zisa::abs(p(x) - f(x))};
     };
 

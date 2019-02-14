@@ -48,14 +48,14 @@ template <int MAX_DEGREE, int NVARS>
 Poly2D<MAX_DEGREE, NVARS>::Poly2D() : degree_(0) {
   std::fill(coeffs, coeffs + n_coeffs() * n_vars(), 0.0);
   std::fill(moments, moments + n_coeffs(), 0.0);
-  x_center_ = XY{0.0, 0.0};
+  x_center_ = XYZ::zeros();
   reference_length_ = 1.0;
 }
 
 template <int MAX_DEGREE, int NVARS>
 Poly2D<MAX_DEGREE, NVARS>::Poly2D(int degree,
                                   const array<double, 1> &moments,
-                                  const XY &x_center,
+                                  const XYZ &x_center,
                                   double reference_length)
     : degree_(degree),
       x_center_(x_center),
@@ -75,7 +75,7 @@ template <int MAX_DEGREE, int NVARS>
 Poly2D<MAX_DEGREE, NVARS>::Poly2D(
     int degree,
     const std::initializer_list<double> &moments_list,
-    const XY &x_center,
+    const XYZ &x_center,
     double reference_length)
     : degree_(degree),
       x_center_(x_center),
@@ -95,7 +95,7 @@ template <int MAX_DEGREE, int NVARS>
 Poly2D<MAX_DEGREE, NVARS>::Poly2D(
     const std::initializer_list<double> &coeffs_list,
     const std::initializer_list<double> &moments_list,
-    const XY &x_center,
+    const XYZ &x_center,
     double reference_length)
     : degree_(poly_degree(coeffs_list.size())),
       x_center_(x_center),
@@ -181,7 +181,7 @@ void Poly2D<MAX_DEGREE, NVARS>::deep_copy(const PolynomialCRTP<E> &e_) {
 }
 
 template <int MAX_DEGREE, int NVARS>
-Cartesian<NVARS> Poly2D<MAX_DEGREE, NVARS>::operator()(const XY &xy) const {
+Cartesian<NVARS> Poly2D<MAX_DEGREE, NVARS>::operator()(const XYZ &xy) const {
   auto x = (xy[0] - x_center_[0]) / reference_length_;
   auto y = (xy[1] - x_center_[1]) / reference_length_;
 
@@ -226,7 +226,7 @@ double Poly2D<MAX_DEGREE, NVARS>::c(int_t i) const {
 }
 
 template <int MAX_DEGREE, int NVARS>
-const XY &Poly2D<MAX_DEGREE, NVARS>::x_center() const {
+const XYZ &Poly2D<MAX_DEGREE, NVARS>::x_center() const {
   return x_center_;
 }
 

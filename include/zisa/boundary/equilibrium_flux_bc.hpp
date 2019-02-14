@@ -36,7 +36,7 @@ public:
       auto eq = LocalEquilibrium<Equilibrium>(equilibrium, tri);
       eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))));
 
-      auto flux = [this, &eq, &edge = edge](XY x) {
+      auto flux = [this, &eq, &edge = edge](XYZ x) {
         auto rhoE = eq.extrapolate(x);
 
         euler_var_t f = euler.flux(euler.eos.cvars(rhoE));

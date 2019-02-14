@@ -25,12 +25,12 @@ namespace opengl {
 
 class TriPlot {
 private:
-  using Vertices = zisa::array<XY, 1>;
+  using Vertices = zisa::array<XYZ, 1>;
   using VertexIndices = zisa::array<int_t, 2>;
 
 public:
   TriPlot(std::shared_ptr<Window> window,
-          const array<XY, 1> &vertices,
+          const array<XYZ, 1> &vertices,
           const array<int_t, 2> &vertex_indices);
 
   void draw(const array<RGBColor, 1> &colors) const;

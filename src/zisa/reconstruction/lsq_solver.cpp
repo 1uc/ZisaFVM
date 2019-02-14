@@ -77,8 +77,7 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   for (int_t ii = 0; ii < n_rows; ++ii) {
     auto ii_ = eint(ii);
     auto j = stencil.global(ii + 1);
-    auto [x_10, x_01] = XY((grid.cell_centers(j) - x0) / l0);
-
+    auto [x_10, x_01, _] = XYZ((grid.cell_centers(j) - x0) / l0);
 
     auto lj = grid.characteristic_length(j) / l0;
     const auto &Cj = grid.normalized_moments(j);

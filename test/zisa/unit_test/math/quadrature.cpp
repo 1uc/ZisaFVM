@@ -12,7 +12,7 @@
 void check_convergence(double expected, double atol, zisa::int_t deg) {
   auto grid_names = zisa::TestGridFactory::unit_square();
 
-  auto f = [](const zisa::XY &x) {
+  auto f = [](const zisa::XYZ &x) {
     return zisa::sin(0.5 * zisa::pi * x[0]) + zisa::sin(0.5 * zisa::pi * x[1]);
   };
 

@@ -43,14 +43,14 @@ public:
       int_t iL, iR;
       std::tie(iL, iR) = grid->left_right(e);
 
-      auto rc = [this, &edge = edge](int_t i, const XY &x) {
+      auto rc = [this, &edge = edge](int_t i, const XYZ &x) {
         auto u = cvars_t((*global_reconstruction)(i)(x));
         coord_transform(u, edge);
 
         return u;
       };
 
-      auto flux = [this, &rc, iL = iL, iR = iR](const XY &x) -> cvars_t {
+      auto flux = [this, &rc, iL = iL, iR = iR](const XYZ &x) -> cvars_t {
         auto uL = rc(iL, x);
         auto uR = rc(iR, x);
 

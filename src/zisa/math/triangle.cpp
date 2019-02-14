@@ -4,7 +4,7 @@
 
 namespace zisa {
 
-Triangle::Triangle(const XY &A, const XY &B, const XY &C)
+Triangle::Triangle(const XYZ &A, const XYZ &B, const XYZ &C)
     : A(A),
       B(B),
       C(C),
@@ -16,9 +16,9 @@ Triangle::Triangle(const XY &A, const XY &B, const XY &C)
 double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg) {
   auto center = barycenter(tri);
 
-  auto f = [x_deg, y_deg, &center](const XY &xy) {
-    auto x = XY(xy - center);
-    return zisa::pow(x[0], x_deg) * zisa::pow(x[1], y_deg);
+  auto f = [x_deg, y_deg, &center](const XYZ &x) {
+    auto x_rel = XYZ(x - center);
+    return zisa::pow(x_rel[0], x_deg) * zisa::pow(x_rel[1], y_deg);
   };
 
   return quadrature(f, tri, quad_deg) / tri.volume;
@@ -26,7 +26,9 @@ double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg) {
 
 double volume(const Triangle &tri) { return tri.volume; }
 
-XY barycenter(const Triangle &tri) { return XY((tri.A + tri.B + tri.C) / 3.0); }
+XYZ barycenter(const Triangle &tri) {
+  return XYZ((tri.A + tri.B + tri.C) / 3.0);
+}
 
 double circum_radius(const Triangle &tri) {
   auto c = barycenter(tri);
@@ -42,6 +44,8 @@ double inradius(const Triangle &tri) {
 
 double characteristic_length(const Triangle &tri) { return circum_radius(tri); }
 
-Triangle reference_triangle() { return {{0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}}; }
+Triangle reference_triangle() {
+  return {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}};
+}
 
 } // namespace zisa

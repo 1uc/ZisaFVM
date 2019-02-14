@@ -24,11 +24,11 @@ static void bm_poly2d_eval(benchmark::State &state) {
                             rand(), rand(), rand(), rand(),
                             rand(), rand(), rand(), rand(), rand()},
 
-                           zisa::XY{rand(), rand()},
+                           zisa::XYZ{rand(), rand(), rand()},
                            0.234);
   // clang-format on
 
-  auto x = zisa::XY{rand(), rand()};
+  auto x = zisa::XYZ{rand(), rand(), 0.0};
 
   for (auto _ : state) {
     benchmark::DoNotOptimize(p(x));

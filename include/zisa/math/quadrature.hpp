@@ -19,9 +19,9 @@ namespace zisa {
 
 template <class QR, class F, class Domain>
 auto quadrature(const QR &qr, const F &f, const Domain &domain)
-    -> decltype(f(std::declval<XY>())) {
+    -> decltype(f(std::declval<XYZ>())) {
 
-  using fx_t = decltype(f(std::declval<XY>()));
+  using fx_t = decltype(f(std::declval<XYZ>()));
 
   const auto &w = qr.weights;
   const auto &x = qr.points;
@@ -42,7 +42,7 @@ auto quadrature(const QR &qr, const F &f, const Domain &domain)
 
 template <class F>
 auto quadrature(const F &f, const Triangle &tri, int_t deg)
-    -> decltype(f(std::declval<XY>())) {
+    -> decltype(f(std::declval<XYZ>())) {
 
   const auto &qr = cached_triangular_quadrature_rule(deg);
   return quadrature(qr, f, tri);
@@ -53,7 +53,7 @@ auto quadrature(const F &f, const Triangle &tri, int_t deg)
 
 template <class F>
 auto quadrature(const F &f, const Edge &edge, int_t deg)
-    -> decltype(f(std::declval<XY>())) {
+    -> decltype(f(std::declval<XYZ>())) {
 
   const auto &qr = cached_edge_quadrature_rule(deg);
   return quadrature(qr, f, edge);
@@ -64,7 +64,7 @@ auto quadrature(const F &f, const Edge &edge, int_t deg)
 
 template <class F>
 auto quadrature(const F &f, const Grid &grid, int_t deg)
-    -> decltype(f(std::declval<XY>())) {
+    -> decltype(f(std::declval<XYZ>())) {
 
   const auto &qr = cached_triangular_quadrature_rule(deg);
 
@@ -86,17 +86,17 @@ auto quadrature(const F &f, const Grid &grid, int_t deg)
 // -- average
 template <class F, class Domain>
 auto average(const F &f, const Domain &domain, int_t deg)
-    -> decltype(f(std::declval<XY>())) {
+    -> decltype(f(std::declval<XYZ>())) {
 
-  using fx_t = decltype(f(std::declval<XY>()));
+  using fx_t = decltype(f(std::declval<XYZ>()));
   return fx_t(quadrature(f, domain, deg) / volume(domain));
 }
 
 template <class QR, class F, class Domain>
 auto average(const QR &qr, const F &f, const Domain &domain)
-    -> decltype(f(std::declval<XY>())) {
+    -> decltype(f(std::declval<XYZ>())) {
 
-  using fx_t = decltype(f(std::declval<XY>()));
+  using fx_t = decltype(f(std::declval<XYZ>()));
   return fx_t(quadrature(qr, f, domain) / volume(domain));
 }
 

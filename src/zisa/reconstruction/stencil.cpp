@@ -139,7 +139,7 @@ int_t required_stencil_size(int deg, double factor) {
 std::vector<int_t>
 central_stencil(const Grid &grid, int_t i_center, int_t n_points) {
   return biased_stencil(
-      grid, i_center, n_points, Cone({0.0, 0.0}, {1.0, 0.0}, -1.1));
+      grid, i_center, n_points, Cone({0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, -1.1));
 }
 
 std::vector<int_t>

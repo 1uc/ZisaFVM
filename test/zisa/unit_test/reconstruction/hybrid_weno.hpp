@@ -20,8 +20,8 @@ void test_hybrid_weno_convergence(
     const std::tuple<double, double> &expected_rate,
     const HybridWENO_Params &params) {
 
-  auto f = [](const XY &x) {
-    auto d = zisa::norm(x - XY{0.5, 0.5});
+  auto f = [](const XYZ &x) {
+    auto d = zisa::norm(x - XYZ{0.5, 0.5, 0.0});
     double sigma = 0.2;
     double g = zisa::exp(-zisa::pow<2>(d / sigma));
 
@@ -74,8 +74,8 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
 
   double tol = 5e-7;
 
-  auto f = [](const XY &x) {
-    auto d = zisa::norm(x - XY{0.5, 0.5});
+  auto f = [](const XYZ &x) {
+    auto d = zisa::norm(x - XYZ{0.5, 0.5, 0.0});
     return (d < 0.3 ? 10.0 : 1.0);
   };
 
@@ -88,7 +88,7 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
       volume_rules.push_back(make_triangular_rule(deg));
     }
 
-    auto points = std::vector<XY>();
+    auto points = std::vector<XYZ>();
 
     for (int_t k = 0; k < grid.max_neighbours; ++k) {
       auto edge = grid.edge(i, k);

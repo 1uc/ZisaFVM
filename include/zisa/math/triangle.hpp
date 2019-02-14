@@ -11,9 +11,9 @@ namespace zisa {
 
 class Triangle {
 public:
-  XY A;
-  XY B;
-  XY C;
+  XYZ A;
+  XYZ B;
+  XYZ C;
 
   double a;
   double b;
@@ -23,11 +23,11 @@ public:
 
 public:
   Triangle() = default;
-  Triangle(const XY &A, const XY &B, const XY &C);
+  Triangle(const XYZ &A, const XYZ &B, const XYZ &C);
 };
 
 double volume(const Triangle &tri);
-XY barycenter(const Triangle &tri);
+XYZ barycenter(const Triangle &tri);
 double circum_radius(const Triangle &tri);
 double characteristic_length(const Triangle &tri);
 double inradius(const Triangle &tri);

@@ -201,15 +201,20 @@ std::ostream &operator<<(std::ostream &os, const Cartesian<n_vars> &x) {
   return os;
 }
 
-class XY : public Cartesian<2> {
+class XYZ : public Cartesian<3> {
 private:
-  using super = Cartesian<2>;
+  using super = Cartesian<3>;
 
 public:
   using scalar_t = double;
 
   using super::Cartesian;
   using super::operator=;
+
+  ANY_DEVICE_INLINE static XYZ zeros() { return XYZ(super::zeros()); }
+  ANY_DEVICE_INLINE static XYZ unit_vector(int_t i) {
+    return XYZ(super::unit_vector(i));
+  }
 };
 
 template <class E1, class E2, class E3>
@@ -243,15 +248,15 @@ Cartesian<E::size()> normalize(const CartesianExpr<E, double> &x) {
 }
 
 template <class E>
-XY rotate_right(const CartesianExpr<E, double> &e_) {
+XYZ rotate_right(const CartesianExpr<E, double> &e_) {
   const E &e = static_cast<const E &>(e_);
-  return {e(1), -e(0)};
+  return {e(1), -e(0), e(2)};
 }
 
 template <class E>
-XY rotate_left(const CartesianExpr<E, double> &e_) {
+XYZ rotate_left(const CartesianExpr<E, double> &e_) {
   const E &e = static_cast<const E &>(e_);
-  return {-e(1), e(0)};
+  return {-e(1), e(0), e(2)};
 }
 
 // /// Save an array of `XY`.
@@ -316,20 +321,20 @@ namespace zisa {
 
 // Enable structured bindings for XY.
 namespace std {
-  template <size_t i>
-  struct tuple_element<i, zisa::XY> {
-    using type = double;
-  };
+template <size_t i>
+struct tuple_element<i, zisa::XYZ> {
+  using type = double;
+};
 
-  template <>
-  struct tuple_size<zisa::XY> : public integral_constant<size_t, 2> {};
+template <>
+struct tuple_size<zisa::XYZ> : public integral_constant<size_t, 3> {};
 } // namespace std
 
 namespace zisa {
-  template <int_t i>
-  auto get(const XY &x) {
-    return x[i];
-  }
+template <int_t i>
+auto get(const XYZ &x) {
+  return x[i];
+}
 } // namespace zisa
 
 

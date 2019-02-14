@@ -36,13 +36,13 @@ public:
     weno_poly = rc.reconstruct(u_local);
   }
 
-  cvars_t operator()(const XY &x) const {
+  cvars_t operator()(const XYZ &x) const {
     return cvars_t(background(x) + delta(x));
   }
 
-  cvars_t delta(const XY &x) const { return cvars_t(weno_poly(x)); }
+  cvars_t delta(const XYZ &x) const { return cvars_t(weno_poly(x)); }
 
-  cvars_t background(const XY &x) const {
+  cvars_t background(const XYZ &x) const {
     auto [rho, E] = eq.extrapolate(x);
     return cvars_t{rho, 0.0, 0.0, 0.0, E};
   }

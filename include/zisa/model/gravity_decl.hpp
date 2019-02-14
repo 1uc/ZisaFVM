@@ -16,21 +16,21 @@ public:
   Gravity(const GravityBase &gravity, const Alignment &alignment)
       : gravity(gravity), alignment(alignment) {}
 
-  ANY_DEVICE_INLINE double phi(const XY &x) const {
+  ANY_DEVICE_INLINE double phi(const XYZ &x) const {
     double chi = alignment.coordinate(x);
     return gravity.phi(chi);
   }
 
-  ANY_DEVICE_INLINE double dphi_dx(const XY &x, int_t dir) const {
+  ANY_DEVICE_INLINE double dphi_dx(const XYZ &x, int_t dir) const {
     double chi = alignment.coordinate(x);
     return gravity.dphi_dx(chi) * alignment.dx(x, dir);
   }
 
-  ANY_DEVICE_INLINE XY grad_phi(const XY &x) const {
-    return {dphi_dx(x, 0), dphi_dx(x, 1)};
+  ANY_DEVICE_INLINE XYZ grad_phi(const XYZ &x) const {
+    return {dphi_dx(x, 0), dphi_dx(x, 1), dphi_dx(x, 2)};
   }
 
-  ANY_DEVICE_INLINE double norm_grad_phi(const XY &x) const {
+  ANY_DEVICE_INLINE double norm_grad_phi(const XYZ &x) const {
     return zisa::norm(grad_phi(x));
   }
 
@@ -47,11 +47,11 @@ protected:
 
 class RadialAlignment {
 public:
-  ANY_DEVICE_INLINE double coordinate(const XY &xy) const {
+  ANY_DEVICE_INLINE double coordinate(const XYZ &xy) const {
     return zisa::norm(xy);
   }
 
-  ANY_DEVICE_INLINE double dx(const XY &xy, int_t dir) const {
+  ANY_DEVICE_INLINE double dx(const XYZ &xy, int_t dir) const {
     double r = zisa::norm(xy);
     return xy[dir] / (r + epsilon);
   }
@@ -63,15 +63,17 @@ private:
 class AxialAlignment {
 public:
   ANY_DEVICE_INLINE AxialAlignment() = default;
-  ANY_DEVICE_INLINE AxialAlignment(const XY &axis) : axis(axis){};
+  ANY_DEVICE_INLINE AxialAlignment(const XYZ &axis) : axis(axis){};
 
-  ANY_DEVICE_INLINE double coordinate(const XY &xy) const {
+  ANY_DEVICE_INLINE double coordinate(const XYZ &xy) const {
     return zisa::dot(xy, axis);
   }
-  ANY_DEVICE_INLINE double dx(const XY &, int_t dir) const { return axis[dir]; }
+  ANY_DEVICE_INLINE double dx(const XYZ &, int_t dir) const {
+    return axis[dir];
+  }
 
 private:
-  XY axis;
+  XYZ axis;
 };
 
 class ConstantGravity {
@@ -143,7 +145,7 @@ private:
 public:
   PointMassGravityXAligned() = default;
   PointMassGravityXAligned(double G, double M, double X)
-      : super({G, M, X}, XY{1.0, 0.0}){};
+      : super({G, M, X}, XYZ::unit_vector(0)){};
 };
 
 class PointMassGravityYAligned : public PointMassGravityAxial {
@@ -153,7 +155,7 @@ private:
 public:
   PointMassGravityYAligned() = default;
   PointMassGravityYAligned(double G, double M, double X)
-      : super({G, M, X}, XY{0.0, 1.0}){};
+      : super({G, M, X}, XYZ::unit_vector(1)){};
 };
 
 class PolytropeGravity {

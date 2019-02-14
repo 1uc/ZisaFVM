@@ -10,11 +10,11 @@ TEST_CASE("Grid; small_example", "[grid]") {
   zisa::int_t n_cells = 2;
   zisa::int_t n_vertices = 4;
 
-  auto vertices = zisa::array<zisa::XY, 1>(zisa::shape_t<1>{n_vertices});
-  vertices(0) = {0.0, 0.0};
-  vertices(1) = {1.0, 0.0};
-  vertices(2) = {1.0, 1.0};
-  vertices(3) = {0.0, 1.0};
+  auto vertices = zisa::array<zisa::XYZ, 1>(zisa::shape_t<1>{n_vertices});
+  vertices(0) = {0.0, 0.0, 0.0};
+  vertices(1) = {1.0, 0.0, 0.0};
+  vertices(2) = {1.0, 1.0, 0.0};
+  vertices(3) = {0.0, 1.0, 0.0};
 
   auto vertex_indices
       = zisa::array<zisa::int_t, 2>(zisa::shape_t<2>{n_cells, 3ul});
@@ -100,7 +100,7 @@ TEST_CASE("Grid; small_example", "[grid]") {
 
     REQUIRE(normals.shape(0) == 5);
 
-    auto exact = zisa::XY{0.5 / std::sqrt(0.5), 0.5 / std::sqrt(0.5)};
+    auto exact = zisa::XYZ{0.5 / std::sqrt(0.5), 0.5 / std::sqrt(0.5), 0.0};
     REQUIRE(zisa::almost_equal(normals(0), exact, 1e-12));
   }
 
@@ -201,8 +201,8 @@ TEST_CASE("Grid; moments", "[grid]") {
     for (const auto &[e, edge] : zisa::interior_edges(*grid)) {
       auto [iL, iR] = grid->left_right(e);
 
-      zisa::XY xL = zisa::barycenter(grid->triangle(iL));
-      zisa::XY xR = zisa::barycenter(grid->triangle(iR));
+      zisa::XYZ xL = zisa::barycenter(grid->triangle(iL));
+      zisa::XYZ xR = zisa::barycenter(grid->triangle(iR));
 
       auto n = edge.normal();
 

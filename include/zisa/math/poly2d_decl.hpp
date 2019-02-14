@@ -49,17 +49,17 @@ public:
 
   Poly2D(int degree,
          const array<double, 1> &moments,
-         const XY &x_center,
+         const XYZ &x_center,
          double reference_length);
 
   Poly2D(int degree,
          const std::initializer_list<double> &moments_list,
-         const XY &x_center,
+         const XYZ &x_center,
          double reference_length);
 
   Poly2D(const std::initializer_list<double> &coeffs_list,
          const std::initializer_list<double> &moments_list,
-         const XY &x_center,
+         const XYZ &x_center,
          double reference_length);
 
   template <class E>
@@ -80,7 +80,7 @@ public:
   template <class E>
   void deep_copy(const PolynomialCRTP<E> &e_);
 
-  Cartesian<NVARS> operator()(const XY &xy) const;
+  Cartesian<NVARS> operator()(const XYZ &xy) const;
 
   double a(int i, int j, int_t k) const;
   double &a(int i, int j, int_t k);
@@ -88,7 +88,7 @@ public:
   double a(int_t i) const;
   double c(int_t i) const;
 
-  const XY &x_center() const;
+  const XYZ &x_center() const;
   double reference_length() const;
 
   double *coeffs_ptr();
@@ -104,7 +104,7 @@ private:
 
   int degree_;
 
-  XY x_center_;
+  XYZ x_center_;
   double reference_length_;
 };
 

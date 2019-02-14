@@ -5,7 +5,7 @@
 #endif
 
 namespace zisa {
-TriPlot::TriPlot(const array<XY, 1> &vertices,
+TriPlot::TriPlot(const array<XYZ, 1> &vertices,
                  const array<int_t, 2> &vertex_indices,
                  const std::string &title) {
 

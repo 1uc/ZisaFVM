@@ -8,42 +8,43 @@ namespace zisa {
 
 class Edge {
 public:
-  Edge(const XY &a, const XY &b)
+  Edge(const XYZ &a, const XYZ &b)
       : a(a), b(b), n(rotate_right(normalize(b - a))), t(normalize(b - a)) {}
 
-  Edge(const XY &a, const XY &b, const XY &n, const XY &t)
+  Edge(const XYZ &a, const XYZ &b, const XYZ &n, const XYZ &t)
       : a(a), b(b), n(n), t(t) {}
   Edge(const Edge &other) = default;
 
   inline double volume() const { return zisa::norm(a - b); }
 
-  inline const XY &normal() const { return n; }
-  inline const XY &tangential() const { return t; }
+  inline const XYZ &normal() const { return n; }
+  inline const XYZ &tangential() const { return t; }
 
   /// Quadrature reference space -> physical space.
   /** Input:
    *   x_rel : relative coordinate in [-1, 1].
    **/
-  inline XY coord(double x_rel) const {
+  inline XYZ coord(double x_rel) const {
     // 0.5 * (a + b) + x_rel * (b - a)
-    return XY((0.5 - 0.5 * x_rel) * a + (0.5 + 0.5 * x_rel) * b);
+    return XYZ((0.5 - 0.5 * x_rel) * a + (0.5 + 0.5 * x_rel) * b);
   }
 
 private:
-  XY a; // one end-point
-  XY b; // other end-point
+  XYZ a; // one end-point
+  XYZ b; // other end-point
 
-  XY n; // normal
-  XY t; // tangential
+  XYZ n; // normal
+  XYZ t; // tangential
 
 private:
-  friend XY unit_outward_normal(const Edge &edge, XY point_inside);
+  friend XYZ unit_outward_normal(const Edge &edge, XYZ point_inside);
 };
 
-inline XY coord(const Edge &edge, double x_rel) { return edge.coord(x_rel); }
+inline XYZ coord(const Edge &edge, double x_rel) { return edge.coord(x_rel); }
 inline double volume(const Edge &edge) { return edge.volume(); }
-inline XY unit_outward_normal(const Edge &edge, XY point_inside) {
-  return XY(zisa::sign(zisa::dot(edge.normal(), edge.a - point_inside)) * edge.normal());
+inline XYZ unit_outward_normal(const Edge &edge, XYZ point_inside) {
+  return XYZ(zisa::sign(zisa::dot(edge.normal(), edge.a - point_inside))
+             * edge.normal());
 }
 
 } // namespace zisa

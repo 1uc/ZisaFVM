@@ -15,7 +15,7 @@ namespace zisa {
 
 class ScalarPlot {
 public:
-  ScalarPlot(const array<XY, 1> &vertices,
+  ScalarPlot(const array<XYZ, 1> &vertices,
              const array<int_t, 2> &vertex_indices,
              const std::string &title);
 

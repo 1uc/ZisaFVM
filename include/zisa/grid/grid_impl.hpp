@@ -9,16 +9,16 @@
 namespace zisa {
 constexpr int_t magic_index_value = std::numeric_limits<int_t>::max();
 
-using vertices_t = array<XY, 1>;
+using vertices_t = array<XYZ, 1>;
 using vertex_indices_t = array<int_t, 2>;
 using neighbours_t = array<int_t, 2>;
 using edges_t = std::vector<std::map<int_t, int_t>>;
 using edge_indices_t = array<int_t, 2>;
 using left_right_t = array<std::pair<int_t, int_t>, 1>;
 using volumes_t = array<double, 1>;
-using normals_t = array<XY, 1>;
-using tangentials_t = array<XY, 1>;
-using cell_centers_t = array<XY, 1>;
+using normals_t = array<XYZ, 1>;
+using tangentials_t = array<XYZ, 1>;
+using cell_centers_t = array<XYZ, 1>;
 using is_valid_t = array<bool, 2>;
 
 using edges_t = std::vector<std::map<int_t, int_t>>;
