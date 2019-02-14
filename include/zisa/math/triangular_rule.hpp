@@ -2,8 +2,8 @@
 #define TRIANGULAR_RULE_H_V7Y5S
 
 #include <zisa/config.hpp>
-#include <zisa/memory/array.hpp>
 #include <zisa/math/barycentric.hpp>
+#include <zisa/memory/array.hpp>
 
 namespace zisa {
 

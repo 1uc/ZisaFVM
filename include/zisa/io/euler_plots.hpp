@@ -13,8 +13,7 @@ namespace zisa {
 class EulerPlots : public Visualization {
 public:
   EulerPlots(const Grid &grid, const std::chrono::milliseconds &delay)
-      : rho_plot(grid.vertices, grid.vertex_indices, "Density"),
-        delay(delay) {}
+      : rho_plot(grid.vertices, grid.vertex_indices, "Density"), delay(delay) {}
 
 protected:
   virtual void do_visualization(const AllVariables &all_variables,

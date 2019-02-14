@@ -144,9 +144,9 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
 
           auto lj_4 = lj_3 * lj;
 
-          A(ii_, eint(i_40 - 1)) = x_40 - C0(i_40) + 6.0 * x_20 * lj_2 * Cj(i_20)
-                                   + 4.0 * x_10 * lj_3 * Cj(i_30)
-                                   + lj_4 * Cj(i_40);
+          A(ii_, eint(i_40 - 1))
+              = x_40 - C0(i_40) + 6.0 * x_20 * lj_2 * Cj(i_20)
+                + 4.0 * x_10 * lj_3 * Cj(i_30) + lj_4 * Cj(i_40);
 
           A(ii_, eint(i_31 - 1))
               = x_31 - C0(i_31) + 3 * x_11 * lj_2 * Cj(i_20)
@@ -160,13 +160,13 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                 + lj_4 * Cj(i_22);
 
           A(ii_, eint(i_13 - 1))
-            = x_13 - C0(i_13) + 3 * x_11 * lj_2 * Cj(i_02)
-            + 3.0 * x_02 * lj_2 * Cj(i_11) + x_10 * lj_3 * Cj(i_03)
-            + 3.0 * x_01 * lj_3 * Cj(i_12) + lj_4 * Cj(i_13);
+              = x_13 - C0(i_13) + 3 * x_11 * lj_2 * Cj(i_02)
+                + 3.0 * x_02 * lj_2 * Cj(i_11) + x_10 * lj_3 * Cj(i_03)
+                + 3.0 * x_01 * lj_3 * Cj(i_12) + lj_4 * Cj(i_13);
 
-          A(ii_, eint(i_04 - 1)) = x_04 - C0(i_04) + 6.0 * x_02 * lj_2 * Cj(i_02)
-                                   + 4.0 * x_01 * lj_3 * Cj(i_03)
-                                   + lj_4 * Cj(i_04);
+          A(ii_, eint(i_04 - 1))
+              = x_04 - C0(i_04) + 6.0 * x_02 * lj_2 * Cj(i_02)
+                + 4.0 * x_01 * lj_3 * Cj(i_03) + lj_4 * Cj(i_04);
         }
       }
     }

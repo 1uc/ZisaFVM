@@ -8,7 +8,7 @@ ScalarPlot::ScalarPlot(const array<XYZ, 1> &vertices,
     : tri_plot(vertices, vertex_indices, title),
       color_map(256),
       values(shape_t<1>{vertex_indices.shape(0)}),
-      colors(shape_t<1>{3*vertex_indices.shape(0)}) {}
+      colors(shape_t<1>{3 * vertex_indices.shape(0)}) {}
 
 std::pair<double, double> ScalarPlot::safe_min_max(double min_, double max_) {
 

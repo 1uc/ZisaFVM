@@ -17,7 +17,8 @@ TriPlot::TriPlot(const array<XYZ, 1> &vertices,
 #else
 
   auto window = std::make_shared<opengl::Window>(title, 600, 600);
-  tri_plot_ = std::make_unique<opengl::TriPlot>(std::move(window), vertices, vertex_indices);
+  tri_plot_ = std::make_unique<opengl::TriPlot>(
+      std::move(window), vertices, vertex_indices);
 
 #endif
 }

@@ -51,9 +51,7 @@ public:
     }
   }
 
-  explicit ANY_DEVICE_INLINE Cartesian(double value) {
-    assign_constant(value);
-  }
+  explicit ANY_DEVICE_INLINE Cartesian(double value) { assign_constant(value); }
 
   ANY_DEVICE_INLINE const scalar_t &operator()(int_t i) const {
     return data[i];
@@ -160,9 +158,9 @@ public:
     return !((*this) == e);
   }
 
-  ANY_DEVICE constexpr static int_t size(void) { return n_vars; }
+  ANY_DEVICE_INLINE constexpr static int_t size(void) { return n_vars; }
 
-  ANY_DEVICE static Cartesian<n_vars> zeros(void) {
+  ANY_DEVICE_INLINE static Cartesian<n_vars> zeros(void) {
     Cartesian<n_vars> ret;
     return ret.assign_zero();
   }
@@ -303,20 +301,20 @@ XYZ rotate_left(const CartesianExpr<E, double> &e_) {
 
 // Enable structured bindings for Cartesian<n>
 namespace std {
-  template <size_t i, zisa::int_t n>
-  struct tuple_element<i, zisa::Cartesian<n>> {
-    using type = double;
-  };
+template <size_t i, zisa::int_t n>
+struct tuple_element<i, zisa::Cartesian<n>> {
+  using type = double;
+};
 
-  template <zisa::int_t n>
-  struct tuple_size<zisa::Cartesian<n>> : public integral_constant<size_t, n> {};
+template <zisa::int_t n>
+struct tuple_size<zisa::Cartesian<n>> : public integral_constant<size_t, n> {};
 } // namespace std
 
 namespace zisa {
-  template <int_t i, int_t n>
-  auto get(const Cartesian<n> &x) {
-    return x[i];
-  }
+template <int_t i, int_t n>
+auto get(const Cartesian<n> &x) {
+  return x[i];
+}
 } // namespace zisa
 
 // Enable structured bindings for XY.
@@ -336,6 +334,5 @@ auto get(const XYZ &x) {
   return x[i];
 }
 } // namespace zisa
-
 
 #endif /* end of include guard: COORDINATES_H_PCND3ABZ */

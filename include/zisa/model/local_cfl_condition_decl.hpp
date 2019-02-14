@@ -1,9 +1,9 @@
 #ifndef LOCAL_CFL_CONDITION_DECL_H_QY93E
 #define LOCAL_CFL_CONDITION_DECL_H_QY93E
 
-#include <zisa/model/cfl_condition.hpp>
-#include <zisa/model/all_variables.hpp>
 #include <zisa/grid/grid.hpp>
+#include <zisa/model/all_variables.hpp>
+#include <zisa/model/cfl_condition.hpp>
 
 namespace zisa {
 

@@ -1,5 +1,5 @@
-#include <zisa/experiments/polytrope.hpp>
 #include <zisa/experiments/ic/polytrope_ic.hpp>
+#include <zisa/experiments/polytrope.hpp>
 
 namespace zisa {
 

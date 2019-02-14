@@ -101,8 +101,8 @@ void TriPlot::compute_normalized_coordinates(
       int_t jj = 3 * i + k;           // index in 'this->vertices'.
 
       for (int_t kk = 0; kk < 2; ++kk) {
-        this->vertices[jj][kk]
-            = float(1.8 * (vertices[j][kk] - min_[kk]) / (max_[kk] - min_[kk]) - 0.9);
+        this->vertices[jj][kk] = float(
+            1.8 * (vertices[j][kk] - min_[kk]) / (max_[kk] - min_[kk]) - 0.9);
       }
       this->vertices[jj][2] = 0.0;
     }

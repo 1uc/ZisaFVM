@@ -91,9 +91,8 @@ public:
                           string_format("edge degree: %d\nvolume degree: %d\n",
                                         edge_deg,
                                         volume_deg))
-      + indent_block(1, type_name<Equilibrium>()) + "\n"
-      + indent_block(1, type_name<RC>())
-      ;
+           + indent_block(1, type_name<Equilibrium>()) + "\n"
+           + indent_block(1, type_name<RC>());
   }
 
 private:

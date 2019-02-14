@@ -43,9 +43,8 @@ public:
 
   double reference_length() const {
     return (e1.degree() > e2.degree() ? e1.reference_length()
-            : e2.reference_length());
+                                      : e2.reference_length());
   }
-
 
 private:
   const E1 &e1;

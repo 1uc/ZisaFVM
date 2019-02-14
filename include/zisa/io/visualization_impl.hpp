@@ -6,8 +6,8 @@
 #ifndef VISUALIZATION_INC_F9TKQD6Z
 #define VISUALIZATION_INC_F9TKQD6Z
 
-#include <zisa/io/visualization.hpp>
 #include <zisa/io/tri_plot.hpp>
+#include <zisa/io/visualization.hpp>
 #include <zisa/model/all_variables.hpp>
 
 namespace zisa {

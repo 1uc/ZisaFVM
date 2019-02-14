@@ -34,9 +34,11 @@ public:
   template <class... Args>
   LocalEquilibrium(Args &&... /* args */) {}
 
-  inline void solve(const RhoE &/* rhoE_bar */) { return; }
+  inline void solve(const RhoE & /* rhoE_bar */) { return; }
   inline RhoE extrapolate(const XYZ & /* xy */) const { return {0.0, 0.0}; }
-  inline RhoE extrapolate(const Triangle &/* tri */) const { return {0.0, 0.0}; }
+  inline RhoE extrapolate(const Triangle & /* tri */) const {
+    return {0.0, 0.0};
+  }
 };
 
 } // namespace zisa

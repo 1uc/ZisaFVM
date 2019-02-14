@@ -1,9 +1,9 @@
-#include <zisa/testing/testing_framework.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("Grid; small_example", "[grid]") {
 
@@ -16,8 +16,8 @@ TEST_CASE("Grid; small_example", "[grid]") {
   vertices(2) = {1.0, 1.0, 0.0};
   vertices(3) = {0.0, 1.0, 0.0};
 
-  auto vertex_indices
-      = zisa::array<zisa::int_t, 2>(zisa::shape_t<2>{n_cells, 3ul});
+  auto vertex_indices =
+      zisa::array<zisa::int_t, 2>(zisa::shape_t<2>{n_cells, 3ul});
   vertex_indices(0, 0) = 0;
   vertex_indices(0, 1) = 1;
   vertex_indices(0, 2) = 3;
@@ -95,8 +95,8 @@ TEST_CASE("Grid; small_example", "[grid]") {
     auto neighbours = zisa::compute_neighbours(vertex_indices);
     auto is_valid = zisa::compute_valid_neighbours(neighbours);
     auto edge_indices = zisa::compute_edge_indices(neighbours, is_valid);
-    auto normals = zisa::compute_normals(
-        vertices, vertex_indices, neighbours, is_valid, edge_indices);
+    auto normals = zisa::compute_normals(vertices, vertex_indices, neighbours,
+                                         is_valid, edge_indices);
 
     REQUIRE(normals.shape(0) == 5);
 
@@ -155,14 +155,14 @@ TEST_CASE("Grid; sizes", "[grid]") {
 TEST_CASE("Grid; moments", "[grid]") {
   auto grid = zisa::load_gmsh("grids/dbg.msh");
 
-  auto check_moment
-      = [](const zisa::Triangle &tri, int k, int l, double exact) {
-          auto m = zisa::avg_moment(tri, k, l, 3);
+  auto check_moment = [](const zisa::Triangle &tri, int k, int l,
+                         double exact) {
+    auto m = zisa::avg_moment(tri, k, l, 3);
 
-          INFO(string_format(
-              "[%d, %d] %e  !=  %e (%e) \n", k, l, m, exact, m - exact));
-          REQUIRE(zisa::almost_equal(m, exact, 1e-8));
-        };
+    INFO(string_format("[%d, %d] %e  !=  %e (%e) \n", k, l, m, exact,
+                       m - exact));
+    REQUIRE(zisa::almost_equal(m, exact, 1e-8));
+  };
 
   SECTION("avg_moment") {
 
@@ -189,8 +189,8 @@ TEST_CASE("Grid; moments", "[grid]") {
     for (const auto &[i, tri] : zisa::triangles(*grid)) {
       auto m = zisa::normalized_moments(tri, 4, 3);
 
-      for (zisa::int_t d = 0; d <= 3; ++d) {
-        for (zisa::int_t k = 0; k <= d; ++k) {
+      for (int d = 0; d <= 3; ++d) {
+        for (int k = 0; k <= d; ++k) {
           check_moment(m, k, d - k);
         }
       }
@@ -262,8 +262,8 @@ TEST_CASE("Grid; incidence", "[grid]") {
     for (const auto &[e, edge] : interior_edges(*grid)) {
       auto [iL, iR] = grid->left_right(e);
 
-      REQUIRE((grid->neighbours(iL, 0) == iR || grid->neighbours(iL, 1) == iR
-               || grid->neighbours(iL, 2) == iR));
+      REQUIRE((grid->neighbours(iL, 0) == iR || grid->neighbours(iL, 1) == iR ||
+               grid->neighbours(iL, 2) == iR));
     }
   }
 

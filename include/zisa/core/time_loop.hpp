@@ -6,14 +6,14 @@
 #ifndef TIME_LOOP_H_3IJELTQK
 #define TIME_LOOP_H_3IJELTQK
 
-#include <zisa/model/sanity_check.hpp>
 #include <zisa/datetime.hpp>
 #include <zisa/io/progress_bar.hpp>
 #include <zisa/io/visualization.hpp>
+#include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/euler.hpp>
+#include <zisa/model/sanity_check.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration.hpp>
-#include <zisa/model/cfl_condition.hpp>
 
 namespace zisa {
 /// The time-stepping loop.

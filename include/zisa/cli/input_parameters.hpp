@@ -18,8 +18,12 @@ private:
 public:
   InputParameters(const std::string &filename);
 
-  inline decltype(auto) operator[](const std::string &key) const { return json_[key]; }
-  inline decltype(auto) operator[](const std::string &key) { return json_[key]; }
+  inline decltype(auto) operator[](const std::string &key) const {
+    return json_[key];
+  }
+  inline decltype(auto) operator[](const std::string &key) {
+    return json_[key];
+  }
 
   bool has_key(const std::string &key) const;
 };

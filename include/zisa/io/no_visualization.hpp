@@ -3,7 +3,6 @@
 
 #include <zisa/io/visualization.hpp>
 
-
 namespace zisa {
 
 class NoVisualization : public Visualization {

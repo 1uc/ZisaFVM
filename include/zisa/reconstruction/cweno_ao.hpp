@@ -12,7 +12,8 @@ private:
 public:
   using super::super;
 
-  auto reconstruct(const array<cvars_t, 1> &qbar) const -> decltype(hybridize());
+  auto reconstruct(const array<cvars_t, 1> &qbar) const
+      -> decltype(hybridize());
 };
 
 } // namespace zisa

@@ -1,10 +1,10 @@
 #include <random>
 
 #include <zisa/grid/grid.hpp>
-#include <zisa/opengl/tri_plot.hpp>
-#include <zisa/memory/array.hpp>
-#include <zisa/io/colors.hpp>
 #include <zisa/io/color_map.hpp>
+#include <zisa/io/colors.hpp>
+#include <zisa/memory/array.hpp>
+#include <zisa/opengl/tri_plot.hpp>
 
 int main() {
 #if ZISA_HAS_OPENGL == 1
@@ -19,7 +19,8 @@ int main() {
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
   zisa::opengl::TriPlot plot(window, grid->vertices, grid->vertex_indices);
 
-  auto colors = zisa::array<zisa::RGBColor, 1>(zisa::shape_t<1>{grid->n_cells * 3});
+  auto colors
+      = zisa::array<zisa::RGBColor, 1>(zisa::shape_t<1>{grid->n_cells * 3});
 
   // Ensure we can capture the escape key being pressed below
   glfwSetInputMode(window->ptr(), GLFW_STICKY_KEYS, GL_TRUE);

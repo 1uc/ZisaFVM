@@ -1,6 +1,6 @@
+#include <zisa/io/format_as_list.hpp>
 #include <zisa/reconstruction/stencil_family_params.hpp>
 #include <zisa/reconstruction/stencil_params.hpp>
-#include <zisa/io/format_as_list.hpp>
 
 namespace zisa {
 

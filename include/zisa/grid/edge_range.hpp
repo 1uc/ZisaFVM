@@ -19,7 +19,9 @@ private:
       return {current_, grid_.edge(current_)};
     }
 
-    inline bool operator!=(const EndIterator &) const { return current_ < end_; }
+    inline bool operator!=(const EndIterator &) const {
+      return current_ < end_;
+    }
     inline bool operator==(const EndIterator &it) const {
       return !(*this != it);
     }

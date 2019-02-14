@@ -12,7 +12,8 @@
 
 namespace zisa {
 
-template <int DEGREE> class FourierSeriesBase {
+template <int DEGREE>
+class FourierSeriesBase {
 public:
   static constexpr int degree() { return DEGREE; }
   static constexpr int size() { return degree() + 1; }
@@ -25,17 +26,20 @@ public:
     std::copy(init_list.begin(), init_list.end(), coeffs);
   }
 
-  template <class E> FourierSeriesBase(const PolynomialCRTP<E> &e_) {
+  template <class E>
+  FourierSeriesBase(const PolynomialCRTP<E> &e_) {
     deep_copy(static_cast<const E &>(e_));
   }
 
-  template <class E> void operator=(const PolynomialCRTP<E> &e_) {
+  template <class E>
+  void operator=(const PolynomialCRTP<E> &e_) {
     const E &e = static_cast<const E &>(e_);
 
     deep_copy(e);
   }
 
-  template <class E> void deep_copy(const PolynomialCRTP<E> &e_) {
+  template <class E>
+  void deep_copy(const PolynomialCRTP<E> &e_) {
     const E &e = static_cast<const E &>(e_);
     static_assert(E::degree() <= degree(), "Polynomial degree mismatch.");
 
@@ -64,7 +68,8 @@ protected:
   double coeffs[size()];
 };
 
-template <int DEGREE> class FourierSeriesDerivative;
+template <int DEGREE>
+class FourierSeriesDerivative;
 
 template <int DEGREE>
 class FourierSeries : public FourierSeriesBase<DEGREE>,

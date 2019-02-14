@@ -1,5 +1,5 @@
-#include <zisa/testing/testing_framework.hpp>
 #include <zisa/math/cone.hpp>
+#include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("Cone", "[cone][math]") {
 

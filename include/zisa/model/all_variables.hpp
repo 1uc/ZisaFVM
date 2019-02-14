@@ -21,8 +21,8 @@ struct AllVariablesDimensions {
 
 class AllVariables {
 public:
-  GridVariables cvars;  // conserved variables
-  GridVariables avars;  // advected variables
+  GridVariables cvars; // conserved variables
+  GridVariables avars; // advected variables
 
 public:
   AllVariables() = default;

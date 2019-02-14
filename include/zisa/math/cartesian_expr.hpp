@@ -412,7 +412,7 @@ class CartesianLessEqual : public CartesianLogic<CartesianLessEqual<E1, E2>> {
 public:
   template <class T>
   ANY_DEVICE_INLINE CartesianLessEqual(const CartesianExpr<E1, T> &e1,
-                                  const CartesianExpr<E2, T> &e2)
+                                       const CartesianExpr<E2, T> &e2)
       : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {}
 
   ANY_DEVICE_INLINE bool operator()(int_t i) const { return e1(i) <= e2(i); }

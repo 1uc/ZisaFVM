@@ -105,8 +105,8 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
       auto exact = zisa::Cartesian<1>{p(x) + q(x)};
       auto approx = tmp(x);
 
-      INFO(string_format(
-          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      INFO(string_format("%e != %e [%e]\n", approx[0], exact[0],
+                         approx - exact));
       REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
 
@@ -116,8 +116,8 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
       auto exact = zisa::Cartesian<1>{p(x) - q(x)};
       auto approx = zisa::Cartesian<1>{tmp(x)};
 
-      INFO(string_format(
-          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      INFO(string_format("%e != %e [%e]\n", approx[0], exact[0],
+                         approx - exact));
       REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
 
@@ -127,8 +127,8 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
       auto exact = zisa::Cartesian<1>{2.0 * p(x)};
       auto approx = zisa::Cartesian<1>{tmp(x)};
 
-      INFO(string_format(
-          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      INFO(string_format("%e != %e [%e]\n", approx[0], exact[0],
+                         approx - exact));
       REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
 
@@ -138,8 +138,8 @@ TEST_CASE("Poly2D; examples", "[math][poly2d]") {
       auto exact = zisa::Cartesian<1>{0.5 * p(x)};
       auto approx = zisa::Cartesian<1>{tmp(x)};
 
-      INFO(string_format(
-          "%e != %e [%e]\n", approx[0], exact[0], approx - exact));
+      INFO(string_format("%e != %e [%e]\n", approx[0], exact[0],
+                         approx - exact));
       REQUIRE(zisa::almost_equal(approx[0], exact[0], 1e-14));
     }
   }
@@ -164,8 +164,8 @@ TEST_CASE("Poly2D<., 2>; examples", "[math][poly2d]") {
   auto p11 = zisa::Cartesian<n_vars>{4.0, -1.0};
   auto p20 = zisa::Cartesian<n_vars>{0.2, -0.1};
 
-  auto p_coeffs
-      = std::vector<zisa::Cartesian<n_vars>>{p00, p10, p01, p20, p11, p02};
+  auto p_coeffs =
+      std::vector<zisa::Cartesian<n_vars>>{p00, p10, p01, p20, p11, p02};
 
   std::copy((double *)&p_coeffs[0],
             (double *)&p_coeffs[0] + p.n_vars() * p.dof(p.degree()),

@@ -1,6 +1,6 @@
-#include <zisa/utils/string_format.hpp>
-#include <zisa/utils/logging.hpp>
 #include <zisa/reconstruction/stencil_bias.hpp>
+#include <zisa/utils/logging.hpp>
+#include <zisa/utils/string_format.hpp>
 
 namespace zisa {
 

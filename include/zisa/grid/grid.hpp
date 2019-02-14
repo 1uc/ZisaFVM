@@ -4,8 +4,8 @@
 #ifndef GRID_H_RDTNK
 #define GRID_H_RDTNK
 
-#include "grid_decl.hpp"
 #include "edge_range.hpp"
+#include "grid_decl.hpp"
 #include "triangle_range.hpp"
 
 #endif /* end of include guard */

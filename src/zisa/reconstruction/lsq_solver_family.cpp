@@ -28,13 +28,12 @@ auto LSQSolverFamily::end() const -> decltype(solvers_.end()) {
   return solvers_.end();
 }
 
-  bool operator==(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs) {
-    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
-  }
+bool operator==(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs) {
+  return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
 
-  bool operator!=(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs) {
-    return !(lhs == rhs);
-  }
-
+bool operator!=(const LSQSolverFamily &lhs, const LSQSolverFamily &rhs) {
+  return !(lhs == rhs);
+}
 
 } // namespace zisa
