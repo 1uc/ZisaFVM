@@ -2,8 +2,8 @@
 #define GLOBAL_RECONSTRUCTION_DECL_H_VHVV5
 
 #include <zisa/config.hpp>
-
 #include <zisa/grid/grid.hpp>
+#include <zisa/memory/block_allocator.hpp>
 #include <zisa/model/all_variables_fwd.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/reconstruction/hybrid_weno_params.hpp>
@@ -28,13 +28,16 @@ public:
   std::string str() const;
 
 private:
-  void set_qbar_local(const AllVariables &current_state, int_t i);
+  void set_qbar_local(array<cvars_t, 1> &qbar_local,
+                      const AllVariables &current_state,
+                      int_t i);
 
 private:
   HybridWENO_Params params;
+  int_t max_stencil_size;
 
   array<LocalReconstruction<Equilibrium, RC>, 1> rc;
-  mutable std::vector<array<cvars_t, 1>> qbar_local;
+  std::shared_ptr<block_allocator<array<cvars_t, 1>>> allocator;
 };
 
 } // namespace zisa
