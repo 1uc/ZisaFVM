@@ -23,7 +23,7 @@ TimeLoop::TimeLoop(const std::shared_ptr<TimeIntegration> &time_integration,
       visualization(visualization),
       cfl_condition(cfl_condition),
       is_sane(sanity_check),
-      progress_bar(1) {}
+      progress_bar() {}
 
 void TimeLoop::operator()(std::shared_ptr<AllVariables> u0) {
   start_timer();
