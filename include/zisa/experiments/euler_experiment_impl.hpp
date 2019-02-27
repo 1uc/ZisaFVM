@@ -6,6 +6,7 @@
 #include <zisa/boundary/flux_bc.hpp>
 #include <zisa/core/flux_loop.hpp>
 #include <zisa/core/gravity_source_loop.hpp>
+#include <zisa/io/dump_snapshot.hpp>
 #include <zisa/io/euler_plots.hpp>
 #include <zisa/io/no_visualization.hpp>
 #include <zisa/model/isentropic_equilibrium.hpp>
@@ -37,6 +38,9 @@ EulerExperiment<EOS, Gravity>::choose_visualization() {
   } else if (params["io"]["mode"] == "opengl") {
     auto delay = parse_duration_ms(params["io"]["opengl"]["delay"]);
     return std::make_shared<EulerPlots>(*grid, delay);
+  } else if (params["io"]["mode"] == "hdf5") {
+    auto fng = make_file_name_generator(params["io"]["hdf5"]["filename"]);
+    return std::make_shared<SerialDumpSnapshot<euler_t>>(euler, fng);
   }
 
   LOG_ERR("Implement missing case.");
