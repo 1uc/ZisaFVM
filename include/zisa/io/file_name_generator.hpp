@@ -53,5 +53,11 @@ private:
   int count;
 };
 
+template <class Map>
+std::shared_ptr<FileNameGenerator> make_file_name_generator(const Map &map) {
+  return std::make_shared<FileNameGenerator>(
+      map["stem"], map["pattern"], map["suffix"]);
+}
+
 } // namespace zisa
 #endif /* end of include guard */
