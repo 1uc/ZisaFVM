@@ -37,7 +37,7 @@ struct euler_var_t : public Cartesian<5> {
     return euler_var_t(Cartesian<5>::zeros());
   }
 
-  static std::string labels(int i);
+  static std::string labels(int_t i);
 };
 
 ANY_DEVICE_INLINE double kinetic_energy(const euler_var_t &u) {
