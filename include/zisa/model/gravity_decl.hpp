@@ -40,10 +40,23 @@ public:
                          type_name<Alignment>().c_str());
   }
 
+  template <class G, class A>
+  friend void save(HDF5Writer &writer, const Gravity<G, A> &gravity);
+
 protected:
   GravityBase gravity;
   Alignment alignment;
 };
+
+template <class GravityBase, class Alignment>
+void save(HDF5Writer &writer,
+                     const Gravity<GravityBase, Alignment> &gravity) {
+  writer.open_group("gravity");
+  save(writer, gravity.gravity);
+  writer.switch_group("alignment");
+  save(writer, gravity.alignment);
+  writer.close_group();
+}
 
 class RadialAlignment {
 public:
@@ -56,9 +69,14 @@ public:
     return xy[dir] / (r + epsilon);
   }
 
+  friend void save(HDF5Writer &writer,
+                              const RadialAlignment &alignment);
+
 private:
   double epsilon = 1e-50;
 };
+
+void save(HDF5Writer &writer, const RadialAlignment &alignment);
 
 class AxialAlignment {
 public:
@@ -72,9 +90,14 @@ public:
     return axis[dir];
   }
 
+  friend void save(HDF5Writer &writer,
+                              const AxialAlignment &alignment);
+
 private:
   XYZ axis;
 };
+
+void save(HDF5Writer &writer, const AxialAlignment &alignment);
 
 class ConstantGravity {
 public:
@@ -84,9 +107,14 @@ public:
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
+  friend void save(HDF5Writer &writer,
+                              const ConstantGravity &gravity);
+
 private:
   double gravity;
 };
+
+void save(HDF5Writer &writer, const ConstantGravity &gravity);
 
 class ConstantGravityRadial : public Gravity<ConstantGravity, RadialAlignment> {
 private:
@@ -113,10 +141,15 @@ public:
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
+  friend void save(HDF5Writer &writer,
+                              const PointMassGravity &alignment);
+
 private:
   double GM;
   double X;
 };
+
+void save(HDF5Writer &writer, const PointMassGravity &gravity);
 
 class PointMassGravityRadial
     : public Gravity<PointMassGravity, RadialAlignment> {
@@ -167,12 +200,17 @@ public:
 
   ANY_DEVICE_INLINE double alpha() const;
 
+  friend void save(HDF5Writer &writer,
+                              const PolytropeGravity &gravity);
+
 private:
   double rhoC = 1.0;
   double K = 1.0;
   double G = 1.0;
   double eps = std::numeric_limits<double>::min();
 };
+
+void save(HDF5Writer &writer, const PolytropeGravity &gravity);
 
 class PolytropeGravityRadial
     : public Gravity<PolytropeGravity, RadialAlignment> {

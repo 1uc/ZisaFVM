@@ -2,12 +2,13 @@
 
 namespace zisa {
 
-void GridVariables::split_save(HDF5Writer &writer,
-                               const std::vector<std::string> &labels) const {
-  array<double, 1> component({shape(0)}, device_type::cpu);
+void save(HDF5Writer &writer,
+          const GridVariables &vars,
+          const std::vector<std::string> &labels) {
+  array<double, 1> component({vars.shape(0)}, device_type::cpu);
   for (int_t k = 0; k < labels.size(); ++k) {
-    for (int_t i = 0; i < shape(0); ++i) {
-      component[i] = (*this)(i, k);
+    for (int_t i = 0; i < vars.shape(0); ++i) {
+      component[i] = vars(i, k);
     }
 
     zisa::save(writer, component, labels.at(k));

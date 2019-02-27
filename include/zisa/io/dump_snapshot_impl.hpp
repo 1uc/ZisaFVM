@@ -5,30 +5,30 @@
  */
 #ifndef VISUALIZATION_INC_F9TKQD6Z
 #define VISUALIZATION_INC_F9TKQD6Z
+#include "dump_snapshot_decl.hpp"
 
-#include <zisa/io/tri_plot.hpp>
-#include <zisa/io/visualization.hpp>
+#include <zisa/io/file_name_generator.hpp>
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/model/all_variables.hpp>
 
 namespace zisa {
 
 template <class Model>
 DumpSnapshot<Model>::DumpSnapshot(
-    const Model &model,
-    const std::shared_ptr<FileNameGenerator> &file_name_generator)
-    : model(model), file_name_generator(file_name_generator) {}
+    const Model &model, std::shared_ptr<FileNameGenerator> file_name_generator)
+    : model(model), file_name_generator(std::move(file_name_generator)) {}
 
 template <class Model>
 void DumpSnapshot<Model>::do_visualization(
     const AllVariables &all_variables,
     const SimulationClock &simulation_clock) {
 
-  double t = simulation_clock.current_time();
-  int n_steps = simulation_clock.current_step();
+  auto t = simulation_clock.current_time();
+  auto n_steps = simulation_clock.current_step();
 
   auto writer = pick_writer(file_name_generator->next_name());
 
-  save_state(*writer, model, *all_variables, t, n_steps);
+  save_state(*writer, model, all_variables, t, n_steps);
 }
 
 template <class Model>

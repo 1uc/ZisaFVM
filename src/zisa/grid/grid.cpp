@@ -1,11 +1,13 @@
+#include <zisa/grid/grid.hpp>
+
 #include <algorithm>
 #include <map>
 #include <vector>
 
 #include <zisa/config.hpp>
 #include <zisa/grid/gmsh_reader.hpp>
-#include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
+#include <zisa/io/hdf5_writer.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
@@ -375,6 +377,11 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
   }
 
   return std::make_shared<Grid>(std::move(vertices), std::move(vertex_indices));
+}
+
+void save(HDF5Writer &writer, const Grid &grid) {
+  save(writer, grid.cell_centers, "cell_centers");
+  save(writer, grid.volumes, "volumes");
 }
 
 double largest_circum_radius(const Grid &grid) {

@@ -49,18 +49,30 @@ AllVariablesDimensions AllVariables::dims(void) const {
   return dims;
 }
 
-void AllVariables::save(HDF5Writer &, const std::vector<std::string> &) const {
-  LOG_ERR("Implement first.");
-  // // conserved variables
-  // cvars.split_save(writer, labels);
+static std::vector<std::string> numbered_labels(const std::string &pattern,
+                                                int_t n_labels) {
+  std::vector<std::string> labels;
+  for (int_t i = 0; i < n_labels; ++i) {
+    labels.push_back(string_format(pattern.c_str(), i));
+  }
 
-  // assert(avars.shape(1) == 0);
-  // // advected variables
-  // int n_avars = avars.shape(1);
-  // writer.write_scalar(n_avars, "n_avars");
+  return labels;
+}
 
-  // auto advected_labels = numbered_labels("mq%d", n_avars);
-  // avars.split_save(writer, advected_labels);
+void save(HDF5Writer &writer,
+          const AllVariables &all_variables,
+          const std::vector<std::string> &labels) {
+
+  const auto &cvars = all_variables.cvars;
+  const auto &avars = all_variables.avars;
+
+  // conserved variables
+  save(writer, cvars, labels);
+
+  // advected variables
+  int_t n_avars = avars.shape(1);
+  writer.write_scalar(n_avars, "n_avars");
+  save(writer, avars, numbered_labels("mq%d", n_avars));
 }
 
 // void AllVariables::load(HDF5Reader &reader,

@@ -14,7 +14,6 @@
 #include <zisa/math/edge.hpp>
 
 namespace zisa {
-
 /// Extra variables in Euler equations.
 struct euler_xvar_t {
   double p; ///< pressure

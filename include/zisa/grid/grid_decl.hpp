@@ -8,6 +8,7 @@
 #include <zisa/math/edge.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/io/hdf5_writer_fwd.hpp>
 
 namespace zisa {
 
@@ -46,6 +47,8 @@ struct Grid {
 
   std::string str() const;
 };
+
+void save(HDF5Writer &writer, const Grid &grid);
 
 double volume(const Grid &grid);
 

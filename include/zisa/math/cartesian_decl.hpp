@@ -7,9 +7,10 @@
 
 #include <zisa/config.hpp>
 
+#include <zisa/io/hdf5_writer.hpp>
 #include <zisa/math/cartesian_expr.hpp>
 #include <zisa/math/isreal.hpp>
-#include <zisa/memory/array_base.hpp>
+#include <zisa/memory/array.hpp>
 
 namespace zisa {
 template <int_t n_vars>
@@ -257,25 +258,10 @@ XYZ rotate_left(const CartesianExpr<E, double> &e_) {
   return {-e(1), e(0), e(2)};
 }
 
-// /// Save an array of `XY`.
-// template <class Indexing, class Array, class Shape>
-// static void save(HDF5Writer &writer,
-//                  const array_base<XY, Indexing, Array, Shape> &arr,
-//                  const std::string &tag) {
-//   XY const *const data = arr.raw();
-//   const auto &dims = arr.shape;
-
-//   HDF5DataType data_type = make_hdf5_data_type<double>();
-
-//   constexpr int_t rank = Shape::size() + 1;
-//   hsize_t h5_dims[rank];
-//   for (int i = 0; i < rank - 1; ++i) {
-//     h5_dims[i] = hsize_t(dims(i)); // size of (i, j, k) axes
-//   }
-//   h5_dims[rank - 1] = 2; // number of space components
-
-//   writer.write_array((double *)data, data_type, tag, rank, h5_dims);
-// }
+template <>
+struct array_save_traits<XYZ> {
+  using dispatch_tag = split_array_dispatch_tag;
+};
 
 // /// Save an array of `XY`.
 // template <class LinearIndex>
@@ -317,7 +303,7 @@ auto get(const Cartesian<n> &x) {
 }
 } // namespace zisa
 
-// Enable structured bindings for XY.
+// Enable structured bindings for XYZ.
 namespace std {
 template <size_t i>
 struct tuple_element<i, zisa::XYZ> {

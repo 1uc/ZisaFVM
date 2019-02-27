@@ -261,6 +261,8 @@ private:
   double specific_gas_constant_;
 };
 
+void save(HDF5Writer &writer, const IdealGasEOS &eos);
+
 } // namespace zisa
 
 #endif /* end of include guard */

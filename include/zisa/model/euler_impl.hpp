@@ -56,21 +56,13 @@ Euler<EOS, Gravity>::energy(double rho, double v1, double v2, double p) const {
   return eos.internal_energy__rho_p(rho, p) + 0.5 * rho * (v1 * v1 + v2 * v2);
 }
 
-namespace detail {
-
-inline void save_parameters(const IdealGasEOS &eos, HDF5Writer &writer) {
-  writer.write_string("IdealGasEOS", "eos");
-  writer.write_scalar(eos.gamma(), "gamma");
-  writer.write_scalar(eos.specific_gas_constant(), "specific_gas_constant");
-}
-
-} // namespace detail
-
 template <class EOS, class Gravity>
-void Euler<EOS, Gravity>::save_parameters(HDF5Writer &writer) const {
-  writer.write_string("Euler", "model");
-
-  detail::save_parameters(eos, writer);
+void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler) {
+  writer.open_group("model");
+  writer.write_string("Euler", "name");
+  save(writer, euler.eos);
+  save(writer, euler.gravity);
+  writer.close_group();
 }
 
 // template <class EOS, class Gravity>

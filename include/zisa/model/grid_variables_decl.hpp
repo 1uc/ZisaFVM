@@ -22,11 +22,12 @@ public:
   inline double &operator()(int_t i, int_t k);
   inline double operator()(int_t i, int_t k) const;
 
-  void split_save(HDF5Writer &writer,
-                  const std::vector<std::string> &labels) const;
-
   void split_load(HDF5Reader &reader, const std::vector<std::string> &labels);
 };
+
+void save(HDF5Writer &writer,
+          const GridVariables &grid_variables,
+          const std::vector<std::string> &labels);
 
 } // namespace zisa
 

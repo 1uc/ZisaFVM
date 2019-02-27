@@ -35,12 +35,17 @@ public:
 
   AllVariablesDimensions dims(void) const;
 
-  void save(HDF5Writer &writer, const std::vector<std::string> &labels) const;
-  void load(HDF5Reader &reader, const std::vector<std::string> &labels);
-
 protected:
   void allocate(const AllVariablesDimensions &dims);
 };
+
+void save(HDF5Writer &writer,
+          const AllVariables &all_variables,
+          const std::vector<std::string> &labels);
+
+// void load(HDF5Reader &reader,
+//           const AllVariables &all_variables,
+//           const std::vector<std::string> &labels);
 
 } // namespace zisa
 

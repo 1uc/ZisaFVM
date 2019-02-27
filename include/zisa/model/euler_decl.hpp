@@ -49,12 +49,14 @@ public:
   /// Kinetic energy of the fluid parcel.
   ANY_DEVICE_INLINE double kinetic_energy(const euler_var_t &u) const;
 
-  /// Write the parameters of this model to disk.
-  void save_parameters(HDF5Writer &writer) const;
-
   /// Self-documenting string.
   std::string str() const;
 };
+
+/// Write the parameters of this model to disk.
+template<class EOS, class Gravity>
+void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler);
+
 
 /// Are the value obviously unphysical?
 /** The variable `u` is considered implausible if any component is not even
