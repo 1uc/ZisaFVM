@@ -16,11 +16,6 @@ public:
   virtual ~Visualization() = default;
 
   /// Perform visualization.
-  /** @param all_variables
-   *      Cell-averages of the prognostic variables.
-   *  @param simulation_clock
-   *      The current simulation time.
-   */
   void operator()(const AllVariables &all_variables,
                   const SimulationClock &simulation_clock);
 
