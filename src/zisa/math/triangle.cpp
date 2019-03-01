@@ -1,3 +1,4 @@
+#include <zisa/math/barycentric.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/quadrature.hpp>
 #include <zisa/math/triangle.hpp>
@@ -22,6 +23,10 @@ double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg) {
   };
 
   return quadrature(f, tri, quad_deg) / tri.volume;
+}
+
+bool is_inside(const Triangle &tri, const XYZ &x) {
+  return is_inside(Barycentric(tri, x));
 }
 
 double volume(const Triangle &tri) { return tri.volume; }

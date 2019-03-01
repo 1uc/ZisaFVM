@@ -32,6 +32,7 @@ double circum_radius(const Triangle &tri);
 double characteristic_length(const Triangle &tri);
 double inradius(const Triangle &tri);
 double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg);
+bool is_inside(const Triangle &tri, const XYZ &x);
 Triangle reference_triangle();
 
 } // namespace zisa

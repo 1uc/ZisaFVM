@@ -20,6 +20,8 @@ private:
 
 XYZ coord(const Triangle &tri, const Barycentric &x);
 
+bool is_inside(const Barycentric &lambda);
+
 std::ostream &operator<<(std::ostream &os, const Barycentric &bc);
 
 } // namespace zisa

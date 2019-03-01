@@ -2,6 +2,15 @@
 
 #include <zisa/math/barycentric.hpp>
 
+TEST_CASE("Barycentric; is_inside", "[math]") {
+
+  auto tri = zisa::reference_triangle();
+
+  REQUIRE(zisa::is_inside(zisa::Barycentric(tri, zisa::XYZ{0.1, 0.1, 0.0})));
+  REQUIRE(!zisa::is_inside(zisa::Barycentric(tri, zisa::XYZ{-0.1, 0.1, 0.0})));
+  REQUIRE(!zisa::is_inside(zisa::Barycentric(tri, zisa::XYZ{1.1, 1.1, 0.0})));
+}
+
 TEST_CASE("Barycentric; basic API", "[math]") {
   auto tri = zisa::Triangle{{0.461024, 0.432542, 0.0},
                             {0.558699, 0.333827, 0.0},

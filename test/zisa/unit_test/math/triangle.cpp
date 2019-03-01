@@ -1,26 +1,23 @@
 #include <zisa/testing/testing_framework.hpp>
 
-#include <zisa/math/triangle.hpp>
 #include <zisa/math/basic_functions.hpp>
+#include <zisa/math/triangle.hpp>
 
-TEST_CASE("avg_moment", "[.]") {
-  auto tri = zisa::Triangle({0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0});
-  zisa::int_t deg = 3;
+TEST_CASE("is_inside", "[math]") {
+  SECTION("reference triangle") {
+    auto tri = zisa::reference_triangle();
 
-  auto exact = [&tri](int k, int l) {
-    auto vol = tri.volume;
-    auto m = zisa::Gamma(k + 2) * zisa::Gamma(l + 1)
-             / ((k + 1) * zisa::Gamma(k + l + 3));
+    REQUIRE(is_inside(tri, zisa::XYZ{0.1, 0.1, 0.0}));
+    REQUIRE(!is_inside(tri, zisa::XYZ{-0.1, 0.1, 0.0}));
+    REQUIRE(!is_inside(tri, zisa::XYZ{1.1, 1.1, 0.0}));
+  }
 
-    return m / vol;
-  };
+  SECTION("troublesome triangle") {
+    auto tri = zisa::Triangle{{0.461024, 0.432542, 0.0},
+                              {0.558699, 0.333827, 0.0},
+                              {0.554918, 0.426801, 0.0}};
+    auto x_center = zisa::XYZ{{0.52488, 0.397723, 0.0}};
 
-  for (int k = 1; k < deg; ++k) {
-    for (int l = 0; l < k; ++l) {
-      auto approx = avg_moment(tri, k, l, 2);
-
-      INFO(string_format("[%d, %d] %e  !=  %e \n", k, l, approx, exact(k, l)));
-      REQUIRE(zisa::almost_equal(approx, exact(k, l), 0.2));
-    }
+    REQUIRE(is_inside(tri, x_center));
   }
 }
