@@ -17,6 +17,9 @@ public:
 
   inline double volume() const { return zisa::norm(a - b); }
 
+  inline const XYZ &start_point() const { return a; }
+  inline const XYZ &end_point() const { return b; }
+
   inline const XYZ &normal() const { return n; }
   inline const XYZ &tangential() const { return t; }
 
@@ -35,16 +38,14 @@ private:
 
   XYZ n; // normal
   XYZ t; // tangential
-
-private:
-  friend XYZ unit_outward_normal(const Edge &edge, XYZ point_inside);
 };
 
 inline XYZ coord(const Edge &edge, double x_rel) { return edge.coord(x_rel); }
 inline double volume(const Edge &edge) { return edge.volume(); }
-inline XYZ unit_outward_normal(const Edge &edge, XYZ point_inside) {
-  return XYZ(zisa::sign(zisa::dot(edge.normal(), edge.a - point_inside))
-             * edge.normal());
+inline XYZ unit_outward_normal(const Edge &edge, const XYZ &point_inside) {
+  return XYZ(
+      zisa::sign(zisa::dot(edge.normal(), edge.start_point() - point_inside))
+      * edge.normal());
 }
 
 } // namespace zisa
