@@ -53,4 +53,9 @@ Triangle reference_triangle() {
   return {{0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}};
 }
 
+std::ostream &operator<<(std::ostream &os, const Triangle &tri) {
+  os << "Triangle{" << tri.A << ", " << tri.B << ", " << tri.C << "}";
+  return os;
+}
+
 } // namespace zisa

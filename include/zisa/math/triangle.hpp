@@ -26,6 +26,8 @@ public:
   Triangle(const XYZ &A, const XYZ &B, const XYZ &C);
 };
 
+std::ostream &operator<<(std::ostream &os, const Triangle &tri);
+
 double volume(const Triangle &tri);
 XYZ barycenter(const Triangle &tri);
 double circum_radius(const Triangle &tri);

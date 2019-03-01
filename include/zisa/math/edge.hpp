@@ -48,6 +48,7 @@ inline XYZ unit_outward_normal(const Edge &edge, const XYZ &point_inside) {
       * edge.normal());
 }
 
+std::ostream &operator<<(std::ostream &os, const Edge &edge);
 } // namespace zisa
 
 #endif
