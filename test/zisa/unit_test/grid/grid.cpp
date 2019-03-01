@@ -2,11 +2,11 @@
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/testing/testing_framework.hpp>
-#include <zisa/io/hdf5_serial_writer.hpp>
 
 TEST_CASE("Grid; small_example", "[grid]") {
 

@@ -34,10 +34,6 @@ std::tuple<X, bool> quasi_newton(const F &f,
 
     if (iter >= 4 && !rate.is_converging(X(0.0))) {
       LOG_WARN("Is not converging.");
-      PRINT(x);
-      PRINT(dx);
-      PRINT(fx);
-
       return std::tuple<X, bool>{x0, false};
     }
 

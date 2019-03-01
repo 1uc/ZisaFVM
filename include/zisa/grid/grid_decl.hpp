@@ -5,11 +5,11 @@
 #include <string>
 #include <utility>
 
+#include <zisa/io/hdf5_writer_fwd.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/edge.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
-#include <zisa/io/hdf5_writer_fwd.hpp>
 
 namespace zisa {
 
