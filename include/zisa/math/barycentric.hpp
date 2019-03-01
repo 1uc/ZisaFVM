@@ -10,6 +10,7 @@ class Barycentric {
 public:
   Barycentric() = default;
   Barycentric(double lambda1, double lambda2, double lambda3);
+  Barycentric(const Triangle &tri, const XYZ &x);
 
   double operator[](int i) const { return lambda[i]; }
 
