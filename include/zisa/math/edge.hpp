@@ -49,6 +49,9 @@ inline XYZ unit_outward_normal(const Edge &edge, const XYZ &point_inside) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Edge &edge);
+
+bool is_intersecting(const Edge &a, const Edge &b);
+
 } // namespace zisa
 
 #endif
