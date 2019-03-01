@@ -1,6 +1,7 @@
 #ifndef GRID_DECL_H_8IQQ7
 #define GRID_DECL_H_8IQQ7
 
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -51,6 +52,9 @@ struct Grid {
 void save(HDF5Writer &writer, const Grid &grid);
 
 double volume(const Grid &grid);
+
+std::optional<int_t>
+locate(const Grid &grid, const XYZ &x, int_t i_guess, int_t max_iter);
 
 double largest_circum_radius(const Grid &grid);
 

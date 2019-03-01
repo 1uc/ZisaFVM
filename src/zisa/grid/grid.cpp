@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <map>
+#include <optional>
 #include <vector>
 
 #include <zisa/config.hpp>
@@ -341,6 +342,32 @@ std::string Grid::str() const {
                        n_cells,
                        n_vertices,
                        n_edges);
+}
+
+std::optional<int_t>
+locate(const Grid &grid, const XYZ &x, int_t i_guess, int_t max_iter) {
+  auto max_neighbours = grid.max_neighbours;
+
+  int_t i = i_guess;
+
+  for (int_t count = 0; count < max_iter; ++count) {
+    if (is_inside(grid.triangle(i), x)) {
+      return i;
+    } else {
+
+      auto connecting_edge = Edge(grid.cell_centers(i), x);
+      for (int_t k = 0; k < max_neighbours; ++k) {
+        if (grid.is_valid(i, k)
+            && is_intersecting(grid.edge(i, k), connecting_edge)) {
+
+          i = grid.neighbours(i, k);
+          break;
+        }
+      }
+    }
+  }
+
+  return std::nullopt;
 }
 
 double volume(const Grid &grid) {

@@ -1,3 +1,5 @@
+#include <random>
+
 #include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/math/basic_functions.hpp>
@@ -297,5 +299,31 @@ TEST_CASE("Grid; serialize", "[grid]") {
 
   auto writer = zisa::HDF5SerialWriter(filename);
   zisa::save(writer, *grid);
+}
 
+TEST_CASE("Grid; locate", "[grid]") {
+  auto grid_names = std::vector<std::string>{};
+
+  for (int i = 0; i < 3; ++i) {
+    grid_names.push_back(
+        string_format("grids/convergence/unit_square_%d.msh", i));
+  }
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  for (const auto &grid_name : grid_names) {
+    auto grid = zisa::load_gmsh(grid_name);
+
+    auto n_cells = grid->n_cells;
+    auto max_iter = grid->n_cells;
+
+    std::uniform_int_distribution<zisa::int_t> dis(0, n_cells-1);
+    for (zisa::int_t i = 0; i < n_cells; ++i) {
+      auto i_guess = dis(gen);
+      auto i_cell = zisa::locate(*grid, grid->cell_centers(i), i_guess, max_iter);
+
+      INFO(string_format("i_guess = %d", i_guess));
+      REQUIRE(i_cell == i);
+    }
+  }
 }
