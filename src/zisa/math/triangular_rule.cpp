@@ -30,11 +30,11 @@ make_quadrature_rule(const std::vector<double> &w,
 TriangularRule make_triangular_rule(int_t deg) {
   if (deg == 1) {
     auto [w, x] = permutate(1.0, {1.0 / 3.0});
-    return make_quadrature_rule(std::move(w), std::move(x));
+    return make_quadrature_rule(w, x);
 
   } else if (deg == 2) {
     auto [w, x] = permutate(1.0 / 3.0, {2.0 / 3.0, 1.0 / 6.0});
-    return make_quadrature_rule(std::move(w), std::move(x));
+    return make_quadrature_rule(w, x);
 
   } else if (deg == 3) {
     auto [w1, x1] = permutate(-0.5625, {1.0 / 3.0});
@@ -46,7 +46,7 @@ TriangularRule make_triangular_rule(int_t deg) {
     x1.reserve(x1.size() + x2.size());
     x1.insert(x1.end(), x2.begin(), x2.end());
 
-    return make_quadrature_rule(std::move(w1), std::move(x1));
+    return make_quadrature_rule(w1, x1);
   } else if (deg == 4) {
 
     auto [w1, x1]
@@ -60,7 +60,7 @@ TriangularRule make_triangular_rule(int_t deg) {
     x1.reserve(x1.size() + x2.size());
     x1.insert(x1.end(), x2.begin(), x2.end());
 
-    return make_quadrature_rule(std::move(w1), std::move(x1));
+    return make_quadrature_rule(w1, x1);
   }
 
   LOG_ERR("Implement the missing case.");

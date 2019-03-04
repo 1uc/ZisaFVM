@@ -23,7 +23,7 @@ TriPlot::TriPlot(std::shared_ptr<Window> window,
                  const Vertices &vertices,
                  const VertexIndices &vertex_indices)
 
-    : vertices(vertex_indices.size()), window(window) {
+    : vertices(vertex_indices.size()), window(std::move(window)) {
 
   assert(window != nullptr);
 
