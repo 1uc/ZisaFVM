@@ -6,6 +6,18 @@
 #include <zisa/model/all_variables.hpp>
 
 namespace zisa {
+bool operator==(const AllVariablesDimensions &a,
+                const AllVariablesDimensions &b) {
+  return (a.n_cells == b.n_cells) && (a.n_cvars == b.n_cvars)
+         && (a.n_avars == b.n_avars);
+}
+
+std::ostream &operator<<(std::ostream &os, const AllVariablesDimensions &dims) {
+  os << "{ " << dims.n_cells << ", " << dims.n_cvars << ", " << dims.n_avars
+     << "}";
+  return os;
+}
+
 AllVariables::AllVariables(const AllVariablesDimensions &dims) {
   allocate(dims);
 }

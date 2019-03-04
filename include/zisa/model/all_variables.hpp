@@ -19,6 +19,16 @@ struct AllVariablesDimensions {
   int_t n_avars;
 };
 
+std::ostream &operator<<(std::ostream &os, const AllVariablesDimensions &dims);
+
+bool operator==(const AllVariablesDimensions &a,
+                const AllVariablesDimensions &b);
+
+inline bool operator!=(const AllVariablesDimensions &a,
+                       const AllVariablesDimensions &b) {
+  return !(a == b);
+}
+
 class AllVariables {
 public:
   GridVariables cvars; // conserved variables
