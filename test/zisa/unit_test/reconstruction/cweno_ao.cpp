@@ -1,8 +1,8 @@
 #include <numeric>
 
-#include <zisa/testing/testing_framework.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/cweno_ao.hpp>
+#include <zisa/testing/testing_framework.hpp>
 #include <zisa/unit_test/reconstruction/hybrid_weno.hpp>
 
 TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
@@ -44,21 +44,29 @@ TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
 
   cases.push_back({{2.8, 3.35},
                    {{{2, 2, 2, 3}, {"b", "b", "b", "c"}, {1.5, 1.5, 1.5, 2.0}},
-                    {1.0, 1.0, 1.0, 100.0}, eps, s}});
+                    {1.0, 1.0, 1.0, 100.0},
+                    eps,
+                    s}});
 
   // CWENO is expected to be high-order even for small weights of the central
   // stencil.
   cases.push_back({{3.8, 5.4},
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-                    {10.0, 1.0, 1.0, 1.0}, eps, s}});
+                    {10.0, 1.0, 1.0, 1.0},
+                    eps,
+                    s}});
 
   cases.push_back({{3.8, 4.7},
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-                    {100.0, 1.0, 1.0, 1.0}, eps, s}});
+                    {100.0, 1.0, 1.0, 1.0},
+                    eps,
+                    s}});
 
   cases.push_back({{4.8, 5.7},
                    {{{5, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-                    {100.0, 1.0, 1.0, 1.0}, eps, s}});
+                    {100.0, 1.0, 1.0, 1.0},
+                    eps,
+                    s}});
 
   for (auto &[expected_rate, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::CWENO_AO>(
