@@ -15,21 +15,26 @@ void save(HDF5Writer &writer,
   }
 }
 
-void GridVariables::split_load(HDF5Reader &reader,
-                               const std::vector<std::string> &labels) {
+GridVariables GridVariables::load(HDF5Reader &reader,
+                                  const std::vector<std::string> &labels) {
 
-  auto dims = reader.dims(labels[0]);
-  assert(dims.size() == 1);
+  auto n_cells = int_t(reader.dims(labels[0])[0]);
+  auto n_vars = int_t(labels.size());
+  auto shape = shape_t<2>{n_cells, n_vars};
 
-  array<double, 1> component(shape_t<1>{dims[0]});
+  GridVariables vars(shape, device_type::cpu);
 
   for (int_t k = 0; k < labels.size(); ++k) {
-    zisa::load(reader, component, labels[k]);
+    auto component = array<double, 1>::load(reader, labels[k]);
 
-    for (int_t i = 0; i < this->shape(1); ++i) {
-      (*this)(i, k) = component[i];
+    LOG_ERR_IF(component.shape(0) != n_cells, "Reloading non-uniform arrays.");
+
+    for (int_t i = 0; i < component.shape(0); ++i) {
+      vars(i, k) = component[i];
     }
   }
+
+  return vars;
 }
 
 } // namespace zisa

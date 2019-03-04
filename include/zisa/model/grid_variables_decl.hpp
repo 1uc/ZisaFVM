@@ -22,7 +22,8 @@ public:
   inline double &operator()(int_t i, int_t k);
   inline double operator()(int_t i, int_t k) const;
 
-  void split_load(HDF5Reader &reader, const std::vector<std::string> &labels);
+  static GridVariables load(HDF5Reader &reader,
+                            const std::vector<std::string> &labels);
 };
 
 void save(HDF5Writer &writer,

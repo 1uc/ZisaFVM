@@ -56,8 +56,6 @@ TEST_CASE("array; write to file") {
     REQUIRE(shape[0] == static_cast<zisa::int_t>(dims[0]));
   }
 
-  auto b = array<double, 3>(shape);
-  zisa::load(reader, b, label);
-
+  auto b = zisa::array<double, 3>::load(reader, label);
   REQUIRE(b == a);
 }

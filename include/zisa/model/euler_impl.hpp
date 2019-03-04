@@ -65,16 +65,6 @@ void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler) {
   writer.close_group();
 }
 
-// template <class EOS, class Gravity>
-// void Euler<EOS, Gravity>::load_state(AllVariables &u, HDF5Reader &reader) {
-//   int n_advected_variables = reader.read_scalar<int>("n_advected_variables");
-//   assert(u.advected_variables.shape[2] == n_advected_variables);
-
-//   u.conserved_variables.split_load(reader, all_labels<cvars_t>());
-//   u.advected_variables.split_load(
-//       reader, numbered_labels("mq%d", n_advected_variables));
-// }
-
 template <class EOS, class Gravity>
 std::string Euler<EOS, Gravity>::str() const {
   std::stringstream ss;
