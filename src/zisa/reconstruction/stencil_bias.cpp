@@ -6,9 +6,9 @@ namespace zisa {
 
 StencilBias deduce_bias(const std::string &b) {
 
-  if (b.compare("c") == 0) {
+  if (b == "c") {
     return StencilBias::central;
-  } else if (b.compare("b") == 0) {
+  } else if (b == "b") {
     return StencilBias::one_sided;
   }
 

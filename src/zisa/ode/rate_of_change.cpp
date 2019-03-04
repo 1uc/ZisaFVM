@@ -50,8 +50,8 @@ std::string SumRatesOfChange::str() const {
 void SumRatesOfChange::remove_all_terms() { rates_of_change.clear(); }
 
 void ZeroRateOfChange::compute(AllVariables &tendency,
-                               const AllVariables &,
-                               double) const {
+                               const AllVariables & /* current_state */,
+                               double /* t */) const {
 
 #pragma omp parallel for
   for (int_t i = 0; i < tendency.size(); ++i) {
