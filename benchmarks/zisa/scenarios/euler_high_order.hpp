@@ -47,7 +47,7 @@ make_global_reconstruction(std::shared_ptr<Grid> &grid) {
   double eps = 1e-12;
   double s = 4.0;
 
-  auto params = HybridWENO_Params{
+  auto params = HybridWENOParams{
       {{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
       {10.0, 1.0, 1.0, 1.0},
       eps,

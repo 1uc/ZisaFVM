@@ -13,7 +13,7 @@ namespace zisa {
 template <class Equilibrium, class RC>
 GlobalReconstruction<Equilibrium, RC>::GlobalReconstruction(
     std::shared_ptr<Grid> grid,
-    const HybridWENO_Params &params,
+    const HybridWENOParams &params,
     const Equilibrium &eq)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),

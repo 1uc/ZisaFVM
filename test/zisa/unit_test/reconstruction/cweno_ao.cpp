@@ -11,7 +11,8 @@ TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
     SECTION("push_back") {
 
       auto grid = zisa::load_gmsh("grids/small.msh");
-      auto params = zisa::HybridWENO_Params({{{1}, {"c"}, {2.0}}, {1.0}, 1e-6, 4});
+      auto params
+          = zisa::HybridWENOParams({{{1}, {"c"}, {2.0}}, {1.0}, 1e-6, 4});
 
       auto rc = std::vector<zisa::CWENO_AO>();
       for (const auto &[i, tri] : triangles(*grid)) {
@@ -36,7 +37,7 @@ TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
                                  "grids/convergence/unit_square_2.msh"};
 
   using interval_t = std::tuple<double, double>;
-  auto cases = std::vector<std::tuple<interval_t, zisa::HybridWENO_Params>>{};
+  auto cases = std::vector<std::tuple<interval_t, zisa::HybridWENOParams>>{};
 
   double eps = 1e-10;
   double s = 4.0;

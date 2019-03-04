@@ -3,16 +3,16 @@
 
 namespace zisa {
 
-HybridWENO_Params::HybridWENO_Params(StencilFamilyParams stencil_family_params,
-                                     std::vector<double> linear_weights,
-                                     double epsilon,
-                                     double exponent)
+HybridWENOParams::HybridWENOParams(StencilFamilyParams stencil_family_params,
+                                   std::vector<double> linear_weights,
+                                   double epsilon,
+                                   double exponent)
     : stencil_family_params(std::move(stencil_family_params)),
       linear_weights(std::move(linear_weights)),
       epsilon(epsilon),
       exponent(exponent) {}
 
-std::ostream &operator<<(std::ostream &os, const HybridWENO_Params &params) {
+std::ostream &operator<<(std::ostream &os, const HybridWENOParams &params) {
   os << params.stencil_family_params << "\n";
   os << "linear weights: ";
   os << format_as_list(params.linear_weights);

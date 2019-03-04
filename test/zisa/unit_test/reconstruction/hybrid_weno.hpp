@@ -18,7 +18,7 @@ template <class RC>
 void test_hybrid_weno_convergence(
     const std::vector<std::string> &grid_names,
     const std::tuple<double, double> &expected_rate,
-    const HybridWENO_Params &params) {
+    const HybridWENOParams &params) {
 
   auto f = [](const XYZ &x) {
     auto d = zisa::norm(x - XYZ{0.5, 0.5, 0.0});
@@ -53,20 +53,24 @@ void test_hybrid_weno_convergence(
 
   for (int_t i = 0; i < rates.size(); ++i) {
     auto title = string_format("RC = %s", type_name<RC>().c_str());
-    auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e", i,
-                                 l1_errors[i], i, rates[i], resolution[i]);
+    auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e",
+                                 i,
+                                 l1_errors[i],
+                                 i,
+                                 rates[i],
+                                 resolution[i]);
     err_str = indent_block(1, err_str);
 
     auto desc_params = indent_block(1, zisa::to_string(params));
-    INFO(string_format("%s\n%s\n%s", title.c_str(), err_str.c_str(),
-                       desc_params.c_str()));
+    INFO(string_format(
+        "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
     CHECK(is_inside_interval(rates[i], expected_rate));
   }
 }
 
 template <class RC>
 void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
-                                const HybridWENO_Params &params) {
+                                const HybridWENOParams &params) {
 
   double tol = 5e-7;
 

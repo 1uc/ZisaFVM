@@ -8,19 +8,19 @@
 
 namespace zisa {
 
-struct HybridWENO_Params {
+struct HybridWENOParams {
 
-  HybridWENO_Params() = default;
-  HybridWENO_Params(const HybridWENO_Params &) = default;
-  HybridWENO_Params(HybridWENO_Params &&) = default;
+  HybridWENOParams() = default;
+  HybridWENOParams(const HybridWENOParams &) = default;
+  HybridWENOParams(HybridWENOParams &&) = default;
 
-  HybridWENO_Params(StencilFamilyParams stencil_family_params,
-                    std::vector<double> linear_weights,
-                    double epsilon,
-                    double exponent);
+  HybridWENOParams(StencilFamilyParams stencil_family_params,
+                   std::vector<double> linear_weights,
+                   double epsilon,
+                   double exponent);
 
-  HybridWENO_Params &operator=(const HybridWENO_Params &) = default;
-  HybridWENO_Params &operator=(HybridWENO_Params &&) = default;
+  HybridWENOParams &operator=(const HybridWENOParams &) = default;
+  HybridWENOParams &operator=(HybridWENOParams &&) = default;
 
 public:
   StencilFamilyParams stencil_family_params;
@@ -29,7 +29,7 @@ public:
   double exponent;
 };
 
-std::ostream &operator<<(std::ostream &os, const HybridWENO_Params &params);
+std::ostream &operator<<(std::ostream &os, const HybridWENOParams &params);
 
 } // namespace zisa
 #endif /* end of include guard */

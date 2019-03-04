@@ -160,7 +160,7 @@ EulerExperiment<EOS, Gravity>::choose_reconstruction() {
   auto rc_params = params["reconstruction"];
 
   auto hybrid_weno_params
-      = HybridWENO_Params(StencilFamilyParams(rc_params["orders"],
+      = HybridWENOParams(StencilFamilyParams(rc_params["orders"],
                                               rc_params["biases"],
                                               rc_params["overfit_factors"]),
                           rc_params["linear_weights"],

@@ -19,7 +19,7 @@ private:
 
 public:
   GlobalReconstruction(std::shared_ptr<Grid> grid,
-                       const HybridWENO_Params &params,
+                       const HybridWENOParams &params,
                        const Equilibrium &eq);
 
   const LocalReconstruction<Equilibrium, RC> &operator()(int_t i) const;
@@ -33,7 +33,7 @@ private:
                       int_t i);
 
 private:
-  HybridWENO_Params params;
+  HybridWENOParams params;
   int_t max_stencil_size;
 
   array<LocalReconstruction<Equilibrium, RC>, 1> rc;
