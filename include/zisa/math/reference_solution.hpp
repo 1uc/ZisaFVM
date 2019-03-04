@@ -26,13 +26,13 @@ public:
                          const eq_t &eq)
       : fine_grid(std::move(fine_grid)),
         fine_vars(std::move(fine_vars)),
-        point_locator(zisa::make_point_locator(fine_grid)),
-        n_cvars(fine_vars->cvars.shape(1)) {
+        point_locator(zisa::make_point_locator(this->fine_grid)),
+        n_cvars(this->fine_vars->cvars.shape(1)) {
 
     grc = std::make_shared<GlobalReconstruction<Equilibrium, CWENO_AO>>(
-        fine_grid, weno_params(), eq);
+        this->fine_grid, weno_params(), eq);
 
-    grc->compute(*fine_vars);
+    grc->compute(*(this->fine_vars));
   }
 
   virtual std::shared_ptr<AllVariables>
