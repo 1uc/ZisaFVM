@@ -23,6 +23,10 @@ make_gravity<PolytropeGravityRadial>(const InputParameters &params) {
   return PolytropeGravityRadial();
 }
 
+Euler<IdealGasEOS, ConstantGravityRadial> make_default_euler() {
+  return Euler{IdealGasEOS{1.2, 2.3}, ConstantGravityRadial{0.99}};
+}
+
 } // namespace zisa
 
 #endif /* end of include guard */

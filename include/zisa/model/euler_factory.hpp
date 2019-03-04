@@ -60,5 +60,7 @@ Model make_euler(const InputParameters &params) {
   return Euler<EOS, Gravity>(eos, gravity);
 }
 
+Euler<IdealGasEOS, ConstantGravityRadial> make_default_euler();
+
 } // namespace zisa
 #endif
