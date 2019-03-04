@@ -6,6 +6,7 @@ target_sources(zisa
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/edge.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/edge_rule.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/poly2d.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/reference_solution.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/triangle.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/triangular_rule.cpp
 )
