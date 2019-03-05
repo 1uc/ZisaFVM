@@ -1,4 +1,4 @@
-target_sources(zisa
+target_sources(zisa_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/plotting_steps.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/rate_of_change.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/runge_kutta.cpp

@@ -1,4 +1,4 @@
-target_sources(zisa
+target_sources(zisa_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/barycentric.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/basic_functions.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/bounding_box.cpp

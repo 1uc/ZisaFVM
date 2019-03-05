@@ -1,6 +1,6 @@
 add_subdirectory(zisa)
 
-target_sources(run
+target_sources(zisa
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/zisa.cpp
 )
 
