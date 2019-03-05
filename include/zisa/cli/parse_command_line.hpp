@@ -5,7 +5,8 @@
 
 namespace zisa {
 
-InputParameters parse_command_line(int argc, char *argv[]);
+std::pair<std::string, InputParameters> parse_command_line(int argc,
+                                                           char *argv[]);
 
 } // namespace zisa
 

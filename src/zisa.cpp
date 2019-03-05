@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <zisa/experiments/down_sample_reference.hpp>
 
 #if ZISA_HAS_OPENGL == 1
 // -- must come before all other GL stuff.
@@ -48,7 +49,13 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 #endif
+  auto [mode, input_parameters] = zisa::parse_command_line(argc, argv);
 
-  run_zisa(zisa::parse_command_line(argc, argv));
+  if (mode == "run") {
+    run_zisa(input_parameters);
+  } else if (mode == "down-sample") {
+    down_sample_reference(input_parameters);
+  }
+
   return EXIT_SUCCESS;
 }
