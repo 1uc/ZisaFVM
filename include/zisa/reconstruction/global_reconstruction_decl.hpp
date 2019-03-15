@@ -12,18 +12,28 @@
 
 namespace zisa {
 
-template <class Equilibrium, class RC>
+template <class CVars>
 class GlobalReconstruction {
+public:
+  virtual ~GlobalReconstruction() = default;
+
+  virtual void compute(const AllVariables &current_state) = 0;
+  virtual CVars operator()(int_t i, const XYZ &x) const = 0;
+};
+
+template <class Equilibrium, class RC>
+class EulerGlobalReconstruction : public GlobalReconstruction<euler_var_t> {
 private:
   using cvars_t = euler_var_t;
 
 public:
-  GlobalReconstruction(std::shared_ptr<Grid> grid,
-                       const HybridWENOParams &params,
-                       const Equilibrium &eq);
+  EulerGlobalReconstruction(std::shared_ptr<Grid> grid,
+                            const HybridWENOParams &params,
+                            const Equilibrium &eq);
 
   const LocalReconstruction<Equilibrium, RC> &operator()(int_t i) const;
-  void compute(const AllVariables &current_state);
+  virtual euler_var_t operator()(int_t i, const XYZ &x) const override;
+  virtual void compute(const AllVariables &current_state) override;
 
   std::string str() const;
 

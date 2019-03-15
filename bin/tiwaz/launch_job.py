@@ -1,4 +1,5 @@
 import shutil
+import glob
 
 from . site_details import *
 from . queue import make_queue
@@ -71,15 +72,23 @@ class LaunchNewJob(LaunchJob):
         self.copy_binaries(zisa_home, directory)
         self.write_config(directory, launch_param)
         self.copy_grid(zisa_home, directory, launch_param)
+        self.copy_shaders(zisa_home, directory)
         self.write_gitinfo(zisa_home, directory)
 
     def copy_binaries(self, zisa_home, directory):
         self.copy(zisa_home + "/build-release", directory, ["zisa"])
 
     def copy_grid(self, zisa_home, directory, launch_params):
-        grid_path = launch_params.grid_filename()
+        grid_paths = [launch_params.grid_filename()]
 
-        self.copy(zisa_home, directory, [grid_path])
+        if "reference" in launch_params:
+            grid_paths += launch_params["reference"]["coarse_grids"]
+
+        self.copy(zisa_home, directory, grid_paths)
+
+    def copy_shaders(self, zisa_home, directory):
+        shaders = glob.glob("shaders/*")
+        self.copy(zisa_home, directory, shaders)
 
     def write_config(self, directory, launch_param):
         launch_param.save(directory + "/config.json")

@@ -33,7 +33,7 @@ public:
   /// Advance `u0` forwards in time.
   /** @param u0  Initial conditions in host memory.
    */
-  void operator()(std::shared_ptr<AllVariables> u0);
+  std::shared_ptr<AllVariables> operator()(std::shared_ptr<AllVariables> u0);
 
   /// Things to do before entering the time loop.
   virtual void pre_loop(AllVariables &) {

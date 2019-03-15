@@ -6,15 +6,16 @@ import subprocess
 import glob
 import multiprocessing
 
-gmsh = "bin/gmsh"
 
 def run_gmesh(geo):
+    gmsh = "bin/gmsh"
     cmd = [gmsh, "-2", geo]
     output = subprocess.check_call(cmd,
                                    stdout=subprocess.DEVNULL,
                                    stderr=subprocess.DEVNULL)
 
     return geo
+
 
 def minimal_geo_files(path):
     return [
@@ -24,11 +25,12 @@ def minimal_geo_files(path):
         path + "/convergence/unit_square_{:d}.geo".format(d) for d in range(4)
     ]
 
+
 def all_geo_files(path):
     return glob.glob("{}/*.geo".format(path)) + glob.glob("{}/**/*.geo".format(path))
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate .msh files.")
 
     parser.add_argument('--minimal',

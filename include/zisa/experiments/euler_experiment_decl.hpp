@@ -4,6 +4,7 @@
 #include <zisa/config.hpp>
 #include <zisa/experiments/numerical_experiment.hpp>
 #include <zisa/flux/hllc.hpp>
+#include <zisa/math/reference_solution.hpp>
 #include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/euler_factory.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
@@ -23,10 +24,13 @@ protected:
   using flux_t = HLLCBatten<euler_t>;
 
 public:
-  EulerExperiment(const InputParameters &params)
+  explicit EulerExperiment(const InputParameters &params)
       : super(params), euler(make_euler<euler_t>(params)) {}
 
 protected:
+  virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) override;
+  virtual void do_post_process() override;
+
   virtual std::shared_ptr<RateOfChange> choose_fvm_rate_of_change();
   virtual std::shared_ptr<RateOfChange> choose_rate_of_change() override;
   virtual std::shared_ptr<RateOfChange> choose_flux_bc() override;
@@ -40,24 +44,37 @@ private:
   std::shared_ptr<RateOfChange> choose_physical_rate_of_change();
 
   template <class Equilibrium, class RC>
-  std::shared_ptr<RateOfChange>
-  choose_flux_loop(const std::shared_ptr<GlobalReconstruction<Equilibrium, RC>>
-                       &global_reconstruction);
+  std::shared_ptr<RateOfChange> choose_flux_loop(
+      const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
+          &global_reconstruction);
 
   template <class Equilibrium, class RC>
   std::shared_ptr<RateOfChange> choose_gravity_source_loop(
-      const std::shared_ptr<GlobalReconstruction<Equilibrium, RC>>
+      const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
           &global_reconstruction);
 
   template <class Equilibrium>
   std::shared_ptr<RateOfChange> deduce_reconstruction();
 
+  std::shared_ptr<ReferenceSolution>
+  deduce_reference_solution(const std::shared_ptr<AllVariables> &u1) const;
+
+  template <class Equilibrium>
+  std::shared_ptr<ReferenceSolution>
+  deduce_reference_solution_eq(const std::shared_ptr<AllVariables> &u1,
+                               const Equilibrium &eq) const;
+
   template <class Equilibrium, class RC>
-  std::shared_ptr<GlobalReconstruction<Equilibrium, RC>>
+  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
   choose_reconstruction();
+
+  template <class Equilibrium, class RC, class RCParams>
+  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
+  choose_reconstruction(const RCParams &rc_params);
 
 protected:
   const euler_t euler;
+  const std::shared_ptr<GlobalReconstruction<euler_var_t>> grc_ = nullptr;
 };
 
 } // namespace zisa

@@ -6,6 +6,7 @@
 #include <zisa/math/comparison.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/ode/runge_kutta.hpp>
+#include <zisa/parallelization/omp.h>
 
 namespace zisa {
 ButcherTableau::ButcherTableau(const std::vector<std::vector<double>> &a,
@@ -114,7 +115,7 @@ void runge_kutta_sum(AllVariables &u1,
   int_t N = u0.size();
   int_t n_stages = coeffs.shape(0);
 
-#pragma omp parallel for schedule(dynamic, 128)
+#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
   for (int_t i = 0; i < N; ++i) {
     double dudt = 0.0;
 

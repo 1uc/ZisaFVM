@@ -2,7 +2,6 @@ import itertools
 import os
 import subprocess
 import glob
-import argparse
 
 from . site_details import get_host
 from . utils import merge_dict
@@ -104,13 +103,7 @@ def product_of_pointwise_combinations(solvers, pw_choices):
 
 
 def folder_name(scheme):
-    subsections = ['experiment',
-                   'reconstruction',
-                   'order', 'ode',
-                   'well-balancing', 'grid-level']
-
-    name = "_".join([scheme[key].short_id() for key in subsections if key in scheme])
-    return name
+    return scheme.folder_name()
 
 
 def build_target(target):
@@ -140,15 +133,9 @@ def build_all():
     build_target("all")
 
 
-def find_grid_filename(n_cells, n_nodes):
-    filename = "${SCRATCH}/grid/" + "r{:d}_g2_p{:d}/subdomain".format(n_cells, n_nodes)
-    filename = os.path.expandvars(filename)
-    return filename
-
-
 def find_grid(model):
     folder = folder_name(model)
-    return folder + "/" + model["experiment"] + "_grid.h5"
+    return folder + "/grid.h5"
 
 
 def glob_datafiles(model):
@@ -174,21 +161,3 @@ def find_background(model):
     return folder + "/" + model["experiment"] + "_steady-state.h5"
 
 
-def default_cli_parser(parser_help):
-    """Create an argparse object with the common flags."""
-
-    parser = argparse.ArgumentParser(description=parser_help)
-
-    parser.add_argument('--run',
-                        action='store_true',
-                        help="Run the required simulations.")
-
-    parser.add_argument('-f', '--force',
-                        action='store_true',
-                        help="Overwrite directories if need be.")
-
-    parser.add_argument('--post-process',
-                        action='store_true',
-                        help="Perform post-processing.")
-
-    return parser

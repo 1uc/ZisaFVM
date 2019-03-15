@@ -51,7 +51,7 @@ double &AllVariables::operator[](int_t i) {
 
 int_t AllVariables::size() const { return cvars.size() + avars.size(); }
 
-AllVariablesDimensions AllVariables::dims(void) const {
+AllVariablesDimensions AllVariables::dims() const {
   AllVariablesDimensions dims{};
 
   dims.n_cells = cvars.shape(0);

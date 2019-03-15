@@ -3,10 +3,12 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
+#include <zisa/math/barycentric.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/utils/to_string.hpp>
 
 TEST_CASE("Grid; small_example", "[grid]") {
 
@@ -317,13 +319,22 @@ TEST_CASE("Grid; locate", "[grid]") {
     auto n_cells = grid->n_cells;
     auto max_iter = grid->n_cells;
 
-    std::uniform_int_distribution<zisa::int_t> dis(0, n_cells-1);
-    for (zisa::int_t i = 0; i < n_cells; ++i) {
-      auto i_guess = dis(gen);
-      auto i_cell = zisa::locate(*grid, grid->cell_centers(i), i_guess, max_iter);
+    std::uniform_int_distribution<zisa::int_t> i_guess_dis(0, n_cells - 1);
+    std::uniform_real_distribution<double> x_dis(0.05, 0.95);
+    for (auto [i, tri] : triangles(*grid)) {
+      auto i_guess = i_guess_dis(gen);
 
-      INFO(string_format("i_guess = %d", i_guess));
-      REQUIRE(i_cell == i);
+      auto eta = x_dis(gen);
+      auto zeta = x_dis(gen) * (1.0 - eta);
+      auto x = zisa::coord(tri, zisa::Barycentric{eta, zeta, 1.0 - eta - zeta});
+
+      auto i_cell = zisa::locate(*grid, x, i_guess, max_iter);
+
+      INFO(string_format("i_guess = %d, tri = %s, x = %s",
+                         i_guess,
+                         zisa::to_string(tri).c_str(),
+                         zisa::to_string(x).c_str()));
+      REQUIRE(*i_cell == i);
     }
   }
 }

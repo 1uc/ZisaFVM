@@ -74,9 +74,3 @@ def test_lazy_product():
     assert lp_none.product(lp_a) == lp_a
     assert lp_a.product(lp_none) == lp_a
 
-def test_config_api():
-    config = Config([Reconstruction([4, 2, 2, 2]), ODESolver("SSP3")])
-    config.
-    config.write()
-
-

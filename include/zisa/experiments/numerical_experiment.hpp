@@ -5,6 +5,7 @@
 #include <zisa/cli/input_parameters.hpp>
 #include <zisa/core/time_loop.hpp>
 #include <zisa/grid/grid.hpp>
+#include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/visualization.hpp>
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/math/triangular_rule.hpp>
@@ -18,15 +19,19 @@ namespace zisa {
 
 class NumericalExperiment {
 public:
-  NumericalExperiment(const InputParameters &params);
+  explicit NumericalExperiment(const InputParameters &params);
   virtual ~NumericalExperiment() = default;
 
   void run();
+  void post_process();
 
 protected:
   virtual void do_run();
+  virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) = 0;
+  virtual void do_post_process() = 0;
 
   virtual std::shared_ptr<Grid> choose_grid();
+  virtual std::shared_ptr<FileNameGenerator> choose_file_name_generator();
 
   /// Total rate of change in the system.
   /** See also:
@@ -63,6 +68,7 @@ protected:
   InputParameters params;
 
   std::shared_ptr<Grid> grid;
+  std::shared_ptr<FileNameGenerator> file_name_generator;
 };
 
 } // namespace zisa

@@ -6,20 +6,46 @@ FileNameGenerator::FileNameGenerator(const std::string &stem,
                                      const std::string &pattern,
                                      const std::string &suffix)
     : filename_stem(stem),
-      steady_state_filename(stem + "_steady-state" + suffix),
+      steady_state_filename("steady_state" + suffix),
       reference_filename(stem + "_reference" + suffix),
-      grid_filename(stem + "_grid" + suffix),
-      xdmf_grid_filename(stem + "_xdmf_grid" + suffix),
-      pattern(stem + pattern + suffix),
-      count(0) {}
+      grid_filename("grid" + suffix),
+      pattern_(stem + pattern + suffix),
+      count_(0) {}
 
-std::string FileNameGenerator::next_name(void) {
-  std::string file_name = string_format(pattern, count);
+std::string FileNameGenerator::next_name() {
+  std::string file_name = string_format(pattern_, count_);
 
-  ++count;
+  ++count_;
   return file_name;
 }
 
-void FileNameGenerator::advance_to(int k) { count = k; }
+void FileNameGenerator::advance_to(int k) { count_ = k; }
+
+int FileNameGenerator::generation(const std::filesystem::path &path) {
+  int gen = -1;
+
+  std::string pattern = std::filesystem::absolute(pattern_);
+  auto status = sscanf(std::string(path).c_str(), pattern.c_str(), &gen);
+
+  return (status == 1 ? gen : -1);
+}
+
+std::string find_last_data_file(FileNameGenerator &fng) {
+  namespace fs = std::filesystem;
+
+  std::string path = zisa::dirname(fng.filename_stem);
+  auto files = std::vector<fs::path>{};
+  for (const auto &entry : fs::directory_iterator(path)) {
+    files.push_back(entry.path());
+  }
+
+  auto m = std::max_element(
+      begin(files), end(files), [&fng](const fs::path &p1, const fs::path &p2) {
+        return fng.generation(p1) < fng.generation(p2);
+      });
+
+  LOG_ERR_IF(fng.generation((*m)) < 0, "Not a data-file.");
+  return std::string(fs::relative(*m));
+}
 
 } // namespace zisa

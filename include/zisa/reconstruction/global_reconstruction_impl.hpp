@@ -11,13 +11,13 @@
 namespace zisa {
 
 template <class Equilibrium, class RC>
-GlobalReconstruction<Equilibrium, RC>::GlobalReconstruction(
+EulerGlobalReconstruction<Equilibrium, RC>::EulerGlobalReconstruction(
     std::shared_ptr<Grid> grid,
     const HybridWENOParams &params,
     const Equilibrium &eq)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
-      allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(32)) {
+      allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)) {
 
   max_stencil_size = 0;
 
@@ -32,12 +32,18 @@ GlobalReconstruction<Equilibrium, RC>::GlobalReconstruction(
 
 template <class Equilibrium, class RC>
 const LocalReconstruction<Equilibrium, RC> &
-GlobalReconstruction<Equilibrium, RC>::operator()(int_t i) const {
+EulerGlobalReconstruction<Equilibrium, RC>::operator()(int_t i) const {
   return rc(i);
 }
 
 template <class Equilibrium, class RC>
-void GlobalReconstruction<Equilibrium, RC>::compute(
+euler_var_t EulerGlobalReconstruction<Equilibrium, RC>::
+operator()(int_t i, const XYZ &x) const {
+  return rc(i)(x);
+}
+
+template <class Equilibrium, class RC>
+void EulerGlobalReconstruction<Equilibrium, RC>::compute(
     const AllVariables &current_state) {
   auto n_cells = current_state.cvars.shape(0);
 
@@ -45,7 +51,7 @@ void GlobalReconstruction<Equilibrium, RC>::compute(
   {
     auto qbar_local = allocator->allocate(shape_t<1>{max_stencil_size});
 
-#pragma omp for schedule(guided)
+#pragma omp for ZISA_OMP_FOR_SCHEDULE_DEFAULT
     for (int_t i = 0; i < n_cells; ++i) {
       set_qbar_local(*qbar_local, current_state, i);
       rc[i].compute(*qbar_local);
@@ -54,7 +60,7 @@ void GlobalReconstruction<Equilibrium, RC>::compute(
 }
 
 template <class Equilibrium, class RC>
-void GlobalReconstruction<Equilibrium, RC>::set_qbar_local(
+void EulerGlobalReconstruction<Equilibrium, RC>::set_qbar_local(
     array<cvars_t, 1> &qbar_local, const AllVariables &current_state, int_t i) {
   const auto &l2g = rc[i].local2global();
   const auto &cvars = current_state.cvars;
@@ -65,8 +71,9 @@ void GlobalReconstruction<Equilibrium, RC>::set_qbar_local(
 }
 
 template <class Equilibrium, class RC>
-std::string GlobalReconstruction<Equilibrium, RC>::str() const {
-  return string_format("GlobalReconstruction<%s>: \n", type_name<RC>().c_str())
+std::string EulerGlobalReconstruction<Equilibrium, RC>::str() const {
+  return string_format("EulerGlobalReconstruction<%s>: \n",
+                       type_name<RC>().c_str())
          + indent_block(1, zisa::to_string(params));
 }
 

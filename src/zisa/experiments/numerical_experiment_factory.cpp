@@ -17,6 +17,10 @@ make_experiment(const InputParameters &params) {
     return std::make_unique<Polytrope>(params);
   }
 
+  if (exp == "gaussian_bump") {
+    return std::make_unique<Polytrope>(params);
+  }
+
   LOG_ERR(string_format("Unknown numerical experiment. [%s]", exp.c_str()));
 }
 

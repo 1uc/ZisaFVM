@@ -7,10 +7,11 @@
 #define RATE_OF_CHANGE_CPP_UYNX1QZJ
 #include <limits>
 
-#include "zisa/config.hpp"
-#include "zisa/math/comparison.hpp"
-#include "zisa/model/all_variables.hpp"
-#include "zisa/ode/rate_of_change.hpp"
+#include <zisa/config.hpp>
+#include <zisa/math/comparison.hpp>
+#include <zisa/model/all_variables.hpp>
+#include <zisa/ode/rate_of_change.hpp>
+#include <zisa/parallelization/omp.h>
 
 namespace zisa {
 
@@ -53,7 +54,7 @@ void ZeroRateOfChange::compute(AllVariables &tendency,
                                const AllVariables & /* current_state */,
                                double /* t */) const {
 
-#pragma omp parallel for
+#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
   for (int_t i = 0; i < tendency.size(); ++i) {
     tendency[i] = 0.0;
   }

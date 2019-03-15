@@ -6,7 +6,7 @@
 #include <zisa/model/euler_factory.hpp>
 #include <zisa/testing/testing_framework.hpp>
 
-TEST_CASE("GridVariables") {
+TEST_CASE("GridVariables", "[memory]") {
   zisa::int_t n_cells = 10;
   zisa::int_t n_vars = 5;
 

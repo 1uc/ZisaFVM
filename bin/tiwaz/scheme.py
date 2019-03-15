@@ -1,12 +1,8 @@
 import json
-import os
 
 class Subsection(dict):
     def __init__(self, d):
         super().__init__(d)
-
-    def absolute_paths(self, dirname):
-        pass
 
 class Scheme:
     def __init__(self, subsections):
@@ -21,67 +17,63 @@ class Scheme:
     def __iter__(self):
         return iter(self.subsections.values())
 
-    def grid_filename(self):
-        return self["grid"]["grid"]["file"]
+    def order(self):
+        return self["reconstruction"]["orders"][0]
 
-    def absolute_paths(self, dirname):
-        for subsection in self.subsections.values():
-            subsection.absolute_paths(dirname)
+    def well_balancing(self):
+        return self["well-balancing"]["mode"]
+
+    def grid_level(self):
+        return self["grid"]["level"]
+
+    def grid_filename(self):
+        return self["grid"]["file"]
+
+    def folder_name(self):
+        subsections = ['experiment',
+                       'reconstruction',
+                       'order', 'ode',
+                       'well-balancing', 'grid']
+
+        subsections = [s for s in subsections if s in self]
+
+        name = "_".join([self[key].short_id() for key in subsections])
+
+        return name
+
 
     def save(self, filename):
-        d = dict()
-        for s in self.subsections.values():
-            d.update(s)
-
         with open(filename, "w") as f:
-            json.dump(d, f, indent=4)
-
-
-class Experiment(Subsection):
-    def __init__(self, name):
-        super().__init__({
-            "experiment": {
-                "name": name
-            }
-        })
-
-    def short_id(self):
-        return self["experiment"]["name"]
+            json.dump(self.subsections, f, indent=4)
 
 
 class Euler(Subsection):
     def __init__(self, eos, gravity):
-        super().__init__({"euler": {**eos, **gravity}})
+        super().__init__({"eos": eos, "gravity": gravity})
 
 
 class IdealGasEOS(Subsection):
     def __init__(self, gamma, r_gas):
         super().__init__({
-            "eos": {
-                "gamma": gamma, "specific-gas-constant": r_gas
-            }
+            "gamma": gamma, "specific-gas-constant": r_gas
         })
 
 
 class FluxBC(Subsection):
     def __init__(self, mode):
         super().__init__({
-            "flux-bc": {
-                "mode": mode
-            }
+            "mode": mode
         })
 
 
 class PolytropeGravity(Subsection):
     def __init__(self):
         super().__init__({
-            "gravity": {
-                "mode": "polytrope",
-                "polytrope": {
-                    "rhoC": 1.0,
-                    "K": 1.0,
-                    "G": 1.0
-                }
+            "mode": "polytrope",
+            "polytrope": {
+                "rhoC": 1.0,
+                "K": 1.0,
+                "G": 1.0
             }
         })
 
@@ -91,24 +83,20 @@ class Quadrature(Subsection):
         edge_deg = edge_deg if edge_deg else volume_deg
 
         super().__init__({
-            "quadrature": {
-                "__comment" : "Specify the quadrature degree (not #points).",
-                "edge": edge_deg,
-                "volume": volume_deg
-            }
+            "__comment" : "Specify the quadrature degree (not #points).",
+            "edge": edge_deg,
+            "volume": volume_deg
         })
 
 
 class WellBalancing(Subsection):
     def __init__(self, mode):
         super().__init__({
-            "well-balancing": {
-                "mode": mode
-            }
+            "mode": mode
         })
 
     def short_id(self):
-        return self["well-balancing"]["mode"]
+        return self["mode"]
 
 
 class Reconstruction(Subsection):
@@ -125,23 +113,21 @@ class Reconstruction(Subsection):
             linear_weights = [100 if i == 0 else 1 for i in range(n_stencils)]
 
         super().__init__({
-            "reconstruction": {
-                "mode": rc,
+            "mode": rc,
 
-                "orders": orders,
-                "biases": biases,
-                "overfit_factors": overfit_factors,
-                "linear_weights": linear_weights,
+            "orders": orders,
+            "biases": biases,
+            "overfit_factors": overfit_factors,
+            "linear_weights": linear_weights,
 
-                "smoothness_indicator": {
-                    "epsilon": 1e-12,
-                    "exponent": 4
-                }
+            "smoothness_indicator": {
+                "epsilon": 1e-10,
+                "exponent": 4
             }
         })
 
     def short_id(self):
-        orders = self["reconstruction"]["orders"]
+        orders = self["orders"]
         return "o"+"".join(str(k) for k in orders)
 
 
@@ -152,31 +138,31 @@ class ODE(Subsection):
             cfl_number = self.default_cfl_number(method)
 
         super().__init__({
-            "ode": {
-                "solver": method,
-                "cfl_number": cfl_number
-            },
+            "solver": method,
+            "cfl_number": cfl_number
         })
 
     def default_cfl_number(self, method):
         return 0.85
 
     def short_id(self):
-        return self["ode"]["solver"]
+        return self["solver"]
 
 
 class Time(Subsection):
     def __init__(self, **kwargs):
-        super().__init__({"time": kwargs})
+        super().__init__(kwargs)
 
 
 class IO(Subsection):
-    def __init__(self, mode, experiment):
-        super().__init__({
-            "io": {
-                "steps_per_frame": 1
-            }
-        })
+    def __init__(self, mode, experiment, **kwargs):
+        super().__init__(kwargs)
+
+        self["filename"] = {
+            "stem": "{:}_data-".format(experiment),
+            "pattern": "%04d",
+            "suffix": ".h5"
+        }
 
         if mode == "opengl":
             self.activate_opengl()
@@ -185,37 +171,30 @@ class IO(Subsection):
             self.activate_hdf5(experiment)
 
     def activate_hdf5(self, experiment):
-        self["io"]["mode"] = "hdf5"
-        self["io"]["hdf5"] = {
-            "filename": {
-                "stem": "{:}_data-".format(experiment),
-                "pattern": "%04d",
-                "suffix": ".h5"
-            }
-        }
+        self["mode"] = "hdf5"
 
     def activate_opengl(self):
-        self["io"]["mode"] = "opengl"
-        self["io"]["mode"] = {
+        self["mode"] = "opengl"
+        self["opengl"] = {
             "delay": "0ms"
         }
 
-    def absolute_paths(self, dirname):
-        io = self["io"]
-
-        if "hdf5" in io:
-            filename = io["hdf5"]["filename"]["stem"]
-            if not os.path.isabs(filename):
-                io["hdf5"]["filename"]["stem"] = os.path.join(dirname, filename)
-
 
 class Grid(Subsection):
-    def __init__(self, grid_name):
+    def __init__(self, grid_name, level):
         super().__init__({
-            "grid": {"file": grid_name}
+            "file": grid_name,
+             "level": level
         })
 
-    def absolute_paths(self, dirname):
-        filename = self["grid"]["file"]
-        if not os.path.isabs(filename):
-            self["grid"]["file"] = os.path.join(dirname, filename)
+    def short_id(self):
+        l = self["level"]
+        return "L" + str(l)
+
+
+class Reference(Subsection):
+    def __init__(self, equilibrium, coarse_grid_names):
+        super().__init__({
+            "equilibrium": equilibrium,
+            "coarse_grids": coarse_grid_names
+        })

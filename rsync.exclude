@@ -2,12 +2,15 @@
 archive
 bin/*
 build
+cmake-build-*
 build-*
 third_party/*
 doc/*
 data/*
 junk
 lib/*
+grids/*.msh
+grids/**/*.msh
 
 # archives
 *.tar

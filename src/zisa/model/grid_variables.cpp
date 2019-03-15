@@ -18,6 +18,10 @@ void save(HDF5Writer &writer,
 GridVariables GridVariables::load(HDF5Reader &reader,
                                   const std::vector<std::string> &labels) {
 
+  if (labels.empty()) {
+    return GridVariables{};
+  }
+
   auto n_cells = int_t(reader.dims(labels[0])[0]);
   auto n_vars = int_t(labels.size());
   auto shape = shape_t<2>{n_cells, n_vars};

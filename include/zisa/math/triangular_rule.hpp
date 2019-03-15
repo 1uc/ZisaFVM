@@ -16,6 +16,12 @@ struct TriangularRule {
   TriangularRule(TriangularRule &&qr) = default;
 };
 
+/// Compute weights and quadrature points.
+/**
+ * References:
+ *   [1] D.A. Dunavant, High degree efficient symmetrical Gaussian quadrature
+ *       rules for the triangle, 1985.
+ */
 TriangularRule make_triangular_rule(int_t deg);
 
 const TriangularRule &cached_triangular_quadrature_rule(int_t deg);

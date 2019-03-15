@@ -20,7 +20,7 @@ protected:
 public:
   FluxLoop(std::shared_ptr<Grid> grid,
            Model model,
-           std::shared_ptr<GlobalReconstruction<Equilibrium, RC>>
+           std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
                global_reconstruction,
            EdgeRule edge_rule)
       : grid(std::move(grid)),
@@ -36,7 +36,7 @@ public:
 
     auto n_interior_edges = grid->n_interior_edges;
 
-#pragma omp parallel for schedule(guided)
+#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
     for (int_t e = 0; e < n_interior_edges; ++e) {
       auto edge = grid->edge(e);
 
@@ -87,7 +87,8 @@ private:
 private:
   std::shared_ptr<Grid> grid;
   Model model;
-  std::shared_ptr<GlobalReconstruction<Equilibrium, RC>> global_reconstruction;
+  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
+      global_reconstruction;
 
   EdgeRule edge_rule;
 };

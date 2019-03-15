@@ -7,8 +7,8 @@
 
 namespace zisa {
 template <class euler_t>
-std::shared_ptr<AllVariables> set_initial_conditions(const Grid &grid,
-                                                     const euler_t &euler) {
+std::shared_ptr<AllVariables> initial_conditions(const Grid &grid,
+                                                 const euler_t &euler) {
 
   int_t n_cells = grid.n_cells;
   int_t n_cvars = 5;
@@ -41,14 +41,47 @@ std::shared_ptr<AllVariables> set_initial_conditions(const Grid &grid,
 }
 
 TEST_CASE("ReferenceSolution; basic API", "[math]") {
-  auto fine_grid = zisa::load_gmsh("grids/convergence/unit_square_4.msh");
-  auto coarse_grid = zisa::load_gmsh("grids/convergence/unit_square_0.msh");
+  auto fine_grid = zisa::load_gmsh("grids/convergence/unit_square_3.msh");
+  auto coarse_gridnames
+      = std::vector<std::string>{"grids/convergence/unit_square_0.msh",
+                                 "grids/convergence/unit_square_1.msh"};
 
   auto euler = zisa::make_default_euler();
-  auto all_vars_ref = set_initial_conditions(*fine_grid, euler);
+  auto all_vars_ref = initial_conditions(*fine_grid, euler);
 
-  auto ref = zisa::EulerReferenceSolution<
-      zisa::IsentropicEquilibrium<decltype(euler)::eos_t,
-                                  decltype(euler)::gravity_t>>(
-      fine_grid, all_vars_ref, {euler.eos, euler.gravity, 4});
+  using eq_t = zisa::NoEquilibrium;
+  auto eq = eq_t{};
+
+  auto ref = zisa::EulerReferenceSolution<eq_t>(fine_grid, all_vars_ref, eq);
+
+  zisa::int_t k_var = 0;
+
+  for (const auto &coarse_gridname : coarse_gridnames) {
+    auto coarse_grid = zisa::load_gmsh(coarse_gridname);
+    auto n_cells = coarse_grid->n_cells;
+
+    auto approx = ref.average(*coarse_grid);
+    auto exact = initial_conditions(*coarse_grid, euler);
+
+    double l1_err = 0.0;
+    for (zisa::int_t i = 0; i < n_cells; ++i) {
+
+      double q_approx = approx->cvars(i, k_var);
+      double q_exact = exact->cvars(i, k_var);
+
+      l1_err += coarse_grid->volumes(i) * zisa::abs(q_approx - q_exact);
+
+      double r_max = zisa::circum_radius(coarse_grid->triangle(i));
+
+      double dq_max = r_max * 1.0;
+      double q_min = q_exact - dq_max;
+      double q_max = q_exact + dq_max;
+
+      INFO(string_format("[%d] q = %.3e, dq = %.3e", i, q_exact, dq_max));
+      REQUIRE(q_approx <= q_max);
+
+      INFO(string_format("[%d] q = %.3e, dq = %.3e", i, q_exact, dq_max));
+      REQUIRE(q_approx >= q_min);
+    }
+  }
 }

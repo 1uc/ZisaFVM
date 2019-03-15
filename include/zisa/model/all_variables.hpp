@@ -42,11 +42,10 @@ public:
   double operator[](int_t i) const;
 
   int_t size() const;
+  AllVariablesDimensions dims() const;
 
-  AllVariablesDimensions dims(void) const;
-
-  static AllVariables load(HDF5Reader &reader,
-                           const std::vector<std::string> &labels);
+  [[nodiscard]] static AllVariables
+  load(HDF5Reader &reader, const std::vector<std::string> &labels);
 
 protected:
   void allocate(const AllVariablesDimensions &dims);

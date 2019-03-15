@@ -23,9 +23,10 @@ TimeLoop::TimeLoop(const std::shared_ptr<TimeIntegration> &time_integration,
       visualization(visualization),
       cfl_condition(cfl_condition),
       is_sane(sanity_check),
-      progress_bar() {}
+      progress_bar(1) {}
 
-void TimeLoop::operator()(std::shared_ptr<AllVariables> u0) {
+std::shared_ptr<AllVariables> TimeLoop::
+operator()(std::shared_ptr<AllVariables> u0) {
   start_timer();
   print_welcome_message();
   progress_bar.reset();
@@ -60,6 +61,8 @@ void TimeLoop::operator()(std::shared_ptr<AllVariables> u0) {
   post_loop(*u0);
   stop_timer();
   print_goodbye_message();
+
+  return u0;
 }
 
 void TimeLoop::pick_time_step(const AllVariables &all_variables) {

@@ -21,7 +21,7 @@ namespace types {
 using euler_t = Euler<IdealGasEOS, PolytropeGravityRadial>;
 using eq_t = NoEquilibrium;
 using rc_t = CWENO_AO;
-using global_reconstruction_t = GlobalReconstruction<eq_t, rc_t>;
+using global_reconstruction_t = EulerGlobalReconstruction<eq_t, rc_t>;
 using flux_loop_t = FluxLoop<eq_t, rc_t, euler_t, HLLCBatten<euler_t>>;
 using source_loop_t = GravitySourceLoop<eq_t, rc_t, euler_t>;
 

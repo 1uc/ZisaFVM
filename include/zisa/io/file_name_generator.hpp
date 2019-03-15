@@ -1,9 +1,12 @@
 #ifndef FILE_NAME_GENERATOR_H_VLEA4
 #define FILE_NAME_GENERATOR_H_VLEA4
 
+#include <algorithm>
+#include <filesystem>
 #include <string>
 
 #include <zisa/config.hpp>
+#include <zisa/io/file_manipulation.hpp>
 
 namespace zisa {
 
@@ -22,8 +25,8 @@ namespace zisa {
  *      }
  *  will produce:
  *
- *      data/foo_grid.h5
- *      data/foo_steady-state.h5
+ *      data/grid.h5
+ *      data/steady-state.h5
  *      data/foo-0000.h5
  *        ...
  *      data/foo-0292.h5
@@ -37,20 +40,24 @@ public:
                     const std::string &suffix);
 
   /// Generate the next numbered file name.
-  std::string next_name(void);
+  std::string next_name();
 
   /// Generate numbers starting from `k`.
   void advance_to(int k);
+
+  /// Returns the count/generation of a datafile.
+  /** Returns -1 if it's not a datafile.
+   */
+  int generation(const std::filesystem::path &path);
 
   const std::string filename_stem;         ///< First part of all filenames.
   const std::string steady_state_filename; ///< Name of the steady-state.
   const std::string reference_filename;    ///< Name of the reference solution.
   const std::string grid_filename;         ///< Name of the grid.
-  const std::string xdmf_grid_filename;    ///< Name of the grid.
 
 private:
-  std::string pattern;
-  int count;
+  std::string pattern_;
+  int count_;
 };
 
 template <class Map>
@@ -58,6 +65,8 @@ std::shared_ptr<FileNameGenerator> make_file_name_generator(const Map &map) {
   return std::make_shared<FileNameGenerator>(
       map["stem"], map["pattern"], map["suffix"]);
 }
+
+std::string find_last_data_file(FileNameGenerator &fng);
 
 } // namespace zisa
 #endif /* end of include guard */

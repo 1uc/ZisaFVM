@@ -11,7 +11,7 @@ class GravitySourceLoop : public RateOfChange {
 private:
   using euler_t = EULER;
   using cvars_t = euler_var_t;
-  using grc_t = GlobalReconstruction<Equilibrium, RC>;
+  using grc_t = EulerGlobalReconstruction<Equilibrium, RC>;
 
 public:
   GravitySourceLoop(std::shared_ptr<Grid> grid,
@@ -32,7 +32,7 @@ public:
     const auto &eos = euler.eos;
     const auto &gravity = euler.gravity;
 
-#pragma omp parallel for schedule(guided)
+#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
     for (int_t i = 0; i < grid->n_cells; ++i) {
       const auto &tri = grid->triangle(i);
       const auto &rc = (*global_reconstruction)(i);

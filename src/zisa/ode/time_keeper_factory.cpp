@@ -5,7 +5,7 @@
 
 namespace zisa {
 PlottingStepsParameters::PlottingStepsParameters(const InputParameters &params)
-    : fps(-1.0), steps_per_frame(int_t(-1)) {
+    : fps(-1.0), steps_per_frame(int_t(-1)), n_snapshots(int_t(-1)) {
 
   LOG_ERR_IF(!has_key(params, "io"), "Missing config section 'io'.");
 
@@ -18,6 +18,10 @@ PlottingStepsParameters::PlottingStepsParameters(const InputParameters &params)
   if (has_key(params_plotting, "steps_per_frame")) {
     steps_per_frame = params_plotting["steps_per_frame"];
   }
+
+  if (has_key(params_plotting, "n_snapshots")) {
+    n_snapshots = params_plotting["n_snapshots"];
+  }
 }
 
 std::shared_ptr<PlottingSteps>
@@ -28,14 +32,23 @@ make_plotting_steps(const PlottingStepsParameters &plotting_params,
 
   double fps = plotting_params.fps;
   int_t steps_per_frame = plotting_params.steps_per_frame;
+  int_t n_snapshots = plotting_params.n_snapshots;
 
   if (fps > 0.0 && std::isfinite(t_end)) {
     double t0 = 0.0;
     double dt = 1.0 / fps;
 
     return std::make_shared<PlotAtFixedInterval>(t0, dt, t_end);
+  }
 
-  } else if (steps_per_frame != int_t(-1) /* which might be > 0 */) {
+  if (n_snapshots != int_t(-1) && std::isfinite(t_end)) {
+    double t0 = 0.0;
+    double dt = t_end / n_snapshots;
+
+    return std::make_shared<PlotAtFixedInterval>(t0, dt, t_end);
+  }
+
+  if (steps_per_frame != int_t(-1) /* which might be > 0 */) {
     return std::make_shared<PlotEveryNthStep>(steps_per_frame);
   }
 

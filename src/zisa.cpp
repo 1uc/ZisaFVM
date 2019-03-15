@@ -33,10 +33,14 @@ void handler(int sig) {
   exit(1);
 }
 
-void run_zisa(const zisa::InputParameters &params) {
-
+void run_zisa(const std::string &mode, const zisa::InputParameters &params) {
   auto experiment = zisa::make_experiment(params);
-  experiment->run();
+
+  if (mode == "run") {
+    experiment->run();
+  } else if (mode == "post-process") {
+    experiment->post_process();
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -49,13 +53,9 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 #endif
-  auto [mode, input_parameters] = zisa::parse_command_line(argc, argv);
 
-  if (mode == "run") {
-    run_zisa(input_parameters);
-  } else if (mode == "down-sample") {
-    down_sample_reference(input_parameters);
-  }
+  auto [mode, input_parameters] = zisa::parse_command_line(argc, argv);
+  run_zisa(mode, input_parameters);
 
   return EXIT_SUCCESS;
 }

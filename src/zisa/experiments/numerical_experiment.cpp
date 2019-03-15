@@ -2,6 +2,7 @@
 
 #include <zisa/boundary/no_boundary_condition.hpp>
 #include <zisa/experiments/numerical_experiment.hpp>
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration_factory.hpp>
@@ -13,13 +14,25 @@ NumericalExperiment::NumericalExperiment(const InputParameters &params)
     : params(params) {}
 
 void NumericalExperiment::run() { do_run(); }
+void NumericalExperiment::post_process() { do_post_process(); }
 
 std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
-  return load_gmsh(params["grid"]["file"]);
+  auto grid = load_gmsh(params["grid"]["file"]);
+
+  auto writer = HDF5SerialWriter("grid.h5");
+  save(writer, *grid);
+
+  return grid;
+}
+
+std::shared_ptr<FileNameGenerator>
+NumericalExperiment::choose_file_name_generator() {
+  return make_file_name_generator(params["io"]["filename"]);
 }
 
 void NumericalExperiment::do_run() {
   grid = choose_grid();
+  file_name_generator = choose_file_name_generator();
 
   std::cout << " --- Grid ---------- \n";
   std::cout << grid->str() << "\n";
@@ -27,7 +40,9 @@ void NumericalExperiment::do_run() {
   auto u0 = choose_initial_conditions();
   auto time_loop = choose_time_loop();
 
-  (*time_loop)(u0);
+  auto u1 = (*time_loop)(u0);
+
+  do_post_run(u1);
 }
 
 std::shared_ptr<SimulationClock>

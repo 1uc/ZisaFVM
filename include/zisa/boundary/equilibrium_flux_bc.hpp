@@ -19,9 +19,12 @@ private:
 public:
   EquilibriumFluxBC(const euler_t &euler,
                     const Equilibrium &equilibrium,
-                    const std::shared_ptr<Grid> &grid,
-                    const EdgeRule &qr)
-      : euler(euler), equilibrium(equilibrium), grid(grid), qr(qr) {}
+                    std::shared_ptr<Grid> grid,
+                    EdgeRule qr)
+      : euler(euler),
+        equilibrium(equilibrium),
+        grid(std::move(grid)),
+        qr(std::move(qr)) {}
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,

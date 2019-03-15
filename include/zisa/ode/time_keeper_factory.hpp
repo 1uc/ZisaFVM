@@ -15,6 +15,7 @@ namespace zisa {
 struct PlottingStepsParameters {
   double fps;
   int_t steps_per_frame;
+  int_t n_snapshots;
 
 public:
   PlottingStepsParameters(const InputParameters &params);

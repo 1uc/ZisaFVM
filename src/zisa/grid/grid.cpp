@@ -409,6 +409,7 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 void save(HDF5Writer &writer, const Grid &grid) {
   save(writer, grid.cell_centers, "cell_centers");
   save(writer, grid.volumes, "volumes");
+  writer.write_scalar(largest_circum_radius(grid), "dx_max");
 }
 
 double largest_circum_radius(const Grid &grid) {
