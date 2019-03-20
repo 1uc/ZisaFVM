@@ -142,7 +142,7 @@ std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_bc() {
   if (flux_bc == "isentropic") {
     auto qr = choose_edge_rule();
     using eq_t = IsentropicEquilibrium<eos_t, gravity_t>;
-    auto eq = eq_t(euler.eos, euler.gravity, 1);
+    auto eq = eq_t(euler.eos, euler.gravity, params["quadrature"]["volume"]);
 
     return std::make_shared<EquilibriumFluxBC<eq_t, euler_t>>(
         euler, eq, grid, qr);
