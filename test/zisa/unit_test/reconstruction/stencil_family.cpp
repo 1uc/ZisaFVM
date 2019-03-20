@@ -40,7 +40,7 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
 
       auto stencils = std::vector<zisa::StencilFamily>();
       for (const auto &[i, tri] : triangles(*grid)) {
-        stencils.push_back(zisa::StencilFamily(grid, i, params));
+        stencils.emplace_back(grid, i, params);
       }
 
       REQUIRE(stencils.size() == grid->n_cells);

@@ -26,7 +26,6 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
 
   double l1_err = 0.0;
   double linf_err = 0.0;
-  double volume = 0.0;
 
   for (const auto &[i, tri] : triangles(grid)) {
     const auto &l2g = rc[i].local2global();
@@ -52,6 +51,7 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
 
   return {l1_err, linf_err};
 }
+
 } // namespace zisa
 
 #endif /* end of include guard */

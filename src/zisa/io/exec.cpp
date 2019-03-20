@@ -19,7 +19,7 @@ std::string exec(const std::string &cmd) {
     exit(EXIT_FAILURE);
   }
 
-  std::string result = "";
+  std::string result;
 
   // Read the buffer in 128 byte chunks.
   char read_buffer[128];

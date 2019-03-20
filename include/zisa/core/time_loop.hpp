@@ -59,9 +59,9 @@ public:
 protected:
   void write_output(const AllVariables &u0);
 
-  virtual void print_welcome_message(void) const;
-  virtual void print_progress_message(void);
-  virtual void print_goodbye_message(void) const;
+  virtual void print_welcome_message() const;
+  virtual void print_progress_message();
+  virtual void print_goodbye_message() const;
 
   virtual void sanity_check(const AllVariables &all_variables) const;
   virtual void pick_time_step(const AllVariables &all_variables);

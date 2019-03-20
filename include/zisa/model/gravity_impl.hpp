@@ -25,6 +25,9 @@ ANY_DEVICE_INLINE double PointMassGravity::dphi_dx(double chi) const {
 }
 
 // ---  Polytrope  ---------------------------------------------------
+inline PolytropeGravity::PolytropeGravity(double rhoC, double K, double G)
+    : rhoC(rhoC), K(K), G(G) {}
+
 ANY_DEVICE_INLINE double PolytropeGravity::phi(double chi) const {
   double alpha = PolytropeGravity::alpha();
 

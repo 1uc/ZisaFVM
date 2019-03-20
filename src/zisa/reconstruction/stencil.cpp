@@ -39,7 +39,7 @@ Stencil::Stencil(std::vector<int_t> &l2g,
 void Stencil::assign_local_indices(const std::vector<int_t> &global_indices,
                                    std::vector<int_t> &l2g) {
 
-  assert(global_indices.size() > 0);
+  assert(!global_indices.empty());
 
   local_ = array<int_t, 1>(shape_t<1>{global_indices.size()});
   global_ = array<int_t, 1>(shape_t<1>{global_indices.size()});

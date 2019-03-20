@@ -1,9 +1,9 @@
 #if ZISA_HAS_OPENGL == 1
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 

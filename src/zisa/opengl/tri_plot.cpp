@@ -116,7 +116,7 @@ void TriPlot::clear() const {
 
 void TriPlot::bind_vertices() const {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 }
 
 void TriPlot::bind_colors(const array<RGBColor, 1> &colors) const {
@@ -126,7 +126,7 @@ void TriPlot::bind_colors(const array<RGBColor, 1> &colors) const {
                (void *)colors.raw(),
                GL_STREAM_DRAW);
 
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void *)0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 }
 
 } // namespace opengl

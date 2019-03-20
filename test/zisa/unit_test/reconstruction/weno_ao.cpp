@@ -1,8 +1,8 @@
 #include <numeric>
 
-#include <zisa/testing/testing_framework.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/weno_ao.hpp>
+#include <zisa/testing/testing_framework.hpp>
 #include <zisa/unit_test/reconstruction/hybrid_weno.hpp>
 
 TEST_CASE("WENO_AO API", "[weno_ao][math]") {
@@ -16,7 +16,7 @@ TEST_CASE("WENO_AO API", "[weno_ao][math]") {
 
       auto rc = std::vector<zisa::WENO_AO>();
       for (const auto &[i, tri] : triangles(*grid)) {
-        rc.push_back(zisa::WENO_AO(grid, i, params));
+        rc.emplace_back(grid, i, params);
       }
 
       REQUIRE(rc.size() == grid->n_cells);

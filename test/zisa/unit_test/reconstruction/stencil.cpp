@@ -1,5 +1,5 @@
-#include <zisa/testing/testing_framework.hpp>
 #include <numeric>
+#include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/reconstruction/stencil.hpp>
 
@@ -90,7 +90,7 @@ TEST_CASE("Stencil API") {
     auto exact = zisa::Stencil(l2g, grid, i_cell, params);
 
     for (zisa::int_t i = 0; i < n_stencils; ++i) {
-      stencils.push_back(zisa::Stencil(l2g, grid, i_cell, params));
+      stencils.emplace_back(l2g, grid, i_cell, params);
     }
 
     REQUIRE(stencils.size() == n_stencils);

@@ -1,10 +1,10 @@
 /* Initialize libraries and launch the simulation.
  */
 
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
 #include <execinfo.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <zisa/experiments/down_sample_reference.hpp>
 

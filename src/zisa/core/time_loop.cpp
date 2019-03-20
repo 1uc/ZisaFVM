@@ -75,7 +75,7 @@ void TimeLoop::post_update(AllVariables &u0) {
   sanity_check(u0);
 }
 
-void TimeLoop::print_welcome_message(void) const {
+void TimeLoop::print_welcome_message() const {
   std::string date = date_format(time(nullptr));
 
   if (simulation_clock->current_time() == 0.0) {
@@ -89,12 +89,12 @@ void TimeLoop::print_welcome_message(void) const {
   std::cout << "------------------------\n";
 }
 
-void TimeLoop::print_progress_message(void) {
+void TimeLoop::print_progress_message() {
   progress_bar.write_progress(std::cout,
                               simulation_clock->compact_progess_string());
 }
 
-void TimeLoop::print_goodbye_message(void) const {
+void TimeLoop::print_goodbye_message() const {
   std::cout << "\n ---- ----- ----\n";
   std::cout << "total steps: " << simulation_clock->current_step() << "\n";
   std::cout << " final time: " << simulation_clock->current_time() << "\n";

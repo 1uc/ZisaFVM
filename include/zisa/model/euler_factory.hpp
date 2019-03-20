@@ -43,11 +43,11 @@ Gravity make_gravity(const InputParameters &) {
 
 template <>
 ConstantGravityRadial
-make_gravity<ConstantGravityRadial>(const InputParameters &params);
+make_gravity<ConstantGravityRadial>(const InputParameters &input_params);
 
 template <>
 PolytropeGravityRadial
-make_gravity<PolytropeGravityRadial>(const InputParameters &params);
+make_gravity<PolytropeGravityRadial>(const InputParameters &input_params);
 
 template <class Model>
 Model make_euler(const InputParameters &params) {

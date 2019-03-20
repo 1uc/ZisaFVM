@@ -4,6 +4,7 @@
 #include <zisa/config.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/edge_rule.hpp>
+#include <zisa/model/euler.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/ode/rate_of_change.hpp>
 #include <zisa/utils/type_name.hpp>
@@ -11,9 +12,13 @@
 namespace zisa {
 
 template <class Equilibrium, class EULER>
-class EquilibriumFluxBC : public RateOfChange {
+class EquilibriumFluxBC;
+
+template <class Equilibrium, class EOS, class Gravity>
+class EquilibriumFluxBC<Equilibrium, Euler<EOS, Gravity>>
+    : public RateOfChange {
 private:
-  using euler_t = EULER;
+  using euler_t = Euler<EOS, Gravity>;
   using cvars_t = typename euler_t::cvars_t;
 
 public:
@@ -42,7 +47,7 @@ public:
       auto flux = [this, &eq, &edge = edge](XYZ x) {
         auto rhoE = eq.extrapolate(x);
 
-        euler_var_t f = euler.flux(euler.eos.cvars(rhoE));
+        auto f = euler.flux(euler.eos.cvars(rhoE));
         inv_coord_transform(f, edge);
 
         return f;

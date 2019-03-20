@@ -1,5 +1,6 @@
 #include <zisa/experiments/ic/polytrope_ic.hpp>
 #include <zisa/experiments/polytrope.hpp>
+#include <zisa/parallelization/omp.h>
 
 namespace zisa {
 
@@ -37,7 +38,11 @@ Polytrope::choose_initial_conditions(double amp, double width) {
   };
 
   auto &u0 = all_variables->cvars;
-  for (auto &&[i, tri] : triangles(*grid)) {
+
+  auto n_cells = grid->n_cells;
+#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
+  for (int_t i = 0; i < n_cells; ++i) {
+    auto tri = grid->triangle(i);
     u0(i) = average(qr, ic, tri);
   }
 

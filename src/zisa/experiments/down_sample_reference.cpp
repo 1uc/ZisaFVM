@@ -20,7 +20,8 @@ void down_sample_euler_reference(
     auto all_vars_coarse = reference_solution.average(*coarse_grid);
 
     std::string stem = zisa::stem(zisa::basename(grid_name));
-    std::string output_name = "down_sampled/" + stem + "/" + filename;
+    std::string output_name
+        = string_format("down_sampled/%s/%s", stem.c_str(), filename.c_str());
 
     auto writer = HDF5SerialWriter(output_name);
     save(writer, *all_vars_coarse, all_labels<euler_var_t>());

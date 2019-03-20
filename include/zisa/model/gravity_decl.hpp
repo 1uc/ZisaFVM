@@ -13,8 +13,8 @@ template <class GravityBase, class Alignment>
 class Gravity {
 public:
   Gravity() = default;
-  Gravity(const GravityBase &gravity, const Alignment &alignment)
-      : gravity(gravity), alignment(alignment) {}
+  Gravity(GravityBase gravity, Alignment alignment)
+      : gravity(std::move(gravity)), alignment(std::move(alignment)) {}
 
   ANY_DEVICE_INLINE double phi(const XYZ &x) const {
     double chi = alignment.coordinate(x);
@@ -41,7 +41,7 @@ public:
   }
 
   template <class G, class A>
-  friend void save(HDF5Writer &writer, const Gravity<G, A> &gravity);
+  friend void save(HDF5Writer &writer, const Gravity<G, A> &g);
 
 protected:
   GravityBase gravity;
@@ -189,7 +189,7 @@ public:
 class PolytropeGravity {
 public:
   PolytropeGravity() = default;
-  __host__ PolytropeGravity(double rhoC, double K, double G);
+  inline PolytropeGravity(double rhoC, double K, double G);
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 

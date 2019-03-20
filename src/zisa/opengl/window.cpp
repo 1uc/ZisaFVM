@@ -26,7 +26,7 @@ Window::Window(const std::string &title, int width, int height) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Open a window and create its OpenGL context
-  window_ = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+  window_ = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
 
   if (window_ == nullptr) {
     glfwTerminate();

@@ -13,7 +13,7 @@ ProgressBar::ProgressBar(int unit_size) : unit_size(unit_size) {
   t_start = zisa::current_time_stamp();
 }
 
-void ProgressBar::reset(void) {
+void ProgressBar::reset() {
   t_start = zisa::current_time_stamp();
   step = 0;
 }
