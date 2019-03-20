@@ -16,11 +16,12 @@ make_gravity<ConstantGravityRadial>(const InputParameters &params) {
 
 template <>
 PolytropeGravityRadial
-make_gravity<PolytropeGravityRadial>(const InputParameters &params) {
-  LOG_ERR_IF(params["euler"]["gravity"]["mode"] != "polytrope",
+make_gravity<PolytropeGravityRadial>(const InputParameters &input_params) {
+  LOG_ERR_IF(input_params["euler"]["gravity"]["mode"] != "polytrope",
              "Incompatible gravity.");
 
-  return PolytropeGravityRadial();
+  const auto &params = input_params["euler"]["gravity"]["polytrope"];
+  return PolytropeGravityRadial(params["rhoC"], params["K"], params["G"]);
 }
 
 Euler<IdealGasEOS, ConstantGravityRadial> make_default_euler() {
