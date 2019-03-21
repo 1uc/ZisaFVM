@@ -25,7 +25,7 @@ TriPlot::TriPlot(std::shared_ptr<Window> window,
 
     : vertices(vertex_indices.size()), window(std::move(window)) {
 
-  assert(window != nullptr);
+  assert(this->window != nullptr);
 
   compute_normalized_coordinates(vertices, vertex_indices);
 
