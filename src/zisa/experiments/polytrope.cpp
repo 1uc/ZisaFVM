@@ -1,8 +1,21 @@
 #include <zisa/experiments/ic/polytrope_ic.hpp>
+#include <zisa/experiments/numerical_experiment_factory.hpp>
 #include <zisa/experiments/polytrope.hpp>
 #include <zisa/parallelization/omp.h>
 
 namespace zisa {
+
+class PolytropeFactory {
+public:
+  PolytropeFactory() { register_experiment("gaussian_bump", *this); }
+
+  std::unique_ptr<zisa::NumericalExperiment>
+  operator()(const InputParameters &params) const {
+    return std::make_unique<Polytrope>(params);
+  }
+};
+
+static PolytropeFactory polytrope_factory;
 
 std::shared_ptr<AllVariables> Polytrope::choose_initial_conditions() {
   double amp = params["experiment"]["initial_conditions"]["amplitude"];
