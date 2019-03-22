@@ -12,8 +12,8 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   zisa::int_t quad_deg = 2;
   auto eq = zisa::IsentropicEquilibrium(eos, gravity, quad_deg);
 
-  auto tri_ref =
-      zisa::Triangle{{1.0, 1.0, 0.0}, {1.01, 1.0, 0.0}, {1.0, 1.01, 0.0}};
+  auto tri_ref
+      = zisa::Triangle{{1.0, 1.0, 0.0}, {1.01, 1.0, 0.0}, {1.0, 1.01, 0.0}};
   auto x_ref = zisa::XYZ{0.5, 0.6, 0.0};
   auto theta_ref = zisa::EnthalpyEntropy{10.0, 3.0};
 
@@ -23,8 +23,8 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
 
   auto rhoE_bar = average(rhoE_eq, tri_ref, quad_deg);
 
-  auto eq_loc = zisa::LocalEquilibrium(eq, tri_ref);
-  eq_loc.solve(rhoE_bar);
+  auto eq_loc = zisa::LocalEquilibrium(eq);
+  eq_loc.solve(rhoE_bar, tri_ref);
 
   SECTION("extrapolate to point") {
     auto xy = zisa::XYZ{1.1, 2.1, 0.0};

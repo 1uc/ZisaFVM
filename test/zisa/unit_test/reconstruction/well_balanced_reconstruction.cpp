@@ -31,7 +31,7 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
   double width = 0.05;
   double amp = 0.0;
   double rand_amp = 1e-8;
-  double atol = 3.1 * rand_amp;
+  double atol = 3.3 * rand_amp;
 
   auto rd = std::random_device();
   auto gen = std::mt19937(rd());

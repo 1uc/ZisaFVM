@@ -41,8 +41,8 @@ public:
       auto i = grid->left_right(e).first;
       auto tri = grid->triangle(i);
 
-      auto eq = LocalEquilibrium<Equilibrium>(equilibrium, tri);
-      eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))));
+      auto eq = LocalEquilibrium<Equilibrium>(equilibrium);
+      eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), tri);
 
       auto flux = [this, &eq, &edge = edge](XYZ x) {
         auto rhoE = eq.extrapolate(x);

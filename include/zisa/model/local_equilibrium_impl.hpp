@@ -16,18 +16,20 @@ RhoE extrapolate(const Equilibrium &eq,
 }
 
 template <class Equilibrium>
-LocalEquilibrium<Equilibrium>::LocalEquilibrium(const Equilibrium &equilibrium,
-                                                const Triangle &tri_ref)
-    : tri_ref(tri_ref), equilibrium(equilibrium) {}
+LocalEquilibrium<Equilibrium>::LocalEquilibrium(const Equilibrium &equilibrium)
+    : equilibrium(equilibrium) {}
 
 template <class Equilibrium>
-void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar) {
-  auto f = [this, &rhoE_bar](const EnthalpyEntropy &theta_star) {
+void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar,
+                                          const Triangle &tri_ref) {
+
+  x_ref = barycenter(tri_ref);
+
+  auto f = [this, &tri_ref, &rhoE_bar](const EnthalpyEntropy &theta_star) {
     auto deg = equilibrium.quad_deg;
 
     auto rhoE_eq = [this, &theta_star](const XYZ &xy) {
-      return zisa::extrapolate(
-          equilibrium, theta_star, barycenter(tri_ref), xy);
+      return zisa::extrapolate(equilibrium, theta_star, x_ref, xy);
     };
 
     return RhoE(rhoE_bar - average(rhoE_eq, tri_ref, deg));
@@ -60,7 +62,7 @@ void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar) {
 
 template <class Equilibrium>
 RhoE LocalEquilibrium<Equilibrium>::extrapolate(const XYZ &xy) const {
-  return zisa::extrapolate(equilibrium, theta, barycenter(tri_ref), xy);
+  return zisa::extrapolate(equilibrium, theta, x_ref, xy);
 }
 
 template <class Equilibrium>

@@ -18,12 +18,13 @@ public:
   LocalReconstruction() = default;
   LocalReconstruction(std::shared_ptr<Grid> &grid,
                       const LocalEquilibrium<Equilibrium> &eq,
-                      const RC &rc)
-      : grid(grid), eq(eq), rc(rc) {}
+                      const RC &rc,
+                      const Triangle &tri_ref)
+      : grid(grid), eq(eq), rc(rc), tri_ref(tri_ref) {}
 
   void compute(array<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
-    eq.solve(RhoE{u0[0], internal_energy(u0)});
+    eq.solve(RhoE{u0[0], internal_energy(u0)}, tri_ref);
 
     auto &l2g = rc.local2global();
     for (int_t il = 0; il < l2g.size(); ++il) {
@@ -60,6 +61,7 @@ private:
   std::shared_ptr<Grid> grid;
   LocalEquilibrium<Equilibrium> eq;
   RC rc;
+  Triangle tri_ref;
   WENOPoly weno_poly;
 };
 

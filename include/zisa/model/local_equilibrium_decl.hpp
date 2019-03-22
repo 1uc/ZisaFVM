@@ -12,17 +12,17 @@ template <class Equilibrium>
 class LocalEquilibrium {
 public:
   LocalEquilibrium() = default;
-  LocalEquilibrium(const Equilibrium &equilibrium, const Triangle &tri_ref);
+  LocalEquilibrium(const Equilibrium &equilibrium);
 
-  void solve(const RhoE &rhoE_bar);
+  void solve(const RhoE &rhoE_bar, const Triangle &tri_ref);
   RhoE extrapolate(const XYZ &xy) const;
   RhoE extrapolate(const Triangle &tri) const;
 
 private:
   EnthalpyEntropy theta = EnthalpyEntropy{};
+  XYZ x_ref = XYZ{};
   bool found_equilibrium = false;
 
-  Triangle tri_ref;
   Equilibrium equilibrium;
 };
 
@@ -34,9 +34,13 @@ public:
   template <class... Args>
   LocalEquilibrium(Args &&... /* args */) {}
 
-  inline void solve(const RhoE & /* rhoE_bar */) { return; }
-  inline RhoE extrapolate(const XYZ & /* xy */) const { return {0.0, 0.0}; }
-  inline RhoE extrapolate(const Triangle & /* tri */) const {
+  template <class... Args>
+  inline void solve(Args &&... /* args */) {
+    return;
+  }
+
+  template <class... Args>
+  RhoE extrapolate(Args &&... /* args */) const {
     return {0.0, 0.0};
   }
 };
