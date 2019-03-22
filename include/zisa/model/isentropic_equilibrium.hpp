@@ -2,6 +2,7 @@
 #define ISENTROPIC_EQUILIBRIUM_H_5173V
 
 #include <zisa/math/triangle.hpp>
+#include <zisa/model/euler.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/model/ideal_gas_eos.hpp>
 
@@ -10,6 +11,9 @@ namespace zisa {
 template <class EOS, class Gravity>
 struct IsentropicEquilibrium {
   IsentropicEquilibrium() = default;
+  IsentropicEquilibrium(const Euler<EOS, Gravity> &euler, int_t quad_deg)
+      : eos(euler.eos), gravity(euler.gravity), quad_deg(quad_deg) {}
+
   IsentropicEquilibrium(const EOS &eos, const Gravity &gravity, int_t quad_deg)
       : eos(eos), gravity(gravity), quad_deg(quad_deg) {}
 

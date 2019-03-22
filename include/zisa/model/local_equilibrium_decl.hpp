@@ -13,6 +13,9 @@ class LocalEquilibrium {
 public:
   LocalEquilibrium() = default;
   LocalEquilibrium(const Equilibrium &equilibrium);
+  LocalEquilibrium(const Equilibrium &equilibrium,
+                   const EnthalpyEntropy &theta_ref,
+                   const XYZ &x);
 
   void solve(const RhoE &rhoE_bar, const Triangle &tri_ref);
   RhoE extrapolate(const XYZ &xy) const;

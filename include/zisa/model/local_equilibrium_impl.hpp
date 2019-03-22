@@ -20,6 +20,16 @@ LocalEquilibrium<Equilibrium>::LocalEquilibrium(const Equilibrium &equilibrium)
     : equilibrium(equilibrium) {}
 
 template <class Equilibrium>
+LocalEquilibrium<Equilibrium>::LocalEquilibrium(
+    const Equilibrium &equilibrium,
+    const EnthalpyEntropy &theta_ref,
+    const XYZ &x_ref)
+    : theta(theta_ref),
+      x_ref(x_ref),
+      found_equilibrium(true),
+      equilibrium(equilibrium) {}
+
+template <class Equilibrium>
 void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar,
                                           const Triangle &tri_ref) {
 
