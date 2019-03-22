@@ -20,7 +20,7 @@ make_gravity<PolytropeGravityRadial>(const InputParameters &input_params) {
   LOG_ERR_IF(input_params["euler"]["gravity"]["mode"] != "polytrope",
              "Incompatible gravity.");
 
-  const auto &params = input_params["euler"]["gravity"]["polytrope"];
+  const auto &params = input_params["euler"]["gravity"];
   return PolytropeGravityRadial(params["rhoC"], params["K"], params["G"]);
 }
 

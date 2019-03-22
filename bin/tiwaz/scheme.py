@@ -70,11 +70,9 @@ class PolytropeGravity(Subsection):
     def __init__(self):
         super().__init__({
             "mode": "polytrope",
-            "polytrope": {
-                "rhoC": 1.0,
-                "K": 1.0,
-                "G": 1.0
-            }
+            "rhoC": 1.0,
+            "K": 1.0,
+            "G": 1.0
         })
 
 
