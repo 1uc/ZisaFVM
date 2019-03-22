@@ -54,14 +54,12 @@ public:
 };
 
 /// Write the parameters of this model to disk.
-template<class EOS, class Gravity>
+template <class EOS, class Gravity>
 void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler);
 
-
-/// Are the value obviously unphysical?
+/// Are the values obviously unphysical?
 /** The variable `u` is considered implausible if any component is not even
- *  a real number or if the density, (pressure, GPU only) or energy is
- *  non-positive.
+ *  a real number or if the density, or energy is non-positive.
  *
  *  @param u variable to check
  *  @return true if clearly unphysical.
@@ -70,11 +68,10 @@ ANY_DEVICE_INLINE bool notplausible(const euler_var_t &u);
 
 /// Could these values be physical (at first glace)?
 /** The variable `u` is considered plausible if all its components are real
- *  numbers and furthermore, density, (pressure, GPU only) and energy are
- *  (strictly) positive.
+ *  numbers and furthermore, density and energy are (strictly) positive.
  *
  *  @param u variable to check
- *  @return true if clearly unphysical.
+ *  @return false if clearly unphysical.
  */
 ANY_DEVICE_INLINE bool isplausible(const euler_var_t &u);
 

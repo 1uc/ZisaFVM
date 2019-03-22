@@ -62,6 +62,10 @@ public:
     return enthalpy_entropy(rhoE(rhoK));
   }
 
+  ANY_DEVICE_INLINE EnthalpyEntropy enthalpy_entropy(RhoP rhoP) const {
+    return enthalpy_entropy(rhoE(rhoP));
+  }
+
   ANY_DEVICE_INLINE EnthalpyEntropy enthalpy_entropy(RhoE rhoE) const {
 
     double p = pressure__rho_E(rhoE.rho(), rhoE.E());
@@ -87,7 +91,6 @@ public:
   }
 
   ANY_DEVICE_INLINE RhoE rhoE(PressureEntropy theta, RhoT) const {
-
     return rhoE(theta);
   }
 
@@ -98,13 +101,16 @@ public:
     return RhoE{rho, E};
   }
 
+  ANY_DEVICE_INLINE RhoE rhoE(const RhoP &rhoP) const {
+    return RhoE{rhoP.rho(), internal_energy(rhoP)};
+  }
+
   ANY_DEVICE_INLINE RhoE rhoE(const RhoEntropy &rhoK) const {
     double rho = rhoK.rho();
     return RhoE{rho, internal_energy(rhoK)};
   }
 
   ANY_DEVICE_INLINE RhoT rhoT(RhoE rhoE) const {
-
     auto rho = rhoE.rho();
     auto T = this->temperature(rhoE);
 

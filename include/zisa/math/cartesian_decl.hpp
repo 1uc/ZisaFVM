@@ -216,6 +216,8 @@ public:
   }
 };
 
+inline double angle(const XYZ &x) { return zisa::atan2(x[1], x[0]); }
+
 template <class E1, class E2, class E3>
 double cos_angle(const CartesianExpr<E1, double> &e1_,
                  const CartesianExpr<E2, double> &e2_,

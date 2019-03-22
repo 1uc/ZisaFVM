@@ -80,6 +80,7 @@ RhoE LocalEquilibrium<Equilibrium>::extrapolate(const Triangle &tri) const {
   auto deg = equilibrium.quad_deg;
   return average([this](const XYZ &xy) { return extrapolate(xy); }, tri, deg);
 }
+
 } // namespace zisa
 
 #endif /* end of include guard */
