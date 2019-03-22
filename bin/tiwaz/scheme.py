@@ -67,12 +67,23 @@ class FluxBC(Subsection):
 
 
 class PolytropeGravity(Subsection):
-    def __init__(self):
+    def __init__(self, rhoC=1.0, K=1.0, G=1.0):
         super().__init__({
             "mode": "polytrope",
-            "rhoC": 1.0,
-            "K": 1.0,
-            "G": 1.0
+            "rhoC": rhoC,
+            "K": K,
+            "G": G
+        })
+
+class PolytropeGravityWithJump(Subsection):
+    def __init__(self, r_crit=0.25, rhoC=1.0, K_inner=1.0, K_outer=1.0, G=1.0):
+        super().__init__({
+            "mode": "polytrope_with_jump",
+            "r_crit": r_crit,
+            "rhoC": rhoC,
+            "K_inner": K_inner,
+            "K_outer": K_outer,
+            "G": G
         })
 
 
