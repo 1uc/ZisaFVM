@@ -54,8 +54,12 @@ public:
   }
 
   ANY_DEVICE_INLINE euler_var_t cvars(RhoE rhoE) const {
-    auto [rho, E] = rhoE;
+    const auto &[rho, E] = rhoE;
     return cvars_t{rho, 0.0, 0.0, 0.0, E};
+  }
+
+  ANY_DEVICE_INLINE EnthalpyEntropy enthalpy_entropy(RhoEntropy rhoK) const {
+    return enthalpy_entropy(rhoE(rhoK));
   }
 
   ANY_DEVICE_INLINE EnthalpyEntropy enthalpy_entropy(RhoE rhoE) const {
@@ -94,12 +98,21 @@ public:
     return RhoE{rho, E};
   }
 
+  ANY_DEVICE_INLINE RhoE rhoE(const RhoEntropy &rhoK) const {
+    double rho = rhoK.rho();
+    return RhoE{rho, internal_energy(rhoK)};
+  }
+
   ANY_DEVICE_INLINE RhoT rhoT(RhoE rhoE) const {
 
     auto rho = rhoE.rho();
     auto T = this->temperature(rhoE);
 
     return RhoT{rho, T};
+  }
+
+  ANY_DEVICE_INLINE RhoP rhoP(RhoE rhoE) const {
+    return RhoP{rhoE.rho(), pressure(rhoE)};
   }
 
   ANY_DEVICE_INLINE double entropy(RhoE rhoE) const { return K(rhoE); }
@@ -182,11 +195,6 @@ public:
     return pressure(RhoE{u[0], u[4] - E_kin});
   }
 
-  /// Kinetic energy.
-  ANY_DEVICE_INLINE double kinetic_energy(const euler_var_t &u) const {
-    return zisa::kinetic_energy(u);
-  }
-
   /// Internal energy.
   ANY_DEVICE_INLINE double internal_energy__p(double p) const {
     return p / (gamma() - 1.0);
@@ -207,9 +215,8 @@ public:
     return internal_energy__rho_p(rho, p);
   }
 
-  ANY_DEVICE_INLINE double internal_energy(const euler_var_t &u) const {
-    return zisa::internal_energy(u);
-  }
+  using EquationOfState::internal_energy;
+  using EquationOfState::kinetic_energy;
 
   ANY_DEVICE_INLINE double internal_energy(EnthalpyEntropy theta) const {
     return internal_energy__h_K(theta.h(), theta.K());
@@ -221,6 +228,10 @@ public:
 
   ANY_DEVICE_INLINE double internal_energy(RhoP rhoP) const {
     return internal_energy__p(rhoP.p());
+  }
+
+  ANY_DEVICE_INLINE double internal_energy(RhoEntropy rhoK) const {
+    return internal_energy__rho_K(rhoK.rho(), rhoK.s());
   }
 
   /// Specific internal energy.

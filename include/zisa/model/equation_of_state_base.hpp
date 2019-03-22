@@ -20,12 +20,11 @@ public:
 
 public:
   double kinetic_energy(const cvars_t &u) const {
-    return 0.5 * (zisa::pow<2>(u[1]) + zisa::pow<2>(u[2]) + zisa::pow<2>(u[3]))
-           / u[0];
+    return zisa::kinetic_energy(u);
   }
 
   double internal_energy(const cvars_t &u) const {
-    return u[4] - kinetic_energy(u);
+    return zisa::internal_energy(u);
   }
 };
 
