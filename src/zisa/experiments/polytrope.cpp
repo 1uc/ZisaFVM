@@ -7,7 +7,8 @@ namespace zisa {
 
 class PolytropeFactory {
 public:
-  PolytropeFactory() { register_experiment("gaussian_bump", *this); }
+  // This is `noexcept` because we can't catch the exception.
+  PolytropeFactory() noexcept { register_experiment("gaussian_bump", *this); }
 
   std::unique_ptr<zisa::NumericalExperiment>
   operator()(const InputParameters &params) const {
