@@ -36,8 +36,8 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   }
 
   SECTION("extrapolate to triangle") {
-    auto tri =
-        zisa::Triangle{{1.2, 1.1, 0.0}, {1.21, 1.1, 0.0}, {1.2, 1.11, 0.0}};
+    auto tri
+        = zisa::Triangle{{1.2, 1.1, 0.0}, {1.21, 1.1, 0.0}, {1.2, 1.11, 0.0}};
 
     auto approx = eq_loc.extrapolate(tri);
     auto exact = average(rhoE_eq, tri, quad_deg);

@@ -75,8 +75,8 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
   for (auto &&[i, tri] : zisa::triangles(*grid)) {
     for (const auto &chi : qr.points) {
       auto x = zisa::coord(tri, chi);
-
       double dE = zisa::norm(grc(i, x) - ic(x));
+
       INFO(string_format("[%d] %.3e >= %.3e", i, dE, atol));
       REQUIRE(dE < atol);
     }
