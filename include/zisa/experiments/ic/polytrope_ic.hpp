@@ -16,7 +16,7 @@ public:
 
   RhoP operator()(const XYZ &x) const {
 
-    double alpha = this->euler.gravity.alpha();
+    double alpha = this->euler.gravity.alpha(zisa::norm(x));
     double eps = std::numeric_limits<double>::min();
     double r_eff = alpha * (zisa::norm(x) + eps);
 

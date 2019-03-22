@@ -190,10 +190,11 @@ class PolytropeGravity {
 public:
   PolytropeGravity() = default;
   inline PolytropeGravity(double rhoC, double K, double G);
+
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
-  ANY_DEVICE_INLINE double alpha() const;
+  ANY_DEVICE_INLINE double alpha(double chi) const;
 
   friend void save(HDF5Writer &writer, const PolytropeGravity &gravity);
 
@@ -204,8 +205,6 @@ private:
   double eps = std::numeric_limits<double>::min();
 };
 
-void save(HDF5Writer &writer, const PolytropeGravity &gravity);
-
 class PolytropeGravityRadial
     : public Gravity<PolytropeGravity, RadialAlignment> {
 private:
@@ -214,70 +213,44 @@ private:
 public:
   PolytropeGravityRadial() = default;
   PolytropeGravityRadial(double rhoC, double K, double G)
-      : super({rhoC, K, G}, RadialAlignment{}) {}
+      : super(PolytropeGravity(rhoC, K, G), RadialAlignment{}) {}
 
-  ANY_DEVICE_INLINE double alpha() const;
+  ANY_DEVICE_INLINE double alpha(double chi) const;
 };
 
-class SphericalGravity {
-private:
-  class Poly1D {
-  public:
-    Poly1D() = default;
-    Poly1D(double a1, double a2, double a3, double b)
-        : a1(a1), a2(a2), a3(a3), b(b) {}
-
-    ANY_DEVICE_INLINE double operator()(double r) const {
-      return ((a3 * r + a2) * r + a1) * r + b * (r - 1);
-    }
-
-    ANY_DEVICE_INLINE double dr(double r) const {
-      return (3 * a3 * r + 2 * a2) * r + a1 + b;
-    }
-
-    ANY_DEVICE_INLINE double drr(double r) const { return 6 * a3 * r + 2 * a2; }
-
-  private:
-    double a1;
-    double a2;
-    double a3;
-    double b;
-  };
-
+class PolytropeGravityWithJump {
 public:
-  SphericalGravity() = default;
-  SphericalGravity(const std::vector<double> &domain,
-                   const std::vector<double> &phi);
+  PolytropeGravityWithJump() = default;
+  inline PolytropeGravityWithJump(
+      double r_crit, double rhoC, double K_inner, double K_outer, double G);
+  ANY_DEVICE_INLINE double phi(double chi) const;
+  ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
-  ANY_DEVICE_INLINE double phi(double r) const;
-  ANY_DEVICE_INLINE double dphi_dx(double r) const;
+  ANY_DEVICE_INLINE double alpha(double chi) const;
 
-private:
-  ANY_DEVICE_INLINE int_t index(double r) const;
-  ANY_DEVICE_INLINE double radii(int_t i) const;
-
-  ANY_DEVICE_INLINE Poly1D make_poly(double f_i,
-                                     double df_i,
-                                     double ddf_i,
-                                     double f_ip1) const;
+  friend void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity);
 
 private:
-  std::vector<double> domain;
-  int_t n_cells;
-  double dr;
-
-  std::vector<double> phi_points;
+  double r_crit;
+  PolytropeGravity inner;
+  PolytropeGravity outer;
 };
 
-class RadialGravity : public Gravity<SphericalGravity, RadialAlignment> {
+void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity);
+
+class PolytropeGravityWithJumpRadial
+    : public Gravity<PolytropeGravityWithJump, RadialAlignment> {
 private:
-  using super = Gravity<SphericalGravity, RadialAlignment>;
+  using super = Gravity<PolytropeGravityWithJump, RadialAlignment>;
 
 public:
-  RadialGravity() = default;
-  RadialGravity(const std::vector<double> &domain,
-                const std::vector<double> &phi)
-      : super({domain, phi}, RadialAlignment{}) {}
+  PolytropeGravityWithJumpRadial() = default;
+
+  PolytropeGravityWithJumpRadial(
+      double r_crit, double rhoC, double K_inner, double K_outer, double G)
+      : super({r_crit, rhoC, K_inner, K_outer, G}, RadialAlignment{}) {}
+
+  ANY_DEVICE_INLINE double alpha(double chi) const;
 };
 
 class NoGravity {

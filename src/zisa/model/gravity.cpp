@@ -28,4 +28,14 @@ void save(HDF5Writer &writer, const PolytropeGravity &gravity) {
   writer.write_scalar(gravity.eps, "eps");
 }
 
+void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity) {
+  writer.write_scalar(gravity.r_crit, "r_crit");
+
+  writer.open_group("inner");
+  save(writer, gravity.inner);
+  writer.switch_group("outer");
+  save(writer, gravity.outer);
+  writer.close_group();
+}
+
 } // zisa

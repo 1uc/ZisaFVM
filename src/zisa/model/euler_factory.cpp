@@ -24,6 +24,21 @@ make_gravity<PolytropeGravityRadial>(const InputParameters &input_params) {
   return PolytropeGravityRadial(params["rhoC"], params["K"], params["G"]);
 }
 
+template <>
+PolytropeGravityWithJumpRadial make_gravity<PolytropeGravityWithJumpRadial>(
+    const InputParameters &input_params) {
+
+  LOG_ERR_IF(input_params["euler"]["gravity"]["mode"] != "polytrope_with_jump",
+             "Incompatible gravity.");
+
+  const auto &params = input_params["euler"]["gravity"];
+  return PolytropeGravityWithJumpRadial(params["r_crit"],
+                                        params["rhoC"],
+                                        params["K_inner"],
+                                        params["K_outer"],
+                                        params["G"]);
+}
+
 Euler<IdealGasEOS, ConstantGravityRadial> make_default_euler() {
   return Euler{IdealGasEOS{1.2, 2.3}, ConstantGravityRadial{0.99}};
 }
