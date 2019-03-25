@@ -9,6 +9,8 @@ from . launch_params import folder_name
 class Grid:
     def __init__(self, grid_name):
         with h5py.File(grid_name, "r") as h5:
+            self.vertex_indices = np.array(h5["vertex_indices"])
+            self.vertices = np.array(h5["vertices"])
             self.cell_centers = np.array(h5["cell_centers"])
             self.volumes = np.array(h5["volumes"])
             self.dx_max = h5["dx_max"][()]

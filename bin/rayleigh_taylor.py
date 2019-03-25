@@ -21,6 +21,7 @@ from tiwaz.scatter_plot import ScatterPlot, plot_visual_convergence
 from tiwaz.launch_params import folder_name
 from tiwaz.post_process import load_data, load_grid
 from tiwaz.post_process import find_last_data_file, find_steady_state_file
+from tiwaz.tri_plot import tri_plot
 
 class RayleighTaylorExperiment(sc.Subsection):
     def __init__(self):
@@ -44,7 +45,7 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0)
 euler = sc.Euler(eos, gravity)
 
-time = sc.Time(t_end=0.9)
+time = sc.Time(t_end=0.01)
 io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=1)
 
 def grid_name(level):
@@ -158,6 +159,8 @@ def post_process(coarse_runs, reference_run):
     coarse_grid = load_grid(coarse_dir)
     u_coarse = load_data(find_last_data_file(coarse_dir),
                          find_steady_state_file(coarse_dir))
+
+    tri_plot(coarse_grid, u_coarse.cvars["E"])
 
     plot = ScatterPlot()
     plot(coarse_grid, u_coarse.cvars["rho"])
