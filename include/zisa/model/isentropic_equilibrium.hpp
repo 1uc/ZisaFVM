@@ -34,7 +34,7 @@ RhoE extrapolate(const IsentropicEquilibrium<IdealGasEOS, Gravity> &eq,
   double phi = gravity.phi(xy);
 
   double h = theta.h() + phi_ref - phi;
-  double K = theta.K();
+  double K = theta.s();
 
   return eos.rhoE(EnthalpyEntropy{h, K});
 }

@@ -106,8 +106,8 @@ struct EnthalpyEntropy : public Cartesian<2> {
   ANY_DEVICE_INLINE double &h() { return (*this)[0]; }
   ANY_DEVICE_INLINE double h() const { return (*this)[0]; }
 
-  ANY_DEVICE_INLINE double &K() { return (*this)[1]; }
-  ANY_DEVICE_INLINE double K() const { return (*this)[1]; }
+  ANY_DEVICE_INLINE double &s() { return (*this)[1]; }
+  ANY_DEVICE_INLINE double s() const { return (*this)[1]; }
 };
 
 struct Momentum : public Cartesian<3> {

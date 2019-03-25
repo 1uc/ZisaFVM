@@ -166,7 +166,7 @@ public:
   }
 
   ANY_DEVICE_INLINE double rho(EnthalpyEntropy theta) const {
-    return rho__h_K(theta.h(), theta.K());
+    return rho__h_K(theta.h(), theta.s());
   }
 
   ANY_DEVICE_INLINE double rho(PressureEntropy theta) const {
@@ -185,11 +185,6 @@ public:
   ANY_DEVICE_INLINE double pressure__rho_T(double rho, double T) const {
     double r_gas = specific_gas_constant();
     return r_gas * rho * T;
-  }
-
-  ANY_DEVICE_INLINE double pressure__rho_s(double rho, double s) const {
-    // s = cV() * zisa::log(p / zisa::pow(rho, gamma()));
-    return zisa::exp(s / cV()) * zisa::pow(rho, gamma());
   }
 
   ANY_DEVICE_INLINE double pressure(RhoE rhoE) const {
@@ -225,7 +220,7 @@ public:
   using EquationOfState::kinetic_energy;
 
   ANY_DEVICE_INLINE double internal_energy(EnthalpyEntropy theta) const {
-    return internal_energy__h_K(theta.h(), theta.K());
+    return internal_energy__h_K(theta.h(), theta.s());
   }
 
   ANY_DEVICE_INLINE double internal_energy(PressureEntropy theta) const {
