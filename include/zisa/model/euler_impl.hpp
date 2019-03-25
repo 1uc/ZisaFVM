@@ -24,7 +24,7 @@ ANY_DEVICE_INLINE double
 Euler<EOS, Gravity>::max_eigen_value(const euler_var_t &u) const {
   double p = eos.pressure(u);
   return zisa::sqrt((u(1) * u(1) + u(2) * u(2)) / (u(0) * u(0)))
-         + eos.sound_speed__rho_p(u[0], p);
+         + eos.sound_speed(RhoP{u[0], p});
 }
 
 template <class EOS, class Gravity>
@@ -53,7 +53,7 @@ ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::flux(const euler_var_t &u,
 template <class EOS, class Gravity>
 ANY_DEVICE_INLINE double
 Euler<EOS, Gravity>::energy(double rho, double v1, double v2, double p) const {
-  return eos.internal_energy__rho_p(rho, p) + 0.5 * rho * (v1 * v1 + v2 * v2);
+  return eos.internal_energy(RhoP{rho, p}) + 0.5 * rho * (v1 * v1 + v2 * v2);
 }
 
 template <class EOS, class Gravity>

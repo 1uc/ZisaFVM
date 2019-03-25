@@ -63,16 +63,11 @@ public:
   }
 
   ANY_DEVICE_INLINE EnthalpyEntropy enthalpy_entropy(RhoP rhoP) const {
-    return enthalpy_entropy(rhoE(rhoP));
+    return EnthalpyEntropy{enthalpy(rhoP), entropy(rhoP)};
   }
 
   ANY_DEVICE_INLINE EnthalpyEntropy enthalpy_entropy(RhoE rhoE) const {
-
-    double p = pressure__rho_E(rhoE.rho(), rhoE.E());
-    double h = enthalpy__rho_p(rhoE.rho(), p);
-    double K = K__rho_p(rhoE.rho(), p);
-
-    return EnthalpyEntropy{h, K};
+    return enthalpy_entropy(rhoP(rhoE));
   }
 
   ANY_DEVICE_INLINE RhoE rhoE(const euler_var_t &u) const {
@@ -121,74 +116,64 @@ public:
     return RhoP{rhoE.rho(), pressure(rhoE)};
   }
 
-  ANY_DEVICE_INLINE double entropy(RhoE rhoE) const { return K(rhoE); }
-
-  ANY_DEVICE_INLINE double entropy__rho_p(double rho, double p) const {
-    return cV() * zisa::log(p / zisa::pow(rho, gamma()));
+  ANY_DEVICE_INLINE RhoP rhoP(RhoEntropy rhoK) const {
+    return RhoP{rhoK.rho(), pressure(rhoK)};
   }
 
-  ANY_DEVICE_INLINE double enthalpy__rho_p(double rho, double p) const {
+  ANY_DEVICE_INLINE double entropy(RhoP rhoP) const { return K(rhoP); }
+  ANY_DEVICE_INLINE double entropy(RhoE rhoE) const { return K(rhoE); }
+
+  ANY_DEVICE_INLINE double enthalpy(const RhoP &rhoP) const {
+    const auto &[rho, p] = rhoP;
     return gamma() / (gamma() - 1.0) * p / rho;
   }
 
   ANY_DEVICE_INLINE double enthalpy(const RhoE &rhoE) const {
-    return enthalpy__rho_p(rhoE.rho(), pressure(rhoE));
+    return enthalpy(rhoP(rhoE));
   }
 
-  ANY_DEVICE_INLINE double K__rho_p(double rho, double p) const {
+  ANY_DEVICE_INLINE double K(const RhoP &rhoP) const {
+    const auto &[rho, p] = rhoP;
     return p / zisa::pow(rho, gamma());
   }
 
-  ANY_DEVICE_INLINE double K(const RhoE &rhoE) const {
-    return K__rho_p(rhoE.rho(), pressure(rhoE));
-  }
+  ANY_DEVICE_INLINE double K(const RhoE &rhoE) const { return K(rhoP(rhoE)); }
 
-  ANY_DEVICE_INLINE double rho__p_T(double p, double T) const {
-    return p / (T * specific_gas_constant());
-  }
-
-  ANY_DEVICE_INLINE double rho__h_K(double h, double K) const {
+  ANY_DEVICE_INLINE double rho(EnthalpyEntropy theta) const {
+    const auto &[h, K] = theta;
     double gamma = IdealGasEOS::gamma();
     double base = 1.0 / K * (gamma - 1.0) / gamma * h;
     double exponent = 1.0 / (gamma - 1.0);
     return zisa::pow(base, exponent);
   }
 
-  ANY_DEVICE_INLINE double rho__p_K(double p, double K) const {
+  ANY_DEVICE_INLINE double rho(PressureEntropy theta) const {
+    const auto &[p, K] = theta;
     return zisa::pow(p / K, 1.0 / gamma());
   }
 
-  ANY_DEVICE_INLINE double rho__p_s(double p, double s) const {
-    double gamma = IdealGasEOS::gamma();
-    double cV = IdealGasEOS::cV();
-
-    return zisa::pow(p, 1.0 / gamma) * zisa::exp(-s / (cV * gamma));
-  }
-
-  ANY_DEVICE_INLINE double rho(EnthalpyEntropy theta) const {
-    return rho__h_K(theta.h(), theta.s());
-  }
-
-  ANY_DEVICE_INLINE double rho(PressureEntropy theta) const {
-    return rho__p_K(theta.p(), theta.s());
-  }
-
   /// Pressure given density and internal energy, using ideal gas law.
-  ANY_DEVICE_INLINE double pressure__rho_E(double, double E) const {
-    return E * (gamma() - 1.0);
-  }
 
-  ANY_DEVICE_INLINE double pressure__rho_K(double rho, double K) const {
-    return K * zisa::pow(rho, gamma());
-  }
+  ANY_DEVICE_INLINE double pressure(EnthalpyEntropy theta) const {
+    double K = theta.s();
+    double rho = this->rho(theta);
 
-  ANY_DEVICE_INLINE double pressure__rho_T(double rho, double T) const {
-    double r_gas = specific_gas_constant();
-    return r_gas * rho * T;
+    return pressure(RhoEntropy{rho, K});
   }
 
   ANY_DEVICE_INLINE double pressure(RhoE rhoE) const {
-    return pressure__rho_E(rhoE.rho(), rhoE.E());
+    return rhoE.E() * (gamma() - 1.0);
+  }
+
+  ANY_DEVICE_INLINE double pressure(RhoEntropy rhoK) const {
+    const auto &[rho, K] = rhoK;
+    return K * zisa::pow(rho, gamma());
+  }
+
+  ANY_DEVICE_INLINE double pressure(RhoT rhoT) const {
+    const auto &[rho, T] = rhoT;
+    double r_gas = specific_gas_constant();
+    return r_gas * rho * T;
   }
 
   ANY_DEVICE_INLINE double pressure(const euler_var_t &u) const {
@@ -196,71 +181,54 @@ public:
     return pressure(RhoE{u[0], u[4] - E_kin});
   }
 
-  /// Internal energy.
-  ANY_DEVICE_INLINE double internal_energy__p(double p) const {
-    return p / (gamma() - 1.0);
-  }
-
-  ANY_DEVICE_INLINE double internal_energy__rho_p(double, double p) const {
-    return internal_energy__p(p);
-  }
-
-  ANY_DEVICE_INLINE double internal_energy__h_K(double h, double K) const {
-    double rho = rho__h_K(h, K);
-    double p = pressure__rho_K(rho, K);
-    return internal_energy__rho_p(rho, p);
-  }
-
-  ANY_DEVICE_INLINE double internal_energy__rho_K(double rho, double K) const {
-    double p = pressure__rho_K(rho, K);
-    return internal_energy__rho_p(rho, p);
-  }
-
   using EquationOfState::internal_energy;
   using EquationOfState::kinetic_energy;
 
+  /// Internal energy.
+  ANY_DEVICE_INLINE double ideal_internal_energy(double p) const {
+    return p / (gamma() - 1.0);
+  }
+
   ANY_DEVICE_INLINE double internal_energy(EnthalpyEntropy theta) const {
-    return internal_energy__h_K(theta.h(), theta.s());
+    double p = pressure(theta);
+    return ideal_internal_energy(p);
   }
 
   ANY_DEVICE_INLINE double internal_energy(PressureEntropy theta) const {
-    return internal_energy__p(theta.p());
+    return ideal_internal_energy(theta.p());
   }
 
   ANY_DEVICE_INLINE double internal_energy(RhoP rhoP) const {
-    return internal_energy__p(rhoP.p());
+    return ideal_internal_energy(rhoP.p());
   }
 
   ANY_DEVICE_INLINE double internal_energy(RhoEntropy rhoK) const {
-    return internal_energy__rho_K(rhoK.rho(), rhoK.s());
-  }
-
-  /// Specific internal energy.
-  ANY_DEVICE_INLINE double specific_internal_energy__rho_E(double rho,
-                                                           double E) const {
-    return E / rho;
+    double p = pressure(rhoK);
+    return ideal_internal_energy(p);
   }
 
   /// -- Speed of sound.
   ANY_DEVICE_INLINE double sound_speed(const euler_var_t &u) const {
-    return sound_speed__rho_p(u[0], pressure(u));
+    return sound_speed(RhoP{u[0], pressure(u)});
   }
 
-  ANY_DEVICE_INLINE double sound_speed__rho_p(double rho, double p) const {
+  ANY_DEVICE_INLINE double sound_speed(const RhoP &rhoP) const {
+    const auto &[rho, p] = rhoP;
     return zisa::sqrt(gamma() * p / rho);
   }
 
   // -- Temperature
-  ANY_DEVICE_INLINE double temperature__rho_p(double rho, double p) const {
+  ANY_DEVICE_INLINE double temperature(const RhoP &rhoP) const {
+    const auto &[rho, p] = rhoP;
     return p / (rho * specific_gas_constant());
   }
 
   ANY_DEVICE_INLINE double temperature(const euler_var_t &u) const {
-    return temperature__rho_p(u[0], pressure(u));
+    return temperature(RhoP{u[0], pressure(u)});
   }
 
   ANY_DEVICE_INLINE double temperature(RhoE rhoE) const {
-    return temperature__rho_p(rhoE.rho(), pressure(rhoE));
+    return temperature(RhoP{rhoE.rho(), pressure(rhoE)});
   }
 
   std::string str() const {
