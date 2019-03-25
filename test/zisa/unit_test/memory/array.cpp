@@ -6,8 +6,7 @@
 
 using namespace zisa;
 
-bool implicit_conversion(
-    const array_const_view<double, 3, column_major> &view) {
+bool implicit_conversion(const array_const_view<double, 3> &view) {
 
   return view.raw() != nullptr;
 }
@@ -58,4 +57,18 @@ TEST_CASE("array; write to file") {
 
   auto b = zisa::array<double, 3>::load(reader, label);
   REQUIRE(b == a);
+}
+
+TEST_CASE("array; builds for general Indexing.") {
+
+  // The point is to check that `array<double, 3, Indexing>`
+  // compiles fine. Despite the fact that `save` and `load` only
+  // work if `Indexing == row_major`.
+
+  auto shape = zisa::shape_t<3>{3ul, 4ul, 2ul};
+
+  auto a = array<double, 3, column_major>(shape);
+  for (zisa::int_t i = 0; i < a.size(); ++i) {
+    a[i] = i;
+  }
 }
