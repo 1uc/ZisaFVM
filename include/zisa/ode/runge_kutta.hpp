@@ -70,6 +70,9 @@ private:
               const std::vector<double> &b);
 };
 
+/// Generate the requested Butcher Tableau.
+ButcherTableau make_tableau(const std::string &method);
+
 /// Implementation of Runge-Kutta based on `ButcherTableau`.
 class RungeKutta : public TimeIntegration {
 private:

@@ -129,10 +129,72 @@ void runge_kutta_sum(AllVariables &u1,
   }
 }
 
+ButcherTableau make_tableau(const std::string &method) {
+  if (method == "forward_euler") {
+    return ButcherTableau({{0.0}}, {1.0});
+  }
+
+  if (method == "ssp2") {
+    return ButcherTableau({{0.0, 0.0}, {1.0, 0.0}}, {0.5, 0.5});
+  }
+
+  if (method == "ssp3") {
+    // clang-format off
+    return ButcherTableau(
+            {{0.0,  0.0,  0.0},
+             {1.0,  0.0,  0.0},
+             {0.25, 0.25, 0.0}},
+            {1.0 / 6, 1.0 / 6, 2.0 / 3});
+    // clang-format on
+  }
+
+  if (method == "wicker") {
+    // clang-format off
+    return ButcherTableau(
+            {{    0.0, 0.0, 0.0},
+             {1.0 / 3, 0.0, 0.0},
+             {    0.0, 0.5, 0.0}},
+            {0.0, 0.0, 1.0}
+    );
+    // clang-format on
+  }
+
+  if (method == "rk4") {
+    // clang-format off
+    return ButcherTableau(
+            {{0.0, 0.0, 0.0, 0.0},
+             {0.5, 0.0, 0.0, 0.0},
+             {0.0, 0.5, 0.0, 0.0},
+             {0.0, 0.0, 1.0, 0.0}},
+            {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6}
+    );
+    // clang-format on
+  }
+
+  if (method == "fehlberg") {
+    // clang-format off
+    return ButcherTableau(
+            {
+                    {0.0,  0.0,  0.0,  0.0,  0.0,  0.0},
+                    {0.25,  0.0,  0.0,  0.0,  0.0,  0.0},
+                    {3.0/32.0,  9.0/32.0,  0.0,  0.0,  0.0,  0.0},
+                    {1932.0/2197.0,  -7200.0/2197.0,  7296.0/2197.0,  0.0,  0.0,  0.0},
+                    {439.0/216.0,  -8.0,  3680.0/513.0,  -845.0/4104,  0.0,  0.0},
+                    {-8.0/27.0,  2.0,  -3544.0/2565.0,  1859.0/4104.0,  -11.0/40.0,  0.0}
+            },
+
+            {16.0/135.0, 0.0, 6656.0/12825.0, 28561.0/56430.0, -9.0/50.0, 2.0/55.0}
+    );
+    // clang-format on
+  }
+
+  LOG_ERR(string_format("Unknown Butcher Tableau. [%s]", method.c_str()));
+}
+
 ForwardEuler::ForwardEuler(const std::shared_ptr<RateOfChange> &rate_of_change,
                            const std::shared_ptr<BoundaryCondition> &bc,
                            const AllVariablesDimensions &dims)
-    : super(rate_of_change, bc, ButcherTableau({{0.0}}, {1.0}), dims) {}
+    : super(rate_of_change, bc, make_tableau("forward_euler"), dims) {}
 
 std::string ForwardEuler::str() const {
   return assemble_description("Forward Euler (`ForwardEuler`)");
@@ -141,42 +203,21 @@ std::string ForwardEuler::str() const {
 SSP2::SSP2(const std::shared_ptr<RateOfChange> &rate_of_change,
            const std::shared_ptr<BoundaryCondition> &bc,
            const AllVariablesDimensions &dims)
-    : super(rate_of_change,
-            bc,
-            ButcherTableau({{0.0, 0.0}, {1.0, 0.0}}, {0.5, 0.5}),
-            dims) {}
+    : super(rate_of_change, bc, make_tableau("ssp2"), dims) {}
 
 std::string SSP2::str() const { return assemble_description("SSP 2 (`SSP2`)"); }
 
 SSP3::SSP3(const std::shared_ptr<RateOfChange> &rate_of_change,
            const std::shared_ptr<BoundaryCondition> &bc,
            const AllVariablesDimensions &dims)
-    : super(
-          rate_of_change,
-          bc,
-          // clang-format off
-          ButcherTableau({{0.0, 0.0, 0.0},
-                          {1.0, 0.0, 0.0},
-                          {0.25, 0.25, 0.0}},
-                         {1.0 / 6, 1.0 / 6, 2.0 / 3}),
-          // clang-format on
-          dims) {}
+    : super(rate_of_change, bc, make_tableau("ssp3"), dims) {}
 
 std::string SSP3::str() const { return assemble_description("SSP 3 (`SSP3`)"); }
 
 Wicker::Wicker(const std::shared_ptr<RateOfChange> &rate_of_change,
                const std::shared_ptr<BoundaryCondition> &bc,
                const AllVariablesDimensions &dims)
-    : super(rate_of_change,
-            bc,
-            // clang-format off
-            ButcherTableau(
-                {{0.0, 0.0, 0.0},
-                 {1.0 / 3, 0.0, 0.0},
-                 {0.0, 0.5, 0.0}},
-                {0.0, 0.0, 1.0}),
-            // clang-format on
-            dims) {}
+    : super(rate_of_change, bc, make_tableau("wicker"), dims) {}
 
 std::string Wicker::str() const {
   return assemble_description("Wicker (`Wicker`)");
@@ -185,16 +226,7 @@ std::string Wicker::str() const {
 RK4::RK4(const std::shared_ptr<RateOfChange> &rate_of_change,
          const std::shared_ptr<BoundaryCondition> &bc,
          const AllVariablesDimensions &dims)
-    : super(rate_of_change,
-            bc,
-            // clang-format off
-            ButcherTableau({{0.0, 0.0, 0.0, 0.0},
-                            {0.5, 0.0, 0.0, 0.0},
-                            {0.0, 0.5, 0.0, 0.0},
-                            {0.0, 0.0, 1.0, 0.0}},
-                            {1.0 / 6, 1.0 / 3, 1.0 / 3, 1.0 / 6}),
-            // clang-format on
-            dims) {}
+    : super(rate_of_change, bc, make_tableau("rk4"), dims) {}
 
 std::string RK4::str() const {
   return assemble_description("The Runge Kutta (`RK4`)");
@@ -205,32 +237,7 @@ Fehlberg::Fehlberg(const std::shared_ptr<RateOfChange> &rate_of_change,
                    const AllVariablesDimensions &dims)
     : super(rate_of_change,
             bc,
-            // clang-format off
-            ButcherTableau(
-                {{0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-                 {0.25, 0.0, 0.0, 0.0, 0.0, 0.0},
-                 {3.0 / 32.0, 9.0 / 32.0, 0.0, 0.0, 0.0, 0.0},
-                 {1932.0 / 2197.0,
-                  -7200.0 / 2197.0,
-                  7296.0 / 2197.0,
-                  0.0,
-                  0.0,
-                  0.0},
-                 {439.0 / 216.0, -8.0, 3680.0 / 513.0, -845.0 / 4104, 0.0, 0.0},
-                 {-8.0 / 27.0,
-                  2.0,
-                  -3544.0 / 2565.0,
-                  1859.0 / 4104.0,
-                  -11.0 / 40.0,
-                  0.0}},
-
-                {16.0 / 135.0,
-                 0.0,
-                 6656.0 / 12825.0,
-                 28561.0 / 56430.0,
-                 -9.0 / 50.0,
-                 2.0 / 55.0}),
-            // clang-format on
+            make_tableau("fehlberg"),
             dims) { /* otherwise empty constructor */
 }
 
