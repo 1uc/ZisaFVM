@@ -7,10 +7,10 @@
 #ifndef GAUSS_LEGENDRE_H_S48VB
 #define GAUSS_LEGENDRE_H_S48VB
 
-#include <functional>
 #include <type_traits>
 
-#include "zisa/math/fourier_series.hpp"
+#include <zisa/math/fourier_series.hpp>
+#include <zisa/math/newton.hpp>
 
 namespace zisa {
 // Forward declarations
@@ -30,28 +30,6 @@ struct GaussLegendre {
 
   static inline constexpr int n_qp() { return n; };
 };
-
-inline double newton(const std::function<double(double)> &f,
-                     const std::function<double(double)> &df,
-                     double x_guess,
-                     double atol = 1e-8,
-                     int max_iter = 100) {
-  double x = x_guess;
-  double fx = f(x);
-
-  int iter = 0;
-  while (zisa::abs(fx) >= atol || iter >= max_iter) {
-    // 0 ~ f(x) = f(x0) + df(x0)*(x - x0)
-    // --> x = x0 - f(x0)/df(x0)
-
-    x = x - fx / df(x);
-    fx = f(x);
-
-    ++iter;
-  }
-
-  return x;
-}
 
 /// Find Gauss-Legendre quadrature point by root finding.
 /** The quadrature points of Gauss-Legendre are the roots of the
