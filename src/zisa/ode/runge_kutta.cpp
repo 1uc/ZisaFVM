@@ -9,6 +9,13 @@
 #include <zisa/parallelization/omp.h>
 
 namespace zisa {
+
+void runge_kutta_sum(AllVariables &u1,
+                     const AllVariables &u0,
+                     const TendencyBuffers &tendency_buffers,
+                     const array<double, 1> &coeffs,
+                     double dt);
+
 ButcherTableau::ButcherTableau(const std::vector<std::vector<double>> &a,
                                const std::vector<double> &b)
     : n_stages(a.size()) {

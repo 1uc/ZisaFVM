@@ -5,7 +5,10 @@
  */
 #ifndef RUNGE_KUTTA_H_MQEL5YKN
 #define RUNGE_KUTTA_H_MQEL5YKN
+
 #include <zisa/config.hpp>
+
+#include <functional>
 
 #include <zisa/boundary/boundary_condition.hpp>
 #include <zisa/model/all_variables.hpp>
@@ -113,14 +116,47 @@ protected:
   TendencyBuffers tendency_buffers;
 };
 
-/// Perform the Runge-Kutta step: `u1 = u0 + dt*(a1*k1 + ... + as*ks)`.
-/** This interface will dispatch to the requested accelerator.
- */
-void runge_kutta_sum(AllVariables &u1,
-                     const AllVariables &u0,
-                     const TendencyBuffers &tendency_buffers,
-                     const array<double, 1> &coeffs,
-                     double dt);
+template <class X>
+class StaticRungeKutta {
+private:
+  using function_t = std::function<X(double, const X &)>;
+
+public:
+  StaticRungeKutta(const function_t f, const std::string &method)
+      : f(f), tableau(make_tableau(method)), tendencies(tableau.n_stages) {}
+
+  X operator()(const X &x0, double t, double dt) {
+    // stage 0
+    tendencies[0] = f(t, x0);
+
+    // stages 1, ..., s
+    for (int_t stage = 1; stage < tableau.n_stages; ++stage) {
+      double tx = t + tableau.c[stage] * dt;
+
+      auto x = runge_kutta_sum(x0, tableau.a[stage], dt);
+      tendencies[stage] = f(tx, x);
+    }
+
+    return runge_kutta_sum(x0, tableau.b, dt);
+  }
+
+protected:
+  X runge_kutta_sum(X x, const array<double, 1> &coeffs, double dt) const {
+    int_t n_stages = coeffs.shape(0);
+    for (int_t stage = 0; stage < n_stages; ++stage) {
+      if (coeffs[stage] != 0.0) {
+        x += dt * coeffs[stage] * tendencies[stage];
+      }
+    }
+
+    return x;
+  }
+
+private:
+  function_t f;
+  ButcherTableau tableau;
+  std::vector<X> tendencies;
+};
 
 /// The simplest first order time integrator.
 class ForwardEuler : public RungeKutta {
