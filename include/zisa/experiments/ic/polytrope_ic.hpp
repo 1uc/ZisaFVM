@@ -33,6 +33,30 @@ private:
 };
 
 template <class EULER>
+class GeneralPolytropeIC {
+private:
+  using euler_t = EULER;
+  using eos_t = typename euler_t::eos_t;
+  using gravity_t = typename euler_t::gravity_t;
+
+public:
+  GeneralPolytropeIC(const euler_t &euler, const RhoEntropy &rhoK_center)
+      : eq(euler, /* quad_deg = */ 0), x_ref(XYZ::zeros()) {
+
+    theta_ref = euler.eos.enthalpy_entropy(rhoK_center);
+  }
+
+  RhoP operator()(const XYZ &x) const {
+    return eq.eos.rhoP(extrapolate(eq, theta_ref, x_ref, x));
+  }
+
+private:
+  IsentropicEquilibrium<eos_t, gravity_t> eq;
+  EnthalpyEntropy theta_ref;
+  XYZ x_ref;
+};
+
+template <class EULER>
 class PolytropeWithJumpIC {
 private:
   using euler_t = EULER;

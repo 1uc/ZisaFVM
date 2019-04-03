@@ -16,7 +16,7 @@ std::tuple<X, bool> quasi_newton(const F &f,
   X x = x0;
   auto fx = f(x0);
 
-  X dx = X(atol + 1.0);
+  X dx = X(2.0 * atol + 1.0);
 
   auto is_converged = [&dx, &atol](double factor = 1.0) {
     return zisa::all(zisa::abs(dx) <= factor * atol);

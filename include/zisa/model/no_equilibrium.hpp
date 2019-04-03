@@ -12,13 +12,10 @@ struct NoEquilibrium {
   NoEquilibrium(Args &&... /* args */) {}
 };
 
-template <class Gravity>
-RhoE extrapolate(const NoEquilibrium & /* eq */,
-                 const IdealGasEOS & /* eos */,
-                 const EnthalpyEntropy & /* theta */,
-                 const XYZ & /* xy_ref */,
-                 const XYZ & /* xy */) {
-
+inline RhoE extrapolate(const NoEquilibrium & /* eq */,
+                        const EnthalpyEntropy & /* theta */,
+                        const XYZ & /* xy_ref */,
+                        const XYZ & /* xy */) {
   return {0.0, 0.0};
 }
 

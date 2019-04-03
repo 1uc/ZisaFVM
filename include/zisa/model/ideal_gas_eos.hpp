@@ -123,6 +123,10 @@ public:
   ANY_DEVICE_INLINE double entropy(RhoP rhoP) const { return K(rhoP); }
   ANY_DEVICE_INLINE double entropy(RhoE rhoE) const { return K(rhoE); }
 
+  ANY_DEVICE_INLINE double enthalpy(const RhoEntropy &rhoK) const {
+    return enthalpy(rhoP(rhoK));
+  }
+
   ANY_DEVICE_INLINE double enthalpy(const RhoP &rhoP) const {
     const auto &[rho, p] = rhoP;
     return gamma() / (gamma() - 1.0) * p / rho;

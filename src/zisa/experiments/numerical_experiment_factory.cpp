@@ -1,7 +1,7 @@
-
 #include <zisa/experiments/numerical_experiment_factory.hpp>
 
 // include experiment headers.
+#include <zisa/experiments/janka.hpp>
 #include <zisa/experiments/polytrope.hpp>
 #include <zisa/experiments/rayleigh_taylor.hpp>
 #include <zisa/experiments/shock_bubble.hpp>
@@ -60,6 +60,7 @@ static NumericalExperimentFactory make_factory() {
   factory.register_simple<ShockBubble>("shock_bubble");
   factory.register_simple<Polytrope>("gaussian_bump");
   factory.register_simple<RayleighTaylor>("rayleigh_taylor");
+  factory.register_simple<Janka>("janka");
 
   return factory;
 }

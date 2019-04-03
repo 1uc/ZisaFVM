@@ -4,6 +4,36 @@
 #include <zisa/model/euler_factory.hpp>
 
 namespace zisa {
+template <>
+IdealGasEOS make_eos<IdealGasEOS>(const InputParameters &params) {
+  auto eos_params = params["euler"]["eos"];
+
+  double gamma = eos_params["gamma"];
+  double R = eos_params["specific-gas-constant"];
+
+  return IdealGasEOS(gamma, R);
+}
+
+JankaEOSParams make_janka_eos_params(const InputParameters &params) {
+  const auto &eos_params = params["euler"]["eos"];
+  LOG_ERR_IF(eos_params["mode"] != "janka", "Mismatching EOS.");
+
+  JankaEOSParams janka_params;
+
+  janka_params.rho_bounce = eos_params["rho_bounce"];
+  janka_params.gamma[0] = eos_params["gamma1"];
+  janka_params.gamma[1] = eos_params["gamma2"];
+  janka_params.gamma_thermal = eos_params["gamma_thermal"];
+  janka_params.E1 = eos_params["E1"];
+
+  return janka_params;
+}
+
+template <>
+JankaEOS make_eos<JankaEOS>(const InputParameters &params) {
+  auto janka_params = make_janka_eos_params(params);
+  return make_janka_eos(janka_params);
+}
 
 template <>
 ConstantGravityRadial

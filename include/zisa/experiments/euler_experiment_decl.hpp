@@ -27,6 +27,9 @@ public:
   explicit EulerExperiment(const InputParameters &params)
       : super(params), euler(make_euler<euler_t>(params)) {}
 
+  explicit EulerExperiment(const InputParameters &params, const euler_t &euler)
+      : super(params), euler(euler) {}
+
 protected:
   virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) override;
   virtual void do_post_process() override;

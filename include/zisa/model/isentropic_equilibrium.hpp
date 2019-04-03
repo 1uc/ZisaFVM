@@ -4,7 +4,6 @@
 #include <zisa/math/triangle.hpp>
 #include <zisa/model/euler.hpp>
 #include <zisa/model/euler_variables.hpp>
-#include <zisa/model/ideal_gas_eos.hpp>
 
 namespace zisa {
 
@@ -22,12 +21,12 @@ struct IsentropicEquilibrium {
   int_t quad_deg; // FIXME this is wrong / unneeded.
 };
 
-template <class Gravity>
-RhoE extrapolate(const IsentropicEquilibrium<IdealGasEOS, Gravity> &eq,
-                 const IdealGasEOS &eos,
+template <class EOS, class Gravity>
+RhoE extrapolate(const IsentropicEquilibrium<EOS, Gravity> &eq,
                  const EnthalpyEntropy &theta,
                  const XYZ &xy_ref,
                  const XYZ &xy) {
+  const auto &eos = eq.eos;
   const auto &gravity = eq.gravity;
 
   double phi_ref = gravity.phi(xy_ref);

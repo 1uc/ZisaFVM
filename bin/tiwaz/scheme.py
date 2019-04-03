@@ -58,6 +58,20 @@ class IdealGasEOS(Subsection):
             "gamma": gamma, "specific-gas-constant": r_gas
         })
 
+class JankaEOS(Subsection):
+    def __init__(self, rho_bounce,
+                 gamma1, gamma2, gamma_thermal,
+                 E1):
+
+        super().__init__({
+            "mode": "janka",
+            "rho_bounce": rho_bounce,
+            "gamma1": gamma1,
+            "gamma2": gamma2,
+            "gamma_thermal": gamma_thermal,
+            "E1": E1
+        })
+
 
 class FluxBC(Subsection):
     def __init__(self, mode):
@@ -85,6 +99,10 @@ class PolytropeGravityWithJump(Subsection):
             "K_outer": K_outer,
             "G": G
         })
+
+class GeneralPolytropeGravity(Subsection):
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
 
 
 class Quadrature(Subsection):

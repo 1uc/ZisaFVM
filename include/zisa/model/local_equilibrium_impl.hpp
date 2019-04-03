@@ -8,14 +8,6 @@
 namespace zisa {
 
 template <class Equilibrium>
-RhoE extrapolate(const Equilibrium &eq,
-                 const EnthalpyEntropy &theta,
-                 const XYZ &xy_ref,
-                 const XYZ &xy) {
-  return extrapolate(eq, eq.eos, theta, xy_ref, xy);
-}
-
-template <class Equilibrium>
 LocalEquilibrium<Equilibrium>::LocalEquilibrium(const Equilibrium &equilibrium)
     : equilibrium(equilibrium) {}
 

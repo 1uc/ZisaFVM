@@ -33,4 +33,10 @@ def tail(filename):
         f.seek(-1024, os.SEEK_END)
         return f.readlines()[-1].decode()
 
+def read_txt(filename):
+    with open(filename, "r") as f:
+        return f.read()
 
+def write_txt(filename, string):
+    with open(filename, "w") as f:
+        f.write(string)

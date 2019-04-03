@@ -12,34 +12,19 @@ using std::declval;
 
 namespace zisa {
 
+JankaEOSParams make_janka_eos_params(const InputParameters &params);
+
 template <class EOS>
-EOS make_eos(const InputParameters & /* params */) {
-  LOG_ERR(string_format("Need to implement this case. [%s]",
-                        type_name<EOS>().c_str()));
-}
+EOS make_eos(const InputParameters & /* params */);
 
 template <>
-inline IdealGasEOS make_eos<IdealGasEOS>(const InputParameters &params) {
-  assert(has_key(params, "euler"));
-  auto euler_params = params["euler"];
+IdealGasEOS make_eos<IdealGasEOS>(const InputParameters &params);
 
-  assert(has_key(euler_params, "eos"));
-  auto eos_params = euler_params["eos"];
-
-  assert(has_key(eos_params, "gamma"));
-  double gamma = eos_params["gamma"];
-
-  assert(has_key(eos_params, "specific-gas-constant"));
-  double R = eos_params["specific-gas-constant"];
-
-  return IdealGasEOS(gamma, R);
-}
+template <>
+JankaEOS make_eos<JankaEOS>(const InputParameters &params);
 
 template <class Gravity>
-Gravity make_gravity(const InputParameters &) {
-  LOG_ERR(string_format("Need to implement this case. [%s]",
-                        type_name<Gravity>().c_str()));
-}
+Gravity make_gravity(const InputParameters &);
 
 template <>
 ConstantGravityRadial

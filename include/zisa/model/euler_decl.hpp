@@ -46,9 +46,6 @@ public:
   ANY_DEVICE_INLINE double
   energy(double rho, double v1, double v2, double p) const;
 
-  /// Kinetic energy of the fluid parcel.
-  ANY_DEVICE_INLINE double kinetic_energy(const euler_var_t &u) const;
-
   /// Self-documenting string.
   std::string str() const;
 };
