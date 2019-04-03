@@ -5,19 +5,6 @@
 
 namespace zisa {
 
-class PolytropeFactory {
-public:
-  // This is `noexcept` because we can't catch the exception.
-  PolytropeFactory() noexcept { register_experiment("gaussian_bump", *this); }
-
-  std::unique_ptr<zisa::NumericalExperiment>
-  operator()(const InputParameters &params) const {
-    return std::make_unique<Polytrope>(params);
-  }
-};
-
-static PolytropeFactory polytrope_factory;
-
 std::shared_ptr<AllVariables> Polytrope::choose_initial_conditions() {
   double amp = params["experiment"]["initial_conditions"]["amplitude"];
   double width = params["experiment"]["initial_conditions"]["width"];

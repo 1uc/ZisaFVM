@@ -5,21 +5,6 @@
 
 namespace zisa {
 
-class RayleighTaylorFactory {
-public:
-  // This is `noexcept` because we can't catch the exception.
-  RayleighTaylorFactory() noexcept {
-    register_experiment("rayleigh_taylor", *this);
-  }
-
-  std::unique_ptr<zisa::NumericalExperiment>
-  operator()(const InputParameters &params) const {
-    return std::make_unique<RayleighTaylor>(params);
-  }
-};
-
-static RayleighTaylorFactory rayleigh_taylor_factory;
-
 std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions() {
   double amp = params["experiment"]["initial_conditions"]["amplitude"];
   double width = params["experiment"]["initial_conditions"]["width"];

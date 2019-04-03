@@ -1,19 +1,46 @@
 
 #include <zisa/experiments/numerical_experiment_factory.hpp>
+
+// include experiment headers.
 #include <zisa/experiments/polytrope.hpp>
+#include <zisa/experiments/rayleigh_taylor.hpp>
 #include <zisa/experiments/shock_bubble.hpp>
 
 namespace zisa {
 
-NumericalExperimentFactory &NumericalExperimentFactory::instance() {
-  static NumericalExperimentFactory instance_;
-  return instance_;
-}
+class NumericalExperimentFactory {
+private:
+  using return_type = std::unique_ptr<zisa::NumericalExperiment>;
+  using argument_type = InputParameters;
+  using callback_type = std::function<return_type(const argument_type &)>;
+  using key_type = std::string;
 
-void NumericalExperimentFactory::add(const key_type &key,
-                                     const callback_type &callback) {
+public:
+  return_type make(const key_type &key, const argument_type &args) const;
+
+  template <class Experiment>
+  void register_simple(const key_type &key);
+  void register_generic(const key_type &key, const callback_type &callback);
+
+protected:
+  bool is_good_key(const key_type &key) const;
+
+private:
+  std::map<key_type, callback_type> registry_;
+};
+
+void NumericalExperimentFactory::register_generic(
+    const key_type &key, const callback_type &callback) {
+
   assert(is_good_key(key));
   registry_[key] = callback;
+}
+
+template <class Experiment>
+void NumericalExperimentFactory::register_simple(const key_type &key) {
+  register_generic(key, [](const InputParameters &params) {
+    return std::make_unique<Experiment>(params);
+  });
 }
 
 bool NumericalExperimentFactory::is_good_key(const key_type &key) const {
@@ -27,21 +54,22 @@ auto NumericalExperimentFactory::make(const key_type &key,
   return registry_.at(key)(args);
 }
 
+static NumericalExperimentFactory make_factory() {
+  NumericalExperimentFactory factory;
+
+  factory.register_simple<ShockBubble>("shock_bubble");
+  factory.register_simple<Polytrope>("gaussian_bump");
+  factory.register_simple<RayleighTaylor>("rayleigh_taylor");
+
+  return factory;
+}
+
 std::unique_ptr<NumericalExperiment>
 make_experiment(const InputParameters &params) {
-  const auto &factory = NumericalExperimentFactory::instance();
+  static auto factory = make_factory();
 
   std::string exp = params["experiment"]["name"];
   return factory.make(exp, params);
-}
-
-void register_experiment(
-    const std::string &key,
-    const std::function<
-        std::unique_ptr<NumericalExperiment>(const InputParameters &)> &f) {
-
-  auto &instance = NumericalExperimentFactory::instance();
-  instance.add(key, f);
 }
 
 } // namespace zisa
