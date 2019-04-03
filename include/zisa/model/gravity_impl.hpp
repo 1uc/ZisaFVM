@@ -3,6 +3,7 @@
 
 #include "gravity.hpp"
 
+#include <algorithm>
 #include <zisa/model/euler.hpp>
 
 namespace zisa {
@@ -48,12 +49,20 @@ ANY_DEVICE_INLINE double PolytropeGravity::dphi_dx(double chi) const {
   return -2.0 * K * rhoC * dphi * alpha;
 }
 
+ANY_DEVICE_INLINE RhoEntropy PolytropeGravity::rhoK_center() const {
+  return RhoEntropy{rhoC, K};
+}
+
 ANY_DEVICE_INLINE double PolytropeGravity::alpha(double /* chi */) const {
   return zisa::sqrt(2 * zisa::pi * G / K);
 }
 
 ANY_DEVICE_INLINE double PolytropeGravityRadial::alpha(double chi) const {
   return this->gravity.alpha(chi);
+}
+
+ANY_DEVICE_INLINE RhoEntropy PolytropeGravityRadial::rhoK_center() const {
+  return gravity.rhoK_center();
 }
 
 // ---  PolytropeWithJump  ----------------------------------------------
@@ -81,6 +90,30 @@ ANY_DEVICE_INLINE double
 PolytropeGravityWithJumpRadial::alpha(double chi) const {
   return this->gravity.alpha(chi);
 }
+
+// ---  SphericalGravity  -----------------------------------------------
+inline double SphericalGravity::phi(double r) const {
+  int_t i = index(r);
+
+  assert(i < phi_->size() - 1);
+
+  double alpha = (r - radii(i)) / (radii(i + 1) - radii(i));
+  return (1 - alpha) * (*phi_)[i] + alpha * (*phi_)[i + 1];
+}
+
+inline double SphericalGravity::dphi_dx(double r) const {
+  int_t i = index(r);
+  return ((*phi_)[i + 1] - (*phi_)[i]) / (radii(i + 1) - radii(i));
+}
+
+inline int_t SphericalGravity::index(double r) const {
+  auto first_past = std::find_if(
+      radii_->begin(), radii_->end(), [r](double rr) { return rr > r; });
+
+  return int_t(first_past - radii_->begin()) - 1;
+}
+
+inline double SphericalGravity::radii(int_t i) const { return (*radii_)[i]; }
 
 } // namespace zisa
 #endif /* end of include guard */

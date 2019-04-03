@@ -5,6 +5,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/model/euler_variables.hpp>
 #include <zisa/utils/type_name.hpp>
 
 namespace zisa {
@@ -194,6 +195,7 @@ public:
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
+  ANY_DEVICE_INLINE RhoEntropy rhoK_center() const;
   ANY_DEVICE_INLINE double alpha(double chi) const;
 
   friend void save(HDF5Writer &writer, const PolytropeGravity &gravity);
@@ -216,6 +218,7 @@ public:
       : super(PolytropeGravity(rhoC, K, G), RadialAlignment{}) {}
 
   ANY_DEVICE_INLINE double alpha(double chi) const;
+  ANY_DEVICE_INLINE RhoEntropy rhoK_center() const;
 };
 
 class PolytropeGravityWithJump {
@@ -251,6 +254,39 @@ public:
       : super({r_crit, rhoC, K_inner, K_outer, G}, RadialAlignment{}) {}
 
   ANY_DEVICE_INLINE double alpha(double chi) const;
+};
+
+class SphericalGravity {
+private:
+public:
+  SphericalGravity() = default;
+  SphericalGravity(array<double, 1> radii, array<double, 1> phi);
+
+  inline double phi(double r) const;
+  inline double dphi_dx(double r) const;
+
+private:
+  inline int_t index(double r) const;
+  inline double radii(int_t i) const;
+
+  friend void save(HDF5Writer &writer, const SphericalGravity &gravity);
+
+private:
+  std::shared_ptr<array<double, 1>> radii_;
+  std::shared_ptr<array<double, 1>> phi_;
+  int_t n_cells;
+};
+
+void save(HDF5Writer &writer, const SphericalGravity &gravity);
+
+class RadialGravity : public Gravity<SphericalGravity, RadialAlignment> {
+private:
+  using super = Gravity<SphericalGravity, RadialAlignment>;
+
+public:
+  RadialGravity() = default;
+  RadialGravity(array<double, 1> radii, array<double, 1> phi)
+      : super({std::move(radii), std::move(phi)}, RadialAlignment{}) {}
 };
 
 class NoGravity {
