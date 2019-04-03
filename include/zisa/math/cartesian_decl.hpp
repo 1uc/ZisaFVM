@@ -109,7 +109,7 @@ public:
     const E &e = static_cast<const E &>(e_);
 
     for (int_t i = 0; i < e.size(); ++i) {
-      data[i] += e[i];
+      data[i] += e(i);
     }
   }
 
