@@ -2,20 +2,10 @@
 # encoding: utf-8
 
 import argparse
-import subprocess
 import glob
-import multiprocessing
 
-
-def run_gmesh(geo):
-    gmsh = "bin/gmsh"
-    cmd = [gmsh, "-2", geo]
-    output = subprocess.check_call(cmd,
-                                   stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL)
-
-    return geo
-
+import tiwaz
+import tiwaz.gmsh as gmsh
 
 def minimal_geo_files(path):
     return [
@@ -40,6 +30,7 @@ if __name__ == "__main__":
                         help="Generate only those grids required for testing.")
 
     parser.add_argument("pattern",
+                        nargs="?",
                         default=None,
                         help="Generate only for the matching grids.")
 
@@ -52,6 +43,4 @@ if __name__ == "__main__":
     else:
         geos = all_geo_files("grids")
 
-    with multiprocessing.Pool() as pool:
-        for i, geo in enumerate(pool.imap_unordered(run_gmesh, geos)):
-            print("[{:2d}/{}] {}".format(i+1, len(geos), geo))
+    gmsh.generate_grids(geos)

@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 import tiwaz
 import tiwaz.scheme as sc
+import tiwaz.gmsh as gmsh
 
 from tiwaz.launch_params import all_combinations, pointwise_combinations
 from tiwaz.launch_params import build_zisa
@@ -200,26 +201,19 @@ class TableLabels:
     def __call__(self, col):
         return " ".join(str(v) for v in col.values())
 
-
-
 def generate_grids():
     gmsh_template = read_txt("grids/janka.tmpl")
+    filename = "grids/janka-{}.geo"
 
     for l in mesh_levels:
         lc_rel = mesh_sizes[l]
-        gmsh = gmsh_template.replace("LC_REL", str(lc_rel))
-        write_txt("grids/janka_{}.geo".format(l), gmsh)
+        geo = gmsh_template.replace("LC_REL", str(lc_rel))
+        write_txt(filename.format(l), geo)
 
-    subprocess.check_call(["bin/generate_grids.py", "grids/janka_"])
+    gmsh.generate_grids([filename.format(l) for l in mesh_levels])
 
 def main():
     parser = default_cli_parser("'janka' numerical experiment.")
-
-    parser.add_argument(
-        "--generate-grids",
-        action='store_true',
-        help="Generate GMSH .geo and .msh files required for these runs."
-    )
 
     parser.add_argument(
         "--config-only",

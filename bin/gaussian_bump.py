@@ -16,6 +16,7 @@ from tiwaz.cli_parser import default_cli_parser
 from tiwaz.launch_job import launch_all
 from tiwaz.latex_tables import write_convergence_table
 from tiwaz.scatter_plot import plot_visual_convergence
+from tiwaz.gmsh import generate_circular_grids
 
 class GaussianBumpExperiment(sc.Subsection):
     def __init__(self, amplitude, width):
@@ -45,6 +46,10 @@ io = sc.IO("hdf5", "gaussian_bump", n_snapshots=1)
 
 def grid_name(level):
     return "grids/polytrope-{:}.msh".format(level)
+
+radius = 0.5
+mesh_levels = list(range(0, 5))
+lc_rel = {l : 0.1 * 0.5**l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 4))
 coarse_grid_names = [grid_name(level) for level in coarse_grid_levels]
@@ -160,9 +165,15 @@ class TableLabels:
     def __call__(self, col):
         return " ".join(str(v) for v in col.values())
 
+def generate_grids():
+    generate_circular_grids("grids/gaussian_bump-{}.geo", radius, lc_rel, mesh_levels)
+
 def main():
     parser = default_cli_parser("'gaussian_bump' numerical experiment.")
     args = parser.parse_args()
+
+    if args.generate_grids:
+        generate_grids()
 
     if args.run:
         build_zisa()

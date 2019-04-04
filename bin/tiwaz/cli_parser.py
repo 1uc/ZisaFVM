@@ -25,4 +25,8 @@ def default_cli_parser(parser_help):
                         action='store_true',
                         help="Also compute the reference solution.")
 
+    parser.add_argument('--generate-grids',
+                        action='store_true',
+                        help="Generate the GMSH .geo / .msh files required.")
+
     return parser
