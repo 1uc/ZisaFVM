@@ -18,7 +18,7 @@ TEST_CASE("LocalEquilibrium", "[equilibrium]") {
   auto theta_ref = zisa::EnthalpyEntropy{10.0, 3.0};
 
   auto rhoE_eq = [&eq, &theta_ref, &x_ref](const zisa::XYZ &xy) {
-    return extrapolate(eq, theta_ref, x_ref, xy);
+    return eq.extrapolate(theta_ref, x_ref, xy);
   };
 
   auto rhoE_bar = average(rhoE_eq, tri_ref, quad_deg);

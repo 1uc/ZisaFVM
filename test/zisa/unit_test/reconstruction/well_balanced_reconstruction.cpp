@@ -11,7 +11,7 @@
 
 TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
-  auto grid = zisa::load_gmsh("grids/polytrope-3.msh");
+  auto grid = zisa::load_gmsh("grids/unit_tests/polytrope.msh");
   auto n_cells = grid->n_cells;
   auto n_cvars = zisa::int_t(5);
   auto n_avars = zisa::int_t(0);

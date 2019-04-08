@@ -115,8 +115,8 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
     constexpr int_t n_vars = 5;
 
     auto grid = load_gmsh(grid_name);
-    auto rc
-        = EulerGlobalReconstruction<NoEquilibrium, RC>(grid, params, n_vars);
+    auto rc = EulerGlobalReconstruction<NoEquilibrium, RC>(
+        grid, params, NoEquilibrium{});
 
     auto u = AllVariables({grid->n_cells, int_t(n_vars), int_t(0)});
     for (auto &&[i, tri] : triangles(*grid)) {
