@@ -14,11 +14,12 @@ private:
   using euler_t = EULER;
 
 public:
-  PolytropeIC(const euler_t &euler) : euler(euler) {}
+  PolytropeIC(std::shared_ptr<euler_t> euler) : euler(std::move(euler)) {}
 
   RhoP operator()(const XYZ &x) const {
 
-    double alpha = this->euler.gravity.alpha(zisa::norm(x));
+    const auto &gravity = this->euler->gravity;
+    double alpha = gravity.alpha(zisa::norm(x));
     double eps = std::numeric_limits<double>::min();
     double r_eff = alpha * (zisa::norm(x) + eps);
 
@@ -29,7 +30,7 @@ public:
   }
 
 private:
-  euler_t euler;
+  std::shared_ptr<euler_t> euler;
 };
 
 template <class EULER>
@@ -40,14 +41,16 @@ private:
   using gravity_t = typename euler_t::gravity_t;
 
 public:
-  GeneralPolytropeIC(const euler_t &euler, const RhoEntropy &rhoK_center)
-      : eq(euler, /* quad_deg = */ 0), x_ref(XYZ::zeros()) {
+  GeneralPolytropeIC(std::shared_ptr<euler_t> euler_,
+                     const RhoEntropy &rhoK_center)
+      : eq(std::move(euler_), /* quad_deg = */ 0), x_ref(XYZ::zeros()) {
 
-    theta_ref = euler.eos.enthalpy_entropy(rhoK_center);
+    theta_ref = eq.euler->eos.enthalpy_entropy(rhoK_center);
   }
 
   RhoP operator()(const XYZ &x) const {
-    return eq.eos.rhoP(eq.extrapolate(theta_ref, x_ref, x));
+    const auto &eos = eq.euler->eos;
+    return eos.rhoP(eq.extrapolate(theta_ref, x_ref, x));
   }
 
 private:
@@ -65,7 +68,7 @@ private:
   using eq_t = IsentropicEquilibrium<eos_t, gravity_t>;
 
 public:
-  PolytropeWithJumpIC(const euler_t &euler,
+  PolytropeWithJumpIC(const std::shared_ptr<euler_t> &euler,
                       const EnthalpyEntropy &theta_inner,
                       const EnthalpyEntropy &theta_outer,
                       const XYZ &x_ref)
@@ -79,11 +82,11 @@ public:
         = (zisa::norm(x) < zisa::norm(x_ref) ? inner_equilibrium
                                              : outer_equilibrium);
     RhoE rhoE = equilibrium.extrapolate(x);
-    return euler.eos.rhoP(rhoE);
+    return euler->eos.rhoP(rhoE);
   }
 
 private:
-  euler_t euler;
+  std::shared_ptr<euler_t> euler;
   XYZ x_ref;
   LocalEquilibrium<eq_t> inner_equilibrium;
   LocalEquilibrium<eq_t> outer_equilibrium;

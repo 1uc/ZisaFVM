@@ -31,14 +31,12 @@ inline std::shared_ptr<Grid> load_grid() {
   return load_gmsh("grids/convergence/unit_square_2.msh");
 }
 
-inline types::euler_t make_model() {
-  return {IdealGasEOS(/* gamma = */ 1.2, /* R = */ 1.1), PolytropeGravityRadial()};
+inline std::shared_ptr<types::euler_t> make_model() {
+  return std::make_shared<types::euler_t>(
+      IdealGasEOS(/* gamma = */ 1.2, /* R = */ 1.1), PolytropeGravityRadial{});
 }
 
-inline types::eq_t make_equilibrium() {
-  auto euler = make_model();
-  return types::eq_t(euler.eos, euler.gravity);
-}
+inline types::eq_t make_equilibrium() { return types::eq_t(make_model()); }
 
 inline std::shared_ptr<types::global_reconstruction_t>
 make_global_reconstruction(std::shared_ptr<Grid> &grid) {

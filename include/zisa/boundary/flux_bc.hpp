@@ -12,8 +12,8 @@ private:
   using cvars_t = typename Model::cvars_t;
 
 public:
-  FluxBC(const Model &model, const std::shared_ptr<Grid> &grid)
-      : model(model), grid(grid) {}
+  FluxBC(std::shared_ptr<Model> model, std::shared_ptr<Grid> grid)
+      : model(std::move(model)), grid(std::move(grid)) {}
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
@@ -25,7 +25,7 @@ public:
       auto u = cvars_t(current_state.cvars(i));
       coord_transform(u, edge);
 
-      auto f = model.flux(u);
+      auto f = model->flux(u);
       inv_coord_transform(f, edge);
 
       tendency.cvars(i) -= volume(edge) / grid->volumes(i) * f;
@@ -37,7 +37,7 @@ public:
   }
 
 private:
-  Model model;
+  std::shared_ptr<Model> model;
   std::shared_ptr<Grid> grid;
 };
 

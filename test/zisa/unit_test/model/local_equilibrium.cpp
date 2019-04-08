@@ -6,11 +6,13 @@
 #include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("LocalEquilibrium", "[equilibrium]") {
+  using euler_t = zisa::Euler<zisa::IdealGasEOS, zisa::ConstantGravityRadial>;
   auto eos = zisa::IdealGasEOS(1.2, 0.9);
   auto gravity = zisa::ConstantGravityRadial(0.9);
+  auto euler = std::make_shared<euler_t>(eos, gravity);
 
   zisa::int_t quad_deg = 2;
-  auto eq = zisa::IsentropicEquilibrium(eos, gravity, quad_deg);
+  auto eq = zisa::IsentropicEquilibrium(euler, quad_deg);
 
   auto tri_ref
       = zisa::Triangle{{1.0, 1.0, 0.0}, {1.01, 1.0, 0.0}, {1.0, 1.01, 0.0}};

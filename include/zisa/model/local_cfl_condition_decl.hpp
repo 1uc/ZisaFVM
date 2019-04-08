@@ -17,13 +17,15 @@ protected:
   using cvars_t = typename Model::cvars_t;
 
 public:
-  LocalCFL(std::shared_ptr<Grid> grid, Model model, double cfl_number);
+  LocalCFL(std::shared_ptr<Grid> grid,
+           std::shared_ptr<Model> model,
+           double cfl_number);
 
   virtual double operator()(const AllVariables &u) override;
 
 protected:
   std::shared_ptr<Grid> grid;
-  Model model;
+  std::shared_ptr<Model> model;
   double cfl_number;
 };
 

@@ -84,8 +84,9 @@ EulerExperiment<EOS, Gravity>::deduce_reference_solution(
 
   if (params["reference"]["equilibrium"] == "isentropic") {
     int_t quad_deg = params["quadrature"]["volume"];
-    return deduce_reference_solution_eq(
-        u1, IsentropicEquilibrium(euler.eos, euler.gravity, quad_deg));
+
+    auto eq = IsentropicEquilibrium(euler, quad_deg);
+    return deduce_reference_solution_eq(u1, eq);
   }
 
   LOG_ERR("Failed to deduce reference solutions.");
@@ -142,7 +143,7 @@ std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_bc() {
   if (flux_bc == "isentropic") {
     auto qr = choose_edge_rule();
     using eq_t = IsentropicEquilibrium<eos_t, gravity_t>;
-    auto eq = eq_t(euler.eos, euler.gravity, params["quadrature"]["volume"]);
+    auto eq = eq_t(euler, params["quadrature"]["volume"]);
 
     return std::make_shared<EquilibriumFluxBC<eq_t, euler_t>>(
         euler, eq, grid, qr);
@@ -249,7 +250,7 @@ EulerExperiment<EOS, Gravity>::choose_reconstruction(
 
   int_t quad_deg = params["quadrature"]["volume"];
 
-  auto eq = Equilibrium{euler.eos, euler.gravity, quad_deg};
+  auto eq = Equilibrium{euler, quad_deg};
   return std::make_shared<EulerGlobalReconstruction<Equilibrium, RC>>(
       grid, hybrid_weno_params, eq);
 }

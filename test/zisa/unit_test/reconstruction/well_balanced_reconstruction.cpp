@@ -24,9 +24,10 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
   using eos_t = zisa::IdealGasEOS;
   using gravity_t = zisa::PolytropeGravityRadial;
+  using euler_t = zisa::Euler<eos_t, gravity_t>;
 
-  auto euler = zisa::Euler<eos_t, gravity_t>({2.0, 1.0}, {});
-  const auto &eos = euler.eos;
+  auto euler = std::make_shared<euler_t>(eos_t{2.0, 1.0}, gravity_t{});
+  const auto &eos = euler->eos;
 
   double width = 0.05;
   double amp = 0.0;
@@ -65,7 +66,7 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
       s);
 
   using eq_t = zisa::IsentropicEquilibrium<eos_t, gravity_t>;
-  auto eq = eq_t{euler.eos, euler.gravity, quad_deg};
+  auto eq = eq_t{euler, quad_deg};
 
   auto grc = zisa::EulerGlobalReconstruction<eq_t, zisa::CWENO_AO>(
       grid, weno_params, eq);

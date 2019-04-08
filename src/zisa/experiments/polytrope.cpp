@@ -24,7 +24,7 @@ Polytrope::choose_initial_conditions(double amp, double width) {
   auto all_variables = std::make_shared<AllVariables>(dims);
 
   auto qr = choose_volume_rule();
-  const auto &eos = euler.eos;
+  const auto &eos = euler->eos;
 
   auto ic_ = PolytropeIC(euler);
   auto ic = [&eos, &ic_, amp, width](const auto &x) {

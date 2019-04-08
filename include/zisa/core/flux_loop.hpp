@@ -19,7 +19,7 @@ protected:
 
 public:
   FluxLoop(std::shared_ptr<Grid> grid,
-           Model model,
+           std::shared_ptr<Model> model,
            std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
                global_reconstruction,
            EdgeRule edge_rule)
@@ -73,7 +73,7 @@ public:
   }
 
   virtual std::string str() const override {
-    auto block = model.str() + "\n" + edge_rule.str() + "\n"
+    auto block = model->str() + "\n" + edge_rule.str() + "\n"
                  + global_reconstruction->str();
 
     return "Flux loop: \n" + indent_block(1, block);
@@ -81,12 +81,13 @@ public:
 
 private:
   cvars_t numerical_flux(const cvars_t &uL, const cvars_t &uR) const {
-    return Flux::flux(model, uL, uR);
+    return Flux::flux(*model, uL, uR);
   }
 
 private:
   std::shared_ptr<Grid> grid;
-  Model model;
+  std::shared_ptr<Model> model;
+
   std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
       global_reconstruction;
 

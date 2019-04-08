@@ -27,7 +27,8 @@ public:
   explicit EulerExperiment(const InputParameters &params)
       : super(params), euler(make_euler<euler_t>(params)) {}
 
-  explicit EulerExperiment(const InputParameters &params, const euler_t &euler)
+  explicit EulerExperiment(const InputParameters &params,
+                           const std::shared_ptr<euler_t> &euler)
       : super(params), euler(euler) {}
 
 protected:
@@ -76,7 +77,7 @@ private:
   choose_reconstruction(const RCParams &rc_params);
 
 protected:
-  const euler_t euler;
+  const std::shared_ptr<euler_t> euler;
   const std::shared_ptr<GlobalReconstruction<euler_var_t>> grc_ = nullptr;
 };
 

@@ -55,7 +55,7 @@ void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar,
     };
   };
 
-  const auto &eos = equilibrium.eos;
+  const auto &eos = equilibrium.euler->eos;
   auto guess = eos.enthalpy_entropy(rhoE_bar);
 
   auto atol = EnthalpyEntropy(1e-10 * guess);

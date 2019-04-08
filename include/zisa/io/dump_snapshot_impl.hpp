@@ -15,8 +15,10 @@ namespace zisa {
 
 template <class Model>
 DumpSnapshot<Model>::DumpSnapshot(
-    const Model &model, std::shared_ptr<FileNameGenerator> file_name_generator)
-    : model(model), file_name_generator(std::move(file_name_generator)) {}
+    std::shared_ptr<Model> model,
+    std::shared_ptr<FileNameGenerator> file_name_generator)
+    : model(std::move(model)),
+      file_name_generator(std::move(file_name_generator)) {}
 
 template <class Model>
 void DumpSnapshot<Model>::do_visualization(
@@ -28,7 +30,7 @@ void DumpSnapshot<Model>::do_visualization(
 
   auto writer = pick_writer(file_name_generator->next_name());
 
-  save_state(*writer, model, all_variables, t, n_steps);
+  save_state(*writer, *model, all_variables, t, n_steps);
 }
 
 template <class Model>

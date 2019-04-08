@@ -9,16 +9,20 @@ namespace zisa {
 
 template <class EOS, class Gravity>
 struct IsentropicEquilibrium {
-  IsentropicEquilibrium() = default;
-  IsentropicEquilibrium(const Euler<EOS, Gravity> &euler, int_t quad_deg)
-      : eos(euler.eos), gravity(euler.gravity), quad_deg(quad_deg) {}
+private:
+  using euler_t = Euler<EOS, Gravity>;
 
-  IsentropicEquilibrium(const EOS &eos, const Gravity &gravity, int_t quad_deg)
-      : eos(eos), gravity(gravity), quad_deg(quad_deg) {}
+public:
+  IsentropicEquilibrium() = default;
+  IsentropicEquilibrium(std::shared_ptr<euler_t> euler, int_t quad_deg)
+      : euler(std::move(euler)), quad_deg(quad_deg) {}
 
   RhoE extrapolate(const EnthalpyEntropy &theta,
                    const XYZ &x_ref,
                    const XYZ &x) const {
+
+    const auto &gravity = euler->gravity;
+    const auto &eos = euler->eos;
 
     double phi_ref = gravity.phi(x_ref);
     double phi = gravity.phi(x);
@@ -29,8 +33,7 @@ struct IsentropicEquilibrium {
     return eos.rhoE(EnthalpyEntropy{h, K});
   }
 
-  EOS eos;
-  Gravity gravity;
+  std::shared_ptr<Euler<EOS, Gravity>> euler;
   int_t quad_deg; // FIXME this is wrong / unneeded.
 };
 

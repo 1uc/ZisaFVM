@@ -7,7 +7,7 @@ namespace zisa {
 
 template <class Model>
 LocalCFL<Model>::LocalCFL(std::shared_ptr<Grid> grid,
-                          Model model,
+                          std::shared_ptr<Model> model,
                           double cfl_number)
     : grid(grid), model(std::move(model)), cfl_number(cfl_number) {}
 
@@ -17,9 +17,10 @@ double LocalCFL<Model>::operator()(const AllVariables &all_variables) {
 
   double dt_inv = 0.0;
 
+  // FIXME missing parallelism
   for (auto &&[i, tri] : triangles(*grid)) {
 
-    double ev_max = model.max_eigen_value(cvars_t(u(i)));
+    double ev_max = model->max_eigen_value(cvars_t(u(i)));
     double dx = inradius(tri);
 
     dt_inv = zisa::max(dt_inv, ev_max / dx);

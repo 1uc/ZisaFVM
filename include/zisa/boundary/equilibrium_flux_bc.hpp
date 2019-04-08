@@ -22,11 +22,11 @@ private:
   using cvars_t = typename euler_t::cvars_t;
 
 public:
-  EquilibriumFluxBC(const euler_t &euler,
+  EquilibriumFluxBC(std::shared_ptr<euler_t> euler,
                     const Equilibrium &equilibrium,
                     std::shared_ptr<Grid> grid,
                     EdgeRule qr)
-      : euler(euler),
+      : euler(std::move(euler)),
         equilibrium(equilibrium),
         grid(std::move(grid)),
         qr(std::move(qr)) {}
@@ -35,6 +35,7 @@ public:
                        const AllVariables &current_state,
                        double /* t */) const override {
 
+    const auto &euler = *this->euler;
     const auto &eos = euler.eos;
 
     for (auto &&[e, edge] : exterior_edges(*grid)) {
@@ -44,7 +45,7 @@ public:
       auto eq = LocalEquilibrium<Equilibrium>(equilibrium);
       eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), tri);
 
-      auto flux = [this, &eq, &edge = edge](XYZ x) {
+      auto flux = [&euler, &eq, &edge = edge](XYZ x) {
         auto rhoE = eq.extrapolate(x);
 
         auto f = euler.flux(euler.eos.cvars(rhoE));
@@ -64,7 +65,7 @@ public:
   }
 
 private:
-  euler_t euler;
+  std::shared_ptr<euler_t> euler;
   Equilibrium equilibrium;
   std::shared_ptr<Grid> grid;
   EdgeRule qr;

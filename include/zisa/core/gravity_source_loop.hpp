@@ -15,13 +15,13 @@ private:
 
 public:
   GravitySourceLoop(std::shared_ptr<Grid> grid,
-                    const euler_t &euler,
+                    std::shared_ptr<euler_t> euler,
                     std::shared_ptr<grc_t> global_reconstruction,
                     int_t edge_deg,
                     int_t volume_deg)
-      : euler(euler),
-        grid(grid),
-        global_reconstruction(global_reconstruction),
+      : euler(std::move(euler)),
+        grid(std::move(grid)),
+        global_reconstruction(std::move(global_reconstruction)),
         edge_deg(edge_deg),
         volume_deg(volume_deg) {}
 
@@ -29,8 +29,8 @@ public:
                        const AllVariables & /* current_state */,
                        double /* t */) const override {
 
-    const auto &eos = euler.eos;
-    const auto &gravity = euler.gravity;
+    const auto &eos = euler->eos;
+    const auto &gravity = euler->gravity;
 
 #pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
     for (int_t i = 0; i < grid->n_cells; ++i) {
@@ -96,7 +96,7 @@ public:
   }
 
 private:
-  euler_t euler;
+  std::shared_ptr<euler_t> euler;
   std::shared_ptr<Grid> grid;
   std::shared_ptr<grc_t> global_reconstruction;
 

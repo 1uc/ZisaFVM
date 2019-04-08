@@ -24,11 +24,11 @@ std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions(
 
   auto dims = choose_all_variable_dims();
   auto all_variables = std::make_shared<AllVariables>(dims);
-  const auto &eos = euler.eos;
+  const auto &eos = euler->eos;
 
   const auto &gravity_params = params["euler"]["gravity"];
   auto rhoK = RhoEntropy{gravity_params["rhoC"], gravity_params["K_inner"]};
-  auto thetaC = euler.eos.enthalpy_entropy(rhoK);
+  auto thetaC = eos.enthalpy_entropy(rhoK);
   LocalEquilibrium inner_equilibrium(
       IsentropicEquilibrium(euler, 0), thetaC, XYZ::zeros());
 
@@ -36,7 +36,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions(
   double r_crit = gravity_params["r_crit"];
   auto x_ref = XYZ(r_crit * XYZ::unit_vector(0));
   auto rhoE_eq = inner_equilibrium.extrapolate(x_ref);
-  auto rhoP = euler.eos.rhoP(rhoE_eq);
+  auto rhoP = eos.rhoP(rhoE_eq);
 
   auto theta_inner = eos.enthalpy_entropy(rhoP);
   auto theta_outer = eos.enthalpy_entropy(RhoP{rhoP.rho() + drho, rhoP.p()});
@@ -57,9 +57,9 @@ std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions(
     double vx = v * zisa::cos(alpha);
     double vy = v * zisa::sin(alpha);
     double p = p_eq;
+    double E = euler->energy(rho, vx, vy, p);
 
-    return euler_var_t{
-        rho, rho * vx, rho * vy, 0.0, euler.energy(rho, vx, vy, p)};
+    return euler_var_t{rho, rho * vx, rho * vy, 0.0, E};
   };
 
   auto qr = choose_volume_rule();

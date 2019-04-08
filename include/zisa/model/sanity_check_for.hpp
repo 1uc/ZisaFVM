@@ -2,6 +2,8 @@
 #define SANITY_CHECK_FOR_H_UX4Z8
 
 #include <zisa/config.hpp>
+
+#include <memory>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/model/sanity_check.hpp>
 
@@ -10,7 +12,7 @@ namespace zisa {
 template <class Model>
 class SanityCheckFor : public SanityCheck {
 public:
-  SanityCheckFor(const Model &model) : model(model) {}
+  SanityCheckFor(std::shared_ptr<Model> model) : model(std::move(model)) {}
 
   bool operator()(const AllVariables &all_variables) const override {
     using cvars_t = typename Model::cvars_t;
@@ -29,7 +31,7 @@ public:
   }
 
 private:
-  Model model;
+  std::shared_ptr<Model> model;
 };
 
 } // namespace zisa

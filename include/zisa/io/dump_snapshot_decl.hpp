@@ -12,7 +12,8 @@ namespace zisa {
 template <class Model>
 class DumpSnapshot : public Visualization {
 public:
-  DumpSnapshot(const Model &model, std::shared_ptr<FileNameGenerator> fng);
+  DumpSnapshot(std::shared_ptr<Model> model,
+               std::shared_ptr<FileNameGenerator> file_name_generator);
 
 protected:
   virtual void
@@ -24,7 +25,7 @@ protected:
       = 0;
 
 private:
-  Model model;
+  std::shared_ptr<Model> model;
   std::shared_ptr<FileNameGenerator> file_name_generator;
 };
 

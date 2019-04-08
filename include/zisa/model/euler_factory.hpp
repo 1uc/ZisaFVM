@@ -39,14 +39,14 @@ PolytropeGravityWithJumpRadial make_gravity<PolytropeGravityWithJumpRadial>(
     const InputParameters &input_params);
 
 template <class Model>
-Model make_euler(const InputParameters &params) {
+std::shared_ptr<Model> make_euler(const InputParameters &params) {
   using EOS = typename Model::eos_t;
   using Gravity = typename Model::gravity_t;
 
   auto eos = make_eos<EOS>(params);
   auto gravity = make_gravity<Gravity>(params);
 
-  return Euler<EOS, Gravity>(eos, gravity);
+  return std::make_shared<Euler<EOS, Gravity>>(eos, gravity);
 }
 
 Euler<IdealGasEOS, ConstantGravityRadial> make_default_euler();
