@@ -16,27 +16,23 @@ struct IsentropicEquilibrium {
   IsentropicEquilibrium(const EOS &eos, const Gravity &gravity, int_t quad_deg)
       : eos(eos), gravity(gravity), quad_deg(quad_deg) {}
 
+  RhoE extrapolate(const EnthalpyEntropy &theta,
+                   const XYZ &x_ref,
+                   const XYZ &x) const {
+
+    double phi_ref = gravity.phi(x_ref);
+    double phi = gravity.phi(x);
+
+    double h = theta.h() + phi_ref - phi;
+    double K = theta.s();
+
+    return eos.rhoE(EnthalpyEntropy{h, K});
+  }
+
   EOS eos;
   Gravity gravity;
   int_t quad_deg; // FIXME this is wrong / unneeded.
 };
-
-template <class EOS, class Gravity>
-RhoE extrapolate(const IsentropicEquilibrium<EOS, Gravity> &eq,
-                 const EnthalpyEntropy &theta,
-                 const XYZ &xy_ref,
-                 const XYZ &xy) {
-  const auto &eos = eq.eos;
-  const auto &gravity = eq.gravity;
-
-  double phi_ref = gravity.phi(xy_ref);
-  double phi = gravity.phi(xy);
-
-  double h = theta.h() + phi_ref - phi;
-  double K = theta.s();
-
-  return eos.rhoE(EnthalpyEntropy{h, K});
-}
 
 } // namespace zisa
 #endif /* end of include guard */

@@ -47,7 +47,7 @@ public:
   }
 
   RhoP operator()(const XYZ &x) const {
-    return eq.eos.rhoP(extrapolate(eq, theta_ref, x_ref, x));
+    return eq.eos.rhoP(eq.extrapolate(theta_ref, x_ref, x));
   }
 
 private:

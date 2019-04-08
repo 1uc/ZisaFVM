@@ -3,22 +3,17 @@
 
 #include <zisa/math/cartesian.hpp>
 #include <zisa/model/euler_variables.hpp>
-#include <zisa/model/ideal_gas_eos.hpp>
 
 namespace zisa {
 
 struct NoEquilibrium {
   template <class... Args>
-  NoEquilibrium(Args &&... /* args */) {}
+  explicit NoEquilibrium(Args &&... /* args */) {}
+
+  RhoE extrapolate(const EnthalpyEntropy &, const XYZ &, const XYZ &) const {
+    return {0.0, 0.0};
+  }
 };
 
-inline RhoE extrapolate(const NoEquilibrium & /* eq */,
-                        const EnthalpyEntropy & /* theta */,
-                        const XYZ & /* xy_ref */,
-                        const XYZ & /* xy */) {
-  return {0.0, 0.0};
-}
-
 } // namespace zisa
-
 #endif /* end of include guard */
