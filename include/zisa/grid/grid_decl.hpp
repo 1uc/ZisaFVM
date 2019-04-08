@@ -57,6 +57,7 @@ std::optional<int_t>
 locate(const Grid &grid, const XYZ &x, int_t i_guess, int_t max_iter);
 
 double largest_circum_radius(const Grid &grid);
+double smallest_inradius(const Grid &grid);
 
 std::shared_ptr<Grid> load_gmsh(const std::string &filename);
 

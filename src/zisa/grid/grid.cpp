@@ -336,12 +336,18 @@ double Grid::characteristic_length(int_t i) const {
 }
 
 std::string Grid::str() const {
+  double dx_min = smallest_inradius(*this);
+  double dx_max = largest_circum_radius(*this);
   return string_format("n_cells : %d\n"
                        "n_vertices : %d\n"
-                       "n_edges : %d",
+                       "n_edges : %d\n"
+                       "dx_min : %e\n"
+                       "dx_max : %e\n",
                        n_cells,
                        n_vertices,
-                       n_edges);
+                       n_edges,
+                       dx_min,
+                       dx_max);
 }
 
 std::optional<int_t>
@@ -422,6 +428,16 @@ double largest_circum_radius(const Grid &grid) {
   double r = 0.0;
   for (const auto &[i, tri] : triangles(grid)) {
     r = zisa::max(r, circum_radius(tri));
+  }
+
+  return r;
+}
+
+double smallest_inradius(const Grid &grid) {
+
+  double r = std::numeric_limits<double>::max();
+  for (const auto &[i, tri] : triangles(grid)) {
+    r = zisa::min(r, inradius(tri));
   }
 
   return r;
