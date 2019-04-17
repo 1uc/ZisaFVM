@@ -36,6 +36,7 @@ public:
 
 public:
   AllVariables() = default;
+  AllVariables(GridVariables cvars, GridVariables avars);
   AllVariables(const AllVariablesDimensions &dims);
 
   double &operator[](int_t i);

@@ -17,6 +17,8 @@ std::ostream &operator<<(std::ostream &os, const AllVariablesDimensions &dims) {
      << "}";
   return os;
 }
+AllVariables::AllVariables(GridVariables cvars, GridVariables avars)
+    : cvars(std::move(cvars)), avars(std::move(avars)) {}
 
 AllVariables::AllVariables(const AllVariablesDimensions &dims) {
   allocate(dims);
