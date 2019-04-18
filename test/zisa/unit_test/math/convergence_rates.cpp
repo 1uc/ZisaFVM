@@ -1,9 +1,9 @@
-#include "basic_functions.hpp"
+#include "convergence_rates.hpp"
 #include <zisa/math/basic_functions.hpp>
 
 #include <cassert>
-#include <zisa/testing/testing_framework.hpp>
 #include <cmath>
+#include <zisa/testing/testing_framework.hpp>
 
 std::vector<double> convergence_rates(const std::vector<double> &dx,
                                       const std::vector<double> &e) {

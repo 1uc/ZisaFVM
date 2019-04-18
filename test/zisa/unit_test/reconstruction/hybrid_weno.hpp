@@ -6,7 +6,7 @@
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
-#include <zisa/unit_test/math/basic_functions.hpp>
+#include <zisa/unit_test/math/convergence_rates.hpp>
 #include <zisa/unit_test/reconstruction/compute_convergence.hpp>
 #include <zisa/utils/indent_block.hpp>
 #include <zisa/utils/to_string.hpp>

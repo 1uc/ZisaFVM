@@ -7,7 +7,7 @@
 #include <zisa/math/quadrature.hpp>
 
 #include <zisa/unit_test/grid/test_grid_factory.hpp>
-#include <zisa/unit_test/math/basic_functions.hpp>
+#include <zisa/unit_test/math/convergence_rates.hpp>
 
 void check_convergence(double expected, double atol, zisa::int_t deg) {
   auto grid_names = zisa::TestGridFactory::unit_square();
