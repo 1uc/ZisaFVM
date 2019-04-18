@@ -203,7 +203,7 @@ class IO(Subsection):
     def activate_opengl(self):
         self["mode"] = "opengl"
         self["opengl"] = {
-            "delay": "0ms"
+            "delay": "1s"
         }
 
 

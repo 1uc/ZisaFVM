@@ -7,5 +7,5 @@ class NoQueue:
         assert(has_no_queue())
         self.queue_args = queue_args
 
-    def submit(self, directory, cmd):
+    def submit(self, directory, launch_param, cmd):
         subprocess.call(cmd, cwd=directory)

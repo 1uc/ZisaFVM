@@ -5,6 +5,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/linear_interpolation.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/utils/type_name.hpp>
 
@@ -260,21 +261,23 @@ class SphericalGravity {
 private:
 public:
   SphericalGravity() = default;
+  explicit SphericalGravity(array<double, 1> radii);
   SphericalGravity(array<double, 1> radii, array<double, 1> phi);
 
   inline double phi(double r) const;
   inline double dphi_dx(double r) const;
 
-private:
-  inline int_t index(double r) const;
-  inline double radii(int_t i) const;
+  array<double, 1> &radius_array() { return interpolate->points; }
+  const array<double, 1> &radius_array() const { return interpolate->points; }
 
+  array<double, 1> &phi_array() { return interpolate->values; }
+  const array<double, 1> &phi_array() const { return interpolate->values; }
+
+private:
   friend void save(HDF5Writer &writer, const SphericalGravity &gravity);
 
 private:
-  std::shared_ptr<array<double, 1>> radii_;
-  std::shared_ptr<array<double, 1>> phi_;
-  int_t n_cells;
+  std::shared_ptr<NonUniformLinearInterpolation<double>> interpolate;
 };
 
 void save(HDF5Writer &writer, const SphericalGravity &gravity);
@@ -285,8 +288,19 @@ private:
 
 public:
   RadialGravity() = default;
+  explicit RadialGravity(array<double, 1> radii)
+      : super(SphericalGravity(std::move(radii)), RadialAlignment{}) {}
+
   RadialGravity(array<double, 1> radii, array<double, 1> phi)
       : super({std::move(radii), std::move(phi)}, RadialAlignment{}) {}
+
+  array<double, 1> &radius_array() { return gravity.radius_array(); }
+  const array<double, 1> &radius_array() const {
+    return gravity.radius_array();
+  }
+
+  array<double, 1> &phi_array() { return gravity.phi_array(); }
+  const array<double, 1> &phi_array() const { return gravity.phi_array(); }
 };
 
 class NoGravity {

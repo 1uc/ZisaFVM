@@ -29,6 +29,8 @@ public:
   double exponent;
 };
 
+HybridWENOParams make_hybrid_weno_params(int order);
+
 std::ostream &operator<<(std::ostream &os, const HybridWENOParams &params);
 
 } // namespace zisa

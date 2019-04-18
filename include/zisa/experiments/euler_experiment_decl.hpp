@@ -77,8 +77,8 @@ private:
   choose_reconstruction(const RCParams &rc_params);
 
 protected:
-  const std::shared_ptr<euler_t> euler;
-  const std::shared_ptr<GlobalReconstruction<euler_var_t>> grc_ = nullptr;
+  std::shared_ptr<euler_t> euler;
+  std::shared_ptr<GlobalReconstruction<euler_var_t>> grc_ = nullptr;
 };
 
 } // namespace zisa

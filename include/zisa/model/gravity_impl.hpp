@@ -3,7 +3,6 @@
 
 #include "gravity.hpp"
 
-#include <algorithm>
 #include <zisa/model/euler.hpp>
 
 namespace zisa {
@@ -93,27 +92,12 @@ PolytropeGravityWithJumpRadial::alpha(double chi) const {
 
 // ---  SphericalGravity  -----------------------------------------------
 inline double SphericalGravity::phi(double r) const {
-  int_t i = index(r);
-
-  assert(i < phi_->size() - 1);
-
-  double alpha = (r - radii(i)) / (radii(i + 1) - radii(i));
-  return (1 - alpha) * (*phi_)[i] + alpha * (*phi_)[i + 1];
+  return (*interpolate)(r);
 }
 
 inline double SphericalGravity::dphi_dx(double r) const {
-  int_t i = index(r);
-  return ((*phi_)[i + 1] - (*phi_)[i]) / (radii(i + 1) - radii(i));
+  return interpolate->derivative(r);
 }
-
-inline int_t SphericalGravity::index(double r) const {
-  auto first_past = std::find_if(
-      radii_->begin(), radii_->end(), [r](double rr) { return rr > r; });
-
-  return int_t(first_past - radii_->begin()) - 1;
-}
-
-inline double SphericalGravity::radii(int_t i) const { return (*radii_)[i]; }
 
 } // namespace zisa
 #endif /* end of include guard */

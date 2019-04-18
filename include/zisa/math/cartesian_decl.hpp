@@ -210,9 +210,16 @@ public:
   using super::Cartesian;
   using super::operator=;
 
-  ANY_DEVICE_INLINE static XYZ zeros() { return XYZ(super::zeros()); }
-  ANY_DEVICE_INLINE static XYZ unit_vector(int_t i) {
+  [[nodiscard]] ANY_DEVICE_INLINE static XYZ zeros() {
+    return XYZ(super::zeros());
+  }
+
+  [[nodiscard]] ANY_DEVICE_INLINE static XYZ unit_vector(int_t i) {
     return XYZ(super::unit_vector(i));
+  }
+
+  [[nodiscard]] ANY_DEVICE_INLINE static XYZ r_hat(double polar_angle) {
+    return {zisa::cos(polar_angle), zisa::sin(polar_angle), 0.0};
   }
 };
 

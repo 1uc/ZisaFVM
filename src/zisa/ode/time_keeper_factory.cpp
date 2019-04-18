@@ -43,7 +43,7 @@ make_plotting_steps(const PlottingStepsParameters &plotting_params,
 
   if (n_snapshots != int_t(-1) && std::isfinite(t_end)) {
     double t0 = 0.0;
-    double dt = t_end / n_snapshots;
+    double dt = t_end / double(n_snapshots);
 
     return std::make_shared<PlotAtFixedInterval>(t0, dt, t_end);
   }

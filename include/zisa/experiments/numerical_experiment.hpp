@@ -10,6 +10,7 @@
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/math/triangular_rule.hpp>
 #include <zisa/model/cfl_condition.hpp>
+#include <zisa/model/instantaneous_physics.hpp>
 #include <zisa/model/sanity_check.hpp>
 #include <zisa/ode/rate_of_change.hpp>
 #include <zisa/ode/simulation_clock.hpp>
@@ -26,12 +27,13 @@ public:
   void post_process();
 
 protected:
+  virtual void write_grid() const;
   virtual void do_run();
   virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) = 0;
   virtual void do_post_process() = 0;
 
-  virtual std::shared_ptr<Grid> choose_grid();
-  virtual std::shared_ptr<FileNameGenerator> choose_file_name_generator();
+  std::shared_ptr<Grid> choose_grid();
+  std::shared_ptr<FileNameGenerator> choose_file_name_generator();
 
   /// Total rate of change in the system.
   /** See also:
@@ -49,6 +51,7 @@ protected:
   aggregate_rates_of_change(const std::vector<std::shared_ptr<RateOfChange>>
                                 &physical_rates_of_change);
 
+  virtual std::shared_ptr<InstantaneousPhysics> choose_instantaneous_physics();
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() = 0;
   virtual std::shared_ptr<Visualization> choose_visualization() = 0;
   virtual std::shared_ptr<AllVariables> choose_initial_conditions() = 0;

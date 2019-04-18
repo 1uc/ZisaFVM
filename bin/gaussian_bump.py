@@ -4,6 +4,8 @@ import os
 import shutil
 import glob
 
+import matplotlib.pyplot as plt
+
 import tiwaz
 import tiwaz.scheme as sc
 
@@ -17,6 +19,12 @@ from tiwaz.launch_job import launch_all
 from tiwaz.latex_tables import write_convergence_table
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_circular_grids
+
+from tiwaz.launch_params import folder_name
+from tiwaz.post_process import load_data, load_grid
+from tiwaz.post_process import find_data_files, find_last_data_file
+from tiwaz.post_process import find_steady_state_file
+from tiwaz.tri_plot import TriPlot
 
 class GaussianBumpExperiment(sc.Subsection):
     def __init__(self, amplitude, width):
@@ -34,7 +42,7 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [0.0]
+amplitudes = [1e-4]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
@@ -44,30 +52,38 @@ euler = sc.Euler(eos, gravity)
 time = sc.Time(t_end=0.09)
 io = sc.IO("hdf5", "gaussian_bump", n_snapshots=1)
 
-def grid_name(level):
-    return "grids/polytrope-{:}.msh".format(level)
+def grid_name_stem(l):
+    return "grids/gaussian_bump-{}".format(l)
+
+def grid_name_geo(l):
+    return grid_name_stem(l) + ".geo"
+
+def grid_name_msh(l):
+    return grid_name_stem(l) + ".msh"
+
+
 
 radius = 0.5
 mesh_levels = list(range(0, 5))
 lc_rel = {l : 0.1 * 0.5**l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 4))
-coarse_grid_names = [grid_name(level) for level in coarse_grid_levels]
+coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
     "grid": [
-        sc.Grid(grid_name(l), l) for l in coarse_grid_levels
+        sc.Grid(grid_name_msh(l), l) for l in coarse_grid_levels
     ]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid("grids/polytrope-4.msh", 4)
+reference_grid = sc.Grid(grid_name_msh(4), 4)
 
 independent_choices = {
     "euler": [euler],
 
     "flux-bc": [sc.FluxBC("isentropic")],
 
-    "well-balancing": [sc.WellBalancing("constant"),
+    "well-balancing": [#sc.WellBalancing("constant"),
                        sc.WellBalancing("isentropic")],
 
     "io": [io],
@@ -154,19 +170,40 @@ def make_runs(amplitude):
 all_runs = [make_runs(amp) for amp in amplitudes]
 
 def post_process(coarse_runs, reference_run):
-    results, columns = load_results(coarse_runs, reference_run)
-    labels = TableLabels()
+    # results, columns = load_results(coarse_runs, reference_run)
+    # labels = TableLabels()
+    #
+    # filename = coarse_runs[0]["experiment"].short_id()
+    # write_convergence_table(results, columns, labels, filename)
+    # plot_visual_convergence(results, columns, labels, filename)
 
-    filename = coarse_runs[0]["experiment"].short_id()
-    write_convergence_table(results, columns, labels, filename)
-    plot_visual_convergence(results, columns, labels, filename)
+    coarse_run = coarse_runs[0]
+    coarse_dir = folder_name(coarse_run)
+    coarse_grid = load_grid(coarse_dir)
+
+
+    data_files = find_data_files(coarse_dir)
+
+    for data_file in data_files[::10]:
+        u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+
+
+        rho = u_coarse.cvars["rho"]
+        vx = u_coarse.cvars["mv1"] / rho
+        vy = u_coarse.cvars["mv2"] / rho
+
+        trip = TriPlot()
+        trip.color_plot(coarse_grid, rho)
+        trip.quiver(coarse_grid, vx, vy)
+
+        plt.show()
 
 class TableLabels:
     def __call__(self, col):
         return " ".join(str(v) for v in col.values())
 
 def generate_grids():
-    generate_circular_grids("grids/gaussian_bump-{}.geo", radius, lc_rel, mesh_levels)
+    generate_circular_grids(grid_name_geo(l), radius, lc_rel, mesh_levels)
 
 def main():
     parser = default_cli_parser("'gaussian_bump' numerical experiment.")
@@ -179,10 +216,10 @@ def main():
         build_zisa()
 
         for c, r in all_runs:
-            launch_all(c, force=args.force)
+            launch_all(c, force=args.force, queue_args=queue_args)
 
             if args.reference:
-                launch_all(r, force=args.force)
+                launch_all(r, force=args.force, queue_args=queue_args)
 
     if args.post_process:
         for c, r in all_runs:

@@ -11,6 +11,7 @@
 #include <zisa/io/visualization.hpp>
 #include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/euler.hpp>
+#include <zisa/model/instantaneous_physics.hpp>
 #include <zisa/model/sanity_check.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration.hpp>
@@ -23,6 +24,7 @@ namespace zisa {
 class TimeLoop {
 public:
   TimeLoop(const std::shared_ptr<TimeIntegration> &time_integration,
+           const std::shared_ptr<InstantaneousPhysics> &instantaneous_physics,
            const std::shared_ptr<SimulationClock> &simulation_clock,
            const std::shared_ptr<CFLCondition> &cfl_condition,
            const std::shared_ptr<SanityCheck> &sanity_check,
@@ -35,29 +37,12 @@ public:
    */
   std::shared_ptr<AllVariables> operator()(std::shared_ptr<AllVariables> u0);
 
-  /// Things to do before entering the time loop.
-  virtual void pre_loop(AllVariables &) {
-    // empty default
-  }
-
-  /// Things to do before the update step.
-  virtual void pre_update(AllVariables &) {
-    // empty default
-  }
-
-  /// Things to do just after 'u0' has been updated.
-  virtual void post_update(AllVariables &u0);
-
-  /// Things to do after the time loop.
-  virtual void post_loop(AllVariables &) {
-    // empty default
-  }
-
   /// Self-documenting string.
   virtual std::string str() const;
 
 protected:
   void write_output(const AllVariables &u0);
+  void post_update(AllVariables &u0);
 
   virtual void print_welcome_message() const;
   virtual void print_progress_message();
@@ -71,6 +56,7 @@ protected:
 
 protected:
   std::shared_ptr<TimeIntegration> time_integration;
+  std::shared_ptr<InstantaneousPhysics> instantaneous_physics;
   std::shared_ptr<SimulationClock> simulation_clock;
   std::shared_ptr<Visualization> visualization;
   std::shared_ptr<CFLCondition> cfl_condition;

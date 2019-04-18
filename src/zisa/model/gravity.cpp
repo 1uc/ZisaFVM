@@ -2,10 +2,15 @@
 
 namespace zisa {
 
+SphericalGravity::SphericalGravity(array<double, 1> radii) {
+  auto phi = array<double, 1>(radii.shape());
+  interpolate = std::make_shared<NonUniformLinearInterpolation<double>>(
+      std::move(radii), std::move(phi));
+}
+
 SphericalGravity::SphericalGravity(array<double, 1> radii, array<double, 1> phi)
-    : radii_(std::make_shared<array<double, 1>>(std::move(radii))),
-      phi_(std::make_shared<array<double, 1>>(std::move(phi))),
-      n_cells(int_t(phi_->size() - 1)) {}
+    : interpolate(std::make_shared<NonUniformLinearInterpolation<double>>(
+          std::move(radii), std::move(phi))) {}
 
 void save(HDF5Writer &writer, const RadialAlignment &alignment) {
   writer.write_scalar(alignment.epsilon, "epsilon");
@@ -44,8 +49,8 @@ void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity) {
 }
 
 void save(HDF5Writer &writer, const SphericalGravity &gravity) {
-  save(writer, *gravity.radii_, "radii");
-  save(writer, *gravity.phi_, "phi");
+  save(writer, gravity.interpolate->points, "radii");
+  save(writer, gravity.interpolate->values, "phi");
 }
 
 } // zisa

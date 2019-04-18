@@ -30,6 +30,11 @@ class Snapshot:
             for key in cvar_keys:
                 self.cvars[key] = np.array(h5[key])
 
+            self.gravity = {
+                "radii": np.array(h5["model/gravity/radii"]),
+                "phi": np.array(h5["model/gravity/phi"])
+            }
+
         if delta_filename:
             with h5py.File(delta_filename, "r") as h5:
                 for key in cvar_keys:

@@ -19,6 +19,7 @@ struct JankaEOSParams {
 
   std::string str() const;
 };
+JankaEOSParams make_default_janka_eos_params();
 
 void save(HDF5Writer &writer, const JankaEOSParams &params);
 
@@ -95,7 +96,7 @@ public:
     };
 
     double rho_a = ideal_gas_density(gamma[REGIME], theta);
-    double rho_b = 2.0 * rho_a;
+    double rho_b = 2.0 * rho_a; // fixme this.
 
     double inf = std::numeric_limits<double>::infinity();
     auto hard_bounds = (REGIME == 0 ? std::array<double, 2>{0.0, rho_bounce}
@@ -223,6 +224,10 @@ public:
     const auto &[rho, p] = rhoP;
     double E = internal_energy(rhoP);
     return (E + p) / rho;
+  }
+
+  ANY_DEVICE_INLINE double enthalpy(const RhoEntropy &rhoK) const {
+    return enthalpy(rhoP(rhoK));
   }
 
   // --- Entropy ---------------------------------------------------------------

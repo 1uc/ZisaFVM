@@ -376,6 +376,10 @@ locate(const Grid &grid, const XYZ &x, int_t i_guess, int_t max_iter) {
   return std::nullopt;
 }
 
+std::optional<int_t> locate(const Grid &grid, const XYZ &x) {
+  return locate(grid, x, 0, grid.n_cells);
+}
+
 double volume(const Grid &grid) {
   double vol = 0.0;
 

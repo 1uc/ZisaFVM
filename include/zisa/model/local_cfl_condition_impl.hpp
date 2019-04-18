@@ -3,6 +3,8 @@
 
 #include "local_cfl_condition_decl.hpp"
 
+#include <zisa/parallelization/omp.h>
+
 namespace zisa {
 
 template <class Model>
@@ -17,8 +19,11 @@ double LocalCFL<Model>::operator()(const AllVariables &all_variables) {
 
   double dt_inv = 0.0;
 
-  // FIXME missing parallelism
-  for (auto &&[i, tri] : triangles(*grid)) {
+  int_t n_cells = grid->n_cells;
+
+#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
+  for (int_t i = 0; i < n_cells; ++i) {
+    auto tri = grid->triangle(i);
 
     double ev_max = model->max_eigen_value(cvars_t(u(i)));
     double dx = inradius(tri);

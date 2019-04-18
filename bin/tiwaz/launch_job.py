@@ -51,7 +51,7 @@ class LaunchNewJob(LaunchJob):
         self.preparatory_work(launch_param)
         cmd = self.launch_command(launch_param, directory)
 
-        self.queue.submit(directory, cmd)
+        self.queue.submit(directory, launch_param, cmd)
 
     def preparatory_work(self, launch_param):
         directory = self.make_clean_directory(launch_param)

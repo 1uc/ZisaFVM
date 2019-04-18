@@ -20,4 +20,24 @@ std::ostream &operator<<(std::ostream &os, const HybridWENOParams &params) {
   return os;
 }
 
+HybridWENOParams make_hybrid_weno_params(int order) {
+  if (order == 1) {
+    return HybridWENOParams({{1}, {"c"}, {2.0}}, {1.0}, 1e-6, 4);
+  }
+
+  if (order == 2) {
+    return HybridWENOParams(
+        {{order, 2, 2, 2}, {"c", "b", "b", "b"}, {3.0, 2.0, 2.0, 2.0}},
+        {100.0, 1.0, 1.0, 1.0},
+        1e-6,
+        4);
+  }
+
+  return HybridWENOParams(
+      {{order, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+      {100.0, 1.0, 1.0, 1.0},
+      1e-6,
+      4);
+}
+
 } // namespace zisa

@@ -297,7 +297,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
 
 TEST_CASE("Grid; serialize", "[grid]") {
   auto grid = zisa::load_gmsh("grids/small.msh");
-  auto filename = std::string("__unit_test--grid_to_hdf5.h5");
+  auto filename = std::string("__unit_tests--grid_to_hdf5.h5");
 
   auto writer = zisa::HDF5SerialWriter(filename);
   zisa::save(writer, *grid);

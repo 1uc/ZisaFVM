@@ -3,7 +3,6 @@
 import os
 import shutil
 import glob
-import subprocess
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,7 +22,7 @@ from tiwaz.post_process import load_data, load_grid
 from tiwaz.post_process import find_data_files, find_last_data_file
 from tiwaz.post_process import find_steady_state_file
 from tiwaz.utils import read_txt, write_txt
-from tiwaz.tri_plot import tri_plot
+from tiwaz.tri_plot import TriPlot
 
 janka_params = dict(rho_bounce = 2e14,
                     gamma1 = 1.33,
@@ -49,23 +48,28 @@ experiment_params = [None]
 
 eos = sc.JankaEOS(**janka_params)
 gravity = sc.GeneralPolytropeGravity(
-    rho_center=1e10,
+    rho_center=7e9,
     polytropic_index_n=polytropic_index_n,
     radius=1.2e8,
     G = 6.674e-8
 )
 euler = sc.Euler(eos, gravity)
 
-time = sc.Time(t_end=0.1)
-# io = sc.IO("hdf5", "janka", n_snapshots=1)
-io = sc.IO("opengl", "janka", steps_per_frame=1)
+time = sc.Time(t_end=0.5)
+io = sc.IO("hdf5", "janka", steps_per_frame=10)
+# io = sc.IO("opengl", "janka", steps_per_frame=1)
+
+def grid_name_stem(l):
+    return "grids/janka-{}".format(l)
 
 def grid_name(l):
-    return "grids/janka_{}.msh".format(l)
+    return grid_name_stem(l) + ".msh"
 
+def geo_grid_name(l):
+    return grid_name_stem(l) + ".geo"
 
-mesh_levels = list(range(0, 5))
-mesh_sizes = [1e-1 * 0.5**l for l in mesh_levels]
+mesh_levels = list(range(0, 2))
+mesh_sizes = [(1e-3 * 0.5**l, 1e-1 * 0.5**l) for l in mesh_levels]
 
 coarse_grid_levels = list(range(0, 1))
 coarse_grid_names = [grid_name(level) for level in coarse_grid_levels]
@@ -81,10 +85,12 @@ reference_grid = sc.Grid(grid_name(mesh_levels[-1]), mesh_levels[-1])
 independent_choices = {
     "euler": [euler],
 
-    "flux-bc": [sc.FluxBC("constant")],
+    "flux-bc": [sc.FluxBC("isentropic")],
 
-    "well-balancing": [ # sc.WellBalancing("constant"),
-        sc.WellBalancing("isentropic")],
+    # "well-balancing": [ # sc.WellBalancing("constant"),
+        # sc.WellBalancing("isentropic")],
+
+    "well-balancing": [ sc.WellBalancing("constant") ],
 
     "io": [io],
 
@@ -174,28 +180,29 @@ def post_process(coarse_runs, reference_run):
     coarse_dir = folder_name(coarse_run)
     coarse_grid = load_grid(coarse_dir)
 
-
-    data_file = find_data_files(coarse_dir)[1]
-    u_coarse = load_data(data_file,
-                         find_steady_state_file(coarse_dir))
+    x, y = coarse_grid.cell_centers[:,0], coarse_grid.cell_centers[:,1]
 
 
-    rho = u_coarse.cvars["rho"]
-    vx = u_coarse.cvars["mv1"] / rho
-    vy = u_coarse.cvars["mv2"] / rho
+    data_files = find_data_files(coarse_dir)
 
-    plt.figure()
-    tri_plot(coarse_grid, np.log10(rho))
+    for data_file in data_files[::1]:
+        u_coarse = load_data(data_file,
+                             find_steady_state_file(coarse_dir))
 
-    plt.figure()
-    tri_plot(coarse_grid, vx / rho)
+        rho = u_coarse.cvars["rho"]
+        drho = u_coarse.dvars["rho"]
+        vx = u_coarse.cvars["mv1"] / rho
+        vy = u_coarse.cvars["mv2"] / rho
+        v = (vx*x + vy*y) / (x**2 + y**2)**0.5
 
-    plt.figure()
-    tri_plot(coarse_grid, vy / rho)
+        # trip = TriPlot()
+        # trip.color_plot(coarse_grid, np.log10(rho))
+        # trip.quiver(coarse_grid, vx, vy)
 
-    plot = ScatterPlot()
-    plot(coarse_grid, np.log10(u_coarse.cvars["rho"]))
-    plt.show()
+        plot = ScatterPlot()
+        plot(coarse_grid, v)
+
+        plt.show()
 
 class TableLabels:
     def __call__(self, col):
@@ -203,14 +210,14 @@ class TableLabels:
 
 def generate_grids():
     gmsh_template = read_txt("grids/janka.tmpl")
-    filename = "grids/janka-{}.geo"
 
     for l in mesh_levels:
-        lc_rel = mesh_sizes[l]
-        geo = gmsh_template.replace("LC_REL", str(lc_rel))
-        write_txt(filename.format(l), geo)
+        lc_min, lc_rel = mesh_sizes[l]
+        geo = gmsh_template.replace("LC_MIN", str(lc_min))
+        geo = geo.replace("LC_REL", str(lc_rel))
+        write_txt(geo_grid_name(l), geo)
 
-    gmsh.generate_grids([filename.format(l) for l in mesh_levels])
+    gmsh.generate_grids([geo_grid_name(l) for l in mesh_levels])
 
 def main():
     parser = default_cli_parser("'janka' numerical experiment.")
@@ -228,6 +235,7 @@ def main():
 
     if args.run:
         build_zisa()
+        generate_grids()
 
         for c, r in all_runs:
             launch_all(c, force=args.force)

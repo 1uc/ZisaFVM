@@ -11,17 +11,15 @@
 namespace zisa {
 
 NumericalExperiment::NumericalExperiment(const InputParameters &params)
-    : params(params) {}
+    : params(params),
+      grid(choose_grid()),
+      file_name_generator(choose_file_name_generator()) {}
 
 void NumericalExperiment::run() { do_run(); }
 void NumericalExperiment::post_process() { do_post_process(); }
 
 std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
   auto grid = load_gmsh(params["grid"]["file"]);
-
-  auto writer = HDF5SerialWriter("grid.h5");
-  save(writer, *grid);
-
   return grid;
 }
 
@@ -30,9 +28,15 @@ NumericalExperiment::choose_file_name_generator() {
   return make_file_name_generator(params["io"]["filename"]);
 }
 
+void NumericalExperiment::write_grid() const {
+
+// extra scope so writer goes out of scope and closes.
+auto writer = HDF5SerialWriter("grid.h5");
+save(writer, *grid);
+}
+
 void NumericalExperiment::do_run() {
-  grid = choose_grid();
-  file_name_generator = choose_file_name_generator();
+  write_grid();
 
   std::cout << " --- Grid ---------- \n";
   std::cout << grid->str() << "\n";
@@ -61,11 +65,13 @@ NumericalExperiment::choose_simulation_clock() {
 std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
   auto simulation_clock = choose_simulation_clock();
   auto time_integration = choose_time_integration();
+  auto instantaneous_physics = choose_instantaneous_physics();
   auto sanity_check = choose_sanity_check();
   auto visualization = choose_visualization();
   auto cfl_condition = choose_cfl_condition();
 
   return std::make_shared<TimeLoop>(time_integration,
+                                    instantaneous_physics,
                                     simulation_clock,
                                     cfl_condition,
                                     sanity_check,
@@ -126,6 +132,11 @@ std::shared_ptr<RateOfChange> NumericalExperiment::aggregate_rates_of_change(
   roc->add_term(flux_bc);
 
   return roc;
+}
+
+std::shared_ptr<InstantaneousPhysics>
+NumericalExperiment::choose_instantaneous_physics() {
+  return std::make_shared<NoInstantaneousPhysics>();
 }
 
 } // namespace zisa

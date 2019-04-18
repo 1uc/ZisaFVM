@@ -22,7 +22,7 @@ JankaEOS make_janka_eos(const JankaEOSParams &params) {
   return JankaEOS(params);
 }
 
-JankaEOS make_default_janka_eos() {
+JankaEOSParams make_default_janka_eos_params() {
   JankaEOSParams params;
 
   params.rho_bounce = 2e14;
@@ -30,6 +30,11 @@ JankaEOS make_default_janka_eos() {
   params.gamma_thermal = 1.5;
   params.E1 = 1.46925e15;
 
+  return params;
+}
+
+JankaEOS make_default_janka_eos() {
+  auto params = make_default_janka_eos_params();
   return make_janka_eos(params);
 }
 

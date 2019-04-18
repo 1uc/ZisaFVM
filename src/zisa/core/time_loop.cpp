@@ -13,12 +13,16 @@
 #include <zisa/model/sanity_check.hpp>
 
 namespace zisa {
-TimeLoop::TimeLoop(const std::shared_ptr<TimeIntegration> &time_integration,
-                   const std::shared_ptr<SimulationClock> &simulation_clock,
-                   const std::shared_ptr<CFLCondition> &cfl_condition,
-                   const std::shared_ptr<SanityCheck> &sanity_check,
-                   const std::shared_ptr<Visualization> &visualization)
+
+TimeLoop::TimeLoop(
+    const std::shared_ptr<TimeIntegration> &time_integration,
+    const std::shared_ptr<InstantaneousPhysics> &instantaneous_physics,
+    const std::shared_ptr<SimulationClock> &simulation_clock,
+    const std::shared_ptr<CFLCondition> &cfl_condition,
+    const std::shared_ptr<SanityCheck> &sanity_check,
+    const std::shared_ptr<Visualization> &visualization)
     : time_integration(time_integration),
+      instantaneous_physics(instantaneous_physics),
       simulation_clock(simulation_clock),
       visualization(visualization),
       cfl_condition(cfl_condition),
@@ -36,29 +40,21 @@ operator()(std::shared_ptr<AllVariables> u0) {
 
   pick_time_step(*u0);
 
-  // pre loop routines, set up additional state, etc.
-  pre_loop(*u0);
-
   while (!simulation_clock->is_finished()) {
-    // pre update routines (mainly for increased flexibility).
-    pre_update(*u0);
-
     double t = simulation_clock->current_time();
     double dt = simulation_clock->current_time_step();
 
     // v-- possibly different buffer, contains u1.
     u0 = time_integration->compute_step(u0, t, dt);
+    instantaneous_physics->compute(*simulation_clock, *u0);
+
     simulation_clock->advance();
     pick_time_step(*u0);
 
-    // post update routines, plotting, etc.
     post_update(*u0);
-
     print_progress_message();
   }
 
-  // post loop routines, for things like start-end comparisons.
-  post_loop(*u0);
   stop_timer();
   print_goodbye_message();
 
