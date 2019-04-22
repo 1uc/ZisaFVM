@@ -112,6 +112,10 @@ public:
     return RhoT{rho, T};
   }
 
+  ANY_DEVICE_INLINE RhoP rhoP(const euler_var_t &u) const {
+    return RhoP{u[0], pressure(u)};
+  }
+
   ANY_DEVICE_INLINE RhoP rhoP(RhoE rhoE) const {
     return RhoP{rhoE.rho(), pressure(rhoE)};
   }

@@ -5,6 +5,8 @@
 #include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/hdf5_writer.hpp>
 #include <zisa/io/visualization.hpp>
+#include <zisa/model/all_variables_fwd.hpp>
+#include <zisa/model/grid_variables_decl.hpp>
 
 namespace zisa {
 

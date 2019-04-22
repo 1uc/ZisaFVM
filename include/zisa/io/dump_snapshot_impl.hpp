@@ -10,6 +10,8 @@
 #include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/model/all_variables.hpp>
+#include <zisa/model/grid_variables_impl.hpp>
+#include <zisa/model/save_full_state.hpp>
 
 namespace zisa {
 
@@ -30,7 +32,7 @@ void DumpSnapshot<Model>::do_visualization(
 
   auto writer = pick_writer(file_name_generator->next_name());
 
-  save_state(*writer, *model, all_variables, t, n_steps);
+  save_full_state(*writer, *model, all_variables, t, n_steps);
 }
 
 template <class Model>

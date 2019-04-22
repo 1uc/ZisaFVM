@@ -23,12 +23,18 @@ class Snapshot:
                  steady_state_filename=None):
 
         cvar_keys = ["rho", "mv1", "mv2", "E"]
+        xvar_keys = ["p", "cs", "h", "s"]
         self.cvars = dict()
+        self.xvars = dict()
         self.dvars = dict()
 
         with h5py.File(data_filename, "r") as h5:
             for key in cvar_keys:
                 self.cvars[key] = np.array(h5[key])
+
+            for key in xvar_keys:
+                if key in h5:
+                    self.xvars[key] = np.array(h5[key])
 
             self.gravity = {
                 "radii": np.array(h5["model/gravity/radii"]),

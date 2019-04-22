@@ -269,6 +269,10 @@ public:
   }
 
   // -- 2 -> 2 Conversions -----------------------------------------------------
+  ANY_DEVICE_INLINE RhoP rhoP(const cvars_t &u) const {
+    return RhoP{u[0], pressure(u)};
+  }
+
   ANY_DEVICE_INLINE RhoP rhoP(const RhoE &rhoE) const {
     return RhoP{rhoE.rho(), pressure(rhoE)};
   }
