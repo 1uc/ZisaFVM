@@ -42,7 +42,7 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [1e-4]
+amplitudes = [0.0, 1e-6, 1e-2]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
@@ -83,33 +83,13 @@ independent_choices = {
 
     "flux-bc": [sc.FluxBC("isentropic")],
 
-    "well-balancing": [#sc.WellBalancing("constant"),
+    "well-balancing": [sc.WellBalancing("constant"),
                        sc.WellBalancing("isentropic")],
 
     "io": [io],
 
     "time": [time],
 }
-
-# dependent_choices = {
-#     "reconstruction": [
-#         # sc.Reconstruction("CWENO-AO", [1]),
-#         sc.Reconstruction("CWENO-AO", [2, 2, 2, 2])
-#         #sc.Reconstruction("CWENO-AO", [3, 2, 2, 2])
-#     ],
-#
-#     "ode": [
-#         # sc.ODE("ForwardEuler"),
-#         sc.ODE("SSP3")
-#         # sc.ODE("SSP3")
-#     ],
-#
-#     "quadrature": [
-#         # sc.Quadrature(1),
-#         sc.Quadrature(1)
-#         # sc.Quadrature(3)
-#     ]
-# }
 
 dependent_choices = {
     "reconstruction": [
@@ -170,40 +150,40 @@ def make_runs(amplitude):
 all_runs = [make_runs(amp) for amp in amplitudes]
 
 def post_process(coarse_runs, reference_run):
-    # results, columns = load_results(coarse_runs, reference_run)
-    # labels = TableLabels()
+    results, columns = load_results(coarse_runs, reference_run)
+    labels = TableLabels()
+
+    filename = coarse_runs[0]["experiment"].short_id()
+    write_convergence_table(results, columns, labels, filename)
+    plot_visual_convergence(results, columns, labels, filename)
+
+    # coarse_run = coarse_runs[0]
+    # coarse_dir = folder_name(coarse_run)
+    # coarse_grid = load_grid(coarse_dir)
     #
-    # filename = coarse_runs[0]["experiment"].short_id()
-    # write_convergence_table(results, columns, labels, filename)
-    # plot_visual_convergence(results, columns, labels, filename)
-
-    coarse_run = coarse_runs[0]
-    coarse_dir = folder_name(coarse_run)
-    coarse_grid = load_grid(coarse_dir)
-
-
-    data_files = find_data_files(coarse_dir)
-
-    for data_file in data_files[::10]:
-        u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
-
-
-        rho = u_coarse.cvars["rho"]
-        vx = u_coarse.cvars["mv1"] / rho
-        vy = u_coarse.cvars["mv2"] / rho
-
-        trip = TriPlot()
-        trip.color_plot(coarse_grid, rho)
-        trip.quiver(coarse_grid, vx, vy)
-
-        plt.show()
+    #
+    # data_files = find_data_files(coarse_dir)
+    #
+    # for data_file in data_files[::10]:
+    #     u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+    #
+    #
+    #     rho = u_coarse.cvars["rho"]
+    #     vx = u_coarse.cvars["mv1"] / rho
+    #     vy = u_coarse.cvars["mv2"] / rho
+    #
+    #     trip = TriPlot()
+    #     trip.color_plot(coarse_grid, rho)
+    #     trip.quiver(coarse_grid, vx, vy)
+    #
+    #     plt.show()
 
 class TableLabels:
     def __call__(self, col):
         return " ".join(str(v) for v in col.values())
 
 def generate_grids():
-    generate_circular_grids(grid_name_geo(l), radius, lc_rel, mesh_levels)
+    generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
 
 def main():
     parser = default_cli_parser("'gaussian_bump' numerical experiment.")
@@ -214,6 +194,7 @@ def main():
 
     if args.run:
         build_zisa()
+        queue_args = None
 
         for c, r in all_runs:
             launch_all(c, force=args.force, queue_args=queue_args)

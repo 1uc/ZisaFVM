@@ -10,9 +10,9 @@ def generate_circular_grids(filename, radius, lc_rel, levels):
         geo = template.replace("RADIUS", str(radius))
         geo = geo.replace("LC_REL", str(lc_rel[l]))
 
-        write_txt(filename.format(l), geo)
+        write_txt(filename(l), geo)
 
-    generate_grids(([filename.format(l) for l in levels]))
+    generate_grids(([filename(l) for l in levels]))
 
 
 def run_gmesh(geo):

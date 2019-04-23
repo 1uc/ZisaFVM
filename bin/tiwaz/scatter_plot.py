@@ -42,4 +42,4 @@ def plot_visual_convergence(data, solvers, labels, filename):
 
         label = labels(solver)
         plot.finalize(label)
-        plot.save(filename + "_" + label + ".png")
+        plot.save(filename + "_" + label.replace(" ", "_") + ".png")
