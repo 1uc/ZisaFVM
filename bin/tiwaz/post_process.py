@@ -23,12 +23,15 @@ class Snapshot:
                  steady_state_filename=None):
 
         cvar_keys = ["rho", "mv1", "mv2", "E"]
-        xvar_keys = ["p", "cs", "h", "s"]
+        xvar_keys = ["p", "cs", "h", "s", "E_th", "E_p", "p_p", "p_th"]
         self.cvars = dict()
         self.xvars = dict()
         self.dvars = dict()
 
         with h5py.File(data_filename, "r") as h5:
+            if "time" in h5:
+                self.time = h5["time"][()]
+
             for key in cvar_keys:
                 self.cvars[key] = np.array(h5[key])
 
@@ -36,10 +39,12 @@ class Snapshot:
                 if key in h5:
                     self.xvars[key] = np.array(h5[key])
 
-            # self.gravity = {
-            #     "radii": np.array(h5["model/gravity/radii"]),
-            #     "phi": np.array(h5["model/gravity/phi"])
-            # }
+            self.gravity = dict()
+            if "model/gravity/radii" in h5:
+                self.gravity["radii"] = np.array(h5["model/gravity/radii"])
+
+            if "model/gravity/phi" in h5:
+                self.gravity["phi"] = np.array(h5["model/gravity/phi"])
 
         if delta_filename:
             with h5py.File(delta_filename, "r") as h5:
@@ -51,9 +56,8 @@ class Snapshot:
                 for key in cvar_keys:
                     self.dvars[key] = self.cvars[key] - np.array(h5[key])
 
-
 def load_grid(directory):
-    return Grid(os.path.join(directory, "grid.h5"))
+    return Grid(find_grid(directory))
 
 def load_reference(reference_dir, grid_name):
     stem, _ = os.path.splitext(os.path.basename(grid_name))
@@ -65,6 +69,8 @@ def load_reference(reference_dir, grid_name):
 def load_data(data_name, steady_state_filename=None):
     return Snapshot(data_name, steady_state_filename=steady_state_filename)
 
+def find_grid(directory):
+    return os.path.join(directory, "grid.h5")
 
 def find_data_files(directory):
     return sorted(glob.glob(os.path.join(directory, "*_data-*.h5")))

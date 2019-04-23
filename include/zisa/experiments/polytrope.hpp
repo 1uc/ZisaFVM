@@ -22,9 +22,28 @@ public:
   using super::super;
 
 protected:
-  virtual std::shared_ptr<AllVariables> choose_initial_conditions() override;
-  std::shared_ptr<AllVariables> choose_initial_conditions(double amp,
-                                                          double width);
+  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+  std::shared_ptr<AllVariables> compute_initial_conditions(double amp,
+                                                           double width);
+};
+
+class JankaBump : public EulerExperiment<IdealGasEOS, PolytropeGravityRadial> {
+private:
+  using super = EulerExperiment<IdealGasEOS, PolytropeGravityRadial>;
+
+protected:
+  using eos_t = typename super::eos_t;
+  using gravity_t = typename super::gravity_t;
+  using euler_t = typename super::euler_t;
+  using cvars_t = typename super::cvars_t;
+
+public:
+  using super::super;
+
+protected:
+  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+  std::shared_ptr<AllVariables> compute_initial_conditions(double amp,
+                                                           double width);
 };
 
 } // namespace zisa

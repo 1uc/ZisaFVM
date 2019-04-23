@@ -44,6 +44,7 @@ public:
 
   /// Generate numbers starting from `k`.
   void advance_to(int k);
+  void advance_to(const std::string &filename);
 
   /// Returns the count/generation of a datafile.
   /** Returns -1 if it's not a datafile.

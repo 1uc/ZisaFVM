@@ -19,24 +19,29 @@ void NumericalExperiment::run() { do_run(); }
 void NumericalExperiment::post_process() { do_post_process(); }
 
 std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
-  auto grid = load_gmsh(params["grid"]["file"]);
-  return grid;
+  return load_grid(params["grid"]["file"]);
 }
 
 std::shared_ptr<FileNameGenerator>
 NumericalExperiment::choose_file_name_generator() {
-  return make_file_name_generator(params["io"]["filename"]);
+  auto fng = make_file_name_generator(params["io"]["filename"]);
+
+  if (is_restart()) {
+    fng->advance_to(std::string(params["restart"]["file"]));
+  }
+
+  return fng;
 }
 
 void NumericalExperiment::write_grid() const {
-
-// extra scope so writer goes out of scope and closes.
-auto writer = HDF5SerialWriter("grid.h5");
-save(writer, *grid);
+  auto writer = HDF5SerialWriter("grid.h5");
+  save(writer, *grid);
 }
 
 void NumericalExperiment::do_run() {
-  write_grid();
+  if (!is_restart()) {
+    write_grid();
+  }
 
   std::cout << " --- Grid ---------- \n";
   std::cout << grid->str() << "\n";
@@ -49,6 +54,14 @@ void NumericalExperiment::do_run() {
   do_post_run(u1);
 }
 
+std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {
+  if (is_restart()) {
+    return load_initial_conditions();
+  } else {
+    return compute_initial_conditions();
+  }
+}
+
 std::shared_ptr<SimulationClock>
 NumericalExperiment::choose_simulation_clock() {
 
@@ -59,19 +72,34 @@ NumericalExperiment::choose_simulation_clock() {
   auto plotting_steps
       = make_plotting_steps(plotting_params, time_keeper_params);
 
-  return std::make_shared<SerialSimulationClock>(time_keeper, plotting_steps);
+  auto simulation_clock
+      = std::make_shared<SerialSimulationClock>(time_keeper, plotting_steps);
+
+  if (is_restart()) {
+    std::string datafile = params["restart"]["file"];
+
+    auto reader = HDF5SerialReader(datafile);
+    auto t = reader.read_scalar<double>("time");
+    auto k = reader.read_scalar<int_t>("n_steps");
+
+    simulation_clock->advance_to(t, k);
+  }
+
+  return simulation_clock;
 }
 
 std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
   auto simulation_clock = choose_simulation_clock();
   auto time_integration = choose_time_integration();
   auto instantaneous_physics = choose_instantaneous_physics();
+  auto step_rejection = choose_step_rejection();
   auto sanity_check = choose_sanity_check();
   auto visualization = choose_visualization();
   auto cfl_condition = choose_cfl_condition();
 
   return std::make_shared<TimeLoop>(time_integration,
                                     instantaneous_physics,
+                                    step_rejection,
                                     simulation_clock,
                                     cfl_condition,
                                     sanity_check,
@@ -137,6 +165,10 @@ std::shared_ptr<RateOfChange> NumericalExperiment::aggregate_rates_of_change(
 std::shared_ptr<InstantaneousPhysics>
 NumericalExperiment::choose_instantaneous_physics() {
   return std::make_shared<NoInstantaneousPhysics>();
+}
+
+std::shared_ptr<StepRejection> NumericalExperiment::choose_step_rejection() {
+  return std::make_shared<RejectNothing>();
 }
 
 } // namespace zisa

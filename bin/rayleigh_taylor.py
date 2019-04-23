@@ -187,10 +187,6 @@ def main():
         for c, r in all_runs:
             post_process(c, r)
 
-
-
-
-
     if args.copy_to_paper:
         dir = "${HOME}/git/papers/LucGrosheintz/papers/unstructured_well_balancing/img/rayleigh_taylor"
         dir = os.path.expandvars(dir)

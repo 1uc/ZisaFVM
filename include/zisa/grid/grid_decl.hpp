@@ -38,7 +38,10 @@ struct Grid {
 
   array<array<double, 1>, 1> normalized_moments;
 
+  Grid() = default;
   Grid(array<XYZ, 1> vertices, array<int_t, 2> vertex_indices);
+
+  [[nodiscard]] static Grid load(HDF5Reader &reader);
 
   const XYZ &vertex(int_t i, int_t k) const;
   Triangle triangle(int_t i) const;
@@ -61,6 +64,7 @@ std::optional<int_t> locate(const Grid &grid, const XYZ &x);
 double largest_circum_radius(const Grid &grid);
 double smallest_inradius(const Grid &grid);
 
+std::shared_ptr<Grid> load_grid(const std::string &filename);
 std::shared_ptr<Grid> load_gmsh(const std::string &filename);
 
 /// Generate all moment for a 2D poly of degree 'deg'.

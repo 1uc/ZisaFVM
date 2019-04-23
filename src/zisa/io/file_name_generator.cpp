@@ -20,6 +20,12 @@ std::string FileNameGenerator::next_name() {
 }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
+void FileNameGenerator::advance_to(const std::string &filename) {
+  int k = -1;
+  sscanf(filename.c_str(), pattern_.c_str(), &k);
+
+  advance_to(k + 1);
+}
 
 int FileNameGenerator::generation(const std::filesystem::path &path) {
   int gen = -1;

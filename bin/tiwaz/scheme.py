@@ -8,8 +8,11 @@ class Scheme:
     def __init__(self, subsections):
         self.subsections = subsections
 
-    def __getitem__(self, item):
-        return self.subsections[item]
+    def __getitem__(self, key):
+        return self.subsections[key]
+
+    def __setitem__(self, key, value):
+        self.subsections[key] = value
 
     def __contains__(self, item):
         return item in self.subsections
@@ -206,12 +209,11 @@ class IO(Subsection):
             "delay": "1s"
         }
 
-
 class Grid(Subsection):
     def __init__(self, grid_name, level):
         super().__init__({
             "file": grid_name,
-             "level": level
+            "level": level
         })
 
     def short_id(self):

@@ -32,10 +32,8 @@ class LSF(object):
         return "#BSUB -J {}".format(job_name)
 
     def wall_clock_line(self):
-        wall_clock = hhmm(queue_args["wall-clock"])
+        wall_clock = hhmm(self.queue_args["wall-clock"])
         return "#BSUB -W {}".format(wall_clock)
-
-
 
 
     def wrap(self, launch_param, cmd):

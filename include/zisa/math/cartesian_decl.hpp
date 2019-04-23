@@ -270,6 +270,7 @@ XYZ rotate_left(const CartesianExpr<E, double> &e_) {
 template <>
 struct array_save_traits<XYZ> {
   using dispatch_tag = split_array_dispatch_tag;
+  using scalar_type = double;
 };
 
 } // namespace zisa

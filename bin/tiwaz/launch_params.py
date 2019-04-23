@@ -2,6 +2,7 @@ import itertools
 import os
 import subprocess
 import glob
+import multiprocessing
 
 from . site_details import get_host
 from . utils import merge_dict
@@ -116,12 +117,13 @@ def build_target(target):
         # subprocess.check_call(cmd, shell=True)
 
     elif host == "euler":
-        raise Exception("Implement proper build instruction for 'daint'.")
+        raise Exception("Implement proper build instruction for 'euler'.")
         # cmd = "bash -l -c 'source ~/bin/build_env.sh; make -j12'"
         # subprocess.check_call(cmd, shell=True)
 
     else:
-        cmd = "cd build-release; make -j12 {:s}".format(target)
+        nproc = multiprocessing.cpu_count()
+        cmd = "cd build-release; make -j{} {:s}".format(nproc, target)
         subprocess.check_call(cmd, shell=True)
 
 
@@ -131,33 +133,3 @@ def build_zisa():
 
 def build_all():
     build_target("all")
-
-
-def find_grid(model):
-    folder = folder_name(model)
-    return folder + "/grid.h5"
-
-
-def glob_datafiles(model):
-    folder = folder_name(model)
-    files = glob.glob(folder + "/" + model["experiment"] + "_data-*.h5")
-
-    if not files:
-        raise Exception("No files found. [{:s}]".format(folder))
-
-    return files
-
-
-def find_all_datafiles(model):
-    return sorted(glob_datafiles(model))
-
-
-def find_last_datafile(model):
-    return max(glob_datafiles(model))
-
-
-def find_background(model):
-    folder = folder_name(model)
-    return folder + "/" + model["experiment"] + "_steady-state.h5"
-
-

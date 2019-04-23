@@ -39,8 +39,9 @@ JankaEOS make_default_janka_eos() {
 }
 
 void save(HDF5Writer &writer, const JankaEOS &eos) {
-  writer.write_string("JankaEOS", "eos");
+  writer.open_group("eos");
   save(writer, eos.params());
+  writer.close_group();
 }
 
 std::string JankaEOS::str() const { return params().str(); }

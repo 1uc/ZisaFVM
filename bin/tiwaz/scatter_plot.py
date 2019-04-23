@@ -28,18 +28,26 @@ class ScatterPlot:
         plt.figure(self.fig.number)
         plt.title(label)
 
+    def annotate_time(self, time):
+        plt.figure(self.fig.number)
+        ax = plt.gca()
+
+        text = "t = {:.3e}".format(time)
+        ax.text(0.05, 0.05, text, transform=ax.transAxes)
+
 
 def plot_visual_convergence(data, solvers, labels, filename):
     for solver in solvers:
         sdata = extract_solver_data(solver, data)
 
-        plot = ScatterPlot()
+        for var in ["rho", "E"]:
+            plot = ScatterPlot()
 
-        for d in sdata:
-            plot(d["grid"], d["u_approx"].dvars["rho"])
+            for d in sdata:
+                plot(d["grid"], d["u_approx"].dvars[var])
 
-        plot.reference(d["fine_grid"], d["u_exact"].dvars["rho"])
+            plot.reference(d["fine_grid"], d["u_exact"].dvars[var])
 
-        label = labels(solver)
-        plot.finalize(label)
-        plot.save(filename + "_" + label.replace(" ", "_") + ".png")
+            label = labels(solver)
+            plot.finalize(label)
+            plot.save(filename + "_" + label.replace(" ", "_") + "_" + var + ".png")

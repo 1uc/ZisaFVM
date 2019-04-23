@@ -10,6 +10,7 @@ namespace zisa {
 template <class T>
 class NonUniformLinearInterpolation {
 public:
+  NonUniformLinearInterpolation() = default;
   NonUniformLinearInterpolation(array<double, 1> points, array<T, 1> values)
       : points(std::move(points)), values(std::move(values)) {}
 

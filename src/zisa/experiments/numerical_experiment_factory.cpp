@@ -59,6 +59,7 @@ static NumericalExperimentFactory make_factory() {
 
   factory.register_simple<ShockBubble>("shock_bubble");
   factory.register_simple<Polytrope>("gaussian_bump");
+  factory.register_simple<JankaBump>("janka_bump");
   factory.register_simple<RayleighTaylor>("rayleigh_taylor");
   factory.register_simple<Janka>("janka");
 

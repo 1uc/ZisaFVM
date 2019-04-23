@@ -9,6 +9,16 @@ def default_cli_parser(parser_help):
                         action='store_true',
                         help="Run the required simulations.")
 
+    parser.add_argument('--restart',
+                        action='store_true',
+                        help="Restart the simulations in 'cwd'.")
+
+    parser.add_argument('--restart-from',
+                        nargs=1,
+                        type=int,
+                        default=-1,
+                        help="Restart the snapshot with the given index.")
+
     parser.add_argument('-f', '--force',
                         action='store_true',
                         help="Overwrite directories if need be.")

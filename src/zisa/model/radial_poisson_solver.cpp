@@ -47,7 +47,7 @@ double RadialPoissonSolver::layer_mass(const Rho &rho,
   double rho_avg = 0.0;
   double volume_shell = 0.0;
 
-  //#pragma omp parallel for reduction(+ : rho_avg, volume_shell)
+#pragma omp parallel for reduction(+ : rho_avg, volume_shell)
   for (int_t i_loc = 0; i_loc < n_cells_per_layer; ++i_loc) {
     int_t i = cell_indices[layer][i_loc];
 
@@ -132,15 +132,23 @@ make_radial_poisson_solver(const std::shared_ptr<Grid> &grid,
   }
 
   auto radii = make_radial_bins(*grid, r_outer, 2.0);
+  auto phi = array<double, 1>(radii.shape());
+  auto gravity = RadialGravity(std::move(radii), std::move(phi));
+
+  auto ps = make_radial_poisson_solver(
+      gravity.radius_array(), grid, gravitational_constant);
+  return {gravity, ps};
+}
+
+std::shared_ptr<RadialPoissonSolver>
+make_radial_poisson_solver(const array<double, 1> &radii,
+                           const std::shared_ptr<Grid> &grid,
+                           double gravitational_constant) {
+
   auto cell_indices = make_cell_indices_bins(*grid, radii);
 
-  auto ps = std::make_shared<RadialPoissonSolver>(
+  return std::make_shared<RadialPoissonSolver>(
       grid, std::move(cell_indices), gravitational_constant);
-
-  auto phi = array<double, 1>(radii.shape());
-  auto g = RadialGravity(std::move(radii), std::move(phi));
-
-  return {g, ps};
 }
 
 double CrudeRadialPoissonSolver::layer_mass(int_t layer) const {

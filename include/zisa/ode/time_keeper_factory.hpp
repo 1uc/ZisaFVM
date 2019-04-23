@@ -13,12 +13,14 @@
 namespace zisa {
 
 struct PlottingStepsParameters {
+  int_t k0;
+  double t0;
   double fps;
   int_t steps_per_frame;
   int_t n_snapshots;
 
 public:
-  PlottingStepsParameters(const InputParameters &params);
+  explicit PlottingStepsParameters(const InputParameters &params);
 };
 
 struct TimeKeeperParameters {
@@ -27,7 +29,7 @@ struct TimeKeeperParameters {
   int_t total_steps;
 
 public:
-  TimeKeeperParameters(const InputParameters &params);
+  explicit TimeKeeperParameters(const InputParameters &params);
 };
 
 std::shared_ptr<PlottingSteps>

@@ -5,13 +5,13 @@
 
 namespace zisa {
 
-std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions() {
+std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
   double amp = params["experiment"]["initial_conditions"]["amplitude"];
   double width = params["experiment"]["initial_conditions"]["width"];
   int n_bumps = params["experiment"]["initial_conditions"]["n_bumps"];
 
-  auto all_variables = choose_initial_conditions(amp, width, n_bumps);
-  auto steady_state = choose_initial_conditions(0.0, width, n_bumps);
+  auto all_variables = compute_initial_conditions(amp, width, n_bumps);
+  auto steady_state = compute_initial_conditions(0.0, width, n_bumps);
 
   auto writer = HDF5SerialWriter(file_name_generator->steady_state_filename);
   save(writer, *steady_state, all_labels<euler_var_t>());
@@ -19,7 +19,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions() {
   return all_variables;
 }
 
-std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions(
+std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
     double amp, double width, int n_bumps) {
 
   auto dims = choose_all_variable_dims();

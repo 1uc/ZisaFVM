@@ -23,7 +23,7 @@ EulerGlobalReconstruction<Equilibrium, RC>::EulerGlobalReconstruction(
 
   for (int_t i = 0; i < grid->n_cells; ++i) {
     rc[i] = LocalReconstruction<Equilibrium, RC>(
-        grid, {eq}, {grid, i, params}, grid->triangle(i));
+        grid, LocalEquilibrium(eq), {grid, i, params}, grid->triangle(i));
 
     max_stencil_size
         = zisa::max(rc[i].combined_stencil_size(), max_stencil_size);

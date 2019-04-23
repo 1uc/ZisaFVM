@@ -45,6 +45,18 @@ public:
   template <class G, class A>
   friend void save(HDF5Writer &writer, const Gravity<G, A> &g);
 
+  template <class RetGravity>
+  [[nodiscard]] static RetGravity load_impl(HDF5Reader &reader) {
+    reader.open_group("gravity");
+    auto g = GravityBase::load(reader);
+    reader.switch_group("alignment");
+    auto a = Alignment::load(reader);
+    reader.close_group();
+
+    return RetGravity(
+        Gravity<GravityBase, Alignment>(std::move(g), std::move(a)));
+  }
+
 protected:
   GravityBase gravity;
   Alignment alignment;
@@ -61,6 +73,9 @@ void save(HDF5Writer &writer, const Gravity<GravityBase, Alignment> &gravity) {
 
 class RadialAlignment {
 public:
+  RadialAlignment() = default;
+  explicit RadialAlignment(double epsilon);
+
   ANY_DEVICE_INLINE double coordinate(const XYZ &xy) const {
     return zisa::norm(xy);
   }
@@ -71,6 +86,7 @@ public:
   }
 
   friend void save(HDF5Writer &writer, const RadialAlignment &alignment);
+  [[nodiscard]] static RadialAlignment load(HDF5Reader &reader);
 
 private:
   double epsilon = 1e-50;
@@ -91,6 +107,7 @@ public:
   }
 
   friend void save(HDF5Writer &writer, const AxialAlignment &alignment);
+  [[nodiscard]] static AxialAlignment load(HDF5Reader &reader);
 
 private:
   XYZ axis;
@@ -101,12 +118,14 @@ void save(HDF5Writer &writer, const AxialAlignment &alignment);
 class ConstantGravity {
 public:
   ANY_DEVICE_INLINE ConstantGravity() = default;
-  ANY_DEVICE_INLINE ConstantGravity(double gravity) : gravity(gravity) {}
+  explicit ANY_DEVICE_INLINE ConstantGravity(double gravity)
+      : gravity(gravity) {}
 
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
   friend void save(HDF5Writer &writer, const ConstantGravity &gravity);
+  [[nodiscard]] static ConstantGravity load(HDF5Reader &reader);
 
 private:
   double gravity;
@@ -120,7 +139,8 @@ private:
 
 public:
   ConstantGravityRadial() = default;
-  ConstantGravityRadial(double gravity) : super(gravity, RadialAlignment()){};
+  explicit ConstantGravityRadial(double gravity)
+      : super(ConstantGravity(gravity), RadialAlignment()){};
 };
 
 class ConstantGravityAxial : public Gravity<ConstantGravity, AxialAlignment> {
@@ -134,12 +154,14 @@ public:
 class PointMassGravity {
 public:
   PointMassGravity() = default;
+  PointMassGravity(double GM, double X);
   PointMassGravity(double G, double M, double X);
 
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
   friend void save(HDF5Writer &writer, const PointMassGravity &alignment);
+  [[nodiscard]] static PointMassGravity load(HDF5Reader &reader);
 
 private:
   double GM;
@@ -191,7 +213,9 @@ public:
 class PolytropeGravity {
 public:
   PolytropeGravity() = default;
-  inline PolytropeGravity(double rhoC, double K, double G);
+
+  PolytropeGravity(double rhoC, double K, double G, double eps);
+  PolytropeGravity(double rhoC, double K, double G);
 
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
@@ -200,6 +224,7 @@ public:
   ANY_DEVICE_INLINE double alpha(double chi) const;
 
   friend void save(HDF5Writer &writer, const PolytropeGravity &gravity);
+  [[nodiscard]] static PolytropeGravity load(HDF5Reader &reader);
 
 private:
   double rhoC = 1.0;
@@ -267,17 +292,17 @@ public:
   inline double phi(double r) const;
   inline double dphi_dx(double r) const;
 
-  array<double, 1> &radius_array() { return interpolate->points; }
-  const array<double, 1> &radius_array() const { return interpolate->points; }
+  array<double, 1> &radius_array() { return interpolate.points; }
+  const array<double, 1> &radius_array() const { return interpolate.points; }
 
-  array<double, 1> &phi_array() { return interpolate->values; }
-  const array<double, 1> &phi_array() const { return interpolate->values; }
+  array<double, 1> &phi_array() { return interpolate.values; }
+  const array<double, 1> &phi_array() const { return interpolate.values; }
 
-private:
   friend void save(HDF5Writer &writer, const SphericalGravity &gravity);
+  [[nodiscard]] static SphericalGravity load(HDF5Reader &reader);
 
 private:
-  std::shared_ptr<NonUniformLinearInterpolation<double>> interpolate;
+  NonUniformLinearInterpolation<double> interpolate;
 };
 
 void save(HDF5Writer &writer, const SphericalGravity &gravity);
@@ -288,6 +313,9 @@ private:
 
 public:
   RadialGravity() = default;
+
+  explicit RadialGravity(super other) : super(std::move(other)) {}
+
   explicit RadialGravity(array<double, 1> radii)
       : super(SphericalGravity(std::move(radii)), RadialAlignment{}) {}
 
@@ -301,6 +329,10 @@ public:
 
   array<double, 1> &phi_array() { return gravity.phi_array(); }
   const array<double, 1> &phi_array() const { return gravity.phi_array(); }
+
+  [[nodiscard]] static RadialGravity load(HDF5Reader &reader) {
+    return super::load_impl<RadialGravity>(reader);
+  }
 };
 
 class NoGravity {

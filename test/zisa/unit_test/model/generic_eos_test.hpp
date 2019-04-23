@@ -57,17 +57,19 @@ void check_eos(const EOS &eos, const From &exact, double rtol = 1e-10) {
   To to = zisa::convert<To>(eos, exact);
   From approx = zisa::convert<From>(eos, to);
 
-  auto decl = string_format("%s convert(%s, %s)",
+  auto decl = string_format("%s -> %s -> %s",
+                            type_name<From>().c_str(),
                             type_name<To>().c_str(),
-                            type_name<EOS>().c_str(),
                             type_name<From>().c_str());
 
-  auto values = string_format("%s -> %s -> %s",
+  auto values = string_format("%s -> %s -> %s  err = %s",
                               zisa::to_string(exact).c_str(),
                               zisa::to_string(to).c_str(),
-                              zisa::to_string(approx).c_str());
+                              zisa::to_string(approx).c_str(),
+                              zisa::to_string(From(exact - approx)).c_str());
 
-  INFO(string_format("%s \n%s", decl.c_str(), values.c_str()));
+  INFO(string_format(
+      "%s\n%s\n%s", type_name<EOS>().c_str(), decl.c_str(), values.c_str()));
   REQUIRE(zisa::almost_equal(approx, exact, rtol * zisa::norm(exact)));
 }
 
@@ -75,21 +77,23 @@ template <class EOS>
 void generic_eos_tests(
     const EOS &eos, double rho, double p, double E, double K, double h) {
 
+  double rtol = 1e-8;
+
   check_eos<zisa::RhoP>(eos, zisa::RhoE{rho, E});
   check_eos<zisa::RhoP>(eos, zisa::RhoEntropy{rho, K});
-  check_eos<zisa::RhoP>(eos, zisa::EnthalpyEntropy{h, K}, 1e-8);
+  check_eos<zisa::RhoP>(eos, zisa::EnthalpyEntropy{h, K}, rtol);
 
   check_eos<zisa::RhoE>(eos, zisa::RhoP{rho, p});
   check_eos<zisa::RhoE>(eos, zisa::RhoEntropy{rho, K});
-  check_eos<zisa::RhoE>(eos, zisa::EnthalpyEntropy{h, K});
+  check_eos<zisa::RhoE>(eos, zisa::EnthalpyEntropy{h, K}, rtol);
 
   check_eos<zisa::RhoEntropy>(eos, zisa::RhoP{rho, p});
   check_eos<zisa::RhoEntropy>(eos, zisa::RhoE{rho, E});
-  check_eos<zisa::RhoEntropy>(eos, zisa::EnthalpyEntropy{h, K}, 1e-8);
+  check_eos<zisa::RhoEntropy>(eos, zisa::EnthalpyEntropy{h, K}, rtol);
 
-  check_eos<zisa::EnthalpyEntropy>(eos, zisa::RhoP{rho, p}, 1e-8);
-  check_eos<zisa::EnthalpyEntropy>(eos, zisa::RhoE{rho, E}, 1e-8);
-  check_eos<zisa::EnthalpyEntropy>(eos, zisa::RhoEntropy{rho, K}, 1e-8);
+  check_eos<zisa::EnthalpyEntropy>(eos, zisa::RhoP{rho, p}, rtol);
+  check_eos<zisa::EnthalpyEntropy>(eos, zisa::RhoE{rho, E}, rtol);
+  check_eos<zisa::EnthalpyEntropy>(eos, zisa::RhoEntropy{rho, K}, rtol);
 }
 
 #endif // ZISA_GENERIC_EOS_TEST_HPP

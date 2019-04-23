@@ -8,11 +8,12 @@
 namespace zisa {
 
 template <class Equilibrium>
-LocalEquilibrium<Equilibrium>::LocalEquilibrium(const Equilibrium &equilibrium)
+LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
+    const Equilibrium &equilibrium)
     : equilibrium(equilibrium) {}
 
 template <class Equilibrium>
-LocalEquilibrium<Equilibrium>::LocalEquilibrium(
+LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
     const Equilibrium &equilibrium,
     const EnthalpyEntropy &theta_ref,
     const XYZ &x_ref)
@@ -22,8 +23,8 @@ LocalEquilibrium<Equilibrium>::LocalEquilibrium(
       equilibrium(equilibrium) {}
 
 template <class Equilibrium>
-void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar,
-                                          const Triangle &tri_ref) {
+void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
+                                              const Triangle &tri_ref) {
 
   x_ref = barycenter(tri_ref);
 
@@ -59,18 +60,27 @@ void LocalEquilibrium<Equilibrium>::solve(const RhoE &rhoE_bar,
   auto guess = eos.enthalpy_entropy(rhoE_bar);
 
   auto atol = EnthalpyEntropy(1e-10 * guess);
-  std::tie(theta, found_equilibrium) = quasi_newton(f, inv_df, guess, atol);
-};
 
-template <class Equilibrium>
-RhoE LocalEquilibrium<Equilibrium>::extrapolate(const XYZ &xy) const {
-  return equilibrium.extrapolate(theta, x_ref, xy);
+  std::tie(theta, found_equilibrium) = quasi_newton(f, inv_df, guess, atol);
 }
 
 template <class Equilibrium>
-RhoE LocalEquilibrium<Equilibrium>::extrapolate(const Triangle &tri) const {
-  auto deg = equilibrium.quad_deg;
-  return average([this](const XYZ &xy) { return extrapolate(xy); }, tri, deg);
+RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const XYZ &xy) const {
+  if (found_equilibrium) {
+    return equilibrium.extrapolate(theta, x_ref, xy);
+  } else {
+    return RhoE(RhoE::zeros());
+  }
+}
+
+template <class Equilibrium>
+RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const Triangle &tri) const {
+  if (found_equilibrium) {
+    auto deg = equilibrium.quad_deg;
+    return average([this](const XYZ &xy) { return extrapolate(xy); }, tri, deg);
+  } else {
+    return RhoE(RhoE::zeros());
+  }
 }
 
 } // namespace zisa

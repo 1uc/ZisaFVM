@@ -25,9 +25,6 @@ ANY_DEVICE_INLINE double PointMassGravity::dphi_dx(double chi) const {
 }
 
 // ---  Polytrope  ---------------------------------------------------
-inline PolytropeGravity::PolytropeGravity(double rhoC, double K, double G)
-    : rhoC(rhoC), K(K), G(G) {}
-
 ANY_DEVICE_INLINE double PolytropeGravity::phi(double chi) const {
   double alpha = PolytropeGravity::alpha(chi);
 
@@ -91,12 +88,10 @@ PolytropeGravityWithJumpRadial::alpha(double chi) const {
 }
 
 // ---  SphericalGravity  -----------------------------------------------
-inline double SphericalGravity::phi(double r) const {
-  return (*interpolate)(r);
-}
+inline double SphericalGravity::phi(double r) const { return interpolate(r); }
 
 inline double SphericalGravity::dphi_dx(double r) const {
-  return interpolate->derivative(r);
+  return interpolate.derivative(r);
 }
 
 } // namespace zisa

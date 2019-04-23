@@ -66,6 +66,15 @@ void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler) {
 }
 
 template <class EOS, class Gravity>
+Euler<EOS, Gravity> Euler<EOS, Gravity>::load(HDF5Reader &reader) {
+  reader.open_group("model");
+  auto euler = Euler<EOS, Gravity>{EOS::load(reader), Gravity::load(reader)};
+  reader.close_group();
+
+  return euler;
+}
+
+template <class EOS, class Gravity>
 std::string Euler<EOS, Gravity>::str() const {
   std::stringstream ss;
 

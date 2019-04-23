@@ -6,6 +6,7 @@
 #include <utility>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/cell_averages.hpp>
+#include <zisa/math/linear_spacing.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/model/gravity.hpp>

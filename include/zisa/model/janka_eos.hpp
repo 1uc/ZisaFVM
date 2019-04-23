@@ -51,7 +51,7 @@ public:
 
   JankaEOS(const JankaEOSParams &params)
       : JankaEOS(
-            params.rho_bounce, params.gamma, params.gamma_thermal, params.E1) {}
+          params.rho_bounce, params.gamma, params.gamma_thermal, params.E1) {}
 
   JankaEOSParams params() const {
     return {rho_bounce, gamma, gamma_thermal, E[0]};
@@ -86,7 +86,8 @@ public:
     const auto &[h, K] = theta;
 
     double K_p = this->K[REGIME];
-    double K_th = K - K_p;
+    double K_th = zisa::max(0.0, K - K_p);
+    //    double K_th = K - K_p;
 
     auto f = [this, h = h, K_th](double rho) {
       double h_p = enthalpy_fixed<REGIME>(rho);
@@ -95,18 +96,28 @@ public:
       return h - (h_p + h_th);
     };
 
-    double rho_a = ideal_gas_density(gamma[REGIME], theta);
-    double rho_b = 2.0 * rho_a; // fixme this.
-
     double inf = std::numeric_limits<double>::infinity();
     auto hard_bounds = (REGIME == 0 ? std::array<double, 2>{0.0, rho_bounce}
                                     : std::array<double, 2>{rho_bounce, inf});
+
+    double rho_a = ideal_gas_density(gamma[REGIME], theta);
+    rho_a = zisa::max(hard_bounds[0], rho_a);
+    double rho_b = zisa::min(hard_bounds[1], 2.0 * rho_a);
 
     double atol = 1e-10 * zisa::avg(rho_a, rho_b);
     int max_iter = 100;
 
     std::tie(rho_a, rho_b)
         = find_bracket(f, {rho_a, rho_b}, hard_bounds, max_iter);
+
+    {
+      auto fa = f(rho_a);
+      auto fb = f(rho_b);
+      if (fa * fb >= 0) {
+        PRINT("not a bracket!");
+        PRINT(theta);
+      }
+    }
 
     return brent(f, rho_a, rho_b, atol, max_iter);
   }
@@ -135,7 +146,8 @@ public:
 
   ANY_DEVICE_INLINE double thermal_pressure(const RhoP &rhoP) const {
     const auto &[rho, p] = rhoP;
-    return p - polytropic_pressure(rho);
+    return zisa::max(0.0, p - polytropic_pressure(rho));
+    //    return p - polytropic_pressure(rho);
   }
 
   ANY_DEVICE_INLINE double total_pressure(double rho, double E_th) const {
@@ -151,7 +163,8 @@ public:
   ANY_DEVICE_INLINE double pressure(RhoEntropy rhoK) const {
     const auto &[rho, K] = rhoK;
 
-    double K_thermal = K - polytropic_entropy(rho);
+    //    double K_thermal = K - polytropic_entropy(rho);
+    double K_thermal = zisa::max(0.0, K - polytropic_entropy(rho));
     double p_thermal = ideal_gas_pressure(K_thermal, rho, gamma_thermal);
 
     return polytropic_pressure(rho) + p_thermal;
@@ -170,12 +183,17 @@ public:
   split_pressure(const RhoP &rhoP) const {
     const auto &[rho, p] = rhoP;
     double p_polytrope = polytropic_pressure(rho);
-    return {p_polytrope, p - p_polytrope};
+    return {p_polytrope, zisa::max(0.0, p - p_polytrope)};
+    //    return {p_polytrope, p - p_polytrope};
   }
 
   // --- Energy ----------------------------------------------------------------
   ANY_DEVICE_INLINE double thermal_energy(double p_thermal) const {
     return p_thermal / (gamma_thermal - 1.0);
+  }
+
+  ANY_DEVICE_INLINE double thermal_energy(const RhoP rhoP) const {
+    return thermal_energy(thermal_pressure(rhoP));
   }
 
   ANY_DEVICE_INLINE double thermal_energy(RhoE rhoE) const {
@@ -258,7 +276,8 @@ public:
     double rho = rhoP.rho();
     double K = entropy(rhoP);
     double K_p = polytropic_entropy(rho);
-    double K_th = K - K_p;
+    //    double K_th = K - K_p;
+    double K_th = zisa::max(0.0, K - K_p);
 
     double gamma_p = polytropic_gamma(rho);
 
@@ -335,6 +354,20 @@ public:
 
   ANY_DEVICE_INLINE xvars_t xvars(const cvars_t &u) const {
     return {pressure(u), sound_speed(rhoE(u))};
+  }
+
+  [[nodiscard]] static JankaEOS load(HDF5Reader &reader) {
+    reader.open_group("eos");
+
+    double rho_bounce = reader.read_scalar<double>("rho_bounce");
+    std::array<double, 2> gamma = {reader.read_scalar<double>("gamma1"),
+                                   reader.read_scalar<double>("gamma2")};
+    double gamma_thermal = reader.read_scalar<double>("gamma_thermal");
+    double E1 = reader.read_scalar<double>("E1");
+
+    reader.close_group();
+
+    return JankaEOS(rho_bounce, gamma, gamma_thermal, E1);
   }
 
   std::string str() const;

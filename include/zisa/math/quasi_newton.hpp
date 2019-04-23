@@ -12,7 +12,6 @@ std::tuple<X, bool> quasi_newton(const F &f,
                                  const X &x0,
                                  const X &atol,
                                  int max_iter = 20) {
-
   X x = x0;
   auto fx = f(x0);
 
@@ -26,18 +25,16 @@ std::tuple<X, bool> quasi_newton(const F &f,
 
   int iter = 0;
   while (!is_converged() && iter < max_iter) {
-    auto inv_df_x = inv_df(x);
-    dx = inv_df_x(fx);
+    dx = inv_df(x)(fx);
     x -= dx;
+    fx = f(x);
 
     rate.push_back(dx);
 
     if (iter >= 4 && !rate.is_converging(X(0.0))) {
-      LOG_WARN("Is not converging.");
+      LOG_ERR("Is not converging.");
       return std::tuple<X, bool>{x0, false};
     }
-
-    fx = f(x);
     ++iter;
   }
 

@@ -20,9 +20,9 @@ public:
   using super::super;
 
 protected:
-  virtual std::shared_ptr<AllVariables> choose_initial_conditions() override;
+  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
   std::shared_ptr<AllVariables>
-  choose_initial_conditions(double amp, double width, int n_bumps);
+  compute_initial_conditions(double amp, double width, int n_bumps);
 };
 
 }

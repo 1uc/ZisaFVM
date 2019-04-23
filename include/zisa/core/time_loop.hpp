@@ -14,6 +14,7 @@
 #include <zisa/model/instantaneous_physics.hpp>
 #include <zisa/model/sanity_check.hpp>
 #include <zisa/ode/simulation_clock.hpp>
+#include <zisa/ode/step_rejection.hpp>
 #include <zisa/ode/time_integration.hpp>
 
 namespace zisa {
@@ -25,6 +26,7 @@ class TimeLoop {
 public:
   TimeLoop(const std::shared_ptr<TimeIntegration> &time_integration,
            const std::shared_ptr<InstantaneousPhysics> &instantaneous_physics,
+           const std::shared_ptr<StepRejection> &step_rejection,
            const std::shared_ptr<SimulationClock> &simulation_clock,
            const std::shared_ptr<CFLCondition> &cfl_condition,
            const std::shared_ptr<SanityCheck> &sanity_check,
@@ -41,6 +43,9 @@ public:
   virtual std::string str() const;
 
 protected:
+  virtual void reject_step(std::shared_ptr<AllVariables> &u0,
+                           std::shared_ptr<AllVariables> &u1);
+
   void write_output(const AllVariables &u0);
   void post_update(AllVariables &u0);
 
@@ -57,6 +62,7 @@ protected:
 protected:
   std::shared_ptr<TimeIntegration> time_integration;
   std::shared_ptr<InstantaneousPhysics> instantaneous_physics;
+  std::shared_ptr<StepRejection> step_rejection;
   std::shared_ptr<SimulationClock> simulation_clock;
   std::shared_ptr<Visualization> visualization;
   std::shared_ptr<CFLCondition> cfl_condition;

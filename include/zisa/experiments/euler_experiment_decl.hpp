@@ -27,9 +27,8 @@ public:
   explicit EulerExperiment(const InputParameters &params)
       : super(params), euler(make_euler<euler_t>(params)) {}
 
-  explicit EulerExperiment(const InputParameters &params,
-                           const std::shared_ptr<euler_t> &euler)
-      : super(params), euler(euler) {}
+  EulerExperiment(const InputParameters &params,
+                  const std::shared_ptr<euler_t> &euler);
 
 protected:
   virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) override;
@@ -42,6 +41,8 @@ protected:
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() override;
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() override;
   virtual AllVariablesDimensions choose_all_variable_dims() override;
+
+  virtual std::shared_ptr<AllVariables> load_initial_conditions() override;
 
 private:
   template <class Equilibrium, class RC>

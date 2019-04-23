@@ -1,8 +1,11 @@
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/model/gravity.hpp>
 #include <zisa/model/ideal_gas_eos.hpp>
 #include <zisa/model/isentropic_equilibrium.hpp>
+#include <zisa/model/janka_eos.hpp>
 #include <zisa/model/local_equilibrium.hpp>
+#include <zisa/model/polytrope.hpp>
 #include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("LocalEquilibrium", "[equilibrium]") {

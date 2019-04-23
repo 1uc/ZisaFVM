@@ -48,6 +48,8 @@ public:
 
   /// Self-documenting string.
   std::string str() const;
+
+  [[nodiscard]] static Euler<EOS, Gravity> load(HDF5Reader &reader);
 };
 
 /// Write the parameters of this model to disk.

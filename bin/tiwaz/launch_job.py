@@ -4,6 +4,7 @@ import glob
 from . site_details import *
 from . queue import make_queue
 from . launch_params import folder_name
+from . post_process import find_data_files, find_grid
 
 
 class LaunchJob(object):
@@ -103,6 +104,22 @@ class LaunchNewJob(LaunchJob):
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             shutil.copy(os.path.join(src, f), filename)
 
+class RestartJob(LaunchJob):
+    """Takes care of everything required to launch a new simulation."""
+
+    def __init__(self, base_directory, queue_args = None):
+        super().__init__(base_directory, queue_args)
+
+    def __call__(self, launch_param):
+        directory = self.output_directory(launch_param)
+        cmd = self.launch_command(launch_param, directory)
+
+        self.write_config(directory, launch_param)
+        self.queue.submit(directory, launch_param, cmd)
+
+    def write_config(self, directory, launch_param):
+        launch_param.save(directory + "/config.json")
+
 
 def launch_all(launch_params, force, queue_args=None):
     launch_job = LaunchNewJob(zisa_home_directory(),
@@ -112,3 +129,16 @@ def launch_all(launch_params, force, queue_args=None):
 
     for param in launch_params:
         launch_job(param)
+
+def restart_all(launch_params, restart_index, queue_args=None):
+    cwd = os.getcwd()
+    restart_job = RestartJob(cwd, queue_args)
+
+    for param in launch_params:
+        dir = folder_name(param)
+        data_files = find_data_files(dir)
+        data_file = os.path.relpath(data_files[restart_index], dir)
+        param["restart"] = {"file": data_file}
+        param["grid"]["file"] = os.path.relpath(find_grid(dir), dir)
+
+        restart_job(param)

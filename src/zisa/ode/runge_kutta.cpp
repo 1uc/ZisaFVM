@@ -82,6 +82,9 @@ RungeKutta::RungeKutta(std::shared_ptr<RateOfChange> rate_of_change,
 
 std::shared_ptr<AllVariables> RungeKutta::compute_step(
     const std::shared_ptr<AllVariables> &u0, double t, double dt) {
+  // ---
+  // Note: we guarantee that u0 remains unchanged.
+  // ---
 
   // stage 0
   rate_of_change->compute(tendency_buffers[0], *u0, t);
@@ -101,7 +104,7 @@ std::shared_ptr<AllVariables> RungeKutta::compute_step(
 
   auto tmp = ux;
   ux = u0;
-  return tmp;
+  return tmp; // Note: we must return the old ux
 }
 
 void RungeKutta::boundary_condition(AllVariables &u0, double t) const {

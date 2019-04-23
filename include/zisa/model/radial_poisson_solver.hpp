@@ -9,16 +9,10 @@
 #include <zisa/model/all_variables.hpp>
 #include <zisa/model/gravity.hpp>
 #include <zisa/model/instantaneous_physics.hpp>
+#include <zisa/model/poisson_solver.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 
 namespace zisa {
-
-class PoissonSolver {
-public:
-  virtual ~PoissonSolver() = default;
-  virtual void update(RadialGravity &gravity,
-                      const AllVariables &all_variables) const = 0;
-};
 
 class RadialPoissonSolver : public PoissonSolver {
 private:
@@ -57,7 +51,7 @@ private:
 /** This version does not use the cell-averages directly, instead it uses the
  * (well-balanced) reconstruction to determine the density.
  */
-class CrudeRadialPoissonSolver : public SelfGravity {
+class CrudeRadialPoissonSolver {
 private:
   using euler_t = Euler<JankaEOS, RadialGravity>;
   using cvars_t = euler_t::cvars_t;
@@ -74,7 +68,9 @@ public:
         quad_points(std::move(quad_points)),
         G(gravitational_constant) {}
 
-  virtual void compute(const SimulationClock &, AllVariables &) override;
+  virtual ~CrudeRadialPoissonSolver() = default;
+
+  virtual void compute(const SimulationClock &, AllVariables &);
 
 protected:
   double layer_mass(int_t layer) const;
@@ -102,6 +98,11 @@ make_radial_bins(const Grid &grid, double r_outer, double rel_layer_width);
 
 std::pair<RadialGravity, std::shared_ptr<RadialPoissonSolver>>
 make_radial_poisson_solver(const std::shared_ptr<Grid> &grid,
+                           double gravitational_constant);
+
+std::shared_ptr<RadialPoissonSolver>
+make_radial_poisson_solver(const array<double, 1> &radii,
+                           const std::shared_ptr<Grid> &grid,
                            double gravitational_constant);
 
 std::shared_ptr<CrudeRadialPoissonSolver> make_crude_radial_poisson_solver(

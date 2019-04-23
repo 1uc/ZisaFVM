@@ -22,7 +22,7 @@ public:
   using super::super;
 
 protected:
-  virtual std::shared_ptr<AllVariables> choose_initial_conditions() override;
+  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
 };
 
 } // namespace zisa

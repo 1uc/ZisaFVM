@@ -8,6 +8,7 @@
 #include <zisa/config.hpp>
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/grid/grid_impl.hpp>
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/io/hdf5_writer.hpp>
 #include <zisa/loops/reduction/max.hpp>
 #include <zisa/loops/reduction/min.hpp>
@@ -276,6 +277,16 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
   return neighbours;
 }
 
+array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid) {
+  auto n_cells = grid.n_cells;
+  auto normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
+  for (const auto &[i, tri] : triangles(grid)) {
+    normalized_moments(i) = zisa::normalized_moments(tri, 4, 4);
+  }
+
+  return normalized_moments;
+}
+
 Grid::Grid(array<XYZ, 1> vertices_, array<int_t, 2> vertex_indices_)
     : vertex_indices(std::move(vertex_indices_)),
       vertices(std::move(vertices_)) {
@@ -302,10 +313,7 @@ Grid::Grid(array<XYZ, 1> vertices_, array<int_t, 2> vertex_indices_)
 
   tangentials = compute_tangentials(normals);
 
-  normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
-  for (const auto &[i, tri] : triangles(*this)) {
-    normalized_moments(i) = zisa::normalized_moments(tri, 4, 4);
-  }
+  normalized_moments = compute_normalized_moments(*this);
 }
 
 const XYZ &Grid::vertex(int_t i, int_t k) const {
@@ -388,6 +396,20 @@ double volume(const Grid &grid) {
       triangles(grid), [](int_t, const Triangle &tri) { return volume(tri); });
 }
 
+std::shared_ptr<Grid> load_grid(const std::string &filename) {
+
+  auto len = filename.size();
+
+  if (filename.substr(len - 4) == ".msh") {
+    return load_gmsh(filename);
+  } else if (filename.substr(len - 3) == ".h5") {
+    auto reader = HDF5SerialReader(filename);
+    return std::make_shared<Grid>(Grid::load(reader));
+  }
+
+  LOG_ERR(string_format("Unknown filetype. [%s]", filename.c_str()));
+}
+
 std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 
   auto gmsh = GMSHReader(filename);
@@ -415,14 +437,28 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
 }
 
 void save(HDF5Writer &writer, const Grid &grid) {
-  save(writer, grid.vertices, "vertices");
-  save(writer, grid.vertex_indices, "vertex_indices");
-  save(writer, grid.cell_centers, "cell_centers");
-  save(writer, grid.volumes, "volumes");
   writer.write_scalar(grid.n_cells, "n_cells");
   writer.write_scalar(grid.n_vertices, "n_vertices");
+  writer.write_scalar(grid.n_edges, "n_edges");
+  writer.write_scalar(grid.n_interior_edges, "n_interior_edges");
+  writer.write_scalar(grid.n_exterior_edges, "n_exterior_edges");
   writer.write_scalar(grid.max_neighbours, "max_neighbours");
+
+  save(writer, grid.vertex_indices, "vertex_indices");
+  save(writer, grid.edge_indices, "edge_indices");
+
+  save(writer, grid.neighbours, "neighbours");
+  save(writer, grid.is_valid, "is_valid");
+
+  save(writer, grid.vertices, "vertices");
+  save(writer, grid.cell_centers, "cell_centers");
+
+  save(writer, grid.volumes, "volumes");
+  save(writer, grid.normals, "normals");
+  save(writer, grid.tangentials, "tangentials");
+
   writer.write_scalar(largest_circum_radius(grid), "dx_max");
+  writer.write_scalar(smallest_inradius(grid), "dx_min");
 }
 
 double largest_circum_radius(const Grid &grid) {
@@ -437,9 +473,38 @@ double smallest_inradius(const Grid &grid) {
   });
 }
 
+Grid Grid::load(HDF5Reader &reader) {
+  auto grid = Grid{};
+
+  grid.n_cells = reader.read_scalar<int_t>("n_cells");
+  grid.n_vertices = reader.read_scalar<int_t>("n_vertices");
+  grid.n_edges = reader.read_scalar<int_t>("n_edges");
+  grid.n_interior_edges = reader.read_scalar<int_t>("n_interior_edges");
+  grid.n_exterior_edges = reader.read_scalar<int_t>("n_exterior_edges");
+  grid.max_neighbours = reader.read_scalar<int_t>("max_neighbours");
+
+  grid.vertex_indices = array<int_t, 2>::load(reader, "vertex_indices");
+  grid.edge_indices = array<int_t, 2>::load(reader, "edge_indices");
+
+  grid.neighbours = array<int_t, 2>::load(reader, "neighbours");
+  grid.is_valid = array<bool, 2>::load(reader, "is_valid");
+
+  grid.vertices = array<XYZ, 1>::load(reader, "vertices");
+  grid.cell_centers = array<XYZ, 1>::load(reader, "cell_centers");
+
+  grid.volumes = array<double, 1>::load(reader, "volumes");
+  grid.normals = array<XYZ, 1>::load(reader, "normals");
+  grid.tangentials = array<XYZ, 1>::load(reader, "tangentials");
+
+  grid.left_right
+      = compute_left_right(grid.edge_indices, grid.neighbours, grid.is_valid);
+  grid.normalized_moments = compute_normalized_moments(grid);
+
+  return grid;
+}
+
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
-
   auto m = array<double, 1>(shape_t<1>{poly_dof(degree)});
 
   auto length = characteristic_length(tri);

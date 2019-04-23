@@ -23,6 +23,17 @@
 namespace zisa {
 
 template <class EOS, class Gravity>
+EulerExperiment<EOS, Gravity>::EulerExperiment(
+    const InputParameters &params, const std::shared_ptr<euler_t> &euler_)
+    : super(params), euler(euler_) {
+
+  if (is_restart()) {
+    auto reader = HDF5SerialReader(params["restart"]["file"]);
+    euler = std::make_shared<euler_t>(euler_t::load(reader));
+  }
+}
+
+template <class EOS, class Gravity>
 void EulerExperiment<EOS, Gravity>::do_post_run(
     const std::shared_ptr<AllVariables> &u1) {
 
@@ -63,6 +74,16 @@ void EulerExperiment<EOS, Gravity>::do_post_process() {
       AllVariables::load(reader, all_labels<euler_var_t>()));
 
   do_post_run(u1);
+}
+
+template <class EOS, class Gravity>
+std::shared_ptr<AllVariables>
+EulerExperiment<EOS, Gravity>::load_initial_conditions() {
+  std::string datafile = params["restart"]["file"];
+
+  auto reader = HDF5SerialReader(datafile);
+  return std::make_shared<AllVariables>(
+      AllVariables::load(reader, all_labels<euler_var_t>()));
 }
 
 template <class EOS, class Gravity>

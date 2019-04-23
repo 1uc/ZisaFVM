@@ -1,15 +1,28 @@
 /* Generate TimeKeeper from CLI input parameters.
  */
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/ode/time_keeper.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
 
 namespace zisa {
 PlottingStepsParameters::PlottingStepsParameters(const InputParameters &params)
-    : fps(-1.0), steps_per_frame(int_t(-1)), n_snapshots(int_t(-1)) {
+    : k0(0),
+      t0(0.0),
+      fps(-1.0),
+      steps_per_frame(int_t(-1)),
+      n_snapshots(int_t(-1)) {
 
   LOG_ERR_IF(!has_key(params, "io"), "Missing config section 'io'.");
 
   const auto &params_plotting = params["io"];
+
+  if (has_key(params, "restart")) {
+    auto filename = std::string(params["restart"]["file"]);
+    auto reader = HDF5SerialReader(filename);
+
+    t0 = reader.read_scalar<double>("time");
+    k0 = reader.read_scalar<int_t>("n_steps");
+  }
 
   if (has_key(params_plotting, "fps")) {
     fps = params_plotting["fps"];
@@ -35,21 +48,22 @@ make_plotting_steps(const PlottingStepsParameters &plotting_params,
   int_t n_snapshots = plotting_params.n_snapshots;
 
   if (fps > 0.0 && std::isfinite(t_end)) {
-    double t0 = 0.0;
+    double t0 = plotting_params.t0;
     double dt = 1.0 / fps;
 
     return std::make_shared<PlotAtFixedInterval>(t0, dt, t_end);
   }
 
   if (n_snapshots != int_t(-1) && std::isfinite(t_end)) {
-    double t0 = 0.0;
+    double t0 = plotting_params.t0;
     double dt = t_end / double(n_snapshots);
 
     return std::make_shared<PlotAtFixedInterval>(t0, dt, t_end);
   }
 
   if (steps_per_frame != int_t(-1) /* which might be > 0 */) {
-    return std::make_shared<PlotEveryNthStep>(steps_per_frame);
+    int_t k0 = plotting_params.k0;
+    return std::make_shared<PlotEveryNthStep>(k0, steps_per_frame);
   }
 
   LOG_ERR("Could not decide on a plotting mode.");

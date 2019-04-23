@@ -17,12 +17,14 @@ namespace zisa {
 TimeLoop::TimeLoop(
     const std::shared_ptr<TimeIntegration> &time_integration,
     const std::shared_ptr<InstantaneousPhysics> &instantaneous_physics,
+    const std::shared_ptr<StepRejection> &step_rejection,
     const std::shared_ptr<SimulationClock> &simulation_clock,
     const std::shared_ptr<CFLCondition> &cfl_condition,
     const std::shared_ptr<SanityCheck> &sanity_check,
     const std::shared_ptr<Visualization> &visualization)
     : time_integration(time_integration),
       instantaneous_physics(instantaneous_physics),
+      step_rejection(step_rejection),
       simulation_clock(simulation_clock),
       visualization(visualization),
       cfl_condition(cfl_condition),
@@ -45,14 +47,23 @@ operator()(std::shared_ptr<AllVariables> u0) {
     double dt = simulation_clock->current_time_step();
 
     // v-- possibly different buffer, contains u1.
-    u0 = time_integration->compute_step(u0, t, dt);
-    instantaneous_physics->compute(*simulation_clock, *u0);
+    auto u1 = time_integration->compute_step(u0, t, dt);
+
+    step_rejection->check(*u0, *u1);
+    if (!step_rejection->is_good()) {
+      reject_step(u0, u1);
+      continue;
+    }
+
+    instantaneous_physics->compute(*simulation_clock, *u1);
 
     simulation_clock->advance();
-    pick_time_step(*u0);
+    pick_time_step(*u1);
 
-    post_update(*u0);
+    post_update(*u1);
     print_progress_message();
+
+    u0 = u1;
   }
 
   stop_timer();
@@ -63,7 +74,8 @@ operator()(std::shared_ptr<AllVariables> u0) {
 
 void TimeLoop::pick_time_step(const AllVariables &all_variables) {
   double dt_cfl = (*cfl_condition)(all_variables);
-  simulation_clock->set_time_step(dt_cfl);
+  double dt_safe = step_rejection->pick_time_step(dt_cfl);
+  simulation_clock->set_time_step(dt_safe);
 }
 
 void TimeLoop::post_update(AllVariables &u0) {
@@ -130,6 +142,20 @@ void TimeLoop::sanity_check(const AllVariables &all_variables) const {
 
 std::string TimeLoop::str() const {
   return "FVM (`TimeLoop`)\n" + indent_block(1, time_integration->str());
+}
+
+void TimeLoop::reject_step(std::shared_ptr<AllVariables> &u0,
+                           std::shared_ptr<AllVariables> &u1) {
+
+  double dt = simulation_clock->current_time_step();
+  auto dt_new = step_rejection->pick_time_step(dt);
+  simulation_clock->set_time_step(dt_new);
+
+  // Remember, `time_integration` keeps the buffer it
+  // was passed for future use. Hence we must either copy and swap the
+  // pointers, or swap the buffers & swap the pointers.
+  *u0 = *u1; // TODO implement swap(*u0, *u1)
+  u0 = u1;
 }
 
 } // namespace zisa
