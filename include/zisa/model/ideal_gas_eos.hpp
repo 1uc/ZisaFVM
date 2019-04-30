@@ -225,6 +225,10 @@ public:
     return zisa::sqrt(gamma() * p / rho);
   }
 
+  ANY_DEVICE_INLINE double sound_speed(const RhoE &rhoE) const {
+    return sound_speed(rhoP(rhoE));
+  }
+
   // -- Temperature
   ANY_DEVICE_INLINE double temperature(const RhoP &rhoP) const {
     const auto &[rho, p] = rhoP;
@@ -237,6 +241,12 @@ public:
 
   ANY_DEVICE_INLINE double temperature(RhoE rhoE) const {
     return temperature(RhoP{rhoE.rho(), pressure(rhoE)});
+  }
+
+  ANY_DEVICE_INLINE cvars_t characteristic_scale(const RhoE &rhoE) const {
+    auto [rho, E] = rhoE;
+    double cs = sound_speed(rhoE);
+    return cvars_t{rho, cs, cs, cs, E};
   }
 
   std::string str() const {

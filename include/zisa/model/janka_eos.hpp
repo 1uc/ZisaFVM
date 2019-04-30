@@ -348,6 +348,12 @@ public:
   }
 
   // --- cvars, xvars, etc. ----------------------------------------------------
+  ANY_DEVICE_INLINE cvars_t characteristic_scale(RhoE rhoE) const {
+    auto [rho, E] = rhoE;
+    double cs = sound_speed(rhoE);
+    return {rho, cs, cs, cs, E};
+  }
+
   ANY_DEVICE_INLINE cvars_t cvars(RhoE rhoE) const {
     return {rhoE.rho(), 0.0, 0.0, 0.0, rhoE.E()};
   }
