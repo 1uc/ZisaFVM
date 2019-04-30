@@ -37,13 +37,13 @@ void ButcherTableau::allocate() {
 void ButcherTableau::assign(const std::vector<std::vector<double>> &a,
                             const std::vector<double> &b) {
   for (int_t i = 0; i < n_stages; ++i) {
-    std::copy(a[i].begin(), a[i].end(), this->a[i].begin());
+    std::copy(a[i].cbegin(), a[i].cend(), this->a[i].begin());
   }
 
-  std::copy(b.begin(), b.end(), this->b.begin());
+  std::copy(b.cbegin(), b.cend(), this->b.begin());
 
   for (int_t i = 0; i < n_stages; ++i) {
-    c[i] = std::accumulate(a[i].begin(), a[i].end(), 0.0);
+    c[i] = std::accumulate(a[i].cbegin(), a[i].cend(), 0.0);
   }
 }
 
