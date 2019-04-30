@@ -39,13 +39,10 @@ Polytrope::choose_initial_conditions(double amp, double width) {
   };
 
   auto &u0 = all_variables->cvars;
-
-  auto n_cells = grid->n_cells;
-#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
-  for (int_t i = 0; i < n_cells; ++i) {
-    auto tri = grid->triangle(i);
-    u0(i) = average(qr, ic, tri);
-  }
+  zisa::for_each(triangles(*grid),
+                 [&qr, &u0, &ic](int_t i, const Triangle &tri) {
+                   u0(i) = average(qr, ic, tri);
+                 });
 
   return all_variables;
 }

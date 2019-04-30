@@ -13,7 +13,7 @@ private:
 
   class Iterator {
   public:
-    inline Iterator(const Grid &grid) : grid(grid), i(0) {}
+    explicit inline Iterator(const Grid &grid) : grid(grid), i(0) {}
 
     inline void operator++() { i++; }
     inline std::pair<int_t, Triangle> operator*() const {
@@ -23,6 +23,7 @@ private:
     inline bool operator!=(const EndIterator &) const {
       return i < grid.n_cells;
     }
+
     inline bool operator==(const EndIterator &it) const {
       return !(*this != it);
     }
@@ -33,10 +34,16 @@ private:
   };
 
 public:
-  inline TriangleRange(const Grid &grid) : grid(grid) {}
+  explicit inline TriangleRange(const Grid &grid) : grid(grid) {}
+
+  static constexpr bool has_item() { return true; }
+  inline Triangle item(int_t i) const { return grid.triangle(i); }
 
   inline Iterator begin() const { return Iterator(grid); }
   inline EndIterator end() const { return EndIterator(); }
+
+  inline int_t start_index() const { return 0; }
+  inline int_t end_index() const { return grid.n_cells; }
 
 private:
   const Grid &grid;

@@ -64,12 +64,11 @@ std::shared_ptr<AllVariables> RayleighTaylor::choose_initial_conditions(
 
   auto qr = choose_volume_rule();
   auto &u0 = all_variables->cvars;
-  auto n_cells = grid->n_cells;
-#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
-  for (int_t i = 0; i < n_cells; ++i) {
-    auto tri = grid->triangle(i);
-    u0(i) = average(qr, ic, tri);
-  }
+
+  zisa::for_each(triangles(*grid),
+                 [&u0, &ic, &qr](int_t i, const Triangle &tri) {
+                   u0(i) = average(qr, ic, tri);
+                 });
 
   return all_variables;
 }

@@ -2,6 +2,7 @@
 #define GRID_VARIABLES_DECL_H_LKLNS
 
 #include <zisa/config.hpp>
+#include <zisa/loops/range.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/memory/array.hpp>
 
@@ -29,6 +30,20 @@ public:
 void save(HDF5Writer &writer,
           const GridVariables &grid_variables,
           const std::vector<std::string> &labels);
+
+class DereferenceConstGridVariables {
+public:
+  explicit DereferenceConstGridVariables(const GridVariables &grid_vars);
+
+  inline CVarConstExpr item(int_t i) const;
+  static constexpr bool has_item() { return true; }
+
+private:
+  const GridVariables &grid_vars;
+};
+
+Range<PlainIndexRange, DereferenceConstGridVariables>
+cell_const_range(const GridVariables &grid_vars);
 
 } // namespace zisa
 

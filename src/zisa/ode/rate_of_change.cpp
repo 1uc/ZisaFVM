@@ -53,11 +53,8 @@ void SumRatesOfChange::remove_all_terms() { rates_of_change.clear(); }
 void ZeroRateOfChange::compute(AllVariables &tendency,
                                const AllVariables & /* current_state */,
                                double /* t */) const {
-
-#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
-  for (int_t i = 0; i < tendency.size(); ++i) {
-    tendency[i] = 0.0;
-  }
+  zisa::fill(tendency.cvars, 0.0);
+  zisa::fill(tendency.avars, 0.0);
 }
 
 std::string ZeroRateOfChange::str() const { return "Zero right-hand side."; }

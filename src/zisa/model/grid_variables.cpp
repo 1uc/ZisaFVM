@@ -41,4 +41,8 @@ GridVariables GridVariables::load(HDF5Reader &reader,
   return vars;
 }
 
+DereferenceConstGridVariables::DereferenceConstGridVariables(
+    const GridVariables &grid_vars)
+    : grid_vars(grid_vars) {}
+
 } // namespace zisa

@@ -103,8 +103,9 @@ make_cell_indices_bins(const Grid &grid, const array<double, 1> &radii) {
 
   for (const auto &[i, tri] : triangles(grid)) {
     double r = zisa::norm(barycenter(tri));
-    auto iter = std::find_if(
-        radii.begin(), radii.end(), [r](double r_test) { return r < r_test; });
+    auto iter = std::find_if(radii.cbegin(), radii.cend(), [r](double r_test) {
+      return r < r_test;
+    });
 
     auto l = int_t(iter - radii.begin() - 1);
     cell_indices_[l].push_back(i);

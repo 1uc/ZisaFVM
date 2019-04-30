@@ -10,7 +10,7 @@
 #include <zisa/io/hdf5_writer.hpp>
 #include <zisa/math/cartesian_expr.hpp>
 #include <zisa/math/isreal.hpp>
-#include <zisa/memory/array.hpp>
+#include <zisa/memory/array_traits.hpp>
 
 namespace zisa {
 template <int_t n_vars>
@@ -271,26 +271,6 @@ template <>
 struct array_save_traits<XYZ> {
   using dispatch_tag = split_array_dispatch_tag;
 };
-
-// /// Save an array of `XY`.
-// template <class LinearIndex>
-// void load_impl(HDF5Reader &reader,
-//                ArrayBase<XY, LinearIndex> &array,
-//                const std::string &tag) {
-//   constexpr int n_dims = LinearIndex::n_dims;
-//   hsize_t dims[n_dims + 1];
-
-//   HDF5DataType data_type = make_hdf5_data_type<double>();
-//   XY *raw_data
-//       = (XY *)reader.read_array(data_type, tag, n_dims + 1, dims);
-
-//   Shape<n_dims> shape;
-//   for (int i = 0; i < n_dims; ++i) {
-//     shape(i) = int(dims[i]);
-//   }
-
-//   array = Array<XY, n_dims>(raw_data, shape);
-// }
 
 } // namespace zisa
 

@@ -226,8 +226,11 @@ TEST_CASE("Grid; moments", "[grid]") {
 
 TEST_CASE("Grid; volume", "[grid]") {
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+  double approx = volume(*grid);
+  double exact = 1.0;
 
-  REQUIRE(zisa::almost_equal(volume(*grid), 1.0, 1e-12));
+  INFO(string_format("%e - %e = %e", approx, exact, approx - exact));
+  REQUIRE(zisa::almost_equal(approx, exact, 1e-12));
 
   for (const auto &[i, tri] : triangles(*grid)) {
     REQUIRE(volume(tri) > 0.0);

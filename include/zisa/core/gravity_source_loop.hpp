@@ -1,6 +1,7 @@
 #ifndef GRAVITY_SOURCE_LOOP_H_F39RG
 #define GRAVITY_SOURCE_LOOP_H_F39RG
 
+#include <zisa/loops/for_each.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 
@@ -32,9 +33,7 @@ public:
     const auto &eos = euler->eos;
     const auto &gravity = euler->gravity;
 
-#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
-    for (int_t i = 0; i < grid->n_cells; ++i) {
-      const auto &tri = grid->triangle(i);
+    auto f = [this, &eos, &gravity, &tendency](int_t i, const Triangle &tri) {
       const auto &rc = (*global_reconstruction)(i);
 
       auto x_cell = grid->cell_centers(i);
@@ -82,7 +81,9 @@ public:
       s += quadrature(s_delta, tri, volume_deg);
 
       tendency.cvars(i) += s / volume(tri);
-    }
+    };
+
+    zisa::for_each(triangles(*grid), f);
   }
 
   virtual std::string str() const override {

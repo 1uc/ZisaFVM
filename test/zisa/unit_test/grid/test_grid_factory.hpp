@@ -9,6 +9,10 @@ namespace zisa {
 class TestGridFactory {
 
 public:
+  static std::string unit_square(int i) {
+    return string_format("grids/convergence/unit_square_%d.msh", i);
+  }
+
   static std::vector<std::string> unit_square() {
     int n_grids = 4;
 
@@ -16,7 +20,7 @@ public:
     ret.reserve(n_grids);
 
     for (int i = 0; i < n_grids; ++i) {
-      ret.push_back(string_format("grids/convergence/unit_square_%d.msh", i));
+      ret.push_back(unit_square(i));
     }
 
     return ret;

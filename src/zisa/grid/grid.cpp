@@ -9,6 +9,9 @@
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/io/hdf5_writer.hpp>
+#include <zisa/loops/reduction/max.hpp>
+#include <zisa/loops/reduction/min.hpp>
+#include <zisa/loops/reduction/sum.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
@@ -381,13 +384,8 @@ std::optional<int_t> locate(const Grid &grid, const XYZ &x) {
 }
 
 double volume(const Grid &grid) {
-  double vol = 0.0;
-
-  for (const auto &[i, tri] : triangles(grid)) {
-    vol += volume(tri);
-  }
-
-  return vol;
+  return zisa::reduce::sum(
+      triangles(grid), [](int_t, const Triangle &tri) { return volume(tri); });
 }
 
 std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
@@ -428,23 +426,15 @@ void save(HDF5Writer &writer, const Grid &grid) {
 }
 
 double largest_circum_radius(const Grid &grid) {
-
-  double r = 0.0;
-  for (const auto &[i, tri] : triangles(grid)) {
-    r = zisa::max(r, circum_radius(tri));
-  }
-
-  return r;
+  return zisa::reduce::max(triangles(grid), [](int_t, const Triangle &tri) {
+    return circum_radius(tri);
+  });
 }
 
 double smallest_inradius(const Grid &grid) {
-
-  double r = std::numeric_limits<double>::max();
-  for (const auto &[i, tri] : triangles(grid)) {
-    r = zisa::min(r, inradius(tri));
-  }
-
-  return r;
+  return zisa::reduce::min(triangles(grid), [](int_t, const Triangle &tri) {
+    return inradius(tri);
+  });
 }
 
 array<double, 1>

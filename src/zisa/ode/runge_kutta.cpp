@@ -119,11 +119,8 @@ void runge_kutta_sum(AllVariables &u1,
                      double dt) {
   assert(u1.size() == u0.size());
 
-  int_t N = u0.size();
   int_t n_stages = coeffs.shape(0);
-
-#pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
-  for (int_t i = 0; i < N; ++i) {
+  auto f = [&u1, &u0, &tendency_buffers, &coeffs, dt, n_stages](int_t i) {
     double dudt = 0.0;
 
     for (int_t stage = 0; stage < n_stages; ++stage) {
@@ -133,7 +130,9 @@ void runge_kutta_sum(AllVariables &u1,
     }
 
     u1[i] = u0[i] + dt * dudt;
-  }
+  };
+
+  zisa::for_each(flat_range(u1), f);
 }
 
 ButcherTableau make_tableau(const std::string &method) {

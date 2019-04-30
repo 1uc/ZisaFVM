@@ -76,5 +76,9 @@ inline double GridVariables::operator()(int_t i, int_t k) const {
   return super::operator()(i, k);
 }
 
+inline CVarConstExpr DereferenceConstGridVariables::item(int_t i) const {
+  return grid_vars(i);
+}
+
 } // namespace zisa
 #endif /* end of include guard */
