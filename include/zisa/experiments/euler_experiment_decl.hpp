@@ -70,12 +70,10 @@ private:
                                const Equilibrium &eq) const;
 
   template <class Equilibrium, class RC>
-  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-  choose_reconstruction();
+  auto choose_reconstruction() -> decltype(auto);
 
   template <class Equilibrium, class RC, class RCParams>
-  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-  choose_reconstruction(const RCParams &rc_params);
+  auto choose_reconstruction(const RCParams &rc_params) -> decltype(auto);
 
 protected:
   std::shared_ptr<euler_t> euler;

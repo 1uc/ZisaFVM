@@ -247,8 +247,7 @@ EulerExperiment<EOS, Gravity>::choose_fvm_rate_of_change() {
 
 template <class EOS, class Gravity>
 template <class Equilibrium, class RC>
-std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-EulerExperiment<EOS, Gravity>::choose_reconstruction() {
+auto EulerExperiment<EOS, Gravity>::choose_reconstruction() -> decltype(auto) {
   LOG_ERR_IF(!has_key(params, "reconstruction"),
              "Missing section 'reconstruction'.");
   auto rc_params = params["reconstruction"];
@@ -258,9 +257,8 @@ EulerExperiment<EOS, Gravity>::choose_reconstruction() {
 
 template <class EOS, class Gravity>
 template <class Equilibrium, class RC, class RCParams>
-std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-EulerExperiment<EOS, Gravity>::choose_reconstruction(
-    const RCParams &rc_params) {
+auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
+    const RCParams &rc_params) -> decltype(auto) {
   auto hybrid_weno_params
       = HybridWENOParams(StencilFamilyParams(rc_params["orders"],
                                              rc_params["biases"],
