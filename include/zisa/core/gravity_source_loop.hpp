@@ -7,12 +7,12 @@
 
 namespace zisa {
 
-template <class Equilibrium, class RC, class EULER>
+template <class Equilibrium, class RC, class EULER, class Scaling>
 class GravitySourceLoop : public RateOfChange {
 private:
   using euler_t = EULER;
   using cvars_t = euler_var_t;
-  using grc_t = EulerGlobalReconstruction<Equilibrium, RC>;
+  using grc_t = EulerGlobalReconstruction<Equilibrium, RC, Scaling>;
 
 public:
   GravitySourceLoop(std::shared_ptr<Grid> grid,

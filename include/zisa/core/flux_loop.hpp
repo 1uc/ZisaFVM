@@ -12,16 +12,16 @@
 
 namespace zisa {
 
-template <class Equilibrium, class RC, class Model, class Flux>
+template <class Model, class Flux, class GRC>
 class FluxLoop : public RateOfChange {
 protected:
   using cvars_t = typename Model::cvars_t;
+  using grc_t = GRC;
 
 public:
   FluxLoop(std::shared_ptr<Grid> grid,
            std::shared_ptr<Model> model,
-           std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-               global_reconstruction,
+           std::shared_ptr<grc_t> global_reconstruction,
            EdgeRule edge_rule)
       : grid(std::move(grid)),
         model(std::move(model)),
@@ -88,8 +88,7 @@ private:
   std::shared_ptr<Grid> grid;
   std::shared_ptr<Model> model;
 
-  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-      global_reconstruction;
+  std::shared_ptr<grc_t> global_reconstruction;
 
   EdgeRule edge_rule;
 };

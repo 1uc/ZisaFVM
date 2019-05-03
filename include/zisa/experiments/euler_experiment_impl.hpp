@@ -59,7 +59,7 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
   }
 
   auto delta
-      = deduce_reference_solution_eq<NoEquilibrium>(u_delta, NoEquilibrium{});
+      = deduce_reference_solution_eq(u_delta, NoEquilibrium{}, UnityScaling{});
   down_sample_euler_reference(*delta, coarse_grid_paths, "delta.h5");
 }
 
@@ -87,12 +87,15 @@ EulerExperiment<EOS, Gravity>::load_initial_conditions() {
 }
 
 template <class EOS, class Gravity>
-template <class Equilibrium>
+template <class Equilibrium, class Scaling>
 std::shared_ptr<ReferenceSolution>
 EulerExperiment<EOS, Gravity>::deduce_reference_solution_eq(
-    const std::shared_ptr<AllVariables> &u1, const Equilibrium &eq) const {
+    const std::shared_ptr<AllVariables> &u1,
+    const Equilibrium &eq,
+    const Scaling &scaling) const {
 
-  return std::make_shared<EulerReferenceSolution<Equilibrium>>(grid, u1, eq);
+  return std::make_shared<EulerReferenceSolution<Equilibrium, Scaling>>(
+      grid, u1, eq, scaling);
 }
 
 template <class EOS, class Gravity>
@@ -100,14 +103,15 @@ std::shared_ptr<ReferenceSolution>
 EulerExperiment<EOS, Gravity>::deduce_reference_solution(
     const std::shared_ptr<AllVariables> &u1) const {
   if (params["reference"]["equilibrium"] == "constant") {
-    return deduce_reference_solution_eq(u1, NoEquilibrium{});
+    return deduce_reference_solution_eq(
+        u1, NoEquilibrium{}, EulerScaling(euler));
   }
 
   if (params["reference"]["equilibrium"] == "isentropic") {
     int_t quad_deg = params["quadrature"]["volume"];
 
     auto eq = IsentropicEquilibrium(euler, quad_deg);
-    return deduce_reference_solution_eq(u1, eq);
+    return deduce_reference_solution_eq(u1, eq, EulerScaling(euler));
   }
 
   LOG_ERR("Failed to deduce reference solutions.");
@@ -188,10 +192,13 @@ EulerExperiment<EOS, Gravity>::choose_physical_rate_of_change() {
 template <class EOS, class Gravity>
 template <class Equilibrium, class RC>
 std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_loop(
-    const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>> &rc) {
+    const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
+        &rc) {
+
+  using grc_t = EulerGlobalReconstruction<Equilibrium, RC, scaling_t>;
 
   auto edge_rule = choose_edge_rule();
-  return std::make_shared<FluxLoop<Equilibrium, RC, euler_t, flux_t>>(
+  return std::make_shared<FluxLoop<euler_t, flux_t, grc_t>>(
       grid, euler, rc, edge_rule);
 }
 
@@ -199,13 +206,15 @@ template <class EOS, class Gravity>
 template <class Equilibrium, class RC>
 std::shared_ptr<RateOfChange>
 EulerExperiment<EOS, Gravity>::choose_gravity_source_loop(
-    const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>> &rc) {
+    const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
+        &rc) {
 
   int_t edge_deg = params["quadrature"]["edge"];
   int_t volume_deg = params["quadrature"]["volume"];
 
   auto edge_rule = choose_edge_rule();
-  return std::make_shared<GravitySourceLoop<Equilibrium, RC, euler_t>>(
+  return std::make_shared<
+      GravitySourceLoop<Equilibrium, RC, euler_t, scaling_t>>(
       grid, euler, rc, edge_deg, volume_deg);
 }
 
@@ -270,8 +279,10 @@ auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
   int_t quad_deg = params["quadrature"]["volume"];
 
   auto eq = Equilibrium{euler, quad_deg};
-  return std::make_shared<EulerGlobalReconstruction<Equilibrium, RC>>(
-      grid, hybrid_weno_params, eq);
+  auto scaling = EulerScaling(euler);
+  return std::make_shared<
+      EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>(
+      grid, hybrid_weno_params, eq, scaling);
 }
 
 } // namespace zisa

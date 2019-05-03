@@ -243,12 +243,6 @@ public:
     return temperature(RhoP{rhoE.rho(), pressure(rhoE)});
   }
 
-  ANY_DEVICE_INLINE cvars_t characteristic_scale(const RhoE &rhoE) const {
-    auto [rho, E] = rhoE;
-    double cs = sound_speed(rhoE);
-    return cvars_t{rho, cs, cs, cs, E};
-  }
-
   std::string str() const {
     return string_format(
         "Ideal gas EOS [%.3e, %.3e]", gamma(), specific_gas_constant());

@@ -58,7 +58,7 @@ gravity = sc.GeneralPolytropeGravity(
     rho_center=rho_center,
     polytropic_index_n=polytropic_index_n,
     radius=polytrope_radius,
-    G = 6.674e-8
+    G=6.674e-8
 )
 euler = sc.Euler(eos, gravity)
 
@@ -92,12 +92,12 @@ reference_grid = sc.Grid(grid_name(mesh_levels[-1]), mesh_levels[-1])
 independent_choices = {
     "euler": [euler],
 
-    # "flux-bc": [sc.FluxBC("isentropic")],
-    "flux-bc": [sc.FluxBC("constant")],
+    "flux-bc": [sc.FluxBC("isentropic")],
+    # "flux-bc": [sc.FluxBC("constant")],
 
-    # "well-balancing": [ sc.WellBalancing("isentropic") ],
+    "well-balancing": [ sc.WellBalancing("isentropic") ],
 
-    "well-balancing": [ sc.WellBalancing("constant") ],
+    # "well-balancing": [ sc.WellBalancing("constant") ],
 
     # "well-balancing": [ sc.WellBalancing("constant"),
     #                     sc.WellBalancing("isentropic")],
@@ -111,22 +111,22 @@ dependent_choices = {
     "reconstruction": [
         # sc.Reconstruction("CWENO-AO", [1]),
         # sc.Reconstruction("CWENO-AO", [2, 2, 2, 2])
-        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2], overfit_factors = [3.0, 2.0, 2.0, 2.0]),
-        sc.Reconstruction("CWENO-AO", [5, 2, 2, 2], overfit_factors = [3.0, 2.0, 2.0, 2.0])
+        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2], overfit_factors = [3.0, 2.0, 2.0, 2.0])
+        # sc.Reconstruction("CWENO-AO", [5, 2, 2, 2], overfit_factors = [3.0, 2.0, 2.0, 2.0])
     ],
 
     "ode": [
         # sc.ODE("ForwardEuler")
-        sc.ODE("SSP3"),
         sc.ODE("SSP3")
+        # sc.ODE("SSP3")
         # sc.ODE("SSP3")
     ],
 
     "quadrature": [
         # sc.Quadrature(1),
         # sc.Quadrature(1)
-        sc.Quadrature(3),
-        sc.Quadrature(4)
+        sc.Quadrature(1)
+        # sc.Quadrature(4)
     ]
 }
 
@@ -190,7 +190,7 @@ def post_process(coarse_runs, reference_run):
         # plt.title("p")
         # plt.show()
 
-        ref_dir = "/home/lucg/sandbox/janka/hd2d_collapse_4Luc/data"
+        ref_dir = os.path.expandvars("${SCRATCH}/1d_reference/janka/hd2d_collapse_4Luc/data")
 
         data_files = find_data_files(coarse_dir)
 
@@ -227,6 +227,7 @@ def post_process(coarse_runs, reference_run):
             plot = ScatterPlot()
             plot(coarse_grid, E_th / E)
             plot.annotate_time(u_coarse.time)
+            plt.ylim([-0.001, 0.001])
             plt.savefig("{}/img/Eth-{:04d}.png".format(coarse_dir, k))
 
             plot = ScatterPlot()

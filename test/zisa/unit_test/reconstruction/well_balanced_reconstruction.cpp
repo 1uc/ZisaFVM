@@ -68,8 +68,12 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
   using eq_t = zisa::IsentropicEquilibrium<eos_t, gravity_t>;
   auto eq = eq_t{euler, quad_deg};
 
-  auto grc = zisa::EulerGlobalReconstruction<eq_t, zisa::CWENO_AO>(
-      grid, weno_params, eq);
+  using rc_t = zisa::CWENO_AO;
+  using scaling_t = zisa::UnityScaling;
+  auto scaling = scaling_t{};
+
+  auto grc = zisa::EulerGlobalReconstruction<eq_t, rc_t, scaling_t>(
+      grid, weno_params, eq, scaling);
 
   grc.compute(*all_variables);
 

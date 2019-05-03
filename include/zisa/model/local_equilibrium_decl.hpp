@@ -62,13 +62,13 @@ public:
                    const XYZ &x)
       : super(equilibrium, theta_ref, x) {}
 
-  void solve(RhoE rhoE_bar, const Triangle &tri_ref) {
+  void solve(const RhoE &rhoE_bar, const Triangle &tri_ref) {
     const auto &eos = this->equilibrium.euler->eos;
     auto [rho, E] = rhoE_bar;
 
-    rhoE_bar.E() = zisa::max(eos.polytropic_energy(rho), E);
+    E = zisa::max(eos.polytropic_energy(rho), E);
 
-    super::solve(rhoE_bar, tri_ref);
+    super::solve(RhoE{rho, E}, tri_ref);
   }
 };
 
@@ -78,11 +78,11 @@ public:
   LocalEquilibrium() = default;
 
   template <class... Args>
-  LocalEquilibrium(Args &&... /* args */) {}
+  explicit LocalEquilibrium(Args &&... /* args */) {}
 
   template <class... Args>
   inline void solve(Args &&... /* args */) {
-    return;
+    // do nothing
   }
 
   template <class... Args>

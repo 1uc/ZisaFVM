@@ -21,17 +21,20 @@ public:
   virtual CVars operator()(int_t i, const XYZ &x) const = 0;
 };
 
-template <class Equilibrium, class RC>
+template <class Equilibrium, class RC, class Scaling>
 class EulerGlobalReconstruction : public GlobalReconstruction<euler_var_t> {
 private:
   using cvars_t = euler_var_t;
+  using lrc_t = LocalReconstruction<Equilibrium, RC, Scaling>;
 
 public:
   EulerGlobalReconstruction(std::shared_ptr<Grid> grid,
                             const HybridWENOParams &params,
-                            const Equilibrium &eq);
+                            const Equilibrium &eq,
+                            const Scaling &scaling);
 
-  const LocalReconstruction<Equilibrium, RC> &operator()(int_t i) const;
+  const lrc_t &operator()(int_t i) const;
+
   virtual euler_var_t operator()(int_t i, const XYZ &x) const override;
   virtual void compute(const AllVariables &current_state) override;
 
@@ -46,7 +49,7 @@ private:
   HybridWENOParams params;
   int_t max_stencil_size;
 
-  array<LocalReconstruction<Equilibrium, RC>, 1> rc;
+  array<lrc_t, 1> rc;
   std::shared_ptr<block_allocator<array<cvars_t, 1>>> allocator;
 };
 

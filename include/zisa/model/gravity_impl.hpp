@@ -34,6 +34,7 @@ ANY_DEVICE_INLINE double PolytropeGravity::phi(double chi) const {
   // is guaranteed. we therefore add a small `eps` which will almost always be
   // truncated, except for the case of `r == 0`.
   double chi_eff = alpha * (chi + eps);
+
   return -2.0 * K * rhoC * zisa::sin(chi_eff) / chi_eff;
 }
 
@@ -50,7 +51,8 @@ ANY_DEVICE_INLINE RhoEntropy PolytropeGravity::rhoK_center() const {
 }
 
 ANY_DEVICE_INLINE double PolytropeGravity::alpha(double /* chi */) const {
-  return zisa::sqrt(2 * zisa::pi * G / K);
+  // formula for gamma == 2;
+  return zisa::sqrt(2.0 * zisa::pi * G / K);
 }
 
 ANY_DEVICE_INLINE double PolytropeGravityRadial::alpha(double chi) const {

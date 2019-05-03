@@ -10,11 +10,12 @@
 
 namespace zisa {
 
-template <class Equilibrium, class RC>
-EulerGlobalReconstruction<Equilibrium, RC>::EulerGlobalReconstruction(
+template <class Equilibrium, class RC, class Scaling>
+EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
     std::shared_ptr<Grid> grid,
     const HybridWENOParams &params,
-    const Equilibrium &eq)
+    const Equilibrium &eq,
+    const Scaling &scaling)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
       allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)) {
@@ -22,28 +23,31 @@ EulerGlobalReconstruction<Equilibrium, RC>::EulerGlobalReconstruction(
   max_stencil_size = 0;
 
   for (int_t i = 0; i < grid->n_cells; ++i) {
-    rc[i] = LocalReconstruction<Equilibrium, RC>(
-        grid, LocalEquilibrium(eq), {grid, i, params}, grid->triangle(i));
+    rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(grid,
+                                                          LocalEquilibrium(eq),
+                                                          RC(grid, i, params),
+                                                          grid->triangle(i),
+                                                          scaling);
 
     max_stencil_size
         = zisa::max(rc[i].combined_stencil_size(), max_stencil_size);
   }
 }
 
-template <class Equilibrium, class RC>
-const LocalReconstruction<Equilibrium, RC> &
-EulerGlobalReconstruction<Equilibrium, RC>::operator()(int_t i) const {
+template <class Equilibrium, class RC, class Scaling>
+const LocalReconstruction<Equilibrium, RC, Scaling> &
+EulerGlobalReconstruction<Equilibrium, RC, Scaling>::operator()(int_t i) const {
   return rc(i);
 }
 
-template <class Equilibrium, class RC>
-euler_var_t EulerGlobalReconstruction<Equilibrium, RC>::
+template <class Equilibrium, class RC, class Scaling>
+euler_var_t EulerGlobalReconstruction<Equilibrium, RC, Scaling>::
 operator()(int_t i, const XYZ &x) const {
   return rc(i)(x);
 }
 
-template <class Equilibrium, class RC>
-void EulerGlobalReconstruction<Equilibrium, RC>::compute(
+template <class Equilibrium, class RC, class Scaling>
+void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
     const AllVariables &current_state) {
   auto n_cells = current_state.cvars.shape(0);
 
@@ -59,8 +63,8 @@ void EulerGlobalReconstruction<Equilibrium, RC>::compute(
   }
 }
 
-template <class Equilibrium, class RC>
-void EulerGlobalReconstruction<Equilibrium, RC>::set_qbar_local(
+template <class Equilibrium, class RC, class Scaling>
+void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::set_qbar_local(
     array<cvars_t, 1> &qbar_local, const AllVariables &current_state, int_t i) {
   const auto &l2g = rc[i].local2global();
   const auto &cvars = current_state.cvars;
@@ -70,8 +74,8 @@ void EulerGlobalReconstruction<Equilibrium, RC>::set_qbar_local(
   }
 }
 
-template <class Equilibrium, class RC>
-std::string EulerGlobalReconstruction<Equilibrium, RC>::str() const {
+template <class Equilibrium, class RC, class Scaling>
+std::string EulerGlobalReconstruction<Equilibrium, RC, Scaling>::str() const {
   return string_format("EulerGlobalReconstruction<%s>: \n",
                        type_name<RC>().c_str())
          + indent_block(1, zisa::to_string(params));

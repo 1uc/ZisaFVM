@@ -22,6 +22,7 @@ protected:
   using euler_t = Euler<eos_t, gravity_t>;
   using cvars_t = typename euler_t::cvars_t;
   using flux_t = HLLCBatten<euler_t>;
+  using scaling_t = EulerScaling<euler_t>;
 
 public:
   explicit EulerExperiment(const InputParameters &params)
@@ -49,13 +50,15 @@ private:
   std::shared_ptr<RateOfChange> choose_physical_rate_of_change();
 
   template <class Equilibrium, class RC>
-  std::shared_ptr<RateOfChange> choose_flux_loop(
-      const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
-          &global_reconstruction);
+  std::shared_ptr<RateOfChange>
+  choose_flux_loop(const std::shared_ptr<
+                   EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
+                       &global_reconstruction);
 
   template <class Equilibrium, class RC>
   std::shared_ptr<RateOfChange> choose_gravity_source_loop(
-      const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC>>
+      const std::shared_ptr<
+          EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
           &global_reconstruction);
 
   template <class Equilibrium>
@@ -64,10 +67,11 @@ private:
   std::shared_ptr<ReferenceSolution>
   deduce_reference_solution(const std::shared_ptr<AllVariables> &u1) const;
 
-  template <class Equilibrium>
+  template <class Equilibrium, class Scaling>
   std::shared_ptr<ReferenceSolution>
   deduce_reference_solution_eq(const std::shared_ptr<AllVariables> &u1,
-                               const Equilibrium &eq) const;
+                               const Equilibrium &eq,
+                               const Scaling &scaling) const;
 
   template <class Equilibrium, class RC>
   auto choose_reconstruction() -> decltype(auto);

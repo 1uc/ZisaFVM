@@ -40,9 +40,14 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
 
   auto df = [&f](const EnthalpyEntropy &x, int_t dir) {
     double eps = 1e-6 * zisa::abs(x[dir]);
-    auto x_eps = static_cast<EnthalpyEntropy>(x + eps * x.unit_vector(dir));
 
-    return RhoE((f(x_eps) - f(x)) / eps);
+    auto x_p_eps
+        = static_cast<EnthalpyEntropy>(x + 0.5 * eps * x.unit_vector(dir));
+
+    auto x_m_eps
+        = static_cast<EnthalpyEntropy>(x - 0.5 * eps * x.unit_vector(dir));
+
+    return RhoE((f(x_p_eps) - f(x_m_eps)) / eps);
   };
 
   auto inv_df = [&df](const EnthalpyEntropy &x) {
@@ -51,6 +56,7 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
 
     return [df0, df1](const auto &fx) {
       double inv_det = 1.0 / (df0[0] * df1[1] - df0[1] * df1[0]);
+
       return EnthalpyEntropy{inv_det * (df1[1] * fx[0] - df1[0] * fx[1]),
                              inv_det * (-df0[1] * fx[0] + df0[0] * fx[1])};
     };

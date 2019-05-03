@@ -3,13 +3,14 @@
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/model/characteristic_scale.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/model/local_equilibrium.hpp>
 #include <zisa/reconstruction/weno_poly.hpp>
 
 namespace zisa {
 
-template <class Equilibrium, class RC>
+template <class Equilibrium, class RC, class Scaling>
 class LocalReconstruction {
 private:
   using cvars_t = euler_var_t;
@@ -19,12 +20,16 @@ public:
   LocalReconstruction(std::shared_ptr<Grid> &grid,
                       const LocalEquilibrium<Equilibrium> &eq,
                       const RC &rc,
-                      const Triangle &tri_ref)
-      : grid(grid), eq(eq), rc(rc), tri_ref(tri_ref) {}
+                      const Triangle &tri_ref,
+                      Scaling scaling)
+      : grid(grid), eq(eq), rc(rc), tri_ref(tri_ref), scaling(scaling) {}
 
   void compute(array<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
-    eq.solve(RhoE{u0[0], internal_energy(u0)}, tri_ref);
+    auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
+    eq.solve(rhoE_self, tri_ref);
+
+    scale = scaling(rhoE_self);
 
     auto &l2g = rc.local2global();
     for (int_t il = 0; il < l2g.size(); ++il) {
@@ -32,6 +37,8 @@ public:
 
       u_local(il)[0] -= rho_eq_bar;
       u_local(il)[4] -= E_eq_bar;
+
+      u_local(il) = u_local(il) / scale;
     }
 
     weno_poly = rc.reconstruct(u_local);
@@ -41,7 +48,7 @@ public:
     return cvars_t(background(x) + delta(x));
   }
 
-  cvars_t delta(const XYZ &x) const { return cvars_t(weno_poly(x)); }
+  cvars_t delta(const XYZ &x) const { return cvars_t(scale * weno_poly(x)); }
 
   cvars_t background(const XYZ &x) const {
     auto [rho, E] = eq.extrapolate(x);
@@ -63,6 +70,8 @@ private:
   RC rc;
   Triangle tri_ref;
   WENOPoly weno_poly;
+  Scaling scaling;
+  cvars_t scale = cvars_t::zeros();
 };
 
 } // namespace zisa

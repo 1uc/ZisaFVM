@@ -52,7 +52,11 @@ TEST_CASE("ReferenceSolution; basic API", "[math]") {
   using eq_t = zisa::NoEquilibrium;
   auto eq = eq_t{};
 
-  auto ref = zisa::EulerReferenceSolution<eq_t>(fine_grid, all_vars_ref, eq);
+  using scaling_t = zisa::UnityScaling;
+  auto scaling = scaling_t{};
+
+  auto ref = zisa::EulerReferenceSolution<eq_t, scaling_t>(
+      fine_grid, all_vars_ref, eq, scaling);
 
   zisa::int_t k_var = 0;
 

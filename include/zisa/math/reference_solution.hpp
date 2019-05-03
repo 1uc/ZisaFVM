@@ -2,7 +2,6 @@
 #define REFERENCE_SOLUTION_H_51D7E
 
 #include <zisa/grid/grid.hpp>
-#include <zisa/grid/point_locator.hpp>
 #include <zisa/math/quadrature.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/model/euler.hpp>
@@ -18,22 +17,22 @@ public:
   average(const zisa::Grid &coarse_grid) const = 0;
 };
 
-template <class Equilibrium>
+template <class Equilibrium, class Scaling>
 class EulerReferenceSolution : public ReferenceSolution {
 protected:
   using eq_t = Equilibrium;
+  using grc_t = EulerGlobalReconstruction<Equilibrium, CWENO_AO, Scaling>;
 
 public:
   EulerReferenceSolution(std::shared_ptr<Grid> fine_grid,
-                         std::shared_ptr<AllVariables> fine_vars,
-                         const eq_t &eq)
+                         const std::shared_ptr<AllVariables> &fine_vars,
+                         const eq_t &eq,
+                         const Scaling &scaling)
       : fine_grid(std::move(fine_grid)), n_cvars(fine_vars->cvars.shape(1)) {
 
     LOG_ERR_IF(fine_vars->dims().n_avars != n_avars, "Dimension mismatch.");
 
-    grc = std::make_shared<EulerGlobalReconstruction<Equilibrium, CWENO_AO>>(
-        this->fine_grid, weno_params(), eq);
-
+    grc = std::make_shared<grc_t>(this->fine_grid, weno_params(), eq, scaling);
     grc->compute(*fine_vars);
   }
 
@@ -88,8 +87,7 @@ protected:
 
 private:
   std::shared_ptr<Grid> fine_grid;
-  // std::shared_ptr<PointLocator> point_locator;
-  std::shared_ptr<EulerGlobalReconstruction<Equilibrium, CWENO_AO>> grc;
+  std::shared_ptr<grc_t> grc;
 
   int_t n_cvars;
   int_t n_avars = 0;
