@@ -12,7 +12,7 @@ class ScatterPlot:
 
     def __call__(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
-        plt.plot(radii, data, "*", markersize=2)
+        plt.plot(radii, data, "k*", markersize=2)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)

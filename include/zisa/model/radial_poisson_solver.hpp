@@ -32,6 +32,11 @@ public:
   virtual void update(RadialGravity &gravity,
                       const AllVariables &all_variables) const override;
 
+  friend void save(HDF5Writer &writer, const RadialPoissonSolver &solver);
+
+  [[nodiscard]] static RadialPoissonSolver
+  load(HDF5Reader &reader, const std::shared_ptr<Grid> &grid);
+
 protected:
   template <class Rho>
   void update_gravity(RadialGravity &gravity, const Rho &rho) const;
@@ -47,42 +52,57 @@ private:
   double G;
 };
 
-/// Solves a radial poisson equation for the gravity.
-/** This version does not use the cell-averages directly, instead it uses the
- * (well-balanced) reconstruction to determine the density.
- */
-class CrudeRadialPoissonSolver {
-private:
-  using euler_t = Euler<JankaEOS, RadialGravity>;
-  using cvars_t = euler_t::cvars_t;
+void save(HDF5Writer &writer, const RadialPoissonSolver &solver);
 
-public:
-  CrudeRadialPoissonSolver(std::shared_ptr<euler_t> euler,
-                           std::shared_ptr<GlobalReconstruction<cvars_t>> grc,
-                           array<array<int_t, 1>, 1> cell_indices,
-                           array<XYZ, 1> quad_points,
-                           double gravitational_constant)
-      : euler(std::move(euler)),
-        grc(std::move(grc)),
-        cell_indices(std::move(cell_indices)),
-        quad_points(std::move(quad_points)),
-        G(gravitational_constant) {}
-
-  virtual ~CrudeRadialPoissonSolver() = default;
-
-  virtual void compute(const SimulationClock &, AllVariables &);
-
-protected:
-  double layer_mass(int_t layer) const;
-
-private:
-  std::shared_ptr<euler_t> euler;
-  std::shared_ptr<GlobalReconstruction<cvars_t>> grc;
-  array<array<int_t, 1>, 1> cell_indices;
-  array<XYZ, 1> quad_points;
-
-  double G;
-};
+///// Solves a radial poisson equation for the gravity.
+///** This version does not use the cell-averages directly, instead it uses
+/// the
+// * (well-balanced) reconstruction to determine the density.
+// */
+// class CrudeRadialPoissonSolver : public PoissonSolver {
+// private:
+//  using euler_t = Euler<JankaEOS, RadialGravity>;
+//  using cvars_t = euler_t::cvars_t;
+//
+// public:
+//  CrudeRadialPoissonSolver(std::shared_ptr<GlobalReconstruction<cvars_t>>
+//  grc,
+//                           array<array<int_t, 1>, 1> cell_indices,
+//                           array<XYZ, 1> quad_points,
+//                           double gravitational_constant)
+//      : grc(std::move(grc)),
+//        cell_indices(std::move(cell_indices)),
+//        quad_points(std::move(quad_points)),
+//        G(gravitational_constant) {}
+//
+//  virtual void update(RadialGravity &gravity,
+//                      const AllVariables &all_variables) const override {
+//    const auto &radii = gravity.radius_array();
+//
+//    compute_average_density(radii, all_variables);
+//  }
+//
+// protected:
+//  double layer_mass(int_t layer) const;
+//  void compute_average_densities(const array<double, 1> &radii) const {
+//    int_t n_layers = radii.size() - 1;
+//
+//    for (int_t l = 0; l < n_layers; ++l) {
+//      rho_bar(l) = average_density(radii, l);
+//    }
+//  }
+//
+//  double average_density(const array<double, 1> &radii, l) {}
+//
+// private:
+//  std::shared_ptr<GlobalReconstruction<cvars_t>> grc;
+//  array<array<int_t, 1>, 1> cell_indices;
+//  array<XYZ, 1> quad_points;
+//
+//  mutable array<double, 1> rho_bar;
+//
+//  double G;
+//};
 
 /// Generate a list of radii such that each layer contains a few cell.
 /**
@@ -105,13 +125,12 @@ make_radial_poisson_solver(const array<double, 1> &radii,
                            const std::shared_ptr<Grid> &grid,
                            double gravitational_constant);
 
-std::shared_ptr<CrudeRadialPoissonSolver> make_crude_radial_poisson_solver(
-    const std::shared_ptr<Euler<JankaEOS, RadialGravity>> &euler,
-    const std::shared_ptr<GlobalReconstruction<euler_var_t>> &grc,
-    const Grid &grid,
-    double gravitational_constant,
-    int_t n_quad_points);
-
+// std::shared_ptr<CrudeRadialPoissonSolver> make_crude_radial_poisson_solver(
+//    const std::shared_ptr<Euler<JankaEOS, RadialGravity>> &euler,
+//    const std::shared_ptr<GlobalReconstruction<euler_var_t>> &grc,
+//    const Grid &grid,
+//    double gravitational_constant,
+//    int_t n_quad_points);
 }
 
 #endif // ZISA_SELF_GRAVITY_HPP

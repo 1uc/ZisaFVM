@@ -112,6 +112,7 @@ def load_results(coarse_runs, reference_run):
     fine_grid = load_grid(ref_dir)
     u_exact = load_data(find_last_data_file(ref_dir),
                         find_steady_state_file(ref_dir))
+    t_end = u_exact.time
 
     for coarse_run in coarse_runs:
         coarse_dir = folder_name(coarse_run)
@@ -131,6 +132,10 @@ def load_results(coarse_runs, reference_run):
 
         l1_err = np.sum(volumes*np.abs(rho_approx - rho_ref))
         l1_eq_err = np.sum(volumes*np.abs(drho_approx - drho_ref))
+
+        if np.abs(u_approx.time - t_end) > 1e-8*t_end:
+            l1_err = np.nan * l1_err
+            l1_eq_err = np.nan * l1_eq_err
 
         results.append({
             "order": coarse_run.order(),

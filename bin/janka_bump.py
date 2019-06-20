@@ -47,8 +47,10 @@ class JankaBumpExperiment(sc.Subsection):
 rho_center = 1e10
 K_center = 4.897e+14
 G = 6.674e-8
-radius = 0.95 * ((2.0 * K_center / (4.0 * np.pi * G))**0.5 * np.pi)
-amplitudes = [0.0, 1e-8, 1e-6, 1e-4]
+radius = ((2.0 * K_center / (4.0 * np.pi * G))**0.5 * np.pi)
+amplitudes = [0.0, 1e-8, 1e-4, 1e-1, 1e2]
+# amplitudes = [0.0]
+# amplitudes = [1e2]
 width = 0.10 * radius
 
 
@@ -69,7 +71,7 @@ def grid_name_msh(l):
     return grid_name_stem(l) + ".msh"
 
 
-mesh_levels = list(range(0, 5))
+mesh_levels = list(range(0, 6))
 lc_rel = {l : 0.1 * 0.5**l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 4))
@@ -81,20 +83,24 @@ coarse_grid_choices = {
     ]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_name_msh(4), 4)
+reference_grid = sc.Grid(grid_name_msh(5), 5)
 
 independent_choices = {
     "euler": [euler],
-
-    "flux-bc": [sc.FluxBC("isentropic")],
-
-    "well-balancing": [sc.WellBalancing("constant"),
-                       sc.WellBalancing("isentropic")],
 
     "io": [io],
 
     "time": [time],
 }
+
+dependent_choices_a = {
+    "flux-bc": [sc.FluxBC("constant"),
+                sc.FluxBC("isentropic")],
+
+    "well-balancing": [sc.WellBalancing("constant"),
+                       sc.WellBalancing("isentropic")],
+}
+
 
 # dependent_choices = {
 #     "reconstruction": [
@@ -116,7 +122,7 @@ independent_choices = {
 #     ]
 # }
 
-dependent_choices = {
+dependent_choices_b = {
     "reconstruction": [
         sc.Reconstruction("CWENO-AO", [1]),
         sc.Reconstruction("CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]),
@@ -152,8 +158,9 @@ reference_choices = {
     "reference": [sc.Reference("isentropic", coarse_grid_names)]
 }
 
-base_choices = all_combinations(independent_choices)
-model_choices = base_choices.product(pointwise_combinations(dependent_choices))
+base_choices = pointwise_combinations(independent_choices)
+base_choices = base_choices.product(pointwise_combinations(dependent_choices_a))
+model_choices = base_choices.product(pointwise_combinations(dependent_choices_b))
 
 coarse_runs_ = model_choices.product(coarse_grids)
 reference_runs_ = all_combinations(reference_choices)
@@ -182,40 +189,43 @@ def post_process(coarse_runs, reference_run):
     write_convergence_table(results, columns, labels, filename)
     plot_visual_convergence(results, columns, labels, filename)
 
-    # coarse_run = coarse_runs[1]
-    # coarse_dir = folder_name(coarse_run)
-    # coarse_grid = load_grid(coarse_dir)
-    #
-    #
-    # data_files = find_data_files(coarse_dir)
-    #
-    # for data_file in data_files[-1:]:
-    #     print(data_file)
-    #     u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
-    #
-    #
-    #     drho = u_coarse.dvars["rho"]
-    #     rho = u_coarse.cvars["rho"]
-    #     vx = u_coarse.cvars["mv1"] / rho
-    #     vy = u_coarse.cvars["mv2"] / rho
-    #     p = u_coarse.xvars["p"]
-    #     dE = u_coarse.dvars["E"]
-    #
-    #     # trip = TriPlot()
-    #     # trip.color_plot(coarse_grid, rho)
-    #     # trip.quiver(coarse_grid, vx, vy)
-    #
-    #     plot = ScatterPlot()
-    #     plot(coarse_grid, np.log10(rho))
-    #     plt.show()
-    #
-    #     plot = ScatterPlot()
-    #     plot(coarse_grid, dE)
-    #     plt.show()
-    #
-    #     plot = ScatterPlot()
-    #     plot(coarse_grid, np.log10(p))
-    #     plt.show()
+    for coarse_run in coarse_runs:
+        coarse_dir = folder_name(coarse_run)
+        coarse_grid = load_grid(coarse_dir)
+        data_files = find_data_files(coarse_dir)
+
+        # for data_file in data_files[-1:]:
+        #     print(data_file)
+        #     u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+        #
+        #     drho = u_coarse.dvars["rho"]
+        #     rho = u_coarse.cvars["rho"]
+        #     vx = u_coarse.cvars["mv1"] / rho
+        #     vy = u_coarse.cvars["mv2"] / rho
+        #     p = u_coarse.xvars["p"]
+        #     dE = u_coarse.dvars["E"]
+        #
+        #     # trip = TriPlot()
+        #     # trip.color_plot(coarse_grid, rho)
+        #     # trip.quiver(coarse_grid, vx, vy)
+        #
+        #     plot = ScatterPlot()
+        #     plot(coarse_grid, np.log10(rho))
+        #     plt.xlabel("Radius [cm]")
+        #     plt.ylabel(r"$log_{10}(\rho)$ [g/cm^3]")
+        #     plt.savefig(coarse_dir + "/img/rho_scatter.png")
+        #
+        #     # plot = ScatterPlot()
+        #     # plot(coarse_grid, dE)
+        #     # plt.xlabel("Radius [cm]")
+        #     # plt.ylabel("log_10(\\rho) [g/cm^3]")
+        #     # plt.savefig(coarse_dir + "/img/rho_scatter.png")
+        #
+        #     plot = ScatterPlot()
+        #     plot(coarse_grid, np.log10(p))
+        #     plt.xlabel("Radius [cm]")
+        #     plt.ylabel(r"$log_{10}(p)$ [barye]")
+        #     plt.savefig(coarse_dir + "/img/p_scatter.png")
 
 
 

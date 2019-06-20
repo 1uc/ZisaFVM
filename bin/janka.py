@@ -6,6 +6,7 @@ import glob
 
 import numpy as np
 import matplotlib.pyplot as plt
+import h5py
 
 import tiwaz
 import tiwaz.scheme as sc
@@ -27,10 +28,15 @@ from tiwaz.hd2d import hd2d
 
 polytropic_index_n = 3.0
 polytropic_gamma = (polytropic_index_n + 1.0)/polytropic_index_n
-polytrope_radius = 1.3e8
+polytrope_radius = 1.45e8
 rho_center = 1e10
 K_center = 4.897e+14
 gamma1 = 1.325
+# gamma1 = 1.25
+
+mesh_levels = list(range(0, 2))
+coarse_grid_levels = list(range(1, 2))
+
 
 janka_params = dict(rho_bounce = 2e14,
                     gamma1 = gamma1,
@@ -75,10 +81,7 @@ def grid_name(l):
 def geo_grid_name(l):
     return grid_name_stem(l) + ".geo"
 
-mesh_levels = list(range(1, 2))
 mesh_sizes = [(1e-3 * 0.5**l, 0.3e-1 * 0.5**l) for l in mesh_levels]
-
-coarse_grid_levels = list(range(1, 2))
 coarse_grid_names = [grid_name(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -92,12 +95,12 @@ reference_grid = sc.Grid(grid_name(mesh_levels[-1]), mesh_levels[-1])
 independent_choices = {
     "euler": [euler],
 
-    "flux-bc": [sc.FluxBC("isentropic")],
-    # "flux-bc": [sc.FluxBC("constant")],
+    # "flux-bc": [sc.FluxBC("isentropic")],
+    "flux-bc": [sc.FluxBC("constant")],
 
-    "well-balancing": [ sc.WellBalancing("isentropic") ],
+    # "well-balancing": [ sc.WellBalancing("isentropic") ],
 
-    # "well-balancing": [ sc.WellBalancing("constant") ],
+    "well-balancing": [ sc.WellBalancing("constant") ],
 
     # "well-balancing": [ sc.WellBalancing("constant"),
     #                     sc.WellBalancing("isentropic")],
@@ -117,7 +120,7 @@ dependent_choices = {
 
     "ode": [
         # sc.ODE("ForwardEuler")
-        sc.ODE("SSP3")
+        sc.ODE("SSP3", cfl_number=0.8)
         # sc.ODE("SSP3")
         # sc.ODE("SSP3")
     ],
@@ -166,6 +169,47 @@ def make_runs(params):
 all_runs = [make_runs(param) for param in experiment_params]
 
 def post_process(coarse_runs, reference_run):
+    ref_dir = os.path.expandvars("${SCRATCH}/1d_reference/janka/hd2d_collapse_4Luc/data")
+
+    # a = hd2d(ref_dir, "test1d", 201)
+    #
+    # rho_ref = a.v[0].reshape(-1)
+    # phi_ref = a.v[23].reshape(-1)
+    # r_ref = a.x1.reshape(-1)
+    #
+    # with h5py.File("recomputed_gravity.h5", "r") as h5:
+    #     phi = np.array(h5["model/gravity/phi"])[:-1]
+    #     r = np.array(h5["model/gravity/radii"])[:-1]
+    #     rho = np.array(h5["rho"])
+    #
+    # with h5py.File("grid.h5") as h5:
+    #     x = np.linalg.norm(np.array(h5["cell_centers"]), axis=1)
+    #
+    # plt.plot(r_ref, phi_ref - phi_ref[0], label="ref")
+    # plt.plot(r, phi - phi[0], label="approx")
+    # plt.legend()
+    # plt.show()
+    #
+    # def avg(x):
+    #     return 0.5*(x[1:] + x[:-1])
+    #
+    # def diff(x):
+    #     return x[1:] - x[:-1]
+    #
+    # plt.loglog(avg(r_ref), diff(phi_ref) / diff(r_ref), label="ref")
+    # plt.loglog(avg(r), diff(phi) / diff(r), label="approx")
+    # plt.legend()
+    # plt.show()
+    #
+    # plt.loglog(r_ref, rho_ref, '+', label="ref")
+    # plt.loglog(x, rho, '.', label="approx")
+    # plt.legend()
+    # plt.show()
+
+
+
+
+
     for coarse_run in coarse_runs:
         coarse_dir = folder_name(coarse_run)
         coarse_grid = load_grid(coarse_dir)
@@ -190,7 +234,6 @@ def post_process(coarse_runs, reference_run):
         # plt.title("p")
         # plt.show()
 
-        ref_dir = os.path.expandvars("${SCRATCH}/1d_reference/janka/hd2d_collapse_4Luc/data")
 
         data_files = find_data_files(coarse_dir)
 
@@ -269,8 +312,22 @@ def post_process(coarse_runs, reference_run):
             phi = u_coarse.gravity["phi"]
             phi = phi - phi[0]
 
-            plt.plot(radii, phi, label="phi")
-            plt.plot(a.x1, a.v[23] - a.v[23][0], label="phi_ref")
+            plt.plot(radii, phi, "+", label="phi")
+            plt.plot(a.x1, a.v[23] - a.v[23][0], ".", label="phi_ref")
+
+            text = "t = {:.3e}".format(u_coarse.time)
+            plt.gca().text(0.70, 0.05, text, transform=plt.gca().transAxes)
+            plt.legend()
+            plt.savefig("{}/img/phi-{:04d}.png".format(coarse_dir, k))
+            plt.close()
+
+            plt.figure()
+            radii = u_coarse.gravity["radii"][1:]
+            phi = u_coarse.gravity["phi"][1:]
+            phi = phi - phi[0]
+
+            plt.loglog(radii, phi, "+", label="phi")
+            # plt.loglog(a.x1, a.v[23] - a.v[23][0], ".", label="phi_ref")
 
             text = "t = {:.3e}".format(u_coarse.time)
             plt.gca().text(0.70, 0.05, text, transform=plt.gca().transAxes)
@@ -311,7 +368,7 @@ def main():
 
     if args.run:
         build_zisa()
-        generate_grids()
+        # generate_grids()
 
         for c, r in all_runs:
             launch_all(c, force=args.force)
