@@ -1,6 +1,19 @@
 import itertools
 import numpy as np
 
+import matplotlib
+import matplotlib.pyplot as plt
+
+# for plots
+from matplotlib import rcParams
+rcParams.update({ 'font.family': 'sans-serif',
+                  'font.size': 18,
+                  'xtick.labelsize': 18,
+                  'ytick.labelsize': 18,
+                  'figure.autolayout': True,
+                  'axes.formatter.limits': (-1, 3)})
+
+
 from . post_process import extract_solver_data
 
 class LatexConvergenceTable(object):
@@ -98,6 +111,26 @@ def format_x_err_rate_y_solver(solver_keys, resolutions, l1_errors, rates):
     return table
 
 
+def linestyle(wb):
+    if wb == 'constant':
+        kwargs = {
+            "marker": '+',
+            'mew': 7,
+            'ms': 3,
+            'linewidth': 3,
+            "color": "#003380"
+        }
+    else:
+        kwargs = {
+            "marker": 'o',
+            'linewidth': 3,
+            "color": '#d40000'
+        }
+
+    return kwargs
+
+
+
 def write_convergence_table(results, columns, labels, filename):
     """Write a latex table of convergence rates to disk."""
 
@@ -105,6 +138,8 @@ def write_convergence_table(results, columns, labels, filename):
         all_errors = []
         all_rates = []
         solver_keys = [labels(col) for col in columns]
+
+        plt.clf()
 
         for col in columns:
             result = extract_solver_data(col, results)
@@ -116,6 +151,9 @@ def write_convergence_table(results, columns, labels, filename):
             all_errors.append(l1_err)
             all_rates.append(rate)
 
+            kwargs = linestyle(col['wb'])
+            plt.loglog(resolutions, l1_err, **kwargs)
+
         l1_errors = np.array(all_errors)
         rates = np.array(all_rates)
 
@@ -124,3 +162,24 @@ def write_convergence_table(results, columns, labels, filename):
 
         table = LatexConvergenceTable(x_labels, data)
         table.write(filename + "_" + key + ".tex")
+
+        plt.minorticks_off()
+
+        f_ = matplotlib.ticker.ScalarFormatter(useOffset=False, useMathText=True)
+        g_ = lambda x,pos : "${}$".format(f_._formatSciNotation('%1.2e' % x))
+
+        plt.xticks(resolutions, [g_(res, None) for res in resolutions])
+        plt.xlabel(r"Resolution $\Delta x$")
+        plt.ylabel(r"$err_1(\Delta \rho)$")
+
+
+        wb_line = matplotlib.lines.Line2D([], [], **linestyle("isentropic"), label='isentropic')
+        const_line = matplotlib.lines.Line2D([], [], **linestyle("constant"), label='constant')
+
+
+        plt.legend(handles=[wb_line, const_line])
+        plt.savefig(filename + "_" + key + ".png")
+        plt.close()
+        # print(filename + "_" + key + ".png")
+        # plt.show()
+
