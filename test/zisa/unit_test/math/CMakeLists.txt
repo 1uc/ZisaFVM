@@ -12,6 +12,7 @@ target_sources(unit_tests
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/quasi_newton.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/reference_solution.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/subnormal.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/symmetric_coices.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/triangle.cpp
 )
 
