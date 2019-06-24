@@ -16,6 +16,7 @@
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
+#include <zisa/math/symmetric_choices.hpp>
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
@@ -230,46 +231,82 @@ int_t count_vertices(const vertex_indices_t &vertex_indices) {
   return *std::max_element(vertex_indices.begin(), vertex_indices.end()) + 1;
 }
 
-edges_t compute_edges(const vertex_indices_t &vertex_indices) {
+vertex_neighbours_t
+compute_vertex_neighbours(const vertex_indices_t &vertex_indices) {
   auto n_vertices = count_vertices(vertex_indices);
   auto n_cells = vertex_indices.shape(0);
+  auto max_neighbours = vertex_indices.shape(1);
 
-  edges_t ret(n_vertices);
+  vertex_neighbours_t ret(n_vertices);
 
-  assert(vertex_indices.shape(0) == n_cells);
   for (int_t i = 0; i < n_cells; ++i) {
+    for (int_t k = 0; k < max_neighbours; ++k) {
 
-    int_t v0 = vertex_indices(i, int_t(0));
-    int_t v1 = vertex_indices(i, int_t(1));
-    int_t v2 = vertex_indices(i, int_t(2));
-
-    ret[v0][v1] = i;
-    ret[v1][v2] = i;
-    ret[v2][v0] = i;
+      auto v = vertex_indices(i, k);
+      ret[v].push_back(i);
+    }
   }
 
   return ret;
 }
 
-neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
-  // Only works when all polygons in the grid have the same number of edges.
-  assert(vertex_indices.shape(1) == 3);
+std::optional<std::pair<int_t, int_t>>
+common_face(const vertex_indices_t &vertex_indices, int_t i, int_t j) {
+  // TODO this only works for triangles.
 
-  int_t n_cells = vertex_indices.shape(0);
-  int_t max_neighbours = vertex_indices.shape(1);
+  auto max_neighbours = vertex_indices.shape(1);
+  auto si = std::vector<bool>(max_neighbours);
+  auto sj = std::vector<bool>(max_neighbours);
+
+  std::fill(si.begin(), si.end(), false);
+  std::fill(sj.begin(), sj.end(), false);
+
+  for (int_t k = 0; k < max_neighbours; ++k) {
+    auto vi = vertex_indices(i, k);
+
+    for (int_t l = 0; l < max_neighbours; ++l) {
+      if (vi == vertex_indices(j, l)) {
+        si[k] = true;
+        sj[l] = true;
+      }
+    }
+  }
+
+  // This is the part that is specific for triangles.
+  auto relative_neighbour_index = [](const auto &s) {
+    for (int_t k = 0; k < 3; ++k) {
+      if (s[k] && s[(k + 1) % 3]) {
+        return k;
+      }
+    }
+
+    return magic_index_value;
+  };
+
+  auto ki = relative_neighbour_index(si);
+  auto kj = relative_neighbour_index(sj);
+
+  if (ki == magic_index_value) {
+    return std::nullopt;
+  }
+
+  return std::optional<std::pair<int_t, int_t>>({ki, kj});
+}
+
+neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
+  int_t n_vertices = count_vertices(vertex_indices);
 
   auto neighbours = empty_like(vertex_indices);
   std::fill(neighbours.begin(), neighbours.end(), magic_index_value);
 
-  auto edges = compute_edges(vertex_indices);
+  auto vertex_neighbours = compute_vertex_neighbours(vertex_indices);
 
-  for (int_t i = 0; i < n_cells; ++i) {
-    for (int_t k = 0; k < max_neighbours; ++k) {
-      const auto &v0 = vertex_indices(i, k);
-      const auto &v1 = vertex_indices(i, (k + 1) % max_neighbours);
-
-      if (edges[v1].find(v0) != edges[v1].end()) {
-        neighbours(i, k) = edges[v1][v0];
+  for (int_t vi = 0; vi < n_vertices; ++vi) {
+    for (auto [i, j] : strict_symmetric_choices(vertex_neighbours[vi])) {
+      auto face = common_face(vertex_indices, i, j);
+      if (face) {
+        neighbours(i, face->first) = j;
+        neighbours(j, face->second) = i;
       }
     }
   }

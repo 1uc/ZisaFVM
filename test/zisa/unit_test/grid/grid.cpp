@@ -10,7 +10,7 @@
 #include <zisa/testing/testing_framework.hpp>
 #include <zisa/utils/to_string.hpp>
 
-TEST_CASE("Grid; small_example", "[grid]") {
+TEST_CASE("Grid; two_triangles", "[grid]") {
 
   zisa::int_t n_cells = 2;
   zisa::int_t n_vertices = 4;
@@ -30,30 +30,6 @@ TEST_CASE("Grid; small_example", "[grid]") {
   vertex_indices(1, 0) = 1;
   vertex_indices(1, 1) = 2;
   vertex_indices(1, 2) = 3;
-
-  SECTION("compute_edges") {
-    auto edges = zisa::compute_edges(vertex_indices);
-
-    REQUIRE(edges[0].find(0) == edges[0].end());
-    REQUIRE(edges[0].find(1) != edges[0].end());
-    REQUIRE(edges[0].find(2) == edges[0].end());
-    REQUIRE(edges[0].find(3) == edges[0].end());
-
-    REQUIRE(edges[1].find(0) == edges[1].end());
-    REQUIRE(edges[1].find(1) == edges[1].end());
-    REQUIRE(edges[1].find(2) != edges[1].end());
-    REQUIRE(edges[1].find(3) != edges[1].end());
-
-    REQUIRE(edges[2].find(0) == edges[2].end());
-    REQUIRE(edges[2].find(1) == edges[2].end());
-    REQUIRE(edges[2].find(2) == edges[2].end());
-    REQUIRE(edges[2].find(3) != edges[2].end());
-
-    REQUIRE(edges[3].find(0) != edges[3].end());
-    REQUIRE(edges[3].find(1) != edges[3].end());
-    REQUIRE(edges[3].find(2) == edges[3].end());
-    REQUIRE(edges[3].find(3) == edges[3].end());
-  }
 
   SECTION("compute_neighbours") {
     auto neighbours = zisa::compute_neighbours(vertex_indices);
@@ -116,6 +92,37 @@ TEST_CASE("Grid; small_example", "[grid]") {
     REQUIRE(volumes.shape(0) == n_cells);
     REQUIRE(zisa::almost_equal(volumes(0), 0.5, 1e-12));
   }
+}
+
+TEST_CASE("Grid; dbg mesh", "[grid]") {
+  auto grid = zisa::load_gmsh("grids/dbg.msh");
+
+  auto magic_value = zisa::int_t(-1);
+
+  // clang-format off
+  auto raw = std::vector<zisa::int_t>{
+          1, 14, 3,
+          6, 0, 9,
+          14, 6, magic_value,
+          12, 0, magic_value,
+          15, 8, magic_value,
+          13, 10, magic_value,
+          2, 1, 7,
+          6, 8, 15,
+          4, 7, 11,
+          10, 1, 12,
+          5, 11, 9,
+          8, 10, 13,
+          magic_value, 9, 3,
+          magic_value, 11, 5,
+          magic_value, 0, 2,
+          magic_value, 7, 4
+  };
+  // clang-format on
+  auto exact
+      = zisa::array<zisa::int_t, 2>(raw.data(), zisa::shape_t<2>{16ul, 3ul});
+
+  REQUIRE(grid->neighbours == exact);
 }
 
 TEST_CASE("Grid; sizes", "[grid]") {
