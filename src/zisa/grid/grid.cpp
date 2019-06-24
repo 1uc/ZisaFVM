@@ -411,8 +411,7 @@ std::shared_ptr<Grid> load_grid(const std::string &filename) {
 }
 
 std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
-
-  auto gmsh = GMSHReader(filename);
+  auto gmsh = GMSHData(filename);
 
   auto max_neighbours = int_t(3);
   auto n_vertices = gmsh.vertices.size();
