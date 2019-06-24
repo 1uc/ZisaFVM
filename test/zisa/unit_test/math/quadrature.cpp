@@ -3,6 +3,7 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/comparison.hpp>
+#include <zisa/math/denormalized_rule.hpp>
 #include <zisa/math/mathematical_constants.hpp>
 #include <zisa/math/quadrature.hpp>
 
@@ -41,4 +42,23 @@ TEST_CASE("Quadrature; smooth f", "[math]") {
   SECTION("p == 2") { check_convergence(3.0, 1e-14, 2); }
   SECTION("p == 3") { check_convergence(4.0, 1e-14, 3); }
   SECTION("p == 4") { check_convergence(5.0, 1e-14, 4); }
+}
+
+TEST_CASE("Quadrature; physical domain") {
+  auto f = [](const zisa::XYZ &x) {
+    return zisa::sin(0.5 * zisa::pi * x[0]) + zisa::sin(0.5 * zisa::pi * x[1]);
+  };
+
+  auto qr_ = zisa::cached_triangular_quadrature_rule(3);
+  auto tri = zisa::reference_triangle();
+
+  auto qr = zisa::denormalize(qr_, tri);
+
+  auto fint_approx = zisa::quadrature(qr, f);
+  auto fint_ref = zisa::quadrature(qr_, f, tri);
+  REQUIRE(zisa::almost_equal(fint_approx, fint_ref, 1e-10));
+
+  auto fbar_approx = zisa::average(qr, f);
+  auto fbar_ref = zisa::average(qr_, f, tri);
+  REQUIRE(zisa::almost_equal(fbar_approx, fbar_ref, 1e-10));
 }

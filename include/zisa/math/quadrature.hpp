@@ -17,6 +17,14 @@
 
 namespace zisa {
 
+namespace detail {
+
+struct UnitDomain {};
+inline XYZ coord(const UnitDomain &, const XYZ &x) { return x; }
+inline double volume(const UnitDomain &) { return 1.0; }
+
+}
+
 template <class QR, class F, class Domain>
 auto quadrature(const QR &qr, const F &f, const Domain &domain)
     -> decltype(f(std::declval<XYZ>())) {
@@ -35,6 +43,17 @@ auto quadrature(const QR &qr, const F &f, const Domain &domain)
   }
 
   return fx_t(volume(domain) * ret);
+}
+
+template <class QR, class F>
+auto quadrature(const QR &qr, const F &f) {
+  return quadrature(qr, f, detail::UnitDomain{});
+}
+
+template <class QR, class F>
+auto average(const QR &qr, const F &f) {
+  using fx_t = decltype(f(std::declval<XYZ>()));
+  return fx_t(quadrature(qr, f, detail::UnitDomain{}) / volume(qr));
 }
 
 // -----------------
