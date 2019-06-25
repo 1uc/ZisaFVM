@@ -7,6 +7,7 @@
 #include <limits>
 #include <map>
 
+#include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/grid/grid_decl.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/memory/array.hpp>
@@ -26,7 +27,8 @@ using tangentials_t = array<XYZ, 1>;
 using cell_centers_t = array<XYZ, 1>;
 using is_valid_t = array<bool, 2>;
 
-neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices);
+neighbours_t compute_neighbours(GMSHElementType element_type,
+                                const vertex_indices_t &vertex_indices);
 is_valid_t compute_valid_neighbours(const neighbours_t &neighbours);
 edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
                                     const is_valid_t &is_valid);
@@ -40,7 +42,8 @@ normals_t compute_normals(const vertices_t &vertices,
                           const is_valid_t &is_valid,
                           const edge_indices_t &edge_indices);
 
-volumes_t compute_volumes(const vertices_t &vertices,
+volumes_t compute_volumes(GMSHElementType element_type,
+                          const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices);
 } // namespace zisa
 #endif /* end of include guard */

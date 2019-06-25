@@ -17,6 +17,7 @@
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/symmetric_choices.hpp>
+#include <zisa/math/tetrahedron.hpp>
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
@@ -101,41 +102,64 @@ tangentials_t compute_tangentials(const normals_t &normals) {
   return tangentials;
 }
 
-volumes_t compute_volumes(const vertices_t &vertices,
-                          const vertex_indices_t &vertex_indices) {
-  assert(vertex_indices.shape(1) == 3);
+double volume(GMSHElementType element_type,
+              const vertices_t &vertices,
+              const vertex_indices_t &vertex_indices,
+              int_t i) {
 
+  const auto &v0 = vertices[vertex_indices(i, int_t(0))];
+  const auto &v1 = vertices[vertex_indices(i, int_t(1))];
+  const auto &v2 = vertices[vertex_indices(i, int_t(2))];
+
+  if (element_type == GMSHElementType::triangle) {
+    return volume(Triangle{v0, v1, v2});
+  } else if (element_type == GMSHElementType::tetrahedron) {
+    const auto &v3 = vertices[vertex_indices(i, int_t(3))];
+    return volume(Tetrahedron{v0, v1, v2, v3});
+  }
+
+  LOG_ERR("Unknown element type.")
+}
+
+volumes_t compute_volumes(GMSHElementType element_type,
+                          const vertices_t &vertices,
+                          const vertex_indices_t &vertex_indices) {
   int_t n_cells = vertex_indices.shape(0);
   auto volumes = volumes_t(shape_t<1>(n_cells));
 
   for (int_t i = 0; i < n_cells; ++i) {
-    const auto &v0 = vertices[vertex_indices(i, int_t(0))];
-    const auto &v1 = vertices[vertex_indices(i, int_t(1))];
-    const auto &v2 = vertices[vertex_indices(i, int_t(2))];
-
-    auto a = norm(v1 - v0);
-    auto b = norm(v2 - v1);
-    auto c = norm(v0 - v2);
-
-    volumes(i) = herons_formula(a, b, c);
+    volumes(i) = volume(element_type, vertices, vertex_indices, i);
   }
 
   return volumes;
 }
 
-cell_centers_t compute_cell_centers(const vertices_t &vertices,
-                                    const vertex_indices_t &vertex_indices) {
-  assert(vertex_indices.shape(1) == 3);
+XYZ cell_center(GMSHElementType element_type,
+                const vertices_t &vertices,
+                const vertex_indices_t &vertex_indices,
+                int_t i) {
+  const auto &v0 = vertices[vertex_indices(i, int_t(0))];
+  const auto &v1 = vertices[vertex_indices(i, int_t(1))];
+  const auto &v2 = vertices[vertex_indices(i, int_t(2))];
 
+  if (element_type == GMSHElementType::triangle) {
+    return barycenter(Triangle{v0, v1, v2});
+  } else if (element_type == GMSHElementType::tetrahedron) {
+    const auto &v3 = vertices[vertex_indices(i, int_t(3))];
+    return barycenter(Tetrahedron{v0, v1, v2, v3});
+  }
+
+  LOG_ERR("Unknown element type.");
+}
+
+cell_centers_t compute_cell_centers(GMSHElementType element_type,
+                                    const vertices_t &vertices,
+                                    const vertex_indices_t &vertex_indices) {
   int_t n_cells = vertex_indices.shape(0);
   auto cell_centers = cell_centers_t(shape_t<1>{n_cells});
+
   for (int_t i = 0; i < n_cells; ++i) {
-
-    const auto &v1 = vertices[vertex_indices(i, int_t(0))];
-    const auto &v2 = vertices[vertex_indices(i, int_t(1))];
-    const auto &v3 = vertices[vertex_indices(i, int_t(2))];
-
-    cell_centers(i) = (v1 + v2 + v3) / 3.0;
+    cell_centers(i) = cell_center(element_type, vertices, vertex_indices, i);
   }
 
   return cell_centers;
@@ -250,11 +274,39 @@ compute_vertex_neighbours(const vertex_indices_t &vertex_indices) {
   return ret;
 }
 
-std::optional<std::pair<int_t, int_t>>
-common_face(const vertex_indices_t &vertex_indices, int_t i, int_t j) {
-  // TODO this only works for triangles.
+int_t relative_neighbour_index(GMSHElementType element_type,
+                               const std::vector<bool> &s) {
+  if (element_type == GMSHElementType::triangle) {
+    for (int_t k = 0; k < 3; ++k) {
+      if (s[k] && s[(k + 1) % 3]) {
+        return k;
+      }
+    }
+    return magic_index_value;
+  } else if (element_type == GMSHElementType::tetrahedron) {
 
+    if (s[0] && s[1] && s[3]) {
+      return int_t(0);
+    } else if (s[0] && s[2] && s[1]) {
+      return int_t(1);
+    } else if (s[0] && s[3] && s[2]) {
+      return int_t(2);
+    } else if (s[1] && s[2] && s[3]) {
+      return int_t(3);
+    } else {
+      return magic_index_value;
+    }
+  }
+  return magic_index_value;
+};
+
+std::optional<std::pair<int_t, int_t>>
+common_face(GMSHElementType element_type,
+            const vertex_indices_t &vertex_indices,
+            int_t i,
+            int_t j) {
   auto max_neighbours = vertex_indices.shape(1);
+
   auto si = std::vector<bool>(max_neighbours);
   auto sj = std::vector<bool>(max_neighbours);
 
@@ -272,19 +324,8 @@ common_face(const vertex_indices_t &vertex_indices, int_t i, int_t j) {
     }
   }
 
-  // This is the part that is specific for triangles.
-  auto relative_neighbour_index = [](const auto &s) {
-    for (int_t k = 0; k < 3; ++k) {
-      if (s[k] && s[(k + 1) % 3]) {
-        return k;
-      }
-    }
-
-    return magic_index_value;
-  };
-
-  auto ki = relative_neighbour_index(si);
-  auto kj = relative_neighbour_index(sj);
+  auto ki = relative_neighbour_index(element_type, si);
+  auto kj = relative_neighbour_index(element_type, sj);
 
   if (ki == magic_index_value) {
     return std::nullopt;
@@ -293,7 +334,8 @@ common_face(const vertex_indices_t &vertex_indices, int_t i, int_t j) {
   return std::optional<std::pair<int_t, int_t>>({ki, kj});
 }
 
-neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
+neighbours_t compute_neighbours(GMSHElementType element_type,
+                                const vertex_indices_t &vertex_indices) {
   int_t n_vertices = count_vertices(vertex_indices);
 
   auto neighbours = empty_like(vertex_indices);
@@ -303,7 +345,7 @@ neighbours_t compute_neighbours(const vertex_indices_t &vertex_indices) {
 
   for (int_t vi = 0; vi < n_vertices; ++vi) {
     for (auto [i, j] : strict_symmetric_choices(vertex_neighbours[vi])) {
-      auto face = common_face(vertex_indices, i, j);
+      auto face = common_face(element_type, vertex_indices, i, j);
       if (face) {
         neighbours(i, face->first) = j;
         neighbours(j, face->second) = i;
@@ -324,7 +366,9 @@ array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid) {
   return normalized_moments;
 }
 
-Grid::Grid(array<XYZ, 1> vertices_, array<int_t, 2> vertex_indices_)
+Grid::Grid(GMSHElementType element_type,
+           array<XYZ, 1> vertices_,
+           array<int_t, 2> vertex_indices_)
     : vertex_indices(std::move(vertex_indices_)),
       vertices(std::move(vertices_)) {
 
@@ -332,18 +376,19 @@ Grid::Grid(array<XYZ, 1> vertices_, array<int_t, 2> vertex_indices_)
   n_vertices = vertices.shape(0);
   max_neighbours = vertex_indices.shape(1);
 
-  neighbours = compute_neighbours(this->vertex_indices);
+  neighbours = compute_neighbours(element_type, this->vertex_indices);
   is_valid = compute_valid_neighbours(neighbours);
 
   n_interior_edges = count_interior_edges(neighbours, is_valid);
   n_exterior_edges = count_exterior_edges(is_valid);
   n_edges = n_interior_edges + n_exterior_edges;
 
-  cell_centers = compute_cell_centers(this->vertices, this->vertex_indices);
+  cell_centers = compute_cell_centers(
+      element_type, this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
   left_right = compute_left_right(edge_indices, neighbours, is_valid);
 
-  volumes = compute_volumes(this->vertices, this->vertex_indices);
+  volumes = compute_volumes(element_type, this->vertices, this->vertex_indices);
 
   normals = compute_normals(
       this->vertices, this->vertex_indices, neighbours, is_valid, edge_indices);
@@ -450,7 +495,7 @@ std::shared_ptr<Grid> load_grid(const std::string &filename) {
 std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
   auto gmsh = GMSHData(filename);
 
-  auto max_neighbours = int_t(3);
+  auto max_neighbours = GMSHElementInfo::n_vertices(gmsh.element_type);
   auto n_vertices = gmsh.vertices.size();
   auto n_cells = gmsh.vertex_indices.size();
 
@@ -469,7 +514,8 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
     }
   }
 
-  return std::make_shared<Grid>(std::move(vertices), std::move(vertex_indices));
+  return std::make_shared<Grid>(
+      gmsh.element_type, std::move(vertices), std::move(vertex_indices));
 }
 
 void save(HDF5Writer &writer, const Grid &grid) {

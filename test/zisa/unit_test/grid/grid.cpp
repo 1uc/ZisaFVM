@@ -1,5 +1,6 @@
 #include <random>
 
+#include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
@@ -14,6 +15,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
 
   zisa::int_t n_cells = 2;
   zisa::int_t n_vertices = 4;
+  auto element_type = zisa::GMSHElementType::triangle;
 
   auto vertices = zisa::array<zisa::XYZ, 1>(zisa::shape_t<1>{n_vertices});
   vertices(0) = {0.0, 0.0, 0.0};
@@ -32,7 +34,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
   vertex_indices(1, 2) = 3;
 
   SECTION("compute_neighbours") {
-    auto neighbours = zisa::compute_neighbours(vertex_indices);
+    auto neighbours = zisa::compute_neighbours(element_type, vertex_indices);
 
     REQUIRE(neighbours(0, 0) == zisa::magic_index_value);
     REQUIRE(neighbours(0, 1) == 1);
@@ -44,7 +46,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
   }
 
   SECTION("compute_valid_neighbours") {
-    auto neighbours = zisa::compute_neighbours(vertex_indices);
+    auto neighbours = zisa::compute_neighbours(element_type, vertex_indices);
     auto is_valid = zisa::compute_valid_neighbours(neighbours);
 
     REQUIRE(!is_valid(0, 0));
@@ -57,7 +59,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
   }
 
   SECTION("compute_edge_indices") {
-    auto neighbours = zisa::compute_neighbours(vertex_indices);
+    auto neighbours = zisa::compute_neighbours(element_type, vertex_indices);
     auto is_valid = zisa::compute_valid_neighbours(neighbours);
     auto edge_indices = zisa::compute_edge_indices(neighbours, is_valid);
 
@@ -73,7 +75,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
   }
 
   SECTION("compute_normals") {
-    auto neighbours = zisa::compute_neighbours(vertex_indices);
+    auto neighbours = zisa::compute_neighbours(element_type, vertex_indices);
     auto is_valid = zisa::compute_valid_neighbours(neighbours);
     auto edge_indices = zisa::compute_edge_indices(neighbours, is_valid);
     auto normals = zisa::compute_normals(
@@ -86,7 +88,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
   }
 
   SECTION("compute_volumes") {
-    auto volumes = compute_volumes(vertices, vertex_indices);
+    auto volumes = compute_volumes(element_type, vertices, vertex_indices);
 
     REQUIRE(volumes.shape().size() == 1);
     REQUIRE(volumes.shape(0) == n_cells);
@@ -347,4 +349,8 @@ TEST_CASE("Grid; locate", "[grid]") {
       REQUIRE(*i_cell == i);
     }
   }
+}
+
+TEST_CASE("Grid; tets", "[grid]") {
+  auto grid = zisa::load_gmsh("grids/cube.msh");
 }

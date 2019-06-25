@@ -5,6 +5,35 @@
 #include <zisa/utils/string_format.hpp>
 
 namespace zisa {
+class GMSHReader {
+public:
+  virtual ~GMSHReader() = default;
+  virtual GMSHData load(const std::string &filename) const = 0;
+
+protected:
+  mutable std::string filename;
+};
+
+class GMSHReader2 : public GMSHReader {
+private:
+  using index_t = std::size_t;
+  using vertices_t = std::vector<std::array<double, 3>>;
+  using vertex_indices_t = std::vector<std::vector<index_t>>;
+
+public:
+  virtual GMSHData load(const std::string &filename) const override;
+
+private:
+  GMSHElementType load_element_type() const;
+
+  vertex_indices_t load_elements(GMSHElementType element_type) const;
+  void load_element(vertex_indices_t &vertex_indices,
+                    const std::string &line,
+                    GMSHElementType element_type) const;
+
+  void load_vertex(vertices_t &vertices, const std::string &line) const;
+  vertices_t load_vertices() const;
+};
 
 namespace gmsh {
 std::ifstream open_msh(const std::string &filename) {
@@ -65,12 +94,12 @@ std::unique_ptr<GMSHReader> gmsh_reader(const std::string &filename) {
 GMSHData GMSHReader2::load(const std::string &filename) const {
   this->filename = filename;
 
-  index_t element_kind = 2; // FIXME: this is triangles  only
+  auto element_type = load_element_type();
 
-  auto vertex_indices = load_elements(element_kind);
+  auto vertex_indices = load_elements(element_type);
   auto vertices = load_vertices();
 
-  return GMSHData{vertices, vertex_indices};
+  return GMSHData{vertices, vertex_indices, element_type};
 }
 
 auto GMSHReader2::load_vertices() const -> vertices_t {
@@ -103,10 +132,30 @@ void GMSHReader2::load_vertex(vertices_t &vertices,
   vertices.push_back({x, y, z});
 }
 
-// void GMSHReader2::load_triangles() { load_elements(2); }
-// void GMSHReader2::load_tetrahedra() { load_elements(4); }
+GMSHElementType GMSHReader2::load_element_type() const {
+  auto msh = gmsh::open_msh(filename);
+  gmsh::skip_to(msh, "$Elements");
 
-auto GMSHReader2::load_elements(index_t element_kind) const
+  index_t n_elements;
+  msh >> n_elements;
+  auto discard = gmsh::getline(msh);
+
+  for (index_t i = 0; (i < n_elements) && msh.good(); ++i) {
+    auto line = std::istringstream(gmsh::getline(msh));
+
+    index_t discard, element;
+    line >> discard;
+    line >> element;
+
+    if (element == index_t(GMSHElementType::tetrahedron)) {
+      return GMSHElementType::tetrahedron;
+    }
+  }
+
+  return GMSHElementType::triangle;
+}
+
+auto GMSHReader2::load_elements(GMSHElementType element_kind) const
     -> vertex_indices_t {
   auto vertex_indices = vertex_indices_t{};
 
@@ -126,12 +175,10 @@ auto GMSHReader2::load_elements(index_t element_kind) const
   return vertex_indices;
 }
 
-auto GMSHElementInfo::n_vertices(index_t element_type) -> index_t {
-  if (element_type == 2) {
-    // 3-node triangles
+auto GMSHElementInfo::n_vertices(GMSHElementType element_type) -> index_t {
+  if (element_type == GMSHElementType::triangle) {
     return 3;
-  } else if (element_type == 4) {
-    // 4-node tetrahedra
+  } else if (element_type == GMSHElementType::tetrahedron) {
     return 4;
   }
 
@@ -140,14 +187,14 @@ auto GMSHElementInfo::n_vertices(index_t element_type) -> index_t {
 
 void GMSHReader2::load_element(vertex_indices_t &vertex_indices,
                                const std::string &line_,
-                               index_t element_kind) const {
-  index_t n_vertices = GMSHElementInfo::n_vertices(element_kind);
+                               GMSHElementType element_type) const {
+  index_t n_vertices = GMSHElementInfo::n_vertices(element_type);
   index_t n_tags, discard, element;
 
   auto line = std::istringstream(line_);
   line >> discard;
   line >> element;
-  if (element != element_kind) {
+  if (element != index_t(element_type)) {
     return;
   }
 
@@ -183,8 +230,10 @@ GMSHData::GMSHData(const std::string &filename) {
 }
 
 GMSHData::GMSHData(std::vector<std::array<double, 3>> vertices,
-                   std::vector<std::vector<GMSHData::index_t>> vertex_indices)
+                   std::vector<std::vector<GMSHData::index_t>> vertex_indices,
+                   GMSHElementType element_type)
     : vertices(std::move(vertices)),
-      vertex_indices(std::move(vertex_indices)) {}
+      vertex_indices(std::move(vertex_indices)),
+      element_type(element_type) {}
 
 } // namespace zisa

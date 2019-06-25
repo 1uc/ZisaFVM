@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 
+#include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/io/hdf5_writer_fwd.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/edge.hpp>
@@ -39,7 +40,11 @@ struct Grid {
   array<array<double, 1>, 1> normalized_moments;
 
   Grid() = default;
-  Grid(array<XYZ, 1> vertices, array<int_t, 2> vertex_indices);
+
+  /// Generate a triangular grid with flat faces.
+  Grid(GMSHElementType element_type,
+       array<XYZ, 1> vertices,
+       array<int_t, 2> vertex_indices);
 
   [[nodiscard]] static Grid load(HDF5Reader &reader);
 
