@@ -17,10 +17,10 @@ def generate_circular_grids(filename, radius, lc_rel, levels):
 
 def run_gmesh(geo):
     gmsh = "bin/gmsh"
-    cmd = [gmsh, "-2", geo]
-    output = subprocess.check_call(cmd,
-                                   stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL)
+    cmd = [gmsh, "-3", "-format", "msh22", geo]
+    subprocess.check_call(cmd,
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
 
     return geo
 

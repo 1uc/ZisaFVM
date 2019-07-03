@@ -2,22 +2,22 @@
 
 #include <zisa/math/barycentric.hpp>
 
-TEST_CASE("Barycentric; is_inside", "[math]") {
+TEST_CASE("Barycentric2D; is_inside", "[math]") {
 
   auto tri = zisa::reference_triangle();
 
-  REQUIRE(zisa::is_inside(zisa::Barycentric(tri, zisa::XYZ{0.1, 0.1, 0.0})));
-  REQUIRE(!zisa::is_inside(zisa::Barycentric(tri, zisa::XYZ{-0.1, 0.1, 0.0})));
-  REQUIRE(!zisa::is_inside(zisa::Barycentric(tri, zisa::XYZ{1.1, 1.1, 0.0})));
+  REQUIRE(zisa::is_inside(zisa::Barycentric2D(tri, zisa::XYZ{0.1, 0.1, 0.0})));
+  REQUIRE(!zisa::is_inside(zisa::Barycentric2D(tri, zisa::XYZ{-0.1, 0.1, 0.0})));
+  REQUIRE(!zisa::is_inside(zisa::Barycentric2D(tri, zisa::XYZ{1.1, 1.1, 0.0})));
 }
 
-TEST_CASE("Barycentric; basic API", "[math]") {
+TEST_CASE("Barycentric2D; basic API", "[math]") {
   auto tri = zisa::Triangle{{0.461024, 0.432542, 0.0},
                             {0.558699, 0.333827, 0.0},
                             {0.554918, 0.426801, 0.0}};
   auto x_center = zisa::XYZ{{0.52488, 0.397723, 0.0}};
 
-  auto lambda = zisa::Barycentric(tri, x_center);
+  auto lambda = zisa::Barycentric2D(tri, x_center);
 
   for (int k = 0; k < 3; ++k) {
     INFO(string_format("lambda[%d] = %e", k, lambda[k]));

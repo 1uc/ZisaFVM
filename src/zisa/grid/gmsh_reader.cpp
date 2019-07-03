@@ -6,33 +6,39 @@
 
 namespace zisa {
 class GMSHReader {
+protected:
+  using index_t = std::size_t;
+  using vertices_t = std::vector<std::array<double, 3>>;
+  using vertex_indices_t = std::vector<std::vector<index_t>>;
+
 public:
   virtual ~GMSHReader() = default;
-  virtual GMSHData load(const std::string &filename) const = 0;
+  GMSHData load(const std::string &filename) const;
+
+protected:
+  virtual GMSHElementType load_element_type() const = 0;
+
+  virtual vertices_t load_vertices() const = 0;
+  virtual vertex_indices_t
+  load_elements(GMSHElementType element_type) const = 0;
 
 protected:
   mutable std::string filename;
 };
 
 class GMSHReader2 : public GMSHReader {
-private:
-  using index_t = std::size_t;
-  using vertices_t = std::vector<std::array<double, 3>>;
-  using vertex_indices_t = std::vector<std::vector<index_t>>;
+protected:
+  virtual GMSHElementType load_element_type() const override;
 
-public:
-  virtual GMSHData load(const std::string &filename) const override;
+  virtual vertices_t load_vertices() const override;
+  virtual vertex_indices_t
+  load_elements(GMSHElementType element_type) const override;
 
-private:
-  GMSHElementType load_element_type() const;
-
-  vertex_indices_t load_elements(GMSHElementType element_type) const;
   void load_element(vertex_indices_t &vertex_indices,
                     const std::string &line,
                     GMSHElementType element_type) const;
 
   void load_vertex(vertices_t &vertices, const std::string &line) const;
-  vertices_t load_vertices() const;
 };
 
 namespace gmsh {
@@ -77,21 +83,31 @@ GMSHFileVersion gmsh_read_version(const std::string &filename) {
   return GMSHFileVersion{int(version), version - int(version)};
 }
 
-std::unique_ptr<GMSHReader> gmsh_reader(const GMSHFileVersion &version) {
+std::unique_ptr<GMSHReader> make_gmsh_reader(const GMSHFileVersion &version) {
   if (version.major == 2) {
     return std::make_unique<GMSHReader2>();
   } else if (version.major == 4) {
-    LOG_ERR("Needs to be implemented.");
+    LOG_ERR("GMSH file version 4.0 needs to be implemented.");
   }
   LOG_ERR("Unknown version.");
 }
 
-std::unique_ptr<GMSHReader> gmsh_reader(const std::string &filename) {
+std::unique_ptr<GMSHReader> make_gmsh_reader(const std::string &filename) {
   auto version = gmsh_read_version(filename);
-  return gmsh_reader(version);
+  return make_gmsh_reader(version);
 }
 
-GMSHData GMSHReader2::load(const std::string &filename) const {
+auto GMSHElementInfo::n_vertices(GMSHElementType element_type) -> index_t {
+  if (element_type == GMSHElementType::triangle) {
+    return 3;
+  } else if (element_type == GMSHElementType::tetrahedron) {
+    return 4;
+  }
+
+  LOG_ERR(string_format("Unknown element type. [%d]", element_type));
+}
+
+GMSHData GMSHReader::load(const std::string &filename) const {
   this->filename = filename;
 
   auto element_type = load_element_type();
@@ -155,7 +171,7 @@ GMSHElementType GMSHReader2::load_element_type() const {
   return GMSHElementType::triangle;
 }
 
-auto GMSHReader2::load_elements(GMSHElementType element_kind) const
+auto GMSHReader2::load_elements(GMSHElementType element_type) const
     -> vertex_indices_t {
   auto vertex_indices = vertex_indices_t{};
 
@@ -169,32 +185,22 @@ auto GMSHReader2::load_elements(GMSHElementType element_kind) const
   vertex_indices.reserve(n_elements);
 
   for (index_t i = 0; (i < n_elements) && msh.good(); ++i) {
-    load_element(vertex_indices, gmsh::getline(msh), element_kind);
+    load_element(vertex_indices, gmsh::getline(msh), element_type);
   }
 
   return vertex_indices;
 }
 
-auto GMSHElementInfo::n_vertices(GMSHElementType element_type) -> index_t {
-  if (element_type == GMSHElementType::triangle) {
-    return 3;
-  } else if (element_type == GMSHElementType::tetrahedron) {
-    return 4;
-  }
-
-  LOG_ERR(string_format("Unknown element type. [%d]", element_type));
-}
-
 void GMSHReader2::load_element(vertex_indices_t &vertex_indices,
                                const std::string &line_,
-                               GMSHElementType element_type) const {
-  index_t n_vertices = GMSHElementInfo::n_vertices(element_type);
-  index_t n_tags, discard, element;
+                               GMSHElementType expected_element_type) const {
+  index_t n_vertices = GMSHElementInfo::n_vertices(expected_element_type);
+  index_t n_tags, discard, element_type;
 
   auto line = std::istringstream(line_);
   line >> discard;
-  line >> element;
-  if (element != index_t(element_type)) {
+  line >> element_type;
+  if (element_type != index_t(expected_element_type)) {
     return;
   }
 
@@ -226,7 +232,7 @@ std::ostream &operator<<(std::ostream &os, const GMSHData &data) {
 }
 
 GMSHData::GMSHData(const std::string &filename) {
-  (*this) = gmsh_reader(filename)->load(filename);
+  (*this) = make_gmsh_reader(filename)->load(filename);
 }
 
 GMSHData::GMSHData(std::vector<std::array<double, 3>> vertices,

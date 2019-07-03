@@ -1,6 +1,12 @@
 #include <zisa/math/tetrahedron.hpp>
 
 namespace zisa {
+Tetrahedron::Tetrahedron(const XYZ &v0,
+                         const XYZ &v1,
+                         const XYZ &v2,
+                         const XYZ &v3)
+    : points{v0, v1, v2, v3} {}
+
 double volume(const Tetrahedron &tetrahedron) {
   const auto &[v0, v1, v2, v3] = tetrahedron.points;
 

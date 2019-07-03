@@ -7,19 +7,38 @@ import glob
 import tiwaz
 import tiwaz.gmsh as gmsh
 
-def minimal_geo_files(path):
+def minimal_geo_files():
+    path = "grids"
     return [
         path + "/dbg.geo",
         path + "/small.geo"
     ] + [
-        path + "/convergence/unit_square_{:d}.geo".format(d) for d in range(4)
+        path + f"/convergence/unit_square_{d}.geo" for d in range(4)
     ]
 
 def matching_geo_files(pattern):
     return glob.glob("{}*.geo".format(pattern))
 
-def all_geo_files(path):
-    return glob.glob("{}/*.geo".format(path)) + glob.glob("{}/**/*.geo".format(path))
+def all_geo_files():
+    path = "grids"
+    return glob.glob("{}/*.geo".format(path)) + glob.glob(f"{path}/**/*.geo")
+
+def generate_geo_files():
+    generate_unit_square_geo_files()
+    generate_unit_cube_geo_files()
+
+def generate_convergence_geo_files(basename, n_grids):
+    template = tiwaz.utils.read_txt(f"grids/convergence/{basename}.tmpl")
+
+    for k in range(n_grids):
+        geo = template.replace("LC", str(0.1 * 2**(-k)))
+        tiwaz.utils.write_txt(f"grids/convergence/{basename}_{k}.geo", geo)
+
+def generate_unit_square_geo_files():
+    generate_convergence_geo_files("unit_square", 5)
+
+def generate_unit_cube_geo_files():
+    generate_convergence_geo_files("unit_cube", 3)
 
 
 if __name__ == "__main__":
@@ -36,11 +55,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    generate_geo_files()
     if args.minimal:
-        geos = minimal_geo_files("grids")
+        geos = minimal_geo_files()
     elif args.pattern:
         geos = matching_geo_files(args.pattern)
     else:
-        geos = all_geo_files("grids")
+        geos = all_geo_files()
 
     gmsh.generate_grids(geos)

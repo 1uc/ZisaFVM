@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <zisa/config.hpp>
+#include <zisa/grid/cell_range.hpp>
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
@@ -17,7 +18,9 @@
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/symmetric_choices.hpp>
+#include <zisa/math/tetrahedral_rule.hpp>
 #include <zisa/math/tetrahedron.hpp>
+#include <zisa/math/triangular_rule.hpp>
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
@@ -58,7 +61,8 @@ int_t count_exterior_edges(const is_valid_t &is_valid) {
   return n_exterior_edges;
 }
 
-normals_t compute_normals(const vertices_t &vertices,
+normals_t compute_normals(GMSHElementType element_type,
+                          const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,
                           const neighbours_t &neighbours,
                           const is_valid_t &is_valid,
@@ -73,6 +77,13 @@ normals_t compute_normals(const vertices_t &vertices,
 
   auto normals = normals_t(n_edges);
   for (int_t i = 0; i < n_cells; ++i) {
+
+    auto vertex_index = [&vertex_indices, &element_type, i](int_t face,
+                                                            int_t rel) {
+      auto k = GMSHElementInfo::relative_vertex_index(element_type, face, rel);
+      return vertex_indices(i, k);
+    };
+
     for (int_t k = 0; k < max_neighbours; ++k) {
 
       int_t j = neighbours(i, k);
@@ -80,23 +91,60 @@ normals_t compute_normals(const vertices_t &vertices,
         continue;
       }
 
-      const auto &vi = vertices[vertex_indices(i, k)];
-      const auto &vj = vertices[vertex_indices(i, (k + 1) % max_neighbours)];
-
       int_t ei = edge_indices(i, k);
-      normals(ei) = rotate_right(normalize(vj - vi));
+      if (element_type == GMSHElementType::triangle) {
+        const auto &v0 = vertices[vertex_index(k, 0)];
+        const auto &v1 = vertices[vertex_index(k, 1)];
+
+        normals(ei) = rotate_right(normalize(v1 - v0));
+      } else if (element_type == GMSHElementType::tetrahedron) {
+        const auto &v0 = vertices[vertex_index(k, 0)];
+        const auto &v1 = vertices[vertex_index(k, 1)];
+        const auto &v2 = vertices[vertex_index(k, 2)];
+
+        normals(ei) = XYZ(zisa::normalize(zisa::cross(v1 - v0, v2 - v0)));
+      }
     }
   }
 
   return normals;
 }
 
-tangentials_t compute_tangentials(const normals_t &normals) {
-  auto tangentials = empty_like(normals);
+tangentials_t compute_tangentials(GMSHElementType element_type,
+                                  const normals_t &normals,
+                                  const vertices_t &vertices,
+                                  const vertex_indices_t &vertex_indices,
+                                  const neighbours_t &neighbours,
+                                  const is_valid_t &is_valid,
+                                  const edge_indices_t &edge_indices) {
+  auto n_edges = normals.shape(0);
+  auto n_cells = vertex_indices.shape(0);
+  auto max_neighbours = vertex_indices.shape(1);
 
-  int_t n_edges = tangentials.shape(0);
-  for (int_t ei = 0; ei < n_edges; ++ei) {
-    tangentials(ei) = rotate_left(normals(ei));
+  auto tangentials = tangentials_t(shape_t<2>{n_edges, int_t(2)});
+  for (int_t i = 0; i < n_cells; ++i) {
+
+    auto vertex_index = [&vertex_indices, &element_type, i](int_t face,
+                                                            int_t rel) {
+      auto k = GMSHElementInfo::relative_vertex_index(element_type, face, rel);
+      return vertex_indices(i, k);
+    };
+
+    for (int_t k = 0; k < max_neighbours; ++k) {
+
+      int_t j = neighbours(i, k);
+      if (!is_valid(i, k) || i > j) {
+        continue;
+      }
+
+      int_t ei = edge_indices(i, k);
+      const auto &v0 = vertices[vertex_index(k, int_t(0))];
+      const auto &v1 = vertices[vertex_index(k, int_t(1))];
+
+      tangentials(ei, int_t(0)) = zisa::normalize(v1 - v0);
+      tangentials(ei, int_t(1))
+          = zisa::cross(normals(ei), tangentials(ei, int_t(0)));
+    }
   }
 
   return tangentials;
@@ -276,28 +324,7 @@ compute_vertex_neighbours(const vertex_indices_t &vertex_indices) {
 
 int_t relative_neighbour_index(GMSHElementType element_type,
                                const std::vector<bool> &s) {
-  if (element_type == GMSHElementType::triangle) {
-    for (int_t k = 0; k < 3; ++k) {
-      if (s[k] && s[(k + 1) % 3]) {
-        return k;
-      }
-    }
-    return magic_index_value;
-  } else if (element_type == GMSHElementType::tetrahedron) {
-
-    if (s[0] && s[1] && s[3]) {
-      return int_t(0);
-    } else if (s[0] && s[2] && s[1]) {
-      return int_t(1);
-    } else if (s[0] && s[3] && s[2]) {
-      return int_t(2);
-    } else if (s[1] && s[2] && s[3]) {
-      return int_t(3);
-    } else {
-      return magic_index_value;
-    }
-  }
-  return magic_index_value;
+  return GMSHElementInfo::relative_vertex_index(element_type, s);
 };
 
 std::optional<std::pair<int_t, int_t>>
@@ -366,9 +393,43 @@ array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid) {
   return normalized_moments;
 }
 
+array<Cell, 1> compute_cells(GMSHElementType element_type,
+                             int_t quad_deg,
+                             const vertices_t &vertices,
+                             const vertex_indices_t &vertex_indices) {
+  auto n_cells = vertex_indices.shape(0);
+  auto cells = array<Cell, 1>(shape_t<1>{n_cells});
+
+  if (element_type == GMSHElementType::triangle) {
+    auto qr_ref = zisa::cached_triangular_quadrature_rule(quad_deg);
+
+    for (int_t i = 0; i < n_cells; ++i) {
+      const auto &v0 = vertices[vertex_indices(i, int_t(0))];
+      const auto &v1 = vertices[vertex_indices(i, int_t(1))];
+      const auto &v2 = vertices[vertex_indices(i, int_t(2))];
+
+      cells[i] = Cell(zisa::denormalize(qr_ref, Triangle(v0, v1, v2)));
+    }
+  } else {
+    auto qr_ref = zisa::make_tetrahedral_rule(quad_deg);
+
+    for (int_t i = 0; i < n_cells; ++i) {
+      const auto &v0 = vertices[vertex_indices(i, int_t(0))];
+      const auto &v1 = vertices[vertex_indices(i, int_t(1))];
+      const auto &v2 = vertices[vertex_indices(i, int_t(2))];
+      const auto &v3 = vertices[vertex_indices(i, int_t(3))];
+
+      cells[i] = Cell(zisa::denormalize(qr_ref, Tetrahedron(v0, v1, v2, v3)));
+    }
+  }
+
+  return cells;
+}
+
 Grid::Grid(GMSHElementType element_type,
            array<XYZ, 1> vertices_,
-           array<int_t, 2> vertex_indices_)
+           array<int_t, 2> vertex_indices_,
+           int_t quad_deg)
     : vertex_indices(std::move(vertex_indices_)),
       vertices(std::move(vertices_)) {
 
@@ -390,12 +451,26 @@ Grid::Grid(GMSHElementType element_type,
 
   volumes = compute_volumes(element_type, this->vertices, this->vertex_indices);
 
-  normals = compute_normals(
-      this->vertices, this->vertex_indices, neighbours, is_valid, edge_indices);
+  normals = compute_normals(element_type,
+                            this->vertices,
+                            this->vertex_indices,
+                            neighbours,
+                            is_valid,
+                            edge_indices);
 
-  tangentials = compute_tangentials(normals);
+  tangentials = compute_tangentials(element_type,
+                                    this->normals,
+                                    this->vertices,
+                                    this->vertex_indices,
+                                    neighbours,
+                                    is_valid,
+                                    edge_indices);
 
-  normalized_moments = compute_normalized_moments(*this);
+  if (quad_deg != 0) {
+    cells = compute_cells(
+        element_type, quad_deg, this->vertices, this->vertex_indices);
+    normalized_moments = compute_normalized_moments(*this);
+  }
 }
 
 const XYZ &Grid::vertex(int_t i, int_t k) const {
@@ -475,15 +550,15 @@ std::optional<int_t> locate(const Grid &grid, const XYZ &x) {
 
 double volume(const Grid &grid) {
   return zisa::reduce::sum(
-      triangles(grid), [](int_t, const Triangle &tri) { return volume(tri); });
+      zisa::cells(grid), [](int_t, const Cell &cell) { return volume(cell); });
 }
 
-std::shared_ptr<Grid> load_grid(const std::string &filename) {
+std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
 
   auto len = filename.size();
 
   if (filename.substr(len - 4) == ".msh") {
-    return load_gmsh(filename);
+    return load_gmsh(filename, quad_deg);
   } else if (filename.substr(len - 3) == ".h5") {
     auto reader = HDF5SerialReader(filename);
     return std::make_shared<Grid>(Grid::load(reader));
@@ -492,7 +567,7 @@ std::shared_ptr<Grid> load_grid(const std::string &filename) {
   LOG_ERR(string_format("Unknown filetype. [%s]", filename.c_str()));
 }
 
-std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
+std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg) {
   auto gmsh = GMSHData(filename);
 
   auto max_neighbours = GMSHElementInfo::n_vertices(gmsh.element_type);
@@ -514,8 +589,10 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
     }
   }
 
-  return std::make_shared<Grid>(
-      gmsh.element_type, std::move(vertices), std::move(vertex_indices));
+  return std::make_shared<Grid>(gmsh.element_type,
+                                std::move(vertices),
+                                std::move(vertex_indices),
+                                quad_deg);
 }
 
 void save(HDF5Writer &writer, const Grid &grid) {
@@ -576,7 +653,7 @@ Grid Grid::load(HDF5Reader &reader) {
 
   grid.volumes = array<double, 1>::load(reader, "volumes");
   grid.normals = array<XYZ, 1>::load(reader, "normals");
-  grid.tangentials = array<XYZ, 1>::load(reader, "tangentials");
+  grid.tangentials = array<XYZ, 2>::load(reader, "tangentials");
 
   grid.left_right
       = compute_left_right(grid.edge_indices, grid.neighbours, grid.is_valid);

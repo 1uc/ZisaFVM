@@ -10,7 +10,7 @@
 #include <zisa/unit_test/grid/test_grid_factory.hpp>
 #include <zisa/unit_test/math/convergence_rates.hpp>
 
-void check_convergence(double expected, double atol, zisa::int_t deg) {
+static void check_convergence(double expected, double atol, zisa::int_t deg) {
   auto grid_names = zisa::TestGridFactory::unit_square();
 
   auto f = [](const zisa::XYZ &x) {
@@ -22,9 +22,9 @@ void check_convergence(double expected, double atol, zisa::int_t deg) {
   std::vector<double> resolution;
 
   for (auto &&grid_name : grid_names) {
-    auto grid = zisa::load_gmsh(grid_name);
+    auto grid = zisa::load_gmsh(grid_name, deg);
 
-    error.push_back(zisa::abs(zisa::quadrature(f, *grid, deg) - exact));
+    error.push_back(zisa::abs(zisa::quadrature(f, *grid) - exact));
     resolution.push_back(zisa::largest_circum_radius(*grid));
   }
 

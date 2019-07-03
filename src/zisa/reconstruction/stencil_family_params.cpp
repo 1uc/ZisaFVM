@@ -32,4 +32,8 @@ std::ostream &operator<<(std::ostream &os, const StencilFamilyParams &params) {
   return os;
 }
 
+int max_order(const StencilFamilyParams &params) {
+  return *std::max_element(params.orders.begin(), params.orders.end());
+}
+
 } // namespace zisa

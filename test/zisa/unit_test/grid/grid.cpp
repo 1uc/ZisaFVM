@@ -78,8 +78,12 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
     auto neighbours = zisa::compute_neighbours(element_type, vertex_indices);
     auto is_valid = zisa::compute_valid_neighbours(neighbours);
     auto edge_indices = zisa::compute_edge_indices(neighbours, is_valid);
-    auto normals = zisa::compute_normals(
-        vertices, vertex_indices, neighbours, is_valid, edge_indices);
+    auto normals = zisa::compute_normals(element_type,
+                                         vertices,
+                                         vertex_indices,
+                                         neighbours,
+                                         is_valid,
+                                         edge_indices);
 
     REQUIRE(normals.shape(0) == 5);
 
@@ -94,37 +98,6 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
     REQUIRE(volumes.shape(0) == n_cells);
     REQUIRE(zisa::almost_equal(volumes(0), 0.5, 1e-12));
   }
-}
-
-TEST_CASE("Grid; dbg mesh", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/dbg.msh");
-
-  auto magic_value = zisa::int_t(-1);
-
-  // clang-format off
-  auto raw = std::vector<zisa::int_t>{
-          1, 14, 3,
-          6, 0, 9,
-          14, 6, magic_value,
-          12, 0, magic_value,
-          15, 8, magic_value,
-          13, 10, magic_value,
-          2, 1, 7,
-          6, 8, 15,
-          4, 7, 11,
-          10, 1, 12,
-          5, 11, 9,
-          8, 10, 13,
-          magic_value, 9, 3,
-          magic_value, 11, 5,
-          magic_value, 0, 2,
-          magic_value, 7, 4
-  };
-  // clang-format on
-  auto exact
-      = zisa::array<zisa::int_t, 2>(raw.data(), zisa::shape_t<2>{16ul, 3ul});
-
-  REQUIRE(grid->neighbours == exact);
 }
 
 TEST_CASE("Grid; sizes", "[grid]") {
@@ -162,7 +135,7 @@ TEST_CASE("Grid; sizes", "[grid]") {
   REQUIRE(grid->normals.shape().size() == 1);
   REQUIRE(grid->normals.shape(0) == n_edges);
 
-  REQUIRE(grid->tangentials.shape().size() == 1);
+  REQUIRE(grid->tangentials.shape().size() == 2);
   REQUIRE(grid->tangentials.shape(0) == n_edges);
 }
 
@@ -233,8 +206,8 @@ TEST_CASE("Grid; moments", "[grid]") {
   }
 }
 
-TEST_CASE("Grid; volume", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+static void check_volume(const std::string &gridname) {
+  auto grid = zisa::load_gmsh(gridname, 1);
   double approx = volume(*grid);
   double exact = 1.0;
 
@@ -246,8 +219,13 @@ TEST_CASE("Grid; volume", "[grid]") {
   }
 }
 
+TEST_CASE("Grid; volume", "[grid]") {
+  SECTION("square") { check_volume("grids/convergence/unit_square_1.msh"); }
+  SECTION("cube") { check_volume("grids/cube.msh"); }
+}
+
 TEST_CASE("Grid; iterators", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh");
   auto n_interior_edges = grid->n_interior_edges;
   auto n_cells = grid->n_cells;
 
@@ -338,7 +316,8 @@ TEST_CASE("Grid; locate", "[grid]") {
 
       auto eta = x_dis(gen);
       auto zeta = x_dis(gen) * (1.0 - eta);
-      auto x = zisa::coord(tri, zisa::Barycentric{eta, zeta, 1.0 - eta - zeta});
+      auto x
+          = zisa::coord(tri, zisa::Barycentric2D{eta, zeta, 1.0 - eta - zeta});
 
       auto i_cell = zisa::locate(*grid, x, i_guess, max_iter);
 

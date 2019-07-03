@@ -40,4 +40,8 @@ HybridWENOParams make_hybrid_weno_params(int order) {
       4);
 }
 
+int max_order(const HybridWENOParams &params) {
+  return max_order(params.stencil_family_params);
+}
+
 } // namespace zisa

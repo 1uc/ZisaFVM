@@ -8,6 +8,8 @@
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/io/hdf5_writer_fwd.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/cell.hpp>
+#include <zisa/math/denormalized_rule.hpp>
 #include <zisa/math/edge.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
@@ -33,18 +35,22 @@ struct Grid {
   array<XYZ, 1> vertices;
   array<XYZ, 1> cell_centers;
 
+  array<Cell, 1> cells;
+  //  array<Faces, 1> faces_;
+
   array<double, 1> volumes;
   array<XYZ, 1> normals;
-  array<XYZ, 1> tangentials;
+  array<XYZ, 2> tangentials;
 
   array<array<double, 1>, 1> normalized_moments;
 
   Grid() = default;
 
-  /// Generate a triangular grid with flat faces.
+  /// Generate a grid optionally with quadrature rules.
   Grid(GMSHElementType element_type,
        array<XYZ, 1> vertices,
-       array<int_t, 2> vertex_indices);
+       array<int_t, 2> vertex_indices,
+       int_t quad_deg = 0);
 
   [[nodiscard]] static Grid load(HDF5Reader &reader);
 
@@ -69,8 +75,8 @@ std::optional<int_t> locate(const Grid &grid, const XYZ &x);
 double largest_circum_radius(const Grid &grid);
 double smallest_inradius(const Grid &grid);
 
-std::shared_ptr<Grid> load_grid(const std::string &filename);
-std::shared_ptr<Grid> load_gmsh(const std::string &filename);
+std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg);
+std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg);
 
 /// Generate all moment for a 2D poly of degree 'deg'.
 array<double, 1>

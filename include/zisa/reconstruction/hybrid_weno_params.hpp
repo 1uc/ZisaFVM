@@ -29,6 +29,8 @@ public:
   double exponent;
 };
 
+int max_order(const HybridWENOParams &params);
+
 HybridWENOParams make_hybrid_weno_params(int order);
 
 std::ostream &operator<<(std::ostream &os, const HybridWENOParams &params);

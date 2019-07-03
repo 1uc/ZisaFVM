@@ -1,6 +1,7 @@
 #ifndef STENCIL_FAMILY_PARAMS_H_IN4IV
 #define STENCIL_FAMILY_PARAMS_H_IN4IV
 
+#include <algorithm>
 #include <cassert>
 #include <string>
 #include <vector>
@@ -29,6 +30,8 @@ public:
   StencilFamilyParams &operator=(const StencilFamilyParams &) = default;
   StencilFamilyParams &operator=(StencilFamilyParams &&) = default;
 };
+
+int max_order(const StencilFamilyParams &params);
 
 StencilParams extract(const StencilFamilyParams &family_params, int_t k);
 

@@ -23,7 +23,7 @@ using edge_indices_t = array<int_t, 2>;
 using left_right_t = array<std::pair<int_t, int_t>, 1>;
 using volumes_t = array<double, 1>;
 using normals_t = array<XYZ, 1>;
-using tangentials_t = array<XYZ, 1>;
+using tangentials_t = array<XYZ, 2>;
 using cell_centers_t = array<XYZ, 1>;
 using is_valid_t = array<bool, 2>;
 
@@ -36,7 +36,8 @@ left_right_t compute_left_right(const edge_indices_t &edge_indices,
                                 const neighbours_t &neighbours,
                                 const is_valid_t &is_valid);
 
-normals_t compute_normals(const vertices_t &vertices,
+normals_t compute_normals(GMSHElementType element_type,
+                          const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,
                           const neighbours_t &neighbours,
                           const is_valid_t &is_valid,

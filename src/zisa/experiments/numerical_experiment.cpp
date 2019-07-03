@@ -19,7 +19,12 @@ void NumericalExperiment::run() { do_run(); }
 void NumericalExperiment::post_process() { do_post_process(); }
 
 std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
-  return load_grid(params["grid"]["file"]);
+  LOG_ERR_IF(!has_key(params, "quadrature"), "Missing section 'quadrature'.");
+  LOG_ERR_IF(!has_key(params["quadrature"], "volume"),
+             "Missing element 'volume'.");
+
+  int quad_deg = params["quadrature"]["volume"];
+  return load_grid(params["grid"]["file"], quad_deg);
 }
 
 std::shared_ptr<FileNameGenerator>

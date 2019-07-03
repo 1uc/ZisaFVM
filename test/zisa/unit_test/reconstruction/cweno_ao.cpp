@@ -10,12 +10,12 @@ TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
   SECTION("compatibility with std::vector") {
     SECTION("push_back") {
 
-      auto grid = zisa::load_gmsh("grids/small.msh");
+      auto grid = zisa::load_gmsh("grids/small.msh", 1);
       auto params
           = zisa::HybridWENOParams({{{1}, {"c"}, {2.0}}, {1.0}, 1e-6, 4});
 
       auto rc = std::vector<zisa::CWENO_AO>();
-      for (const auto &[i, tri] : triangles(*grid)) {
+      for (const auto &[i, cell] : cells(*grid)) {
         rc.push_back(zisa::CWENO_AO(grid, i, params));
       }
 

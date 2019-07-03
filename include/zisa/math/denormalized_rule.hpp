@@ -12,10 +12,18 @@ struct DenormalizedRule {
   array<XYZ, 1> points;
   double volume;
 
-  DenormalizedRule(int_t n_points);
+  DenormalizedRule() = default;
+  explicit DenormalizedRule(int_t n_points);
   DenormalizedRule(const DenormalizedRule &qr) = default;
   DenormalizedRule(DenormalizedRule &&qr) = default;
+
+  DenormalizedRule &operator=(const DenormalizedRule &qr) = default;
+  DenormalizedRule &operator=(DenormalizedRule &&qr) = default;
 };
+
+bool operator==(const DenormalizedRule &a, const DenormalizedRule &b);
+
+bool operator!=(const DenormalizedRule &a, const DenormalizedRule &b);
 
 inline double volume(const DenormalizedRule &qr) { return qr.volume; }
 

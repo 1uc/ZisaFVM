@@ -26,7 +26,7 @@ double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg) {
 }
 
 bool is_inside(const Triangle &tri, const XYZ &x) {
-  return is_inside(Barycentric(tri, x));
+  return is_inside(Barycentric2D(tri, x));
 }
 
 double volume(const Triangle &tri) { return tri.volume; }

@@ -21,7 +21,7 @@ make_quadrature_rule(const std::vector<double> &w,
 
   for (int_t i = 0; i < w.size(); ++i) {
     qr.weights[i] = w[i];
-    qr.points[i] = Barycentric{x[i][0], x[i][1], x[i][2]};
+    qr.points[i] = Barycentric2D{x[i][0], x[i][1], x[i][2]};
   }
 
   return qr;

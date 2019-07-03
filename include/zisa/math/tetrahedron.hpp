@@ -8,6 +8,8 @@ namespace zisa {
 class Tetrahedron {
 public:
   XYZ points[4];
+
+  Tetrahedron(const XYZ &v0, const XYZ &v1, const XYZ &v2, const XYZ &v3);
 };
 
 double volume(const Tetrahedron &tetrahedron);

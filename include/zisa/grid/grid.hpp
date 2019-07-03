@@ -5,7 +5,11 @@
 #define GRID_H_RDTNK
 
 #include "edge_range.hpp"
+
 #include "grid_decl.hpp"
+
 #include "triangle_range.hpp"
+
+#include "cell_range.hpp"
 
 #endif /* end of include guard */

@@ -49,8 +49,8 @@ public:
       int_t i_guess = 0;
 
       for (int_t i = 0; i < n_cells; ++i) {
-        auto tri = coarse_grid.triangle(i);
-        auto u_bar = cvars_average(tri, i_guess);
+        const auto &cell = coarse_grid.cells(i);
+        auto u_bar = cvars_average(cell, i_guess);
         for (int_t k_var = 0; k_var < n_cvars; ++k_var) {
           u_coarse(i, k_var) = u_bar[k_var];
         }
@@ -61,9 +61,9 @@ public:
   }
 
 protected:
-  euler_var_t cvars_average(const Triangle &tri, int_t &i_guess) const {
+  euler_var_t cvars_average(const Cell &cell, int_t &i_guess) const {
     auto f = [this, &i_guess](const XYZ &x) { return u_ref(x, i_guess); };
-    return zisa::average(f, tri, quad_deg);
+    return zisa::average(cell, f);
   }
 
   euler_var_t u_ref(const XYZ &x, int_t &i_guess) const {

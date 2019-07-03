@@ -8,12 +8,25 @@
 
 namespace zisa::reduce {
 
-template <class Transform>
-auto sum(omp_policy, const TriangleRange &range, const Transform &transform) {
+namespace detail {
+template <class Range, class Transform>
+struct return_type_trait {
+  using type = decltype(std::declval<Transform>()(
+      std::declval<int_t>(),
+      std::declval<Range>().item(std::declval<int_t>())));
+};
+
+template <class Range, class Transform>
+using return_t = typename return_type_trait<Range, Transform>::type;
+
+}
+
+template <class Range, class Transform>
+auto sum(omp_policy, const Range &range, const Transform &transform) {
   int_t i_start = range.start_index();
   int_t i_end = range.end_index();
 
-  using ret_type = return_t<Transform, int_t, Triangle>;
+  using ret_type = detail::return_t<Range, Transform>;
   ret_type ret = 0;
 
 #pragma omp parallel for reduction(+ : ret)
@@ -24,14 +37,12 @@ auto sum(omp_policy, const TriangleRange &range, const Transform &transform) {
   return ret;
 }
 
-template <class Transform>
-auto sum(serial_policy,
-         const TriangleRange &range,
-         const Transform &transform) {
+template <class Range, class Transform>
+auto sum(serial_policy, const Range &range, const Transform &transform) {
   int_t i_start = range.start_index();
   int_t i_end = range.end_index();
 
-  using ret_type = return_t<Transform, int_t, Triangle>;
+  using ret_type = detail::return_t<Range, Transform>;
   ret_type ret = 0;
 
   for (int_t i = i_start; i < i_end; ++i) {

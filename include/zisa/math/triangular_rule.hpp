@@ -9,7 +9,7 @@ namespace zisa {
 
 struct TriangularRule {
   array<double, 1> weights;
-  array<Barycentric, 1> points;
+  array<Barycentric2D, 1> points;
 
   TriangularRule(int_t n_points);
   TriangularRule(const TriangularRule &qr) = default;
