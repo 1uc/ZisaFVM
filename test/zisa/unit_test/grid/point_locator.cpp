@@ -11,7 +11,7 @@ TEST_CASE("PointLocator; basic API", "[grid][point_locator]") {
   }
 
   for (const auto &grid_name : grid_names) {
-    auto grid = zisa::load_gmsh(grid_name);
+    auto grid = zisa::load_gmsh(grid_name, /* quad_deg = */ 1);
     auto locator = make_point_locator(grid);
 
     auto n_cells = grid->n_cells;

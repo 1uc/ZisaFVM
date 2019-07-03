@@ -4,7 +4,8 @@
 TEST_CASE("StencilFamily", "[weno_ao]") {
 
   SECTION("initialization") {
-    auto grid = zisa::load_gmsh("grids/small.msh");
+    // FIXME remove argument
+    auto grid = zisa::load_gmsh("grids/small.msh", 0);
     zisa::int_t i_cell = 20;
 
     SECTION("single stencil") {
@@ -34,24 +35,15 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
 
   SECTION("compatibility with std::vector") {
     SECTION("push_back") {
-
-      auto grid = zisa::load_gmsh("grids/small.msh");
+      auto grid = zisa::load_gmsh("grids/small.msh", 1);
       auto params = zisa::StencilFamilyParams({{1}, {"c"}, {2.0}});
 
       auto stencils = std::vector<zisa::StencilFamily>();
-      for (const auto &[i, tri] : triangles(*grid)) {
+      for (const auto &[i, cell] : cells(*grid)) {
         stencils.emplace_back(grid, i, params);
       }
 
       REQUIRE(stencils.size() == grid->n_cells);
-
-      // REQUIRE(stencils.size() == n_stencils);
-      // for (zisa::int_t i = 0; i < n_stencils; ++i) {
-      //   const auto &approx = stencils[i];
-
-      //   REQUIRE(approx.size() == exact.size());
-      //   REQUIRE(approx == exact);
-      // }
     }
   }
 }

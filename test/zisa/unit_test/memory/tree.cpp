@@ -2,8 +2,8 @@
 #include <zisa/memory/tree.hpp>
 #include <zisa/testing/testing_framework.hpp>
 
-TEST_CASE("Tree; basic API", "[memory][tree]") {
-  auto grid = zisa::load_gmsh("grids/small.msh");
+TEST_CASE("Tree; basic API", "[.][memory][tree]") {
+  auto grid = zisa::load_gmsh("grids/small.msh", 0);
 
   auto tree = zisa::Tree<int, 4>{};
   auto f = [&grid](zisa::int_t i, zisa::int_t j) {

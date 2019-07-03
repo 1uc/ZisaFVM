@@ -9,7 +9,7 @@
 namespace zisa {
 
 TEST_CASE("for_each; saxpy-like update") {
-  auto grid = zisa::load_gmsh(zisa::TestGridFactory::unit_square(0));
+  auto grid = zisa::load_gmsh(zisa::TestGridFactory::unit_square(0), 1);
 
   zisa::int_t n_vars = 3;
   zisa::int_t n_cells = grid->n_cells;
@@ -27,13 +27,13 @@ TEST_CASE("for_each; saxpy-like update") {
     }
   }
 
-  auto ff = [f, &u1, &u0](zisa::int_t i, const zisa::Triangle &) {
+  auto ff = [f, &u1, &u0](zisa::int_t i, const zisa::Cell &) {
     for (zisa::int_t k = 0; k < u0.shape(1); ++k) {
       u1(i, k) = f(i, k) + u0(i, k);
     }
   };
 
-  zisa::for_each(zisa::triangles(*grid), ff);
+  zisa::for_each(zisa::cells(*grid), ff);
 
   for (zisa::int_t i = 0; i < n_cells; ++i) {
     for (zisa::int_t k = 0; k < n_vars; ++k) {

@@ -101,7 +101,8 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
 }
 
 TEST_CASE("Grid; sizes", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/dbg.msh");
+  // FIXME remove argument.
+  auto grid = zisa::load_gmsh("grids/dbg.msh", /* quad_deg = */ 0);
 
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t n_vertices = grid->n_vertices;
@@ -140,11 +141,12 @@ TEST_CASE("Grid; sizes", "[grid]") {
 }
 
 TEST_CASE("Grid; moments", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/dbg.msh");
+  zisa::int_t quad_deg = 3;
+  auto grid = zisa::load_gmsh("grids/dbg.msh", quad_deg);
 
   auto check_moment
-      = [](const zisa::Triangle &tri, int k, int l, double exact) {
-          auto m = zisa::avg_moment(tri, k, l, 3);
+      = [quad_deg](const zisa::Triangle &tri, int k, int l, double exact) {
+          auto m = zisa::avg_moment(tri, k, l, quad_deg);
 
           INFO(string_format(
               "[%d, %d] %e  !=  %e (%e) \n", k, l, m, exact, m - exact));
@@ -225,36 +227,36 @@ TEST_CASE("Grid; volume", "[grid]") {
 }
 
 TEST_CASE("Grid; iterators", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh");
-  auto n_interior_edges = grid->n_interior_edges;
-  auto n_cells = grid->n_cells;
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh", 1);
 
-  SECTION("interior_edges") {
+  // FIXME: this iterator is outdated.
+
+  //  SECTION("interior_edges") {
+  //    zisa::int_t count = 0;
+  //    for (const auto &[e, edge] : interior_edges(*grid)) {
+  //      ++count;
+  //    }
+  //
+  //    REQUIRE(count == n_interior_edges);
+  //  }
+
+  SECTION("cells") {
     zisa::int_t count = 0;
-    for (const auto &[e, edge] : interior_edges(*grid)) {
+    for (const auto &[i, cell] : cells(*grid)) {
       ++count;
     }
 
-    REQUIRE(count == n_interior_edges);
-  }
-
-  SECTION("triangles") {
-    zisa::int_t count = 0;
-    for (const auto &[i, tri] : triangles(*grid)) {
-      ++count;
-    }
-
-    REQUIRE(count == n_cells);
+    REQUIRE(count == grid->n_cells);
   }
 }
 
 TEST_CASE("Grid; incidence", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh");
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh", 1);
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t max_neighbours = grid->max_neighbours;
 
   SECTION("(iL, iR) are neighbours") {
-    for (const auto &[e, edge] : interior_edges(*grid)) {
+    for (const auto &e : zisa::interior_face_indices(*grid)) {
       auto [iL, iR] = grid->left_right(e);
 
       REQUIRE((grid->neighbours(iL, 0) == iR || grid->neighbours(iL, 1) == iR
@@ -265,7 +267,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
   SECTION("edges of interior cells") {
     auto count = zisa::array<zisa::int_t, 1>(zisa::shape_t<1>{n_cells});
 
-    for (const auto &[e, edge] : interior_edges(*grid)) {
+    for (auto e : zisa::interior_face_indices(*grid)) {
       auto [iL, iR] = grid->left_right(e);
 
       count(iL) += 1;
@@ -286,7 +288,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
 }
 
 TEST_CASE("Grid; serialize", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/small.msh");
+  auto grid = zisa::load_gmsh("grids/small.msh", 0);
   auto filename = std::string("__unit_tests--grid_to_hdf5.h5");
 
   auto writer = zisa::HDF5SerialWriter(filename);
@@ -304,7 +306,7 @@ TEST_CASE("Grid; locate", "[grid]") {
   std::mt19937 gen(rd());
 
   for (const auto &grid_name : grid_names) {
-    auto grid = zisa::load_gmsh(grid_name);
+    auto grid = zisa::load_gmsh(grid_name, /* quad_deg = */ 1);
 
     auto n_cells = grid->n_cells;
     auto max_iter = grid->n_cells;
@@ -331,5 +333,5 @@ TEST_CASE("Grid; locate", "[grid]") {
 }
 
 TEST_CASE("Grid; tets", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/cube.msh");
+  auto grid = zisa::load_gmsh("grids/cube.msh", 2);
 }

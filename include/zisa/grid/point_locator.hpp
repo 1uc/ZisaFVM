@@ -9,6 +9,7 @@
 
 namespace zisa {
 
+// FIXME deprecate this. (It's complicated and not used.)
 /// Locate a point in a *convex* domain.
 class PointLocator {
 public:

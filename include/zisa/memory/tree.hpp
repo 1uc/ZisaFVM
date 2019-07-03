@@ -18,6 +18,7 @@ struct tree_traits
     : public integer_tree_traits<
           typename std::enable_if<std::is_integral<Int>::value, Int>::type> {};
 
+// FIXME deprecate this.
 template <class T, int WIDTH>
 class Tree {
 private:

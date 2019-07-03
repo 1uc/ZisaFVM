@@ -11,16 +11,14 @@
 
 TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
-  auto grid = zisa::load_gmsh("grids/unit_tests/polytrope.msh");
+  auto quad_deg = zisa::int_t(2);
+  auto grid = zisa::load_gmsh("grids/unit_tests/polytrope.msh", quad_deg);
   auto n_cells = grid->n_cells;
   auto n_cvars = zisa::int_t(5);
   auto n_avars = zisa::int_t(0);
 
   auto dims = zisa::AllVariablesDimensions{n_cells, n_cvars, n_avars};
   auto all_variables = std::make_shared<zisa::AllVariables>(dims);
-
-  auto quad_deg = zisa::int_t(2);
-  auto qr = zisa::cached_triangular_quadrature_rule(quad_deg);
 
   using eos_t = zisa::IdealGasEOS;
   using gravity_t = zisa::PolytropeGravityRadial;
@@ -51,8 +49,8 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
   };
 
   auto &u0 = all_variables->cvars;
-  for (auto &&[i, tri] : zisa::triangles(*grid)) {
-    u0(i) = zisa::average(qr, ic, tri);
+  for (auto &&[i, cell] : zisa::cells(*grid)) {
+    u0(i) = zisa::average(cell, ic);
     u0(i, 4) += dist(gen) * rand_amp;
   }
 
@@ -77,9 +75,8 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
   grc.compute(*all_variables);
 
-  for (auto &&[i, tri] : zisa::triangles(*grid)) {
-    for (const auto &chi : qr.points) {
-      auto x = zisa::coord(tri, chi);
+  for (auto &&[i, cell] : zisa::cells(*grid)) {
+    for (const auto &x : cell.qr.points) {
       double dE = zisa::norm(grc(i, x) - ic(x));
 
       INFO(string_format("[%d] %.3e >= %.3e", i, dE, atol));

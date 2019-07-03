@@ -16,7 +16,8 @@ int main() {
 
   auto window = std::make_shared<zisa::opengl::Window>("OpenGL demo", 600, 600);
 
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+  // FIXME remove the quad_deg argument.
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh", 0);
   zisa::opengl::TriPlot plot(window, grid->vertices, grid->vertex_indices);
 
   auto colors

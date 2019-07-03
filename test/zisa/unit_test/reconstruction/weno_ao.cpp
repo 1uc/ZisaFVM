@@ -10,12 +10,13 @@ TEST_CASE("WENO_AO API", "[weno_ao][math]") {
   SECTION("compatibility with std::vector") {
     SECTION("push_back") {
 
-      auto grid = zisa::load_gmsh("grids/small.msh");
+      // FIXME remove argument
+      auto grid = zisa::load_gmsh("grids/small.msh", 0);
       auto params
           = zisa::HybridWENOParams({{{1}, {"c"}, {2.0}}, {1.0}, 1e-10, 4.0});
 
       auto rc = std::vector<zisa::WENO_AO>();
-      for (const auto &[i, tri] : triangles(*grid)) {
+      for (auto i : cell_indices(*grid)) {
         rc.emplace_back(grid, i, params);
       }
 

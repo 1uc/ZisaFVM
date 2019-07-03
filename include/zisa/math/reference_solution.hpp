@@ -92,8 +92,6 @@ private:
   int_t n_cvars;
   int_t n_avars = 0;
 
-  int_t quad_deg = 4;
-
   mutable int_t last_index_ = 0;
 };
 

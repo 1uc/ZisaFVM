@@ -52,8 +52,13 @@ private:
 };
 
 inline CellRange cells(const Grid &grid) { return CellRange(grid); }
+
 inline PlainIndexRange cell_indices(const Grid &grid) {
   return PlainIndexRange(0, grid.n_cells);
+}
+
+inline PlainIndexRange interior_face_indices(const Grid &grid) {
+  return PlainIndexRange(0, grid.n_interior_edges);
 }
 
 }
