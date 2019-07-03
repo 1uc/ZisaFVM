@@ -1,6 +1,7 @@
 #include <zisa/grid/grid.hpp>
 
 #include <algorithm>
+#include <list>
 #include <map>
 #include <optional>
 #include <vector>
@@ -518,34 +519,109 @@ std::string Grid::str() const {
                        dx_max);
 }
 
-std::optional<int_t>
-locate(const Grid &grid, const XYZ &x, int_t i_guess, int_t max_iter) {
+template <class Predicate, class Ranking>
+std::optional<int_t> depth_first_search(const Grid &grid,
+                                        int_t i_guess,
+                                        const Predicate &predicate,
+                                        const Ranking &ranking) {
+
+  if (predicate(i_guess)) {
+    return i_guess;
+  }
+
+  const auto &is_valid = grid.is_valid;
+  const auto &neighbours = grid.neighbours;
+
+  auto n_cells = grid.n_cells;
   auto max_neighbours = grid.max_neighbours;
 
+  auto visited = array<bool, 1>(shape_t<1>{n_cells});
+  zisa::fill(visited, false);
+
+  auto trail = std::stack<int_t>{};
+  auto candidates = std::vector<int_t>{};
+  candidates.reserve(max_neighbours);
+
   int_t i = i_guess;
+  visited[i] = true;
+  trail.push(i);
 
-  for (int_t count = 0; count < max_iter; ++count) {
-    if (is_inside(grid.triangle(i), x)) {
-      return i;
-    } else {
+  while (!predicate(i)) {
+    candidates.clear();
 
-      auto connecting_edge = Edge(grid.cell_centers(i), x);
-      for (int_t k = 0; k < max_neighbours; ++k) {
-        if (grid.is_valid(i, k)
-            && is_intersecting(grid.edge(i, k), connecting_edge)) {
+    // populate candidates.
+    for (int_t k = 0; k < max_neighbours; ++k) {
+      int_t cand = neighbours(i, k);
+      if (is_valid(i, k) && !visited(cand)) {
 
-          i = grid.neighbours(i, k);
-          break;
+        if (predicate(cand)) {
+          return cand;
         }
+
+        candidates.push_back(cand);
       }
+    }
+
+    if (!candidates.empty()) {
+      auto comp
+          = [&ranking](int_t i, int_t j) { return ranking(i) < ranking(j); };
+
+      i = *std::max_element(candidates.begin(), candidates.end(), comp);
+
+      visited[i] = true;
+      trail.push(i);
+    }
+
+    else {
+      i = trail.top();
+      trail.pop();
     }
   }
 
   return std::nullopt;
 }
 
-std::optional<int_t> locate(const Grid &grid, const XYZ &x) {
-  return locate(grid, x, 0, grid.n_cells);
+Triangle triangle(const Grid &grid, int_t i) {
+  const auto &v0 = grid.vertex(i, int_t(0));
+  const auto &v1 = grid.vertex(i, int_t(1));
+  const auto &v2 = grid.vertex(i, int_t(2));
+
+  return Triangle(v0, v1, v2);
+}
+
+Tetrahedron tetrahedron(const Grid &grid, int_t i) {
+  const auto &v0 = grid.vertex(i, int_t(0));
+  const auto &v1 = grid.vertex(i, int_t(1));
+  const auto &v2 = grid.vertex(i, int_t(2));
+  const auto &v3 = grid.vertex(i, int_t(3));
+
+  return Tetrahedron(v0, v1, v2, v3);
+}
+
+bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x) {
+  GMSHElementType element_type
+      = (grid.max_neighbours == 3 ? GMSHElementType::triangle
+                                  : GMSHElementType::tetrahedron);
+
+  if (element_type == GMSHElementType::triangle) {
+    auto tri = triangle(grid, i);
+    return is_inside(Barycentric2D(tri, x));
+  } else {
+    auto tet = tetrahedron(grid, i);
+    return is_inside(Barycentric3D(tet, x));
+  }
+}
+
+std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess) {
+
+  auto predicate = [&grid, &x](int_t i) { return is_inside_cell(grid, i, x); };
+
+  auto ranking = [&grid, &x](int_t i) {
+    auto d = zisa::norm(grid.cell_centers(i) - x);
+    return 1.0 / (1.0 + d);
+  };
+
+  return depth_first_search(grid, i_guess, predicate, ranking);
 }
 
 double volume(const Grid &grid) {

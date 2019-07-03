@@ -67,9 +67,7 @@ protected:
   }
 
   euler_var_t u_ref(const XYZ &x, int_t &i_guess) const {
-    // auto i_cell = point_locator->locate(x);
-    int_t max_iter = fine_grid->n_cells;
-    auto i_cell = locate(*fine_grid, x, i_guess, max_iter);
+    auto i_cell = locate(*fine_grid, x, i_guess);
 
     LOG_ERR_IF(!i_cell, "Failed to locate the cell.");
     i_guess = *i_cell;

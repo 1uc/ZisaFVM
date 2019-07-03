@@ -13,9 +13,9 @@ PointLocator::PointLocator(std::shared_ptr<Grid> grid,
 
 int_t PointLocator::locate(const XYZ &x) const {
   auto i_guess = tree->locate(
-          [this, &x](int_t i) { return zisa::norm(grid->cell_centers(i) - x); });
+      [this, &x](int_t i) { return zisa::norm(grid->cell_centers(i) - x); });
 
-  auto i_cell = zisa::locate(*grid, x, i_guess, /* max_iter = */ 10);
+  auto i_cell = zisa::locate(*grid, x, i_guess);
 
   LOG_ERR_IF(!i_cell, "Could not find a cell containing the point.");
 
@@ -57,7 +57,7 @@ make_point_locator(const std::shared_ptr<Grid> &grid) {
           });
         }
 
-        auto i_cell = locate(*grid, x, i_guess, grid->n_cells);
+        auto i_cell = locate(*grid, x, i_guess);
         ++count;
 
         if (i_cell) {

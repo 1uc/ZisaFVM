@@ -37,7 +37,19 @@ Barycentric3D::Barycentric3D(double lambda1,
     : lambda{lambda1, lambda2, lambda3, lambda4} {}
 
 Barycentric3D::Barycentric3D(const Tetrahedron &tet, const XYZ &x) {
-  LOG_ERR("Needs to be implemented.");
+  const auto &[v0, v1, v2, v3] = tet.points;
+
+  auto dx = XYZ(x - v0);
+  auto dv1 = XYZ(v1 - v0);
+  auto dv2 = XYZ(v2 - v0);
+  auto dv3 = XYZ(v3 - v0);
+
+  auto idet = 1.0 / zisa::det(dv1, dv2, dv3);
+
+  lambda[0] = idet * zisa::dot(dx, dv1);
+  lambda[1] = idet * zisa::dot(dx, dv2);
+  lambda[2] = idet * zisa::dot(dx, dv3);
+  lambda[3] = 1.0 - (lambda[0] - lambda[1] - lambda[2]);
 }
 
 XYZ coord(const Tetrahedron &tet, const Barycentric3D &lambda) {

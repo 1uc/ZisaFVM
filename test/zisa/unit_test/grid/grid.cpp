@@ -295,7 +295,7 @@ TEST_CASE("Grid; serialize", "[grid]") {
   zisa::save(writer, *grid);
 }
 
-TEST_CASE("Grid; locate", "[grid]") {
+TEST_CASE("Grid; locate", "[grid][locate]") {
   auto grid_names = std::vector<std::string>{};
 
   for (int i = 0; i < 3; ++i) {
@@ -309,7 +309,6 @@ TEST_CASE("Grid; locate", "[grid]") {
     auto grid = zisa::load_gmsh(grid_name, /* quad_deg = */ 1);
 
     auto n_cells = grid->n_cells;
-    auto max_iter = grid->n_cells;
 
     std::uniform_int_distribution<zisa::int_t> i_guess_dis(0, n_cells - 1);
     std::uniform_real_distribution<double> x_dis(0.05, 0.95);
@@ -318,10 +317,10 @@ TEST_CASE("Grid; locate", "[grid]") {
 
       auto eta = x_dis(gen);
       auto zeta = x_dis(gen) * (1.0 - eta);
-      auto x
-          = zisa::coord(tri, zisa::Barycentric2D{eta, zeta, 1.0 - eta - zeta});
+      auto lambda = zisa::Barycentric2D{eta, zeta, 1.0 - eta - zeta};
+      auto x = zisa::coord(tri, lambda);
 
-      auto i_cell = zisa::locate(*grid, x, i_guess, max_iter);
+      auto i_cell = zisa::locate(*grid, x, i_guess);
 
       INFO(string_format("i_guess = %d, tri = %s, x = %s",
                          i_guess,

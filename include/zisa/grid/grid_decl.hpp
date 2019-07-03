@@ -67,10 +67,9 @@ void save(HDF5Writer &writer, const Grid &grid);
 
 double volume(const Grid &grid);
 
-std::optional<int_t>
-locate(const Grid &grid, const XYZ &x, int_t i_guess, int_t max_iter);
+bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x);
 
-std::optional<int_t> locate(const Grid &grid, const XYZ &x);
+std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess = 0);
 
 double largest_circum_radius(const Grid &grid);
 double smallest_inradius(const Grid &grid);

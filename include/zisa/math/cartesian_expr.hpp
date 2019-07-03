@@ -324,6 +324,19 @@ ANY_DEVICE_INLINE double norm(const T &e) {
   return std::sqrt(dot(e, e));
 }
 
+/// Determinate of 3x3 matrix (e1| e2| e3).
+template <class E1, class E2, class E3, class T>
+ANY_DEVICE_INLINE double det(const CartesianExpr<E1, T> &e1_,
+                             const CartesianExpr<E2, T> &e2_,
+                             const CartesianExpr<E3, T> &e3_) {
+
+  auto e1 = static_cast<const E1 &>(e1_);
+  auto e2 = static_cast<const E2 &>(e2_);
+  auto e3 = static_cast<const E3 &>(e3_);
+
+  return zisa::dot(e1, CartesianCross{e2, e3});
+}
+
 template <class E, class T>
 ANY_DEVICE_INLINE CartesianLog<E, T> log(const CartesianExpr<E, T> &e) {
   return CartesianLog<E, T>(e);
