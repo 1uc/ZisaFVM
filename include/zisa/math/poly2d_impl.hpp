@@ -14,6 +14,18 @@ constexpr ANY_DEVICE_INLINE int_t poly_dof(int deg) {
   }
 }
 
+template <int NDIMS>
+int poly_degree(int_t n_coeffs) {
+
+  LOG_ERR_IF(n_coeffs == 0, "Too few coefficients.");
+
+  for (int d = 1;; ++d) {
+    if (poly_dof<NDIMS>(d) > n_coeffs) {
+      return d - 1;
+    }
+  }
+}
+
 constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b) {
   auto n = a + b;
   return int_t(((n + 1) * n) / 2 + b);
@@ -35,7 +47,7 @@ int PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::degree() const {
 
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 constexpr int_t PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::dof(int deg) {
-  return poly_dof(deg);
+  return poly_dof<NDIMS>(deg);
 }
 
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
@@ -46,6 +58,11 @@ constexpr int_t PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::n_coeffs() {
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 constexpr int_t PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::n_vars() {
   return NVARS;
+}
+
+template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
+constexpr int PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::n_dims() {
+  return NDIMS;
 }
 
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
@@ -102,14 +119,14 @@ PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::PolyND(
     const std::initializer_list<double> &moments_list,
     const XYZ &x_center,
     double reference_length)
-    : degree_(poly_degree(coeffs_list.size())),
+    : degree_(poly_degree<NDIMS>(coeffs_list.size())),
       x_center_(x_center),
       reference_length_(reference_length) {
 
   assert(n_vars() == 1);
   assert(coeffs_list.size() <= n_coeffs());
   assert(coeffs_list.size() == moments_list.size());
-  assert(poly_dof(degree()) == coeffs_list.size());
+  assert(poly_dof<NDIMS>(degree()) == coeffs_list.size());
 
   std::fill(coeffs, coeffs + n_vars() * n_coeffs(), 0.0);
   std::copy(coeffs_list.begin(), coeffs_list.end(), coeffs);
@@ -121,7 +138,10 @@ PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::PolyND(
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 template <class E>
 PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::PolyND(const PolynomialCRTP<E> &e_) {
-  deep_copy(static_cast<const E &>(e_));
+  const auto &e = static_cast<const E &>(e_);
+
+  static_assert(E::n_dims() == NDIMS, "Dimensions mismatch.");
+  deep_copy(e);
 }
 
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
@@ -181,8 +201,9 @@ template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 template <class E>
 void PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::
 operator=(const PolynomialCRTP<E> &e_) {
-  const E &e = static_cast<const E &>(e_);
+  static_assert(E::n_dims() == NDIMS, "Dimensions mismatch.");
 
+  const E &e = static_cast<const E &>(e_);
   this->deep_copy(e);
 }
 
@@ -190,8 +211,9 @@ template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 template <class E>
 void PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::
 operator+=(const PolynomialCRTP<E> &e_) {
-  const E &e = static_cast<const E &>(e_);
+  static_assert(E::n_dims() == NDIMS, "Dimensions mismatch.");
 
+  const E &e = static_cast<const E &>(e_);
   *this = *this + e;
 }
 
@@ -199,8 +221,9 @@ template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 template <class E>
 void PolyND<Derived, MAX_DEGREE, NVARS, NDIMS>::
 operator-=(const PolynomialCRTP<E> &e_) {
-  const E &e = static_cast<const E &>(e_);
+  static_assert(E::n_dims() == NDIMS, "Dimensions mismatch.");
 
+  const E &e = static_cast<const E &>(e_);
   *this = *this - e;
 }
 
@@ -244,11 +267,47 @@ Cartesian<NVARS> Poly2D<MAX_DEGREE, NVARS>::operator()(const XYZ &xy) const {
 }
 
 template <int MAX_DEGREE, int NVARS>
-Cartesian<NVARS> smoothness_indicator(const Poly2D<MAX_DEGREE, NVARS> &p) {
+constexpr int_t Poly3D<MAX_DEGREE, NVARS>::idx(int i, int j, int k) {
+  return poly_index(i, j, k);
+}
+
+template <int MAX_DEGREE, int NVARS>
+Cartesian<NVARS> Poly3D<MAX_DEGREE, NVARS>::operator()(const XYZ &xy) const {
+  auto [x, y, z] = XYZ((xy - this->x_center()) / this->reference_length());
+
+  auto d = this->degree();
+
+  Cartesian<NVARS> px(0.0);
+  double pow_x_kx = 1.0;
+  for (int kx = 0; kx <= d; ++kx) {
+    double pow_y_ky = 1.0;
+    for (int ky = 0; ky <= d - kx; ++ky) {
+      double pow_z_kz = 1.0;
+
+      for (int kz = 0; kz <= d - kx - ky; ++kz) {
+        int_t i = idx(kx, ky, kz);
+        for (int_t k = 0; k < NVARS; ++k) {
+          double ak = this->a(i * NVARS + k);
+          px[k] += ak * (pow_x_kx * pow_y_ky * pow_z_kz - this->c(i));
+        }
+
+        pow_z_kz *= z;
+      }
+      pow_y_ky *= y;
+    }
+    pow_x_kx *= x;
+  }
+
+  return px;
+}
+
+template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
+Cartesian<NVARS>
+smoothness_indicator(const PolyND<Derived, MAX_DEGREE, NVARS, NDIMS> &p) {
   auto beta = Cartesian<NVARS>(0.0);
 
-  int_t n = poly_dof(p.degree());
-  for (int_t i = poly_dof(0); i < n; ++i) {
+  int_t n = poly_dof<NDIMS>(p.degree());
+  for (int_t i = poly_dof<NDIMS>(0); i < n; ++i) {
     for (int_t k = 0; k < p.n_vars(); ++k) {
       beta[k] += zisa::pow<2>(p.a(i * NVARS + k));
     }
@@ -257,11 +316,12 @@ Cartesian<NVARS> smoothness_indicator(const Poly2D<MAX_DEGREE, NVARS> &p) {
   return beta;
 }
 
-template <int MAX_DEGREE, int NVARS>
-std::ostream &operator<<(std::ostream &os,
-                         const Poly2D<MAX_DEGREE, NVARS> &poly2d) {
-  os << format_as_list(poly2d.coeffs, poly_dof(poly2d.degree())) << "\n";
-  os << format_as_list(poly2d.moments, poly_dof(poly2d.degree())) << "\n";
+template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
+std::ostream &
+operator<<(std::ostream &os,
+           const PolyND<Derived, MAX_DEGREE, NVARS, NDIMS> &poly) {
+  os << format_as_list(poly.coeffs, poly_dof<NDIMS>(poly.degree())) << "\n";
+  os << format_as_list(poly.moments, poly_dof<NDIMS>(poly.degree())) << "\n";
 
   return os;
 }

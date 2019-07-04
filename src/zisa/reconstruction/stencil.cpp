@@ -133,7 +133,8 @@ int_t required_stencil_size(int deg, double factor) {
     return 1;
   }
 
-  return int_t(double(poly_dof(deg) - 1) * factor);
+  // The polynomials being fitted all have zero mean.
+  return int_t(double(poly_dof<2>(deg) - 1) * factor);
 }
 
 std::vector<int_t>

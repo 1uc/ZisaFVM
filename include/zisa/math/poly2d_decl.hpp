@@ -12,10 +12,11 @@
 namespace zisa {
 
 /// Number of degree of freedom in a `deg` degree 2D polynomial.
-template <int NDIMS = 2>
+template <int NDIMS>
 constexpr ANY_DEVICE_INLINE int_t poly_dof(int deg);
 
 /// Highest degree of a polynomial with '<=n_coeffs' coefficients.
+template <int NDIMS>
 int poly_degree(int_t n_coeffs);
 
 /// Compute the linear index of the coefficient of a polynomial.
@@ -28,11 +29,14 @@ int poly_degree(int_t n_coeffs);
  *    ...
  *
  *  Input:
- *    @param k  -- slow index
- *    @param l  -- fast index, i.e. for fixed (k+l) consecutive values of l
+ *    @param a  -- slow index
+ *    @param b  -- fast index, i.e. for fixed (k+l) consecutive values of l
  *                 result in consecutive values of the linear index.
  **/
-constexpr ANY_DEVICE_INLINE int_t poly_index(int k, int l);
+constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b);
+
+/// Compute linear index of the coefficient of a 3D polynomial.
+constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b, int c);
 
 template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
 class PolyND : public PolynomialCRTP<Derived> {
@@ -43,6 +47,7 @@ public:
   static constexpr int_t dof(int deg);
   static constexpr int_t n_coeffs();
   static constexpr int_t n_vars();
+  static constexpr int n_dims();
 
 public:
   PolyND();
@@ -98,7 +103,16 @@ private:
 
   XYZ x_center_;
   double reference_length_;
+
+private:
+  template <class D, int MD, int NV, int ND>
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const PolyND<D, MD, NV, ND> &poly);
 };
+
+template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
+std::ostream &operator<<(std::ostream &os,
+                         const PolyND<Derived, MAX_DEGREE, NVARS, NDIMS> &poly);
 
 template <int MAX_DEGREE, int NVARS>
 class Poly2D : public PolyND<Poly2D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 2> {
@@ -117,20 +131,31 @@ public:
   using super::operator/=;
 
   Cartesian<NVARS> operator()(const XYZ &xy) const;
+};
 
-protected:
-  template <int DEG, int VARS>
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const Poly2D<DEG, VARS> &poly2d);
+template <int MAX_DEGREE, int NVARS>
+class Poly3D : public PolyND<Poly3D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 3> {
+private:
+  using super = PolyND<Poly3D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 3>;
+
+public:
+  static constexpr int_t idx(int i, int j, int k);
+
+public:
+  using super::super;
+  using super::operator=;
+  using super::operator+=;
+  using super::operator-=;
+  using super::operator*=;
+  using super::operator/=;
+
+  Cartesian<NVARS> operator()(const XYZ &xy) const;
 };
 
 /// Value that represents the smoothness of the polynomial.
-template <int MAX_DEGREE, int NVARS>
-Cartesian<NVARS> smoothness_indicator(const Poly2D<MAX_DEGREE, NVARS> &p);
-
-template <int MAX_DEGREE, int NVARS>
-std::ostream &operator<<(std::ostream &os,
-                         const Poly2D<MAX_DEGREE, NVARS> &poly2d);
+template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
+Cartesian<NVARS>
+smoothness_indicator(const PolyND<Derived, MAX_DEGREE, NVARS, NDIMS> &p);
 
 } // namespace zisa
 #endif /* end of include guard */

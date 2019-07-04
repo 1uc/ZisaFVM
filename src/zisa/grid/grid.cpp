@@ -744,7 +744,7 @@ Grid Grid::load(HDF5Reader &reader) {
 
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
-  auto m = array<double, 1>(shape_t<1>{poly_dof(degree)});
+  auto m = array<double, 1>(shape_t<1>{poly_dof<2>(degree)});
 
   auto length = characteristic_length(tri);
   double length_d = 1.0;

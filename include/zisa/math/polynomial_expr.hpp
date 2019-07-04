@@ -16,13 +16,21 @@ template <class E1, class E2>
 class PointwiseSum : public PolynomialCRTP<PointwiseSum<E1, E2>> {
 public:
   PointwiseSum(const PolynomialCRTP<E1> &e1, const PolynomialCRTP<E2> &e2)
-      : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {}
+      : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {
+
+    static_assert(E1::n_dims() == E2::n_dims(), "Dimensional mismatch.");
+  }
 
   static constexpr int max_degree() {
     return zisa::max(E1::max_degree(), E2::max_degree());
   }
 
   int degree() const { return zisa::max(e1.degree(), e2.degree()); }
+
+  static constexpr int n_dims() {
+    static_assert(E1::n_dims() == E2::n_dims(), "Dimensions mismatch.");
+    return E1::n_dims();
+  }
 
   template <class... Indices>
   double a(Indices &&... indices) const {
@@ -55,13 +63,17 @@ template <class E1, class E2>
 class PointwiseSubtract : public PolynomialCRTP<PointwiseSubtract<E1, E2>> {
 public:
   PointwiseSubtract(const PolynomialCRTP<E1> &e1, const PolynomialCRTP<E2> &e2)
-      : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {}
+      : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {
+
+    static_assert(E1::n_dims() == E2::n_dims(), "Dimensional mismatch.");
+  }
 
   static constexpr int max_degree() {
     return zisa::max(E1::max_degree(), E2::max_degree());
   }
 
   int degree() const { return zisa::max(e1.degree(), e2.degree()); }
+  static constexpr int n_dims() { return E1::n_dims(); }
 
   template <class... Indices>
   double a(Indices &&... indices) const {
@@ -99,6 +111,7 @@ public:
   static constexpr int max_degree() { return E::max_degree(); }
 
   int degree() const { return e.degree(); }
+  static constexpr int n_dims() { return E::n_dims(); }
 
   template <class... Indices>
   double a(Indices &&... indices) const {

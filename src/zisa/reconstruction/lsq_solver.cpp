@@ -59,7 +59,7 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
 
   auto degree = order - 1;
   auto n_rows = required_stencil_size(degree, factor) - 1;
-  auto n_cols = poly_dof(degree) - 1;
+  auto n_cols = poly_dof<2>(degree) - 1;
 
   auto A = Eigen::MatrixXd(n_rows, n_cols);
 
