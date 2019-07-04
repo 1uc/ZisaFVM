@@ -89,8 +89,7 @@ JankaBump::compute_initial_conditions(double amp, double width) {
   auto n_cells = grid->n_cells;
 #pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
   for (int_t i = 0; i < n_cells; ++i) {
-    auto tri = grid->triangle(i);
-    u0(i) = average(qr, ic, tri);
+    u0(i) = average(grid->cells(i), ic);
   }
 
   return all_variables;

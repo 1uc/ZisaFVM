@@ -17,7 +17,7 @@ private:
 
     inline void operator++() { i++; }
     inline std::pair<int_t, Triangle> operator*() const {
-      return {i, grid.triangle(i)};
+      return {i, triangle(grid, i)};
     }
 
     inline bool operator!=(const EndIterator &) const {
@@ -37,7 +37,7 @@ public:
   explicit inline TriangleRange(const Grid &grid) : grid(grid) {}
 
   static constexpr bool has_item() { return true; }
-  inline Triangle item(int_t i) const { return grid.triangle(i); }
+  inline Triangle item(int_t i) const { return triangle(grid, i); }
 
   inline Iterator begin() const { return Iterator(grid); }
   inline EndIterator end() const { return EndIterator(); }

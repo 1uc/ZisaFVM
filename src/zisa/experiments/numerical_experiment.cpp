@@ -23,7 +23,7 @@ std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
   LOG_ERR_IF(!has_key(params["quadrature"], "volume"),
              "Missing element 'volume'.");
 
-  int quad_deg = params["quadrature"]["volume"];
+  int_t quad_deg = params["quadrature"]["volume"];
   return load_grid(params["grid"]["file"], quad_deg);
 }
 

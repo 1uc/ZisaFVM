@@ -546,7 +546,7 @@ std::optional<int_t> depth_first_search(const Grid &grid,
   visited[i] = true;
   trail.push(i);
 
-  while (!predicate(i)) {
+  for (int_t count = 0; count < grid.n_cells; ++count) {
     candidates.clear();
 
     // populate candidates.
@@ -573,6 +573,10 @@ std::optional<int_t> depth_first_search(const Grid &grid,
     }
 
     else {
+      if (trail.empty()) {
+        return std::nullopt;
+      }
+
       i = trail.top();
       trail.pop();
     }

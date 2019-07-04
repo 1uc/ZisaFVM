@@ -40,7 +40,7 @@ public:
 
     for (auto &&[e, edge] : exterior_edges(*grid)) {
       auto i = grid->left_right(e).first;
-      auto tri = grid->triangle(i);
+      auto tri = triangle(*grid, i);
 
       auto eq = LocalEquilibrium<Equilibrium>(equilibrium);
       eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), tri);

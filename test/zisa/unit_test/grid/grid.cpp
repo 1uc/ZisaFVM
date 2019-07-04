@@ -296,12 +296,9 @@ TEST_CASE("Grid; serialize", "[grid]") {
 }
 
 TEST_CASE("Grid; locate", "[grid][locate]") {
-  auto grid_names = std::vector<std::string>{};
+  auto grid_names
+      = std::vector<std::string>{"grids/convergence/unit_square_1.msh"};
 
-  for (int i = 0; i < 3; ++i) {
-    grid_names.push_back(
-        string_format("grids/convergence/unit_square_%d.msh", i));
-  }
   std::random_device rd;
   std::mt19937 gen(rd());
 
@@ -328,6 +325,28 @@ TEST_CASE("Grid; locate", "[grid][locate]") {
                          zisa::to_string(x).c_str()));
       REQUIRE(*i_cell == i);
     }
+  }
+}
+
+TEST_CASE("Grid; fail to locate", "[grid][locate]") {
+  auto grid_names
+      = std::vector<std::string>{"grids/convergence/unit_square_1.msh"};
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  for (const auto &grid_name : grid_names) {
+    auto grid = zisa::load_gmsh(grid_name, /* quad_deg = */ 1);
+
+    auto n_cells = grid->n_cells;
+    std::uniform_int_distribution<zisa::int_t> i_guess_dis(0, n_cells - 1);
+
+    auto i_guess = i_guess_dis(gen);
+    auto x = zisa::XYZ{10.0, 20.0, -23.0};
+    auto i_cell = zisa::locate(*grid, x, i_guess);
+
+    INFO(string_format("i_guess = %d", i_guess));
+    REQUIRE(i_cell == std::nullopt);
   }
 }
 

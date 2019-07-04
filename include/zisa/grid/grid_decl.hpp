@@ -11,6 +11,7 @@
 #include <zisa/math/cell.hpp>
 #include <zisa/math/denormalized_rule.hpp>
 #include <zisa/math/edge.hpp>
+#include <zisa/math/face.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
 
@@ -36,7 +37,7 @@ struct Grid {
   array<XYZ, 1> cell_centers;
 
   array<Cell, 1> cells;
-  //  array<Faces, 1> faces_;
+  array<Face, 1> faces;
 
   array<double, 1> volumes;
   array<XYZ, 1> normals;
@@ -66,6 +67,7 @@ struct Grid {
 void save(HDF5Writer &writer, const Grid &grid);
 
 double volume(const Grid &grid);
+Triangle triangle(const Grid &grid, int_t i);
 
 bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x);
 

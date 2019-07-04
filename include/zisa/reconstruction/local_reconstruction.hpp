@@ -33,7 +33,7 @@ public:
 
     auto &l2g = rc.local2global();
     for (int_t il = 0; il < l2g.size(); ++il) {
-      auto [rho_eq_bar, E_eq_bar] = eq.extrapolate(grid->triangle(l2g[il]));
+      auto [rho_eq_bar, E_eq_bar] = eq.extrapolate(triangle(*grid, l2g[il]));
 
       u_local(il)[0] -= rho_eq_bar;
       u_local(il)[4] -= E_eq_bar;
