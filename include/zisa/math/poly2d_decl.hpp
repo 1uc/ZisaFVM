@@ -12,6 +12,7 @@
 namespace zisa {
 
 /// Number of degree of freedom in a `deg` degree 2D polynomial.
+template <int NDIMS = 2>
 constexpr ANY_DEVICE_INLINE int_t poly_dof(int deg);
 
 /// Highest degree of a polynomial with '<=n_coeffs' coefficients.
@@ -33,37 +34,36 @@ int poly_degree(int_t n_coeffs);
  **/
 constexpr ANY_DEVICE_INLINE int_t poly_index(int k, int l);
 
-template <int MAX_DEGREE, int NVARS>
-class Poly2D : public PolynomialCRTP<Poly2D<MAX_DEGREE, NVARS>> {
+template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
+class PolyND : public PolynomialCRTP<Derived> {
 public:
   static constexpr int max_degree();
   int degree() const;
 
-  static constexpr int_t idx(int k, int l);
   static constexpr int_t dof(int deg);
   static constexpr int_t n_coeffs();
   static constexpr int_t n_vars();
 
 public:
-  Poly2D();
+  PolyND();
 
-  Poly2D(int degree,
+  PolyND(int degree,
          const array<double, 1> &moments,
          const XYZ &x_center,
          double reference_length);
 
-  Poly2D(int degree,
+  PolyND(int degree,
          const std::initializer_list<double> &moments_list,
          const XYZ &x_center,
          double reference_length);
 
-  Poly2D(const std::initializer_list<double> &coeffs_list,
+  PolyND(const std::initializer_list<double> &coeffs_list,
          const std::initializer_list<double> &moments_list,
          const XYZ &x_center,
          double reference_length);
 
   template <class E>
-  Poly2D(const PolynomialCRTP<E> &e_);
+  PolyND(const PolynomialCRTP<E> &e_);
 
   template <class E>
   void operator=(const PolynomialCRTP<E> &e_);
@@ -80,23 +80,15 @@ public:
   template <class E>
   void deep_copy(const PolynomialCRTP<E> &e_);
 
-  Cartesian<NVARS> operator()(const XYZ &xy) const;
-
-  double a(int i, int j, int_t k) const;
-  double &a(int i, int j, int_t k);
-
   double a(int_t i) const;
+  double &a(int_t i);
+
   double c(int_t i) const;
 
   const XYZ &x_center() const;
   double reference_length() const;
 
   double *coeffs_ptr();
-
-protected:
-  template <int DEG, int VARS>
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const Poly2D<DEG, VARS> &poly2d);
 
 private:
   double coeffs[n_vars() * n_coeffs()];
@@ -106,6 +98,30 @@ private:
 
   XYZ x_center_;
   double reference_length_;
+};
+
+template <int MAX_DEGREE, int NVARS>
+class Poly2D : public PolyND<Poly2D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 2> {
+private:
+  using super = PolyND<Poly2D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 2>;
+
+public:
+  static constexpr int_t idx(int k, int l);
+
+public:
+  using super::super;
+  using super::operator=;
+  using super::operator+=;
+  using super::operator-=;
+  using super::operator*=;
+  using super::operator/=;
+
+  Cartesian<NVARS> operator()(const XYZ &xy) const;
+
+protected:
+  template <int DEG, int VARS>
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const Poly2D<DEG, VARS> &poly2d);
 };
 
 /// Value that represents the smoothness of the polynomial.
