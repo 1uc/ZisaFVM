@@ -26,7 +26,7 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
     rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(grid,
                                                           LocalEquilibrium(eq),
                                                           RC(grid, i, params),
-                                                          triangle(*grid, i),
+                                                          grid->cells(i),
                                                           scaling);
 
     max_stencil_size

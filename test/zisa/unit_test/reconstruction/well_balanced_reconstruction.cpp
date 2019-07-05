@@ -64,7 +64,7 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
       s);
 
   using eq_t = zisa::IsentropicEquilibrium<eos_t, gravity_t>;
-  auto eq = eq_t{euler, quad_deg};
+  auto eq = eq_t(euler);
 
   using rc_t = zisa::CWENO_AO;
   using scaling_t = zisa::UnityScaling;

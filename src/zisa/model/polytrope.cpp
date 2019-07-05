@@ -137,7 +137,7 @@ make_polytrope_self_gravity(const std::shared_ptr<Grid> &grid,
   {
     auto eos = zisa::IdealGasEOS(params.polytropic_gamma(), -1.0);
     auto all_variables
-        = zisa::make_general_polytrope_profile(*grid, eos, params, 3);
+        = zisa::make_general_polytrope_profile(*grid, eos, params);
     poisson_solver->update(gravity, all_variables);
   }
 

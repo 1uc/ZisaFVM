@@ -30,7 +30,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
   auto rhoK = RhoEntropy{gravity_params["rhoC"], gravity_params["K_inner"]};
   auto thetaC = eos.enthalpy_entropy(rhoK);
   LocalEquilibrium inner_equilibrium(
-      IsentropicEquilibrium(euler, 0), thetaC, XYZ::zeros());
+      IsentropicEquilibrium(euler), thetaC, XYZ::zeros());
 
   double drho = params["experiment"]["initial_conditions"]["drho"];
   double r_crit = gravity_params["r_crit"];

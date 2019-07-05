@@ -8,16 +8,13 @@
 namespace zisa {
 
 template <class F>
-GridVariables cell_averages(const F &f, const Grid &grid, int_t deg) {
-  const auto &qr = cached_triangular_quadrature_rule(deg);
-
+GridVariables cell_averages(const F &f, const Grid &grid) {
   int_t n_vars = decltype(f(std::declval<XYZ>()))::size();
   auto grid_vars = GridVariables(shape_t<2>{grid.n_cells, n_vars});
 
-  zisa::for_each(triangles(grid),
-                 [&grid_vars, &qr, &f](int_t i, const Triangle &tri) {
-                   grid_vars(i) = average(qr, f, tri);
-                 });
+  zisa::for_each(cells(grid), [&grid_vars, &f](int_t i, const Cell &cell) {
+    grid_vars(i) = average(cell, f);
+  });
 
   return grid_vars;
 }

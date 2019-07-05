@@ -14,8 +14,8 @@ private:
 
 public:
   IsentropicEquilibrium() = default;
-  IsentropicEquilibrium(std::shared_ptr<euler_t> euler, int_t quad_deg)
-      : euler(std::move(euler)), quad_deg(quad_deg) {}
+  explicit IsentropicEquilibrium(std::shared_ptr<euler_t> euler)
+      : euler(std::move(euler)) {}
 
   RhoE extrapolate(const EnthalpyEntropy &theta,
                    const XYZ &x_ref,
@@ -34,7 +34,7 @@ public:
   }
 
   std::shared_ptr<Euler<EOS, Gravity>> euler;
-  int_t quad_deg; // FIXME this is wrong / unneeded.
+  //  int_t quad_deg; // FIXME this is wrong / unneeded.
 };
 
 } // namespace zisa

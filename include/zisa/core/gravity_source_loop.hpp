@@ -33,7 +33,7 @@ public:
     const auto &eos = euler->eos;
     const auto &gravity = euler->gravity;
 
-    auto f = [this, &eos, &gravity, &tendency](int_t i, const Triangle &tri) {
+    auto f = [this, &eos, &gravity, &tendency](int_t i, const Cell &cell) {
       const auto &rc = (*global_reconstruction)(i);
 
       auto x_cell = grid->cell_centers(i);
@@ -78,12 +78,12 @@ public:
         return s;
       };
 
-      s += quadrature(s_delta, tri, volume_deg);
+      s += quadrature(cell, s_delta);
 
-      tendency.cvars(i) += s / volume(tri);
+      tendency.cvars(i) += s / volume(cell);
     };
 
-    zisa::for_each(triangles(*grid), f);
+    zisa::for_each(cells(*grid), f);
   }
 
   virtual std::string str() const override {

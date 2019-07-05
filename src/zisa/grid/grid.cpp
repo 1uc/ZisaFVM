@@ -17,6 +17,7 @@
 #include <zisa/loops/reduction/sum.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/cell_factory.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/symmetric_choices.hpp>
 #include <zisa/math/tetrahedral_rule.hpp>
@@ -701,12 +702,14 @@ void save(HDF5Writer &writer, const Grid &grid) {
 }
 
 double largest_circum_radius(const Grid &grid) {
+  // FIXME this is triangles only
   return zisa::reduce::max(triangles(grid), [](int_t, const Triangle &tri) {
     return circum_radius(tri);
   });
 }
 
 double smallest_inradius(const Grid &grid) {
+  // FIXME this is triangles only
   return zisa::reduce::min(triangles(grid), [](int_t, const Triangle &tri) {
     return inradius(tri);
   });
@@ -744,22 +747,44 @@ Grid Grid::load(HDF5Reader &reader) {
 
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
-  auto m = array<double, 1>(shape_t<1>{poly_dof<2>(degree)});
-
   auto length = characteristic_length(tri);
-  double length_d = 1.0;
+  auto cell = make_cell(tri, quad_deg);
 
+  auto m = array<double, 1>(shape_t<1>{poly_dof<2>(degree)});
+  double length_d = 1.0;
   for (int d = 0; d <= degree; ++d) {
     for (int k = 0; k <= d; ++k) {
       int l = d - k;
 
-      m(poly_index(k, l)) = avg_moment(tri, k, l, quad_deg) / length_d;
+      m(poly_index(k, l)) = avg_moment(cell, k, l) / length_d;
     }
 
     length_d *= length;
   }
 
   return m;
+}
+
+array<double, 1>
+normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
+  auto length = characteristic_length(tet);
+  auto cell = make_cell(tet, quad_deg);
+
+  auto moments = array<double, 1>(shape_t<1>{poly_dof<2>(degree)});
+  double length_d = 1.0;
+  for (int d = 0; d <= degree; ++d) {
+    for (int k = 0; k <= d; ++k) {
+      for (int l = 0; l <= d - k; ++l) {
+        int m = d - k - l;
+
+        moments(poly_index(k, l, m)) = avg_moment(cell, k, l, m) / length_d;
+      }
+    }
+
+    length_d *= length;
+  }
+
+  return moments;
 }
 
 } // namespace zisa

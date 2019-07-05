@@ -2,7 +2,7 @@
 #define LOCAL_EQUILIBRIUM_DECL_H_Z7M0R
 
 #include <zisa/math/cartesian.hpp>
-#include <zisa/math/triangle.hpp>
+#include <zisa/math/cell.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/model/isentropic_equilibrium.hpp>
 #include <zisa/model/janka_eos.hpp>
@@ -19,9 +19,9 @@ public:
                        const EnthalpyEntropy &theta_ref,
                        const XYZ &x);
 
-  void solve(const RhoE &rhoE_bar, const Triangle &tri_ref);
+  void solve(const RhoE &rhoE_bar, const Cell &cell_ref);
   RhoE extrapolate(const XYZ &xy) const;
-  RhoE extrapolate(const Triangle &tri) const;
+  RhoE extrapolate(const Cell &cell) const;
 
 protected:
   EnthalpyEntropy theta = EnthalpyEntropy{};
@@ -62,13 +62,13 @@ public:
                    const XYZ &x)
       : super(equilibrium, theta_ref, x) {}
 
-  void solve(const RhoE &rhoE_bar, const Triangle &tri_ref) {
+  void solve(const RhoE &rhoE_bar, const Cell &cell_ref) {
     const auto &eos = this->equilibrium.euler->eos;
     auto [rho, E] = rhoE_bar;
 
     E = zisa::max(eos.polytropic_energy(rho), E);
 
-    super::solve(RhoE{rho, E}, tri_ref);
+    super::solve(RhoE{rho, E}, cell_ref);
   }
 };
 

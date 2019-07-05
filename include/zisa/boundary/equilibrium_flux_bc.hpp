@@ -40,10 +40,10 @@ public:
 
     for (auto &&[e, edge] : exterior_edges(*grid)) {
       auto i = grid->left_right(e).first;
-      auto tri = triangle(*grid, i);
+      const auto &cell = grid->cells(i);
 
       auto eq = LocalEquilibrium<Equilibrium>(equilibrium);
-      eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), tri);
+      eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), cell);
 
       auto flux = [&euler, &eq, &edge = edge](XYZ x) {
         auto rhoE = eq.extrapolate(x);
@@ -55,7 +55,7 @@ public:
       };
 
       auto f = quadrature(qr, flux, edge);
-      tendency.cvars(i) -= f / volume(tri);
+      tendency.cvars(i) -= f / volume(cell);
     }
   }
 

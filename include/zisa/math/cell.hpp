@@ -17,7 +17,11 @@ public:
 inline bool operator==(const Cell &a, const Cell &b) { return a.qr == b.qr; }
 inline bool operator!=(const Cell &a, const Cell &b) { return !(a == b); }
 
+XYZ barycenter(const Cell &cell);
 inline double volume(const Cell &cell) { return volume(cell.qr); }
+
+double avg_moment(const Cell &cell, int x_deg, int y_deg);
+double avg_moment(const Cell &cell, int x_deg, int y_deg, int z_deg);
 
 }
 

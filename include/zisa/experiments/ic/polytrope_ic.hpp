@@ -43,7 +43,7 @@ private:
 public:
   GeneralPolytropeIC(std::shared_ptr<euler_t> euler_,
                      const RhoEntropy &rhoK_center)
-      : eq(std::move(euler_), /* quad_deg = */ 0), x_ref(XYZ::zeros()) {
+      : eq(std::move(euler_)), x_ref(XYZ::zeros()) {
 
     theta_ref = eq.euler->eos.enthalpy_entropy(rhoK_center);
   }
@@ -74,8 +74,8 @@ public:
                       const XYZ &x_ref)
       : euler(euler),
         x_ref(x_ref),
-        inner_equilibrium(eq_t(euler, 0), theta_inner, x_ref),
-        outer_equilibrium(eq_t(euler, 0), theta_outer, x_ref) {}
+        inner_equilibrium(eq_t(euler), theta_inner, x_ref),
+        outer_equilibrium(eq_t(euler), theta_outer, x_ref) {}
 
   RhoP operator()(const XYZ &x) const {
     const auto &equilibrium

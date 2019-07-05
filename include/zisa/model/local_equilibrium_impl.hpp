@@ -2,6 +2,7 @@
 #define LOCAL_EQUILIBRIUM_IMPL_H_NLD8L
 
 #include "local_equilibrium_decl.hpp"
+#include <zisa/math/cell.hpp>
 #include <zisa/math/quadrature.hpp>
 #include <zisa/math/quasi_newton.hpp>
 
@@ -24,18 +25,16 @@ LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
 
 template <class Equilibrium>
 void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
-                                              const Triangle &tri_ref) {
+                                              const Cell &cell_ref) {
 
-  x_ref = barycenter(tri_ref);
+  x_ref = cell_ref.qr.points[0];
 
-  auto f = [this, &tri_ref, &rhoE_bar](const EnthalpyEntropy &theta_star) {
-    auto deg = equilibrium.quad_deg;
-
+  auto f = [this, &cell_ref, &rhoE_bar](const EnthalpyEntropy &theta_star) {
     auto rhoE_eq = [this, &theta_star](const XYZ &xy) {
       return equilibrium.extrapolate(theta_star, x_ref, xy);
     };
 
-    return RhoE(rhoE_bar - average(rhoE_eq, tri_ref, deg));
+    return RhoE(rhoE_bar - average(cell_ref, rhoE_eq));
   };
 
   auto df = [&f](const EnthalpyEntropy &x, int_t dir) {
@@ -80,10 +79,9 @@ RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const XYZ &xy) const {
 }
 
 template <class Equilibrium>
-RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const Triangle &tri) const {
+RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const Cell &cell) const {
   if (found_equilibrium) {
-    auto deg = equilibrium.quad_deg;
-    return average([this](const XYZ &xy) { return extrapolate(xy); }, tri, deg);
+    return average(cell, [this](const XYZ &xy) { return extrapolate(xy); });
   } else {
     return RhoE(RhoE::zeros());
   }

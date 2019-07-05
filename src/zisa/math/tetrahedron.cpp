@@ -27,4 +27,17 @@ XYZ barycenter(const Tetrahedron &tetrahedron) {
   return XYZ(0.25 * (v0 + v1 + v2 + v3));
 }
 
+double characteristic_length(const Tetrahedron &tet) {
+  auto c = barycenter(tet);
+
+  auto r = [&c](const XYZ &x) { return 2.0 * zisa::norm(c - x); };
+
+  double l = 0.0;
+  for (const auto &p : tet.points) {
+    l += r(p);
+  }
+
+  return 0.25 * l;
+}
+
 }

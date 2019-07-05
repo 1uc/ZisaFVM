@@ -32,7 +32,7 @@ void test_hybrid_weno_convergence(
   std::vector<double> l1_errors;
   std::vector<double> linf_errors;
 
-  auto quad_deg = max_order(params) - 1;
+  auto quad_deg = zisa::max(1, max_order(params) - 1);
 
   for (auto &&grid_name : grid_names) {
     auto grid = load_gmsh(grid_name, quad_deg);
@@ -40,7 +40,7 @@ void test_hybrid_weno_convergence(
     auto rc = std::vector<RC>();
     rc.reserve(grid->n_cells);
 
-    for (const auto &[i, tri] : triangles(*grid)) {
+    for (auto i : cell_indices(*grid)) {
       rc.push_back(RC(grid, i, params));
     }
 
@@ -77,7 +77,7 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
   using scaling_t = zisa::UnityScaling;
   auto scaling = scaling_t{};
 
-  auto quad_deg = max_order(params) - 1;
+  auto quad_deg = zisa::max(1, max_order(params) - 1);
   double tol = 5e-7;
 
   auto f = [](const XYZ &x) {
@@ -125,15 +125,15 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
         grid, params, NoEquilibrium{}, scaling);
 
     auto u = AllVariables({grid->n_cells, int_t(n_vars), int_t(0)});
-    for (auto &&[i, tri] : triangles(*grid)) {
+    for (auto i : cell_indices(*grid)) {
       for (int_t k = 0; k < n_vars; ++k) {
-        u.cvars(i, k) = f(barycenter(tri));
+        u.cvars(i, k) = f(grid->cell_centers(i));
       }
     }
 
     rc.compute(u);
 
-    for (auto &&[i, tri] : triangles(*grid)) {
+    for (auto i : cell_indices(*grid)) {
       auto points = make_points(*grid, i);
       for (auto &&x : points) {
         auto approx = rc(i)(x);

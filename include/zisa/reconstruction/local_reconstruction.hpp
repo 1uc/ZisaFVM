@@ -20,20 +20,20 @@ public:
   LocalReconstruction(std::shared_ptr<Grid> &grid,
                       const LocalEquilibrium<Equilibrium> &eq,
                       const RC &rc,
-                      const Triangle &tri_ref,
+                      const Cell &cell_ref,
                       Scaling scaling)
-      : grid(grid), eq(eq), rc(rc), tri_ref(tri_ref), scaling(scaling) {}
+      : grid(grid), eq(eq), rc(rc), cell_ref(cell_ref), scaling(scaling) {}
 
   void compute(array<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
     auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
-    eq.solve(rhoE_self, tri_ref);
+    eq.solve(rhoE_self, cell_ref);
 
     scale = scaling(rhoE_self);
 
     auto &l2g = rc.local2global();
     for (int_t il = 0; il < l2g.size(); ++il) {
-      auto [rho_eq_bar, E_eq_bar] = eq.extrapolate(triangle(*grid, l2g[il]));
+      auto [rho_eq_bar, E_eq_bar] = eq.extrapolate(grid->cells(l2g[il]));
 
       u_local(il)[0] -= rho_eq_bar;
       u_local(il)[4] -= E_eq_bar;
@@ -68,7 +68,7 @@ private:
   std::shared_ptr<Grid> grid;
   LocalEquilibrium<Equilibrium> eq;
   RC rc;
-  Triangle tri_ref;
+  Cell cell_ref;
   WENOPoly weno_poly;
   Scaling scaling;
   cvars_t scale = cvars_t::zeros();

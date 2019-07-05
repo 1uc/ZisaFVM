@@ -1,12 +1,15 @@
+#include <zisa/grid/grid.hpp>
+
 #include <random>
 
 #include <zisa/grid/gmsh_reader.hpp>
-#include <zisa/grid/grid.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/barycentric.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/cell.hpp>
+#include <zisa/math/cell_factory.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/testing/testing_framework.hpp>
 #include <zisa/utils/to_string.hpp>
@@ -144,25 +147,25 @@ TEST_CASE("Grid; moments", "[grid]") {
   zisa::int_t quad_deg = 3;
   auto grid = zisa::load_gmsh("grids/dbg.msh", quad_deg);
 
-  auto check_moment
-      = [quad_deg](const zisa::Triangle &tri, int k, int l, double exact) {
-          auto m = zisa::avg_moment(tri, k, l, quad_deg);
+  auto check_moment = [](const zisa::Cell &cell, int k, int l, double exact) {
+    auto m = zisa::avg_moment(cell, k, l);
 
-          INFO(string_format(
-              "[%d, %d] %e  !=  %e (%e) \n", k, l, m, exact, m - exact));
-          REQUIRE(zisa::almost_equal(m, exact, 1e-8));
-        };
+    INFO(string_format(
+        "[%d, %d] %e  !=  %e (%e) \n", k, l, m, exact, m - exact));
+    REQUIRE(zisa::almost_equal(m, exact, 1e-8));
+  };
 
   SECTION("avg_moment") {
 
     for (const auto &[i, tri] : zisa::triangles(*grid)) {
+      auto cell = zisa::make_cell(tri, quad_deg);
 
-      check_moment(tri, 0, 0, 1.0);
+      check_moment(cell, 0, 0, 1.0);
 
-      check_moment(tri, 1, 0, 0.0);
-      check_moment(tri, 0, 1, 0.0);
+      check_moment(cell, 1, 0, 0.0);
+      check_moment(cell, 0, 1, 0.0);
 
-      REQUIRE(zisa::abs(zisa::avg_moment(tri, 1, 2, 3)) < 1.0);
+      REQUIRE(zisa::abs(zisa::avg_moment(cell, 1, 2)) < 1.0);
     }
   }
 

@@ -73,8 +73,7 @@ array<double, 1> compute_polytrope_densities(const Grid &grid,
 template <class EOS>
 AllVariables make_general_polytrope_profile(const Grid &grid,
                                             const EOS &eos,
-                                            const PolytropeParams &params,
-                                            int_t quad_deg) {
+                                            const PolytropeParams &params) {
 
   auto spacing = zisa::linear_spacing(0.0, 1.0, 2048);
   auto [r, rho_mass] = compute_polytrope_profile(params, spacing);
@@ -89,8 +88,7 @@ AllVariables make_general_polytrope_profile(const Grid &grid,
         auto rhoK = RhoEntropy{rho, K};
         return euler_var_t{rho, 0.0, 0.0, 0.0, eos.internal_energy(rhoK)};
       },
-      grid,
-      quad_deg);
+      grid);
 
   return AllVariables{std::move(cvars), GridVariables{}};
 }

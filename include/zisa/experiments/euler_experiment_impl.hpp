@@ -108,9 +108,8 @@ EulerExperiment<EOS, Gravity>::deduce_reference_solution(
   }
 
   if (params["reference"]["equilibrium"] == "isentropic") {
-    int_t quad_deg = params["quadrature"]["volume"];
-
-    auto eq = IsentropicEquilibrium(euler, quad_deg);
+    //    int_t quad_deg = params["quadrature"]["volume"];
+    auto eq = IsentropicEquilibrium(euler);
     return deduce_reference_solution_eq(u1, eq, EulerScaling(euler));
   }
 
@@ -168,7 +167,7 @@ std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_bc() {
   if (flux_bc == "isentropic") {
     auto qr = choose_edge_rule();
     using eq_t = IsentropicEquilibrium<eos_t, gravity_t>;
-    auto eq = eq_t(euler, params["quadrature"]["volume"]);
+    auto eq = eq_t(euler);
 
     return std::make_shared<EquilibriumFluxBC<eq_t, euler_t>>(
         euler, eq, grid, qr);
@@ -276,9 +275,7 @@ auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
                          rc_params["smoothness_indicator"]["epsilon"],
                          rc_params["smoothness_indicator"]["exponent"]);
 
-  int_t quad_deg = params["quadrature"]["volume"];
-
-  auto eq = Equilibrium{euler, quad_deg};
+  auto eq = Equilibrium(euler);
   auto scaling = EulerScaling(euler);
   return std::make_shared<
       EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>(

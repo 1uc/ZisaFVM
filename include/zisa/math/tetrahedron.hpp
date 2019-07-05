@@ -15,6 +15,8 @@ public:
 double volume(const Tetrahedron &tetrahedron);
 XYZ barycenter(const Tetrahedron &tetrahedron);
 
+double characteristic_length(const Tetrahedron &tet);
+
 }
 
 #endif // ZISA_TETRAHEDRON_HPP

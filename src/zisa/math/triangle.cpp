@@ -14,17 +14,6 @@ Triangle::Triangle(const XYZ &A, const XYZ &B, const XYZ &C)
       c(zisa::norm(A - B)),
       volume(herons_formula(a, b, c)) {}
 
-double avg_moment(const Triangle &tri, int x_deg, int y_deg, int_t quad_deg) {
-  auto center = barycenter(tri);
-
-  auto f = [x_deg, y_deg, &center](const XYZ &x) {
-    auto x_rel = XYZ(x - center);
-    return zisa::pow(x_rel[0], x_deg) * zisa::pow(x_rel[1], y_deg);
-  };
-
-  return quadrature(f, tri, quad_deg) / tri.volume;
-}
-
 bool is_inside(const Triangle &tri, const XYZ &x) {
   return is_inside(Barycentric2D(tri, x));
 }
