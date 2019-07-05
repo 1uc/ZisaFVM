@@ -63,6 +63,12 @@ FlatRange flat_range(const T &t) {
   return FlatRange(PlainIndexRange(0, t.size()), NoDereference{});
 }
 
+inline PlainIndexRange index_range(int_t i_start, int_t i_end) {
+  return PlainIndexRange(i_start, i_end);
+}
+
+inline auto index_range(int_t n) -> decltype(auto) { return index_range(0, n); }
+
 template <class Range>
 struct range_traits {
   template <class T>

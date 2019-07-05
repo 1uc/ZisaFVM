@@ -9,6 +9,7 @@
 #include <zisa/config.hpp>
 #include <zisa/grid/cell_range.hpp>
 #include <zisa/grid/gmsh_reader.hpp>
+#include <zisa/grid/grid_decl.hpp>
 #include <zisa/grid/grid_impl.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/io/hdf5_writer.hpp>
@@ -224,6 +225,31 @@ array<double, 1> compute_inradii(GMSHElementType element_type,
   }
 
   return inradii;
+}
+
+array<double, 1> compute_circum_radii(GMSHElementType element_type,
+                                      const vertices_t &vertices,
+                                      const vertex_indices_t &vertex_indices) {
+  int_t n_cells = vertex_indices.shape(0);
+  auto circum_radii = array<double, 1>(shape_t<1>(n_cells));
+
+  if (element_type == GMSHElementType::triangle) {
+    zisa::for_each(PlainIndexRange(0, n_cells),
+                   [&circum_radii, &vertices, &vertex_indices](int_t i) {
+                     circum_radii(i)
+                         = circum_radius(triangle(vertices, vertex_indices, i));
+                   });
+  } else if (element_type == GMSHElementType::tetrahedron) {
+    zisa::for_each(PlainIndexRange(0, n_cells),
+                   [&circum_radii, &vertices, &vertex_indices](int_t i) {
+                     circum_radii(i) = circum_radius(
+                         tetrahedron(vertices, vertex_indices, i));
+                   });
+  } else {
+    LOG_ERR("Unknown element_type.");
+  }
+
+  return circum_radii;
 }
 
 XYZ cell_center(GMSHElementType element_type,
@@ -479,6 +505,8 @@ Grid::Grid(GMSHElementType element_type,
 
   volumes = compute_volumes(element_type, this->vertices, this->vertex_indices);
   inradii = compute_inradii(element_type, this->vertices, this->vertex_indices);
+  circum_radii = compute_circum_radii(
+      element_type, this->vertices, this->vertex_indices);
 
   normals = compute_normals(element_type,
                             this->vertices,
@@ -722,6 +750,7 @@ void save(HDF5Writer &writer, const Grid &grid) {
 
   save(writer, grid.volumes, "volumes");
   save(writer, grid.inradii, "inradii");
+  save(writer, grid.circum_radii, "circum_radii");
   save(writer, grid.normals, "normals");
   save(writer, grid.tangentials, "tangentials");
 
@@ -731,16 +760,13 @@ void save(HDF5Writer &writer, const Grid &grid) {
 
 double largest_circum_radius(const Grid &grid) {
   // FIXME this is triangles only
-  return zisa::reduce::max(triangles(grid), [](int_t, const Triangle &tri) {
-    return circum_radius(tri);
-  });
+  return zisa::reduce::max(cell_indices(grid),
+                           [&grid](int_t i) { return grid.circum_radius(i); });
 }
 
 double smallest_inradius(const Grid &grid) {
-  // FIXME this is triangles only
-  return zisa::reduce::min(triangles(grid), [](int_t, const Triangle &tri) {
-    return inradius(tri);
-  });
+  return zisa::reduce::min(cell_indices(grid),
+                           [&grid](int_t i) { return grid.inradius(i); });
 }
 
 Grid Grid::load(HDF5Reader &reader) {
@@ -764,6 +790,7 @@ Grid Grid::load(HDF5Reader &reader) {
 
   grid.volumes = array<double, 1>::load(reader, "volumes");
   grid.inradii = array<double, 1>::load(reader, "inradii");
+  grid.circum_radii = array<double, 1>::load(reader, "circum_radii");
   grid.normals = array<XYZ, 1>::load(reader, "normals");
   grid.tangentials = array<XYZ, 2>::load(reader, "tangentials");
 
@@ -775,6 +802,7 @@ Grid Grid::load(HDF5Reader &reader) {
 }
 
 double Grid::inradius(int_t i) const { return inradii[i]; }
+double Grid::circum_radius(int_t i) const { return circum_radii[i]; }
 
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {

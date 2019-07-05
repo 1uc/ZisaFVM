@@ -2,6 +2,7 @@
 
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/loops/execution_policies.hpp>
+#include <zisa/loops/reduction/max.hpp>
 #include <zisa/loops/reduction/min.hpp>
 
 namespace zisa {
@@ -48,8 +49,16 @@ double inradius(const Tetrahedron &tet) {
   auto c = barycenter(tet);
 
   return zisa::reduce::min(
-      serial_policy{}, PlainIndexRange(0, 4), [&c, &tet](int_t k) {
+      serial_policy{}, index_range(4), [&c, &tet](int_t k) {
         return zisa::norm(barycenter(face(tet, k)) - c);
+      });
+}
+
+double circum_radius(const Tetrahedron &tet) {
+  auto c = barycenter(tet);
+  return zisa::reduce::max(
+      serial_policy{}, index_range(4), [&c, &tet](int_t k) {
+        return zisa::norm(tet.points[k] - c);
       });
 }
 

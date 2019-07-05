@@ -42,6 +42,7 @@ struct Grid {
 
   array<double, 1> volumes;
   array<double, 1> inradii;
+  array<double, 1> circum_radii;
   array<XYZ, 1> normals;
   array<XYZ, 2> tangentials;
 
@@ -63,6 +64,7 @@ struct Grid {
   Edge edge(int_t i, int_t k) const;
 
   double inradius(int_t i) const;
+  double circum_radius(int_t i) const;
   double characteristic_length(int_t i) const;
 
   std::string str() const;

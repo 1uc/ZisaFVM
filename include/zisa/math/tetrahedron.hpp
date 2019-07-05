@@ -3,6 +3,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/grid/gmsh_reader.hpp>
+#include <zisa/loops/execution_policies.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/triangle.hpp>
 
@@ -15,6 +16,7 @@ public:
 };
 
 double inradius(const Tetrahedron &tet);
+double circum_radius(const Tetrahedron &tet);
 
 Triangle face(const Tetrahedron &tet, int_t k);
 double volume(const Tetrahedron &tetrahedron);
