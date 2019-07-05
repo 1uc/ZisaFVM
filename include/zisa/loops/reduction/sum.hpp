@@ -4,22 +4,9 @@
 #include <zisa/config.hpp>
 #include <zisa/loops/execution_policies.hpp>
 #include <zisa/loops/range.hpp>
-#include <zisa/meta/return_t.hpp>
+#include <zisa/loops/reduction/return_type.hpp>
 
 namespace zisa::reduce {
-
-namespace detail {
-template <class Range, class Transform>
-struct return_type_trait {
-  using type = decltype(std::declval<Transform>()(
-      std::declval<int_t>(),
-      std::declval<Range>().item(std::declval<int_t>())));
-};
-
-template <class Range, class Transform>
-using return_t = typename return_type_trait<Range, Transform>::type;
-
-}
 
 template <class Range, class Transform>
 auto sum(omp_policy, const Range &range, const Transform &transform) {
@@ -31,7 +18,11 @@ auto sum(omp_policy, const Range &range, const Transform &transform) {
 
 #pragma omp parallel for reduction(+ : ret)
   for (int_t i = i_start; i < i_end; ++i) {
-    ret += transform(i, range.item(i));
+    if constexpr (range_traits<Range>::has_item) {
+      ret += transform(i, range.item(i));
+    } else {
+      ret += transform(i);
+    }
   }
 
   return ret;
@@ -46,7 +37,11 @@ auto sum(serial_policy, const Range &range, const Transform &transform) {
   ret_type ret = 0;
 
   for (int_t i = i_start; i < i_end; ++i) {
-    ret += transform(i, range.item(i));
+    if constexpr (range_traits<Range>::has_item) {
+      ret += transform(i, range.item(i));
+    } else {
+      ret += transform(i);
+    }
   }
 
   return ret;

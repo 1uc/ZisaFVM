@@ -18,14 +18,14 @@ template <class Model>
 double LocalCFL<Model>::operator()(const AllVariables &all_variables) {
   const auto &u = all_variables.cvars;
 
-  auto f = [this, &u](int_t i, const Triangle &tri) {
+  auto f = [this, &u](int_t i) {
     double ev_max = model->max_eigen_value(cvars_t(u(i)));
-    double dx = inradius(tri);
+    double dx = grid->inradius(i);
 
     return dx / ev_max;
   };
 
-  return cfl_number * zisa::reduce::min(triangles(*grid), f);
+  return cfl_number * zisa::reduce::min(cell_indices(*grid), f);
 }
 
 } // namespace zisa

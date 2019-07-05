@@ -1,6 +1,8 @@
 #ifndef ZISA_RANGE_HPP
 #define ZISA_RANGE_HPP
 
+#include <experimental/type_traits>
+
 #include <zisa/config.hpp>
 
 namespace zisa {
@@ -60,6 +62,15 @@ template <class T>
 FlatRange flat_range(const T &t) {
   return FlatRange(PlainIndexRange(0, t.size()), NoDereference{});
 }
+
+template <class Range>
+struct range_traits {
+  template <class T>
+  using item_t = decltype(std::declval<T>().item(std::declval<int_t>()));
+
+  static constexpr bool has_item
+      = std::experimental::is_detected_v<item_t, Range>;
+};
 
 }
 

@@ -26,6 +26,28 @@
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
+
+Triangle triangle(const vertices_t &vertices,
+                  const vertex_indices_t &vertex_indices,
+                  int_t i) {
+  const auto &v0 = vertices(vertex_indices(i, int_t(0)));
+  const auto &v1 = vertices(vertex_indices(i, int_t(1)));
+  const auto &v2 = vertices(vertex_indices(i, int_t(2)));
+
+  return Triangle(v0, v1, v2);
+}
+
+Tetrahedron tetrahedron(const vertices_t &vertices,
+                        const vertex_indices_t &vertex_indices,
+                        int_t i) {
+  const auto &v0 = vertices(vertex_indices(i, int_t(0)));
+  const auto &v1 = vertices(vertex_indices(i, int_t(1)));
+  const auto &v2 = vertices(vertex_indices(i, int_t(2)));
+  const auto &v3 = vertices(vertex_indices(i, int_t(3)));
+
+  return Tetrahedron(v0, v1, v2, v3);
+}
+
 int_t count_interior_edges(const neighbours_t &neighbours,
                            const is_valid_t &is_valid) {
   int_t n_interior_edges = 0;
@@ -157,15 +179,10 @@ double volume(GMSHElementType element_type,
               const vertex_indices_t &vertex_indices,
               int_t i) {
 
-  const auto &v0 = vertices[vertex_indices(i, int_t(0))];
-  const auto &v1 = vertices[vertex_indices(i, int_t(1))];
-  const auto &v2 = vertices[vertex_indices(i, int_t(2))];
-
   if (element_type == GMSHElementType::triangle) {
-    return volume(Triangle{v0, v1, v2});
+    return volume(triangle(vertices, vertex_indices, i));
   } else if (element_type == GMSHElementType::tetrahedron) {
-    const auto &v3 = vertices[vertex_indices(i, int_t(3))];
-    return volume(Tetrahedron{v0, v1, v2, v3});
+    return volume(tetrahedron(vertices, vertex_indices, i));
   }
 
   LOG_ERR("Unknown element type.")
@@ -184,19 +201,39 @@ volumes_t compute_volumes(GMSHElementType element_type,
   return volumes;
 }
 
+array<double, 1> compute_inradii(GMSHElementType element_type,
+                                 const vertices_t &vertices,
+                                 const vertex_indices_t &vertex_indices) {
+  int_t n_cells = vertex_indices.shape(0);
+  auto inradii = array<double, 1>(shape_t<1>(n_cells));
+
+  if (element_type == GMSHElementType::triangle) {
+    zisa::for_each(PlainIndexRange(0, n_cells),
+                   [&inradii, &vertices, &vertex_indices](int_t i) {
+                     inradii(i)
+                         = inradius(triangle(vertices, vertex_indices, i));
+                   });
+  } else if (element_type == GMSHElementType::tetrahedron) {
+    zisa::for_each(PlainIndexRange(0, n_cells),
+                   [&inradii, &vertices, &vertex_indices](int_t i) {
+                     inradii(i)
+                         = inradius(tetrahedron(vertices, vertex_indices, i));
+                   });
+  } else {
+    LOG_ERR("Unknown element_type.");
+  }
+
+  return inradii;
+}
+
 XYZ cell_center(GMSHElementType element_type,
                 const vertices_t &vertices,
                 const vertex_indices_t &vertex_indices,
                 int_t i) {
-  const auto &v0 = vertices[vertex_indices(i, int_t(0))];
-  const auto &v1 = vertices[vertex_indices(i, int_t(1))];
-  const auto &v2 = vertices[vertex_indices(i, int_t(2))];
-
   if (element_type == GMSHElementType::triangle) {
-    return barycenter(Triangle{v0, v1, v2});
+    return barycenter(triangle(vertices, vertex_indices, i));
   } else if (element_type == GMSHElementType::tetrahedron) {
-    const auto &v3 = vertices[vertex_indices(i, int_t(3))];
-    return barycenter(Tetrahedron{v0, v1, v2, v3});
+    return barycenter(tetrahedron(vertices, vertex_indices, i));
   }
 
   LOG_ERR("Unknown element type.");
@@ -403,25 +440,14 @@ array<Cell, 1> compute_cells(GMSHElementType element_type,
   auto cells = array<Cell, 1>(shape_t<1>{n_cells});
 
   if (element_type == GMSHElementType::triangle) {
-    auto qr_ref = zisa::cached_triangular_quadrature_rule(quad_deg);
-
     for (int_t i = 0; i < n_cells; ++i) {
-      const auto &v0 = vertices[vertex_indices(i, int_t(0))];
-      const auto &v1 = vertices[vertex_indices(i, int_t(1))];
-      const auto &v2 = vertices[vertex_indices(i, int_t(2))];
-
-      cells[i] = Cell(zisa::denormalize(qr_ref, Triangle(v0, v1, v2)));
+      auto tri = triangle(vertices, vertex_indices, i);
+      cells[i] = make_cell(tri, quad_deg);
     }
   } else {
-    auto qr_ref = zisa::make_tetrahedral_rule(quad_deg);
-
     for (int_t i = 0; i < n_cells; ++i) {
-      const auto &v0 = vertices[vertex_indices(i, int_t(0))];
-      const auto &v1 = vertices[vertex_indices(i, int_t(1))];
-      const auto &v2 = vertices[vertex_indices(i, int_t(2))];
-      const auto &v3 = vertices[vertex_indices(i, int_t(3))];
-
-      cells[i] = Cell(zisa::denormalize(qr_ref, Tetrahedron(v0, v1, v2, v3)));
+      auto tet = tetrahedron(vertices, vertex_indices, i);
+      cells[i] = make_cell(tet, quad_deg);
     }
   }
 
@@ -452,6 +478,7 @@ Grid::Grid(GMSHElementType element_type,
   left_right = compute_left_right(edge_indices, neighbours, is_valid);
 
   volumes = compute_volumes(element_type, this->vertices, this->vertex_indices);
+  inradii = compute_inradii(element_type, this->vertices, this->vertex_indices);
 
   normals = compute_normals(element_type,
                             this->vertices,
@@ -694,6 +721,7 @@ void save(HDF5Writer &writer, const Grid &grid) {
   save(writer, grid.cell_centers, "cell_centers");
 
   save(writer, grid.volumes, "volumes");
+  save(writer, grid.inradii, "inradii");
   save(writer, grid.normals, "normals");
   save(writer, grid.tangentials, "tangentials");
 
@@ -735,6 +763,7 @@ Grid Grid::load(HDF5Reader &reader) {
   grid.cell_centers = array<XYZ, 1>::load(reader, "cell_centers");
 
   grid.volumes = array<double, 1>::load(reader, "volumes");
+  grid.inradii = array<double, 1>::load(reader, "inradii");
   grid.normals = array<XYZ, 1>::load(reader, "normals");
   grid.tangentials = array<XYZ, 2>::load(reader, "tangentials");
 
@@ -744,6 +773,8 @@ Grid Grid::load(HDF5Reader &reader) {
 
   return grid;
 }
+
+double Grid::inradius(int_t i) const { return inradii[i]; }
 
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {

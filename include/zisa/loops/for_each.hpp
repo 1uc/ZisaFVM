@@ -14,7 +14,7 @@ void for_each(omp_policy, const Range &range, const Body &body) {
 
 #pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
   for (auto i = i0; i < i_end; ++i) {
-    if constexpr (Range::has_item()) {
+    if constexpr (range_traits<Range>::has_item) {
       body(i, range.item(i));
     } else {
       body(i);
@@ -28,7 +28,7 @@ void for_each(serial_policy, const Range &range, const Body &body) {
   auto i_end = range.end_index();
 
   for (auto i = i0; i < i_end; ++i) {
-    if constexpr (Range::has_item()) {
+    if constexpr (range_traits<Range>::has_item) {
       body(i, range.item(i));
     } else {
       body(i);

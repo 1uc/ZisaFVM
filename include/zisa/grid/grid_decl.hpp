@@ -12,6 +12,7 @@
 #include <zisa/math/denormalized_rule.hpp>
 #include <zisa/math/edge.hpp>
 #include <zisa/math/face.hpp>
+#include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
 
@@ -40,6 +41,7 @@ struct Grid {
   array<Face, 1> faces;
 
   array<double, 1> volumes;
+  array<double, 1> inradii;
   array<XYZ, 1> normals;
   array<XYZ, 2> tangentials;
 
@@ -59,6 +61,8 @@ struct Grid {
   Triangle triangle(int_t i) const;
   Edge edge(int_t e) const;
   Edge edge(int_t i, int_t k) const;
+
+  double inradius(int_t i) const;
   double characteristic_length(int_t i) const;
 
   std::string str() const;
@@ -82,6 +86,10 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg);
 /// Generate all moment for a 2D poly of degree 'deg'.
 array<double, 1>
 normalized_moments(const Triangle &tri, int deg, int_t quad_deg);
+
+/// Generate all moment for a 3D poly of degree 'deg'.
+array<double, 1>
+normalized_moments(const Tetrahedron &tet, int deg, int_t quad_deg);
 
 } // namespace zisa
 
