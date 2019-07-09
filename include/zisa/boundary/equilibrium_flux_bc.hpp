@@ -38,23 +38,23 @@ public:
     const auto &euler = *this->euler;
     const auto &eos = euler.eos;
 
-    for (auto &&[e, edge] : exterior_edges(*grid)) {
+    for (auto &&[e, face] : exterior_faces(*grid)) {
       auto i = grid->left_right(e).first;
       const auto &cell = grid->cells(i);
 
       auto eq = LocalEquilibrium<Equilibrium>(equilibrium);
       eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), cell);
 
-      auto flux = [&euler, &eq, &edge = edge](XYZ x) {
+      auto flux = [&euler, &eq, &face = face](XYZ x) {
         auto rhoE = eq.extrapolate(x);
 
         auto f = euler.flux(euler.eos.cvars(rhoE));
-        inv_coord_transform(f, edge);
+        inv_coord_transform(f, face);
 
         return f;
       };
 
-      auto f = quadrature(qr, flux, edge);
+      auto f = quadrature(face, flux);
       tendency.cvars(i) -= f / volume(cell);
     }
   }

@@ -46,5 +46,16 @@ normals_t compute_normals(GMSHElementType element_type,
 volumes_t compute_volumes(GMSHElementType element_type,
                           const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices);
+
+Triangle tetrahedron_face(const vertices_t &vertices,
+                          const vertex_indices_t &vertex_indices,
+                          int_t i,
+                          int_t k);
+
+Edge triangle_face(const vertices_t &vertices,
+                   const vertex_indices_t &vertex_indices,
+                   int_t i,
+                   int_t k);
+
 } // namespace zisa
 #endif /* end of include guard */

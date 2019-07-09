@@ -14,6 +14,8 @@ constexpr ANY_DEVICE_INLINE int_t poly_dof(int deg) {
   }
 }
 
+ANY_DEVICE int_t poly_dof(int deg, int n_dims);
+
 template <int NDIMS>
 int poly_degree(int_t n_coeffs) {
 

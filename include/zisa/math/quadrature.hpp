@@ -12,6 +12,7 @@
 #include <zisa/math/cell.hpp>
 #include <zisa/math/edge.hpp>
 #include <zisa/math/edge_rule.hpp>
+#include <zisa/math/face.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/math/triangular_rule.hpp>
 #include <zisa/memory/array.hpp>
@@ -90,6 +91,19 @@ auto quadrature(const Cell &cell, const F &f) {
 template <class F>
 auto average(const Cell &cell, const F &f) {
   return average(cell.qr, f);
+}
+
+// -----------------
+// -- Over Face
+
+template <class F>
+auto quadrature(const Face &face, const F &f) {
+  return quadrature(face.qr, f);
+}
+
+template <class F>
+auto average(const Face &face, const F &f) {
+  return average(face.qr, f);
 }
 
 // -----------------

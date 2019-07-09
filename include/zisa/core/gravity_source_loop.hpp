@@ -41,19 +41,19 @@ public:
       // equilibrium terms
       auto s = cvars_t(0.0);
       for (int_t k = 0; k < grid->max_neighbours; ++k) {
-        auto edge = grid->edge(i, k);
+        auto face = grid->face(i, k);
 
-        auto s_eq = [&x_cell, &rc, &eos, &edge = edge](XYZ x) {
+        auto s_eq = [&x_cell, &rc, &eos, &face = face](XYZ x) {
           auto u_eq = rc.background(x);
           auto p_eq = eos.pressure(RhoE{u_eq[0], u_eq[4]});
 
-          auto n = unit_outward_normal(edge, x_cell);
+          auto n = unit_outward_normal(face, x_cell);
           auto s = cvars_t{0.0, p_eq * n[0], p_eq * n[1], 0.0, 0.0};
 
           return s;
         };
 
-        s += quadrature(s_eq, edge, edge_deg);
+        s += quadrature(face, s_eq);
       }
 
       // delta terms

@@ -19,6 +19,7 @@
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/cell_factory.hpp>
+#include <zisa/math/face_factory.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/symmetric_choices.hpp>
 #include <zisa/math/tetrahedral_rule.hpp>
@@ -84,6 +85,11 @@ int_t count_exterior_edges(const is_valid_t &is_valid) {
   }
 
   return n_exterior_edges;
+}
+
+int_t count_edges(const neighbours_t &neighbours, const is_valid_t &is_valid) {
+  return count_interior_edges(neighbours, is_valid)
+         + count_exterior_edges(is_valid);
 }
 
 normals_t compute_normals(GMSHElementType element_type,
@@ -265,17 +271,16 @@ XYZ cell_center(GMSHElementType element_type,
   LOG_ERR("Unknown element type.");
 }
 
-cell_centers_t compute_cell_centers(GMSHElementType element_type,
-                                    const vertices_t &vertices,
-                                    const vertex_indices_t &vertex_indices) {
-  int_t n_cells = vertex_indices.shape(0);
-  auto cell_centers = cell_centers_t(shape_t<1>{n_cells});
+template <class T>
+static array<XYZ, 1> compute_barycenters(const array<T, 1> &cells) {
+  auto n = cells.shape(0);
+  auto centers = array<XYZ, 1>(shape_t<1>{n});
 
-  for (int_t i = 0; i < n_cells; ++i) {
-    cell_centers(i) = cell_center(element_type, vertices, vertex_indices, i);
-  }
+  zisa::for_each(index_range(n), [&centers, &cells](int_t i) {
+    centers(i) = barycenter(cells(i));
+  });
 
-  return cell_centers;
+  return centers;
 }
 
 int_t find_self(const neighbours_t &neighbours, int_t me, int_t other) {
@@ -480,6 +485,67 @@ array<Cell, 1> compute_cells(GMSHElementType element_type,
   return cells;
 }
 
+array<Face, 1> compute_faces(GMSHElementType element_type,
+                             int_t quad_deg,
+                             const neighbours_t &neighbours,
+                             const is_valid_t &is_valid,
+                             const vertices_t &vertices,
+                             const vertex_indices_t &vertex_indices,
+                             const edge_indices_t &edge_indices) {
+
+  auto n_cells = neighbours.shape(0);
+  auto max_neighbours = neighbours.shape(1);
+  auto n_edges = count_edges(neighbours, is_valid);
+
+  auto faces = array<Face, 1>(shape_t<1>{n_edges});
+
+  for (int_t i = 0; i < n_cells; ++i) {
+    for (int_t k = 0; k < max_neighbours; ++k) {
+      if (i < neighbours(i, k)) {
+        if (element_type == GMSHElementType::triangle) {
+          auto edge = triangle_face(vertices, vertex_indices, i, k);
+          faces(edge_indices(i, k)) = make_face(edge, quad_deg);
+        } else if (element_type == GMSHElementType::tetrahedron) {
+          auto tri = tetrahedron_face(vertices, vertex_indices, i, k);
+          faces(edge_indices(i, k)) = make_face(tri, quad_deg);
+        }
+      }
+    }
+  }
+
+  return faces;
+}
+
+Triangle tetrahedron_face(const vertices_t &vertices,
+                          const vertex_indices_t &vertex_indices,
+                          int_t i,
+                          int_t k) {
+
+  auto element_type = GMSHElementType::tetrahedron;
+  auto k0 = GMSHElementInfo::relative_vertex_index(element_type, k, 0);
+  auto k1 = GMSHElementInfo::relative_vertex_index(element_type, k, 1);
+  auto k2 = GMSHElementInfo::relative_vertex_index(element_type, k, 2);
+
+  const auto &v0 = vertices(vertex_indices(i, k0));
+  const auto &v1 = vertices(vertex_indices(i, k1));
+  const auto &v2 = vertices(vertex_indices(i, k2));
+  return Triangle(v0, v1, v2);
+}
+
+Edge triangle_face(const vertices_t &vertices,
+                   const vertex_indices_t &vertex_indices,
+                   int_t i,
+                   int_t k) {
+  auto element_type = GMSHElementType::triangle;
+  auto k0 = GMSHElementInfo::relative_vertex_index(element_type, k, 0);
+  auto k1 = GMSHElementInfo::relative_vertex_index(element_type, k, 1);
+
+  const auto &v0 = vertices(vertex_indices(i, k0));
+  const auto &v1 = vertices(vertex_indices(i, k1));
+
+  return Edge(v0, v1);
+}
+
 Grid::Grid(GMSHElementType element_type,
            array<XYZ, 1> vertices_,
            array<int_t, 2> vertex_indices_,
@@ -498,8 +564,6 @@ Grid::Grid(GMSHElementType element_type,
   n_exterior_edges = count_exterior_edges(is_valid);
   n_edges = n_interior_edges + n_exterior_edges;
 
-  cell_centers = compute_cell_centers(
-      element_type, this->vertices, this->vertex_indices);
   edge_indices = compute_edge_indices(neighbours, is_valid);
   left_right = compute_left_right(edge_indices, neighbours, is_valid);
 
@@ -526,6 +590,19 @@ Grid::Grid(GMSHElementType element_type,
   if (quad_deg != 0) {
     cells = compute_cells(
         element_type, quad_deg, this->vertices, this->vertex_indices);
+
+    cell_centers = compute_barycenters(this->cells);
+
+    faces = compute_faces(element_type,
+                          quad_deg,
+                          this->neighbours,
+                          this->is_valid,
+                          this->vertices,
+                          this->vertex_indices,
+                          this->edge_indices);
+
+    face_centers = compute_barycenters(this->faces);
+
     normalized_moments = compute_normalized_moments(*this);
   }
 }
@@ -555,6 +632,7 @@ Edge Grid::edge(int_t e) const {
 }
 
 Edge Grid::edge(int_t i, int_t k) const { return edge(edge_indices(i, k)); }
+Face Grid::face(int_t i, int_t k) const { return faces(edge_indices(i, k)); }
 
 double Grid::characteristic_length(int_t i) const {
   return zisa::characteristic_length(triangle(i));
@@ -704,6 +782,8 @@ std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
 }
 
 std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg) {
+  quad_deg = zisa::max(1ul, quad_deg);
+
   auto gmsh = GMSHData(filename);
 
   auto max_neighbours = GMSHElementInfo::n_vertices(gmsh.element_type);
@@ -803,6 +883,10 @@ Grid Grid::load(HDF5Reader &reader) {
 
 double Grid::inradius(int_t i) const { return inradii[i]; }
 double Grid::circum_radius(int_t i) const { return circum_radii[i]; }
+
+const XYZ &Grid::face_center(int_t i, int_t k) const {
+  return face_centers(edge_indices(i, k));
+}
 
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {

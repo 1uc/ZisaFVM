@@ -19,16 +19,16 @@ public:
                        const AllVariables &current_state,
                        double /* t */) const override {
 
-    for (auto &&[e, edge] : exterior_edges(*grid)) {
+    for (auto &&[e, face] : exterior_faces(*grid)) {
       auto i = grid->left_right(e).first;
 
       auto u = cvars_t(current_state.cvars(i));
-      coord_transform(u, edge);
+      coord_transform(u, face);
 
       auto f = model->flux(u);
-      inv_coord_transform(f, edge);
+      inv_coord_transform(f, face);
 
-      tendency.cvars(i) -= volume(edge) / grid->volumes(i) * f;
+      tendency.cvars(i) -= volume(face) / grid->volumes(i) * f;
     }
   }
 

@@ -3,7 +3,7 @@
 
 #include <zisa/reconstruction/stencil.hpp>
 
-TEST_CASE("select stencil", "[weno_ao]") {
+TEST_CASE("select stencil", "[stencil][weno_ao]") {
   // FIXME remove argument
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh", 0);
   zisa::int_t i_cell = 42;
@@ -56,7 +56,7 @@ TEST_CASE("select stencil", "[weno_ao]") {
   }
 }
 
-TEST_CASE("Stencil API") {
+TEST_CASE("Stencil API", "[stencil]") {
   // FIXME remove argument
   auto grid = zisa::load_gmsh("grids/dbg.msh", 0);
 
@@ -107,20 +107,22 @@ TEST_CASE("Stencil API") {
   }
 }
 
-TEST_CASE("deduce_max_order", "[weno_ao]") {
+TEST_CASE("deduce_max_order", "[stencil]") {
   double factor = 2.0;
 
-  REQUIRE(zisa::deduce_max_order(1, factor) == 1);
-  REQUIRE(zisa::deduce_max_order(2, factor) == 1);
+  int n_dims = 2;
 
-  REQUIRE(zisa::deduce_max_order(4, factor) == 2);
-  REQUIRE(zisa::deduce_max_order(9, factor) == 2);
+  REQUIRE(zisa::deduce_max_order(1, factor, n_dims) == 1);
+  REQUIRE(zisa::deduce_max_order(2, factor, n_dims) == 1);
 
-  REQUIRE(zisa::deduce_max_order(10, factor) == 3);
-  REQUIRE(zisa::deduce_max_order(17, factor) == 3);
+  REQUIRE(zisa::deduce_max_order(4, factor, n_dims) == 2);
+  REQUIRE(zisa::deduce_max_order(9, factor, n_dims) == 2);
 
-  REQUIRE(zisa::deduce_max_order(18, factor) == 4);
-  REQUIRE(zisa::deduce_max_order(27, factor) == 4);
+  REQUIRE(zisa::deduce_max_order(10, factor, n_dims) == 3);
+  REQUIRE(zisa::deduce_max_order(17, factor, n_dims) == 3);
 
-  REQUIRE(zisa::deduce_max_order(28, factor) == 5);
+  REQUIRE(zisa::deduce_max_order(18, factor, n_dims) == 4);
+  REQUIRE(zisa::deduce_max_order(27, factor, n_dims) == 4);
+
+  REQUIRE(zisa::deduce_max_order(28, factor, n_dims) == 5);
 }

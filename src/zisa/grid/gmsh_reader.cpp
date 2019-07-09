@@ -97,6 +97,11 @@ std::unique_ptr<GMSHReader> make_gmsh_reader(const std::string &filename) {
   return make_gmsh_reader(version);
 }
 
+auto GMSHElementInfo::n_vertices_per_face(GMSHElementType element_type)
+    -> index_t {
+  return n_vertices(element_type) - 1;
+}
+
 auto GMSHElementInfo::n_vertices(GMSHElementType element_type) -> index_t {
   if (element_type == GMSHElementType::triangle) {
     return 3;

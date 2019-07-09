@@ -8,45 +8,25 @@ namespace zisa {
 
 class Edge {
 public:
-  Edge(const XYZ &a, const XYZ &b)
-      : a(a), b(b), n(rotate_right(normalize(b - a))), t(normalize(b - a)) {}
+  XYZ points[2];
 
-  Edge(const XYZ &a, const XYZ &b, const XYZ &n, const XYZ &t)
-      : a(a), b(b), n(n), t(t) {}
+public:
+  Edge(const XYZ &a, const XYZ &b) : points{a, b} {}
   Edge(const Edge &other) = default;
 
-  inline double volume() const { return zisa::norm(a - b); }
+  inline double volume() const { return zisa::norm(points[1] - points[0]); }
 
-  inline const XYZ &start_point() const { return a; }
-  inline const XYZ &end_point() const { return b; }
-
-  inline const XYZ &normal() const { return n; }
-  inline const XYZ &tangential() const { return t; }
-
-  /// Quadrature reference space -> physical space.
-  /** Input:
-   *   x_rel : relative coordinate in [-1, 1].
-   **/
-  inline XYZ coord(double x_rel) const {
-    // 0.5 * (a + b) + x_rel * (b - a)
-    return XYZ((0.5 - 0.5 * x_rel) * a + (0.5 + 0.5 * x_rel) * b);
-  }
-
-private:
-  XYZ a; // one end-point
-  XYZ b; // other end-point
-
-  XYZ n; // normal
-  XYZ t; // tangential
+  inline const XYZ &start_point() const { return points[0]; }
+  inline const XYZ &end_point() const { return points[1]; }
 };
 
-inline XYZ coord(const Edge &edge, double x_rel) { return edge.coord(x_rel); }
-inline double volume(const Edge &edge) { return edge.volume(); }
-inline XYZ unit_outward_normal(const Edge &edge, const XYZ &point_inside) {
-  return XYZ(
-      zisa::sign(zisa::dot(edge.normal(), edge.start_point() - point_inside))
-      * edge.normal());
+inline XYZ coord(const Edge &edge, double x_rel) {
+  const auto &[a, b] = edge.points;
+  // 0.5 * (a + b) + x_rel * (b - a)
+  return XYZ((0.5 - 0.5 * x_rel) * a + (0.5 + 0.5 * x_rel) * b);
 }
+
+inline double volume(const Edge &edge) { return edge.volume(); }
 
 std::ostream &operator<<(std::ostream &os, const Edge &edge);
 

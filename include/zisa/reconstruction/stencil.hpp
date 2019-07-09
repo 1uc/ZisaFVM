@@ -54,6 +54,9 @@ private:
   int max_order_;
   int order_;
 
+  int_t size_;
+  int_t max_size_;
+
   StencilBias bias_;
   double overfit_factor_;
 
@@ -72,8 +75,8 @@ biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points);
 std::vector<int_t>
 biased_stencil(const Grid &grid, int_t i, int_t n_points, const Cone &cone);
 
-int deduce_max_order(int_t stencil_size, double factor);
-int_t required_stencil_size(int deg, double factor);
+int deduce_max_order(int_t stencil_size, double factor, int n_dims);
+int_t required_stencil_size(int deg, double factor, int n_dims);
 
 } // namespace zisa
 

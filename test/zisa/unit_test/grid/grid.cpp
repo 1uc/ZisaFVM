@@ -105,7 +105,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
 
 TEST_CASE("Grid; sizes", "[grid]") {
   // FIXME remove argument.
-  auto grid = zisa::load_gmsh("grids/dbg.msh", /* quad_deg = */ 0);
+  auto grid = zisa::load_gmsh("grids/dbg.msh", /* quad_deg = */ 1);
 
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t n_vertices = grid->n_vertices;
@@ -190,13 +190,13 @@ TEST_CASE("Grid; moments", "[grid]") {
   }
 
   SECTION("orientation normals") {
-    for (const auto &[e, edge] : zisa::interior_edges(*grid)) {
+    for (const auto &[e, face] : zisa::interior_faces(*grid)) {
       auto [iL, iR] = grid->left_right(e);
 
       zisa::XYZ xL = zisa::barycenter(grid->triangle(iL));
       zisa::XYZ xR = zisa::barycenter(grid->triangle(iR));
 
-      auto n = edge.normal();
+      const auto &n = face.normal;
 
       // clang-format off
       INFO(string_format("[%d, (%d, %d)] xL = (%.3e, %.3e) xR = (%.3e, %.3e), "
@@ -291,7 +291,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
 }
 
 TEST_CASE("Grid; serialize", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/small.msh", 0);
+  auto grid = zisa::load_gmsh("grids/small.msh", 1);
   auto filename = std::string("__unit_tests--grid_to_hdf5.h5");
 
   auto writer = zisa::HDF5SerialWriter(filename);

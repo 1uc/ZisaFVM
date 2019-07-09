@@ -11,7 +11,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
-#include <zisa/math/edge.hpp>
+#include <zisa/math/face.hpp>
 
 namespace zisa {
 /// Extra variables in Euler equations.
@@ -47,8 +47,8 @@ ANY_DEVICE_INLINE double internal_energy(const euler_var_t &u) {
   return u[4] - kinetic_energy(u);
 }
 
-void coord_transform(euler_var_t &u, const Edge &edge);
-void inv_coord_transform(euler_var_t &u, const Edge &edge);
+void coord_transform(euler_var_t &u, const Face &face);
+void inv_coord_transform(euler_var_t &u, const Face &face);
 
 struct RhoE : public Cartesian<2> {
   using Cartesian<2>::Cartesian;

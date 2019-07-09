@@ -29,8 +29,8 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
   const auto &gravity_params = params["euler"]["gravity"];
   auto rhoK = RhoEntropy{gravity_params["rhoC"], gravity_params["K_inner"]};
   auto thetaC = eos.enthalpy_entropy(rhoK);
-  LocalEquilibrium inner_equilibrium(
-      IsentropicEquilibrium(euler), thetaC, XYZ::zeros());
+  auto inner_equilibrium
+      = LocalEquilibrium(IsentropicEquilibrium(euler), thetaC, XYZ::zeros());
 
   double drho = params["experiment"]["initial_conditions"]["drho"];
   double r_crit = gravity_params["r_crit"];

@@ -38,14 +38,14 @@ public:
 
 #pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
     for (int_t e = 0; e < n_interior_edges; ++e) {
-      auto edge = grid->edge(e);
+      auto face = grid->faces(e);
 
       int_t iL, iR;
       std::tie(iL, iR) = grid->left_right(e);
 
-      auto rc = [this, &edge = edge](int_t i, const XYZ &x) {
+      auto rc = [this, &face = face](int_t i, const XYZ &x) {
         auto u = cvars_t((*global_reconstruction)(i)(x));
-        coord_transform(u, edge);
+        coord_transform(u, face);
 
         return u;
       };
@@ -57,8 +57,8 @@ public:
         return numerical_flux(uL, uR);
       };
 
-      auto nf = quadrature(edge_rule, flux, edge);
-      inv_coord_transform(nf, edge);
+      auto nf = quadrature(face, flux);
+      inv_coord_transform(nf, face);
 
       for (int_t k = 0; k < cvars_t::size(); ++k) {
         auto nfL = nf(k) / grid->volumes(iL);

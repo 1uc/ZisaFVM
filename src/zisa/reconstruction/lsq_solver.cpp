@@ -48,6 +48,7 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil) {
 
   int order = stencil.order();
+  int n_dims = 2; // FIXME
   double factor = stencil.overfit_factor();
 
   LOG_ERR_IF(order <= 0,
@@ -58,8 +59,8 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   }
 
   auto degree = order - 1;
-  auto n_rows = required_stencil_size(degree, factor) - 1;
-  auto n_cols = poly_dof<2>(degree) - 1;
+  auto n_rows = required_stencil_size(degree, factor, n_dims) - 1;
+  auto n_cols = poly_dof(degree, n_dims) - 1;
 
   auto A = Eigen::MatrixXd(n_rows, n_cols);
 

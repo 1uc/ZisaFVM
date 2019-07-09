@@ -8,6 +8,8 @@ target_sources(zisa_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/denormalized_rule.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/edge.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/edge_rule.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/face.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/face_factory.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/geometric_spacing.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/linear_spacing.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/newton.cpp

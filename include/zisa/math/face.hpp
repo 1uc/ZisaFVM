@@ -1,19 +1,31 @@
 #ifndef ZISA_FACE_HPP_JIDEW
 #define ZISA_FACE_HPP_JIDEW
 
+#include <zisa/config.hpp>
+
+#include <utility>
+#include <zisa/math/cartesian.hpp>
+#include <zisa/math/denormalized_rule.hpp>
+
 namespace zisa {
 class Face {
 public:
   DenormalizedRule qr;
+  XYZ normal;
+  std::pair<XYZ, XYZ> tangentials;
 
   Face() = default;
-  explicit Face(DenormalizedRule qr) : qr(std::move(qr)) {}
+  Face(DenormalizedRule qr, const XYZ &n, const XYZ &t1, const XYZ &t2);
 };
 
-inline bool operator==(const Face &a, const Face &b) { return a.qr == b.qr; }
-inline bool operator!=(const Face &a, const Face &b) { return !(a == b); }
+XYZ barycenter(const Face &face);
 
-inline double volume(const Face &face) { return volume(face.qr); }
+bool operator==(const Face &a, const Face &b);
+bool operator!=(const Face &a, const Face &b);
+
+double volume(const Face &face);
+
+XYZ unit_outward_normal(const Face &face, const XYZ &point_inside);
 
 }
 

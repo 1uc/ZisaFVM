@@ -1,5 +1,7 @@
 #include <algorithm>
 
+#include <zisa/grid/gmsh_reader.hpp>
+#include <zisa/loops/reduction/max.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/reconstruction/stencil.hpp>
 
@@ -13,11 +15,15 @@ Stencil::Stencil(std::vector<int_t> &l2g,
       bias_(deduce_bias(params.bias)),
       overfit_factor_(params.overfit_factor) {
 
+  int n_dims = 2; // FIXME
+  max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
+
   assert(bias() == StencilBias::central);
   assign_local_indices(central_stencil(*grid, i_cell, max_size()), l2g);
 
   assert(local_.size() == global_.size());
-  order_ = deduce_max_order(local_.size(), overfit_factor());
+  order_ = deduce_max_order(local_.size(), overfit_factor(), n_dims);
+  size_ = required_stencil_size(order() - 1, overfit_factor(), n_dims);
 }
 
 Stencil::Stencil(std::vector<int_t> &l2g,
@@ -28,12 +34,15 @@ Stencil::Stencil(std::vector<int_t> &l2g,
     : max_order_(params.order),
       bias_(deduce_bias(params.bias)),
       overfit_factor_(params.overfit_factor) {
+  int n_dims = 2; // FIXME
+  max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
 
   assert(bias() == StencilBias::one_sided);
   assign_local_indices(biased_stencil(*grid, i_cell, k, max_size()), l2g);
 
   assert(local_.size() == global_.size());
-  order_ = deduce_max_order(local_.size(), overfit_factor());
+  order_ = deduce_max_order(local_.size(), overfit_factor(), n_dims);
+  size_ = required_stencil_size(order() - 1, overfit_factor(), n_dims);
 }
 
 void Stencil::assign_local_indices(const std::vector<int_t> &global_indices,
@@ -72,16 +81,11 @@ int_t Stencil::global(int_t k) const {
 
 int Stencil::order() const { return order_; }
 int Stencil::max_order() const { return max_order_; }
+int_t Stencil::size() const { return size_; }
+int_t Stencil::max_size() const { return max_size_; }
+
 StencilBias Stencil::bias() const { return bias_; }
 double Stencil::overfit_factor() const { return overfit_factor_; }
-
-int_t Stencil::size() const {
-  return required_stencil_size(order() - 1, overfit_factor());
-}
-
-int_t Stencil::max_size() const {
-  return required_stencil_size(max_order() - 1, overfit_factor());
-}
 
 bool operator==(const Stencil &a, const Stencil &b) {
   if (a.size() != b.size()) {
@@ -119,22 +123,22 @@ bool operator==(const Stencil &a, const Stencil &b) {
 
 bool operator!=(const Stencil &a, const Stencil &b) { return !(a == b); }
 
-int deduce_max_order(int_t stencil_size, double factor) {
+int deduce_max_order(int_t stencil_size, double factor, int n_dims) {
   int deg = 0;
-  while (required_stencil_size(deg + 1, factor) <= stencil_size) {
+  while (required_stencil_size(deg + 1, factor, n_dims) <= stencil_size) {
     deg += 1;
   }
 
   return deg + 1; // order is the degree plus one
 }
 
-int_t required_stencil_size(int deg, double factor) {
+int_t required_stencil_size(int deg, double factor, int n_dims) {
   if (deg == 0) {
     return 1;
   }
 
   // The polynomials being fitted all have zero mean.
-  return int_t(double(poly_dof<2>(deg) - 1) * factor);
+  return int_t(double(poly_dof(deg, n_dims) - 1) * factor);
 }
 
 std::vector<int_t>
@@ -143,13 +147,41 @@ central_stencil(const Grid &grid, int_t i_center, int_t n_points) {
       grid, i_center, n_points, Cone({0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, -1.1));
 }
 
+static double compute_cos_alpha(const Grid &grid, int_t i, int_t k) {
+  auto max_neighbours = grid.max_neighbours;
+  auto element_type = (max_neighbours == 3 ? GMSHElementType::triangle
+                                           : GMSHElementType::tetrahedron);
+
+  const auto &x_center = grid.cell_centers(i);
+
+  auto range = index_range(GMSHElementInfo::n_vertices_per_face(element_type));
+
+  double r_max = zisa::reduce::max(
+      range, [&grid, &x_center, element_type, i, k](int_t rel) {
+        auto k_rel
+            = GMSHElementInfo::relative_vertex_index(element_type, k, rel);
+        const auto &vi = grid.vertices(grid.vertex_indices(i, k_rel));
+
+        return zisa::norm(x_center - vi);
+      });
+
+  double r = zisa::norm(grid.face_center(i, k) - x_center);
+
+  return r / r_max;
+}
+
 std::vector<int_t>
 biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points) {
-  const auto &x_center = grid.cell_centers(i_center);
-  const auto &v0 = grid.vertex(i_center, k);
-  const auto &v1 = grid.vertex(i_center, (k + 1) % grid.max_neighbours);
+  const auto &cell_center = grid.cell_centers(i_center);
+  const auto &face_center = grid.face_center(i_center, k);
 
-  return biased_stencil(grid, i_center, n_points, Cone(v0, x_center, v1));
+  double cos_alpha = compute_cos_alpha(grid, i_center, k);
+
+  auto v = XYZ(face_center - cell_center);
+  auto v_hat = XYZ(normalize(v));
+
+  return biased_stencil(
+      grid, i_center, n_points, Cone(cell_center, v_hat, cos_alpha));
 }
 
 std::vector<int_t> biased_stencil(const Grid &grid,

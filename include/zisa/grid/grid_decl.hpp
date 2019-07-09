@@ -36,6 +36,7 @@ struct Grid {
 
   array<XYZ, 1> vertices;
   array<XYZ, 1> cell_centers;
+  array<XYZ, 1> face_centers;
 
   array<Cell, 1> cells;
   array<Face, 1> faces;
@@ -62,6 +63,9 @@ struct Grid {
   Triangle triangle(int_t i) const;
   Edge edge(int_t e) const;
   Edge edge(int_t i, int_t k) const;
+
+  Face face(int_t i, int_t k) const;
+  const XYZ &face_center(int_t i, int_t k) const;
 
   double inradius(int_t i) const;
   double circum_radius(int_t i) const;

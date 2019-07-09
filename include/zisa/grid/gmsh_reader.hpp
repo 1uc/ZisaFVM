@@ -24,6 +24,7 @@ private:
 
 public:
   static index_t n_vertices(GMSHElementType element_type);
+  static index_t n_vertices_per_face(GMSHElementType element_type);
 
   static index_t
   relative_vertex_index(GMSHElementType element_type, index_t k, index_t rel) {

@@ -17,13 +17,6 @@ TEST_CASE("Edge", "[math][edge]") {
   REQUIRE(almost_equal(zisa::coord(edge, -1.0), a, tol));
   REQUIRE(almost_equal(zisa::coord(edge, 1.0), b, tol));
 
-  // |    b
-  // |  a
-  // |
-  // --------
-  REQUIRE(zisa::dot(edge.normal(), zisa::XYZ{1.0, -1.0, 0.0}) > 0.0);
-  REQUIRE(zisa::dot(edge.tangential(), b - a) > 0.0);
-
   SECTION("is_intersection") {
     SECTION("edges") {
       auto edge_2
