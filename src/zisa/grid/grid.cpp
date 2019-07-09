@@ -781,6 +781,10 @@ std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
   LOG_ERR(string_format("Unknown filetype. [%s]", filename.c_str()));
 }
 
+std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
+  return load_gmsh(filename, 1);
+}
+
 std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg) {
   quad_deg = zisa::max(1ul, quad_deg);
 
@@ -839,7 +843,6 @@ void save(HDF5Writer &writer, const Grid &grid) {
 }
 
 double largest_circum_radius(const Grid &grid) {
-  // FIXME this is triangles only
   return zisa::reduce::max(cell_indices(grid),
                            [&grid](int_t i) { return grid.circum_radius(i); });
 }

@@ -59,21 +59,17 @@ double RadialPoissonSolver::layer_mass(const Rho &rho,
   }
 
   double rho_avg = 0.0;
-  //  double volume_shell = 0.0;
+  double volume_shell = 0.0;
 
 #pragma omp parallel for reduction(+ : rho_avg)
   for (int_t i_loc = 0; i_loc < n_cells_per_layer; ++i_loc) {
     int_t i = cell_indices[layer][i_loc];
 
-    //    double vol = grid->volumes(i);
-
-    /// TODO this is dependent on make_cell_indices_bins
-    rho_avg += rho(i);
-
-    //    volume_shell += vol;
+    double vol = grid->volumes(i);
+    rho_avg += vol * rho(i);
+    volume_shell += vol;
   }
-  //  rho_avg = rho_avg / volume_shell;
-  rho_avg = rho_avg / n_cells_per_layer;
+  rho_avg = rho_avg / volume_shell;
 
   double r_lower = zisa::avg(radii[layer], radii[layer + 1]);
   double r_outer = zisa::avg(radii[layer + 1], radii[layer + 2]);

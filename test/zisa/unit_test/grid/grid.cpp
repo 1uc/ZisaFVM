@@ -104,8 +104,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
 }
 
 TEST_CASE("Grid; sizes", "[grid]") {
-  // FIXME remove argument.
-  auto grid = zisa::load_gmsh("grids/dbg.msh", /* quad_deg = */ 1);
+  auto grid = zisa::load_gmsh("grids/dbg.msh");
 
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t n_vertices = grid->n_vertices;
@@ -232,16 +231,14 @@ TEST_CASE("Grid; volume", "[grid]") {
 TEST_CASE("Grid; iterators", "[grid]") {
   auto grid = zisa::load_gmsh("grids/convergence/unit_square_1.msh", 1);
 
-  // FIXME: this iterator is outdated.
+  SECTION("interior_edges") {
+    zisa::int_t count = 0;
+    for (const auto &[e, faces] : interior_faces(*grid)) {
+      ++count;
+    }
 
-  //  SECTION("interior_edges") {
-  //    zisa::int_t count = 0;
-  //    for (const auto &[e, edge] : interior_edges(*grid)) {
-  //      ++count;
-  //    }
-  //
-  //    REQUIRE(count == n_interior_edges);
-  //  }
+    REQUIRE(count == grid->n_interior_edges);
+  }
 
   SECTION("cells") {
     zisa::int_t count = 0;

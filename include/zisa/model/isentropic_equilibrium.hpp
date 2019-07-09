@@ -34,7 +34,6 @@ public:
   }
 
   std::shared_ptr<Euler<EOS, Gravity>> euler;
-  //  int_t quad_deg; // FIXME this is wrong / unneeded.
 };
 
 } // namespace zisa

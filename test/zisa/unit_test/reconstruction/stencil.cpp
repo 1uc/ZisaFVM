@@ -4,8 +4,7 @@
 #include <zisa/reconstruction/stencil.hpp>
 
 TEST_CASE("select stencil", "[stencil][weno_ao]") {
-  // FIXME remove argument
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh", 0);
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
   zisa::int_t i_cell = 42;
   zisa::int_t n_points = 12;
   zisa::int_t n_cells = grid->n_cells;
@@ -57,8 +56,7 @@ TEST_CASE("select stencil", "[stencil][weno_ao]") {
 }
 
 TEST_CASE("Stencil API", "[stencil]") {
-  // FIXME remove argument
-  auto grid = zisa::load_gmsh("grids/dbg.msh", 0);
+  auto grid = zisa::load_gmsh("grids/dbg.msh");
 
   zisa::int_t i_cell = 6;
 
@@ -80,9 +78,7 @@ TEST_CASE("Stencil API", "[stencil]") {
   }
 
   SECTION("compatibility with std::vector") {
-
-    // FIXME remove argument
-    auto grid = zisa::load_gmsh("grids/dbg.msh", 0);
+    auto grid = zisa::load_gmsh("grids/dbg.msh");
     zisa::int_t i_cell = 6;
     zisa::int_t n_stencils = 3;
 

@@ -4,8 +4,7 @@
 TEST_CASE("StencilFamily", "[weno_ao]") {
 
   SECTION("initialization") {
-    // FIXME remove argument
-    auto grid = zisa::load_gmsh("grids/small.msh", 0);
+    auto grid = zisa::load_gmsh("grids/small.msh");
     zisa::int_t i_cell = 20;
 
     SECTION("single stencil") {

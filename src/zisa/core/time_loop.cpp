@@ -152,9 +152,11 @@ void TimeLoop::reject_step(std::shared_ptr<AllVariables> &u0,
   simulation_clock->set_time_step(dt_new);
 
   // Remember, `time_integration` keeps the buffer it
-  // was passed for future use. Hence we must either copy and swap the
-  // pointers, or swap the buffers & swap the pointers.
-  *u0 = *u1; // TODO implement swap(*u0, *u1)
+  // was passed for future use. Hence we must either copy data and copy the
+  // pointers, or swap the buffers & copy the pointers.
+  //
+  // Note: That `u1` will not be used after this call.
+  *u1 = *u0; // TODO implement swap(*u0, *u1)
   u0 = u1;
 }
 
