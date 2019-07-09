@@ -71,6 +71,8 @@ struct Grid {
   double circum_radius(int_t i) const;
   double characteristic_length(int_t i) const;
 
+  int n_dims() const;
+
   std::string str() const;
 };
 

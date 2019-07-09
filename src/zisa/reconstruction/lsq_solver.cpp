@@ -48,7 +48,7 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil) {
 
   int order = stencil.order();
-  int n_dims = 2; // FIXME
+  int n_dims = grid.n_dims();
   double factor = stencil.overfit_factor();
 
   LOG_ERR_IF(order <= 0,

@@ -891,6 +891,11 @@ const XYZ &Grid::face_center(int_t i, int_t k) const {
   return face_centers(edge_indices(i, k));
 }
 
+int Grid::n_dims() const {
+  // FIXME only correct if triangles and tetrahedra are the only elements.
+  return (max_neighbours == 3 ? 2 : 3);
+}
+
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
   auto length = characteristic_length(tri);

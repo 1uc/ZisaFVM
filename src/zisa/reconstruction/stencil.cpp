@@ -15,7 +15,7 @@ Stencil::Stencil(std::vector<int_t> &l2g,
       bias_(deduce_bias(params.bias)),
       overfit_factor_(params.overfit_factor) {
 
-  int n_dims = 2; // FIXME
+  int n_dims = grid->n_dims();
   max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
 
   assert(bias() == StencilBias::central);
@@ -34,7 +34,7 @@ Stencil::Stencil(std::vector<int_t> &l2g,
     : max_order_(params.order),
       bias_(deduce_bias(params.bias)),
       overfit_factor_(params.overfit_factor) {
-  int n_dims = 2; // FIXME
+  int n_dims = grid->n_dims();
   max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
 
   assert(bias() == StencilBias::one_sided);
