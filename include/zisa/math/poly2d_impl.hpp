@@ -328,5 +328,110 @@ operator<<(std::ostream &os,
   return os;
 }
 
+template <int_t NDIMS>
+class PolyIndexRange {};
+
+template <>
+class PolyIndexRange<2> {
+public:
+  class EndIterator {
+  public:
+    EndIterator(int_t deg) : deg(deg) {}
+
+  public:
+    int_t deg;
+  };
+
+  class Iterator {
+  public:
+    std::array<int_t, 2> operator*() const { return {d - j, j}; }
+
+    void operator++() {
+      ++j;
+
+      if (j > d) {
+        ++d;
+        j = 0;
+      }
+    }
+
+    int_t level() const { return d; }
+
+    bool operator==(const EndIterator &end_it) const {
+      return level() > end_it.deg;
+    }
+
+    bool operator!=(const EndIterator &end_it) const {
+      return !((*this) == end_it);
+    }
+
+  private:
+    int_t d = 0;
+    int_t j = 0;
+  };
+
+  PolyIndexRange(int_t max_deg) : max_deg(max_deg) {}
+
+  Iterator begin() const { return Iterator(); }
+  EndIterator end() const { return EndIterator(max_deg); }
+
+private:
+  int_t max_deg;
+};
+
+template <>
+class PolyIndexRange<3> {
+private:
+  static constexpr int_t n_dims() { return 3; }
+
+  class EndIterator {
+  public:
+    EndIterator(int_t deg) : deg(deg) {}
+
+  public:
+    int_t deg;
+  };
+
+  class Iterator {
+  public:
+    void operator++() {
+      ++it_2d;
+
+      if (it_2d.level() > d) {
+        ++d;
+        it_2d = PolyIndexRange<2>::Iterator();
+      }
+    }
+
+    std::array<int_t, 3> operator*() const {
+      auto ij = *it_2d;
+      return {d - it_2d.level(), ij[0], ij[1]};
+    }
+
+    int_t level() const { return d; }
+
+    bool operator==(const EndIterator &end_it) const {
+      return level() > end_it.deg;
+    }
+
+    bool operator!=(const EndIterator &end_it) const {
+      return !((*this) == end_it);
+    }
+
+  private:
+    int_t d = 0;
+    PolyIndexRange<2>::Iterator it_2d;
+  };
+
+public:
+  PolyIndexRange(int_t max_deg) : max_deg(max_deg) {}
+
+  Iterator begin() const { return Iterator(); }
+  EndIterator end() const { return EndIterator(max_deg); }
+
+public:
+  int_t max_deg;
+};
+
 } // namespace zisa
 #endif /* end of include guard */

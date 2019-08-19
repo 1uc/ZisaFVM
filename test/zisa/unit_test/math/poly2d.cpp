@@ -20,41 +20,44 @@ TEST_CASE("poly_dof-3d", "[math][poly]") {
   REQUIRE(zisa::poly_dof<3>(4) == 35);
 }
 
-TEST_CASE("poly_index-2d", "[math][poly]") {
+TEST_CASE("PolyIndexRange<2>", "[math][poly]") {
+  zisa::int_t max_degree = 3;
+  auto index_range = zisa::PolyIndexRange<2>(max_degree);
 
-  int i = 0;
+  zisa::int_t degree = 0;
+  zisa::int_t count = 0;
+  for (auto [i, j] : index_range) {
+    if (i + j > degree) {
+      ++degree;
+    }
 
-  REQUIRE(zisa::poly_index(0, 0) == i++);
+    REQUIRE(i + j == degree);
+    REQUIRE(zisa::poly_index(i, j) == count);
+    ++count;
+  }
 
-  REQUIRE(zisa::poly_index(1, 0) == i++);
-  REQUIRE(zisa::poly_index(0, 1) == i++);
-
-  REQUIRE(zisa::poly_index(2, 0) == i++);
-  REQUIRE(zisa::poly_index(1, 1) == i++);
-  REQUIRE(zisa::poly_index(0, 2) == i++);
-
-  REQUIRE(zisa::poly_index(3, 0) == i++);
-  REQUIRE(zisa::poly_index(2, 1) == i++);
-  REQUIRE(zisa::poly_index(1, 2) == i++);
-  REQUIRE(zisa::poly_index(0, 3) == i++);
+  REQUIRE(degree == max_degree);
+  REQUIRE(count == zisa::poly_dof<2>(max_degree));
 }
 
-TEST_CASE("poly_index-3d", "[math][poly]") {
+TEST_CASE("PolyIndexRange<3>", "[math][poly]") {
+  zisa::int_t max_degree = 3;
+  auto index_range = zisa::PolyIndexRange<3>(max_degree);
 
-  int i = 0;
+  zisa::int_t degree = 0;
+  zisa::int_t count = 0;
+  for (auto [i, j, k] : index_range) {
+    if (i + j + k > degree) {
+      ++degree;
+    }
 
-  REQUIRE(zisa::poly_index(0, 0, 0) == i++);
+    REQUIRE(i + j + k == degree);
+    REQUIRE(zisa::poly_index(i, j, k) == count);
+    ++count;
+  }
 
-  REQUIRE(zisa::poly_index(1, 0, 0) == i++);
-  REQUIRE(zisa::poly_index(0, 1, 0) == i++);
-  REQUIRE(zisa::poly_index(0, 0, 1) == i++);
-
-  REQUIRE(zisa::poly_index(2, 0, 0) == i++);
-  REQUIRE(zisa::poly_index(1, 1, 0) == i++);
-  REQUIRE(zisa::poly_index(1, 0, 1) == i++);
-  REQUIRE(zisa::poly_index(0, 2, 0) == i++);
-  REQUIRE(zisa::poly_index(0, 1, 1) == i++);
-  REQUIRE(zisa::poly_index(0, 0, 2) == i++);
+  REQUIRE(max_degree == degree);
+  REQUIRE(count == zisa::poly_dof<3>(max_degree));
 }
 
 template <int NDIMS>
