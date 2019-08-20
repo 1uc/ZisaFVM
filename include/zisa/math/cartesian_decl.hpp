@@ -67,14 +67,8 @@ public:
   ANY_DEVICE_INLINE scalar_t &operator[](int_t i) { return data[i]; }
 
   /// Deep copy.
-  ANY_DEVICE_INLINE Cartesian<n_vars> &
-  operator=(const Cartesian<n_vars> &other) {
-    for (int_t i = 0; i < n_vars; ++i) {
-      data[i] = other.data[i];
-    }
-
-    return *this;
-  }
+  ANY_DEVICE_INLINE Cartesian<n_vars> &operator=(const Cartesian<n_vars> &other)
+      = default;
 
   ANY_DEVICE_INLINE Cartesian<n_vars> &
   operator=(std::initializer_list<double> list) {
@@ -209,6 +203,7 @@ public:
 
   using super::Cartesian;
   using super::operator=;
+  XYZ &operator=(const XYZ &) = default;
 
   [[nodiscard]] ANY_DEVICE_INLINE static XYZ zeros() {
     return XYZ(super::zeros());
