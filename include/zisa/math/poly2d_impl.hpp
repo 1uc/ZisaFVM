@@ -21,7 +21,7 @@ int poly_degree(int_t n_coeffs) {
 
   LOG_ERR_IF(n_coeffs == 0, "Too few coefficients.");
 
-  for (int d = 1;; ++d) {
+  for (int d = 1; true; ++d) {
     if (poly_dof<NDIMS>(d) > n_coeffs) {
       return d - 1;
     }
@@ -29,8 +29,8 @@ int poly_degree(int_t n_coeffs) {
 }
 
 constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b) {
-  auto n = a + b;
-  return int_t(((n + 1) * n) / 2 + b);
+  auto n = int_t(a) + int_t(b);
+  return int_t(((n + 1) * n) / 2 + int_t(b));
 }
 
 constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b, int c) {

@@ -28,8 +28,6 @@ public:
   using scalar_t = double;
 
   /// Empty constructor.
-  /** Make CUDA happy.
-   */
   ANY_DEVICE_INLINE Cartesian() = default;
 
   // Copy constructor.
