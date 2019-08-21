@@ -36,6 +36,9 @@ public:
   bool operator!=(const LSQSolver &other) const;
 
 private:
+  int n_dims() const;
+
+private:
   std::shared_ptr<Grid> grid;
   int_t i_cell;
   int order;

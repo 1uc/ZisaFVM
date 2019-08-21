@@ -89,13 +89,16 @@ TEST_CASE("poly_degree", "[math][poly]") {
 }
 
 TEST_CASE("Poly2D; examples", "[math][poly]") {
-  auto p = zisa::Poly2D<5, 1>({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-                              {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
-                              zisa::XYZ::zeros(),
-                              1.0);
+  int n_dims = 2;
+  using Poly = zisa::PolyND<zisa::poly_dof<2>(5), 1>;
+  auto p = Poly({1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+                {0.0, 0.0, 0.0, 1.0, 2.0, 3.0},
+                zisa::XYZ::zeros(),
+                1.0,
+                n_dims);
 
-  auto q = zisa::Poly2D<5, 1>(
-      {1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XYZ::zeros(), 1.0);
+  auto q
+      = Poly({1.0, 2.0, 3.0}, {0.0, 0.0, 0.0}, zisa::XYZ::zeros(), 1.0, n_dims);
 
   SECTION("degree") { REQUIRE(p.degree() == 2); }
   SECTION("max_degree") { REQUIRE(p.max_degree() == 5); }
@@ -123,7 +126,7 @@ TEST_CASE("Poly2D; examples", "[math][poly]") {
   SECTION("saxpy-like") {
     auto x = zisa::XYZ{-3.4, 2.138, 0.0};
 
-    auto pq = zisa::Poly2D<5, 1>(0.2 * p + q - 0.4 * p);
+    auto pq = Poly(0.2 * p + q - 0.4 * p);
 
     auto exact = zisa::Cartesian<1>{0.2 * p(x) + q(x) - 0.4 * p(x)};
     auto approx = pq(x);
@@ -135,7 +138,7 @@ TEST_CASE("Poly2D; examples", "[math][poly]") {
   SECTION("assignment") {
     auto x = zisa::XYZ{-3.4, 2.138, 0.0};
 
-    auto tmp = zisa::Poly2D<5, 1>(p);
+    auto tmp = Poly(p);
 
     SECTION("+=") {
       tmp += q;
@@ -191,12 +194,15 @@ TEST_CASE("Poly2D; examples", "[math][poly]") {
 }
 
 TEST_CASE("Poly3D<., 2>; examples", "[math][poly]") {
+  int n_dims = 3;
   constexpr int n_vars = 2;
-  auto p = zisa::Poly3D<5, n_vars>(
-      2,
-      {0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
-      zisa::XYZ::zeros(),
-      1.0);
+  using Poly = zisa::PolyND<zisa::poly_dof<3>(5), n_vars>;
+
+  auto p = Poly(2,
+                {0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0},
+                zisa::XYZ::zeros(),
+                1.0,
+                n_dims);
 
   auto p000 = zisa::Cartesian<n_vars>{1.0, -1.0};
 
@@ -220,11 +226,10 @@ TEST_CASE("Poly3D<., 2>; examples", "[math][poly]") {
   // clang-format on
 
   std::copy((double *)&p_coeffs[0],
-            (double *)&p_coeffs[0] + p.n_vars() * p.dof(p.degree()),
+            (double *)&p_coeffs[0] + p.n_vars() * p.dof(),
             p.coeffs_ptr());
 
-  auto q = zisa::Poly3D<5, n_vars>(
-      1, {0.0, 0.0, 0.0, 0.0}, zisa::XYZ::zeros(), 1.0);
+  auto q = Poly(1, {0.0, 0.0, 0.0, 0.0}, zisa::XYZ::zeros(), 1.0, n_dims);
 
   auto q000 = zisa::Cartesian<n_vars>{1.0, -1.0};
   auto q100 = zisa::Cartesian<n_vars>{-1.0, -1.0};
@@ -233,7 +238,7 @@ TEST_CASE("Poly3D<., 2>; examples", "[math][poly]") {
 
   auto q_coeffs = std::vector<zisa::Cartesian<n_vars>>{q000, q100, q010, q001};
   std::copy((double *)&q_coeffs[0],
-            (double *)&q_coeffs[0] + q.n_vars() * q.dof(q.degree()),
+            (double *)&q_coeffs[0] + q.n_vars() * q.dof(),
             q.coeffs_ptr());
 
   SECTION("degree") { REQUIRE(p.degree() == 2); }
@@ -241,8 +246,8 @@ TEST_CASE("Poly3D<., 2>; examples", "[math][poly]") {
   SECTION("n_vars") { REQUIRE(p.n_vars() == n_vars); }
 
   SECTION("p{} == 0") {
-    auto p = std::make_shared<zisa::Poly3D<5, 2>>();
-    REQUIRE((*p)(zisa::XYZ{2.0, -1.0, 0.0}) == zisa::Cartesian<2>{0.0, 0.0});
+    auto p = std::make_shared<Poly>();
+    REQUIRE((*p)(zisa::XYZ{2.0, -1.0, 0.0}) == zisa::Cartesian<n_vars>(0.0));
   }
 
   SECTION("p(x)") {
@@ -265,7 +270,7 @@ TEST_CASE("Poly3D<., 2>; examples", "[math][poly]") {
   SECTION("saxpy-like") {
     auto x = zisa::XYZ{-3.4, 2.138, 0.2};
 
-    auto pq = zisa::Poly3D<5, n_vars>(0.2 * p + q - 0.4 * p);
+    auto pq = Poly(0.2 * p + q - 0.4 * p);
 
     auto exact = zisa::Cartesian<n_vars>{0.2 * p(x) + q(x) - 0.4 * p(x)};
     auto approx = pq(x);

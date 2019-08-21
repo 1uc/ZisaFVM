@@ -69,7 +69,8 @@ WENOPoly HybridWENO::eno_hybridize() const {
     al_tot += al;
   }
 
-  auto p = WENOPoly(0, {0.0}, XYZ::zeros(), 1.0);
+  int n_dims = 2;
+  auto p = WENOPoly(0, {0.0}, XYZ::zeros(), 1.0, n_dims);
   for (int_t k = 0; k < stencils.size(); ++k) {
     p += (non_linear_weights[k] / al_tot) * polys[k];
   }

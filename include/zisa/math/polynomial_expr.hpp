@@ -18,19 +18,17 @@ public:
   PointwiseSum(const PolynomialCRTP<E1> &e1, const PolynomialCRTP<E2> &e2)
       : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {
 
-    static_assert(E1::n_dims() == E2::n_dims(), "Dimensional mismatch.");
+    static_assert(E1::n_coeffs() == E2::n_coeffs(),
+                  "Number of coefficients mismatch.");
+    static_assert(E1::n_vars() == E2::n_vars(),
+                  "Number of variables mismatch.");
   }
 
-  static constexpr int max_degree() {
-    return zisa::max(E1::max_degree(), E2::max_degree());
-  }
+  static constexpr int n_coeffs() { return E1::n_coeffs(); }
+  static constexpr int n_vars() { return E1::n_vars(); }
 
   int degree() const { return zisa::max(e1.degree(), e2.degree()); }
-
-  static constexpr int n_dims() {
-    static_assert(E1::n_dims() == E2::n_dims(), "Dimensions mismatch.");
-    return E1::n_dims();
-  }
+  int n_dims() const { return zisa::max(e1.n_dims(), e2.n_dims()); }
 
   template <class... Indices>
   double a(Indices &&... indices) const {
@@ -64,16 +62,17 @@ class PointwiseSubtract : public PolynomialCRTP<PointwiseSubtract<E1, E2>> {
 public:
   PointwiseSubtract(const PolynomialCRTP<E1> &e1, const PolynomialCRTP<E2> &e2)
       : e1(static_cast<const E1 &>(e1)), e2(static_cast<const E2 &>(e2)) {
-
-    static_assert(E1::n_dims() == E2::n_dims(), "Dimensional mismatch.");
+    static_assert(E1::n_coeffs() == E2::n_coeffs(),
+                  "Number of coefficients mismatch.");
+    static_assert(E1::n_vars() == E2::n_vars(),
+                  "Number of variables mismatch.");
   }
 
-  static constexpr int max_degree() {
-    return zisa::max(E1::max_degree(), E2::max_degree());
-  }
+  static constexpr int n_coeffs() { return E1::n_coeffs(); }
+  static constexpr int n_vars() { return E1::n_vars(); }
 
   int degree() const { return zisa::max(e1.degree(), e2.degree()); }
-  static constexpr int n_dims() { return E1::n_dims(); }
+  int n_dims() const { return zisa::max(e1.n_dims(), e2.n_dims()); }
 
   template <class... Indices>
   double a(Indices &&... indices) const {
@@ -108,10 +107,11 @@ public:
   PointwiseScale(const PolynomialCRTP<E> &e, double alpha)
       : e(static_cast<const E &>(e)), alpha(alpha) {}
 
-  static constexpr int max_degree() { return E::max_degree(); }
+  static constexpr int n_coeffs() { return E::n_coeffs(); }
+  static constexpr int n_vars() { return E::n_vars(); }
 
   int degree() const { return e.degree(); }
-  static constexpr int n_dims() { return E::n_dims(); }
+  int n_dims() const { return e.n_dims(); }
 
   template <class... Indices>
   double a(Indices &&... indices) const {

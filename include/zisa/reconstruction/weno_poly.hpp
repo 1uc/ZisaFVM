@@ -6,7 +6,7 @@
 #include <zisa/math/poly2d.hpp>
 
 namespace zisa {
-using WENOPoly = Poly2D</* degree = */ 4, /* vars = */ 5>;
+using WENOPoly = PolyND</* max_coeffs = */ 35, /* vars = */ 5>;
 }
 
 #endif

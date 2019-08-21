@@ -14,4 +14,12 @@ ANY_DEVICE int_t poly_dof(int deg, int n_dims) {
   }
 }
 
+int poly_degree(int_t n_coeffs, int n_dims) {
+  if (n_dims == 2) {
+    return poly_degree<2>(n_coeffs);
+  } else {
+    return poly_degree<3>(n_coeffs);
+  }
+}
+
 } // namespace zisa

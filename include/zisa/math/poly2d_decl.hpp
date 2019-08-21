@@ -19,6 +19,9 @@ constexpr ANY_DEVICE_INLINE int_t poly_dof(int deg);
 template <int NDIMS>
 int poly_degree(int_t n_coeffs);
 
+/// Highest degree of a polynomial with '<=n_coeffs' coefficients.
+int poly_degree(int_t n_coeffs, int n_dims);
+
 /// Compute the linear index of the coefficient of a polynomial.
 /** Example:
  *    p(x, y) = \sum_{k,l} a(k,l) * x^k*y^l
@@ -38,16 +41,17 @@ constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b);
 /// Compute linear index of the coefficient of a 3D polynomial.
 constexpr ANY_DEVICE_INLINE int_t poly_index(int a, int b, int c);
 
-template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
-class PolyND : public PolynomialCRTP<Derived> {
+template <int NCOEFFS, int NVARS>
+class PolyND : public PolynomialCRTP<PolyND<NCOEFFS, NVARS>> {
 public:
-  static constexpr int max_degree();
+  int max_degree() const;
   int degree() const;
 
-  static constexpr int_t dof(int deg);
   static constexpr int_t n_coeffs();
   static constexpr int_t n_vars();
-  static constexpr int n_dims();
+
+  static constexpr int_t idx(int k, int l);
+  static constexpr int_t idx(int k, int l, int m);
 
 public:
   PolyND();
@@ -55,17 +59,20 @@ public:
   PolyND(int degree,
          const array<double, 1> &moments,
          const XYZ &x_center,
-         double reference_length);
+         double reference_length,
+         int n_dims);
 
   PolyND(int degree,
          const std::initializer_list<double> &moments_list,
          const XYZ &x_center,
-         double reference_length);
+         double reference_length,
+         int n_dims);
 
   PolyND(const std::initializer_list<double> &coeffs_list,
          const std::initializer_list<double> &moments_list,
          const XYZ &x_center,
-         double reference_length);
+         double reference_length,
+         int n_dims);
 
   template <class E>
   PolyND(const PolynomialCRTP<E> &e_);
@@ -82,8 +89,16 @@ public:
   void operator*=(double alpha);
   void operator/=(double alpha);
 
+  Cartesian<NVARS> operator()(const XYZ &xyz) const;
+
+  Cartesian<NVARS> eval_2d(const XYZ &xyz) const;
+  Cartesian<NVARS> eval_3d(const XYZ &xyz) const;
+
   template <class E>
   void deep_copy(const PolynomialCRTP<E> &e_);
+
+  int n_dims() const;
+  int_t dof() const;
 
   double a(int_t i) const;
   double &a(int_t i);
@@ -100,62 +115,22 @@ private:
   double moments[n_coeffs()];
 
   int degree_;
+  int n_dims_;
 
   XYZ x_center_;
   double reference_length_;
 
 private:
-  template <class D, int MD, int NV, int ND>
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const PolyND<D, MD, NV, ND> &poly);
+  template <int M, int NV>
+  friend std::ostream &operator<<(std::ostream &os, const PolyND<M, NV> &poly);
 };
 
-template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
-std::ostream &operator<<(std::ostream &os,
-                         const PolyND<Derived, MAX_DEGREE, NVARS, NDIMS> &poly);
-
-template <int MAX_DEGREE, int NVARS>
-class Poly2D : public PolyND<Poly2D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 2> {
-private:
-  using super = PolyND<Poly2D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 2>;
-
-public:
-  static constexpr int_t idx(int k, int l);
-
-public:
-  using super::super;
-  using super::operator=;
-  using super::operator+=;
-  using super::operator-=;
-  using super::operator*=;
-  using super::operator/=;
-
-  Cartesian<NVARS> operator()(const XYZ &xy) const;
-};
-
-template <int MAX_DEGREE, int NVARS>
-class Poly3D : public PolyND<Poly3D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 3> {
-private:
-  using super = PolyND<Poly3D<MAX_DEGREE, NVARS>, MAX_DEGREE, NVARS, 3>;
-
-public:
-  static constexpr int_t idx(int i, int j, int k);
-
-public:
-  using super::super;
-  using super::operator=;
-  using super::operator+=;
-  using super::operator-=;
-  using super::operator*=;
-  using super::operator/=;
-
-  Cartesian<NVARS> operator()(const XYZ &xy) const;
-};
+template <int NCOEFFS, int NVARS>
+std::ostream &operator<<(std::ostream &os, const PolyND<NCOEFFS, NVARS> &poly);
 
 /// Value that represents the smoothness of the polynomial.
-template <class Derived, int MAX_DEGREE, int NVARS, int NDIMS>
-Cartesian<NVARS>
-smoothness_indicator(const PolyND<Derived, MAX_DEGREE, NVARS, NDIMS> &p);
+template <int NCOEFFS, int NVARS>
+Cartesian<NVARS> smoothness_indicator(const PolyND<NCOEFFS, NVARS> &p);
 
 } // namespace zisa
 #endif /* end of include guard */
