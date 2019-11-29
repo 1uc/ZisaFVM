@@ -226,7 +226,7 @@ EulerExperiment<EOS, Gravity>::deduce_reconstruction() {
   if (reconstruction == "WENO-AO") {
     return choose_physical_rate_of_change<Equilibrium, WENO_AO>();
   } else if (reconstruction == "CWENO-AO") {
-    return choose_physical_rate_of_change<Equilibrium, WENO_AO>();
+    return choose_physical_rate_of_change<Equilibrium, CWENO_AO>();
   }
 
   LOG_ERR("Failed to deduce reconstruction.");
