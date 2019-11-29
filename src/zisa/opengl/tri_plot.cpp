@@ -37,6 +37,7 @@ TriPlot::TriPlot(std::shared_ptr<Window> window,
 void TriPlot::draw(const array<RGBColor, 1> &colors) const {
   assert(colors.size() == vertices.size());
 
+  glfwPollEvents();
   clear();
 
   glEnableVertexAttribArray(0);

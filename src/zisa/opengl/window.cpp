@@ -36,6 +36,16 @@ Window::Window(const std::string &title, int width, int height) {
   glfwMakeContextCurrent(window_);
   glewExperimental = true;
 
+  glfwSetFramebufferSizeCallback(
+      window_, [](GLFWwindow * /*window */, int width, int height) {
+        int length = std::min(width, height);
+
+        int x = width < height ? 0 : (width - height) / 2;
+        int y = width < height ? (height - width) / 2 : 0;
+
+        glViewport(x, y, length, length);
+      });
+
   if (glewInit() != GLEW_OK) {
     LOG_ERR("Failed to initialize GLEW.");
   }
