@@ -2,9 +2,14 @@
 #include <zisa/reconstruction/lsq_solver.hpp>
 
 namespace zisa {
-Eigen::MatrixXd allocate_matrix(const Grid &grid, const Stencil &stencil);
+Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
+                                        const Stencil &stencil);
 
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
+                                        const Stencil &stencil);
+
+void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
+                                        const Grid &grid,
                                         const Stencil &stencil);
 
 void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
@@ -47,12 +52,14 @@ WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
   using RowMajorMatrix
       = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
-  Eigen::Index n_coeffs = Eigen::Index(poly.dof() - 1);
-  Eigen::Map<RowMajorMatrix> coeffs(
+  auto n_coeffs = Eigen::Index(poly.dof() - 1);
+  auto coeffs = Eigen::Map<RowMajorMatrix>(
       poly.coeffs_ptr() + n_vars, n_coeffs, n_vars);
 
-  coeffs = qr.solve(
-      Eigen::Map<const RowMajorMatrix>(rhs.raw(), qr.rows(), n_vars));
+  auto mapped_rhs
+      = Eigen::Map<const RowMajorMatrix>(rhs.raw(), qr.rows(), n_vars);
+
+  coeffs = qr.solve(mapped_rhs);
 
   return poly;
 }
@@ -60,9 +67,16 @@ WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil) {
 
-  int n_dims = grid.n_dims();
+  auto A = allocate_weno_ao_matrix(grid, stencil);
+  assemble_weno_ao_matrix(A, grid, stencil);
 
-  auto A = allocate_matrix(grid, stencil);
+  return A;
+}
+
+void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
+                             const Grid &grid,
+                             const Stencil &stencil) {
+  int n_dims = grid.n_dims();
 
   if (n_dims == 2) {
     assemble_2d_weno_ao_matrix(A, grid, stencil);
@@ -72,11 +86,10 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   } else {
     LOG_ERR(string_format("Only works in 2D or 3D. [%d]", n_dims));
   }
-
-  return A;
 }
 
-Eigen::MatrixXd allocate_matrix(const Grid &grid, const Stencil &stencil) {
+Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
+                                        const Stencil &stencil) {
   int order = stencil.order();
   int n_dims = grid.n_dims();
   double factor = stencil.overfit_factor();
