@@ -18,7 +18,7 @@ public:
 protected:
   virtual void do_visualization(const AllVariables &all_variables,
                                 const SimulationClock &) override {
-    rho_plot([&all_variables](int_t i) { return all_variables.cvars(i, 4); });
+    rho_plot([&all_variables](int_t i) { return all_variables.cvars(i, 0); });
     std::this_thread::sleep_for(delay);
   }
 
