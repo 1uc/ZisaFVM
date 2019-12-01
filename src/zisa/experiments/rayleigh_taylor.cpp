@@ -42,7 +42,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
   auto theta_outer = eos.enthalpy_entropy(RhoP{rhoP.rho() + drho, rhoP.p()});
 
   auto ic_ = PolytropeWithJumpIC(euler, theta_inner, theta_outer, x_ref);
-  auto ic = [this, &ic_, amp, width, n_bumps](const auto &x) {
+  auto ic = [this, &ic_, amp, width, n_bumps, r_crit](const auto &x) {
     // Avoid any silent conversion when the return type changes.
     RhoP rhoP = ic_(x);
 
@@ -51,7 +51,8 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
 
     double alpha = zisa::angle(x);
 
-    auto v = amp * exp(-zisa::pow<2>(r / width)) * zisa::sin(n_bumps * alpha);
+    auto v = amp * exp(-zisa::pow<2>((r - r_crit) / width))
+             * zisa::sin(n_bumps * alpha);
 
     double rho = rho_eq;
     double vx = v * zisa::cos(alpha);
