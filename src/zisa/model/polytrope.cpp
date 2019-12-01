@@ -110,11 +110,11 @@ RadialGravity make_general_polytrope_gravity(const PolytropeParams &params,
   double alpha = params.alpha();
   double n = params.polytropic_index_n;
   double r_outer = params.polytrope_radius;
+  int_t n_points = spacing.size();
 
   auto [r, x]
       = compute_polytrope_profile(r_outer, rhoC, alpha, n, std::move(spacing));
 
-  int_t n_points = spacing.size();
   auto phi = array<double, 1>(n_points);
   phi[0] = 0.0;
   for (int_t i = 1; i < n_points; ++i) {
