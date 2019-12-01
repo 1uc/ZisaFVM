@@ -52,7 +52,7 @@ private:
 
 public:
   SumRatesOfChange() = default;
-  SumRatesOfChange(std::vector<std::shared_ptr<RateOfChange>> init_list);
+  SumRatesOfChange(const std::vector<std::shared_ptr<RateOfChange>> &init_list);
 
   template <class... Args>
   SumRatesOfChange(Args &&... args) {

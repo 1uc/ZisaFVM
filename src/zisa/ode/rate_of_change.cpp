@@ -16,7 +16,7 @@
 namespace zisa {
 
 SumRatesOfChange::SumRatesOfChange(
-    std::vector<std::shared_ptr<RateOfChange>> rates_of_change) {
+    const std::vector<std::shared_ptr<RateOfChange>> &rates_of_change) {
   for (auto &&roc : rates_of_change) {
     add_term(roc);
   }
