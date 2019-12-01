@@ -110,15 +110,7 @@ public:
     std::tie(rho_a, rho_b)
         = find_bracket(f, {rho_a, rho_b}, hard_bounds, max_iter);
 
-    {
-      auto fa = f(rho_a);
-      auto fb = f(rho_b);
-      if (fa * fb >= 0) {
-        PRINT("not a bracket!");
-        PRINT(theta);
-        LOG_ERR("fail.");
-      }
-    }
+    LOG_ERR_IF(f(rho_a) * f(rho_b) < 0.0, "Failed to compute a valid bracket.");
 
     return brent(f, rho_a, rho_b, atol, max_iter);
   }
