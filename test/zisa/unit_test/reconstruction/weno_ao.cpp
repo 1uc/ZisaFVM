@@ -60,7 +60,7 @@ TEST_CASE("WENO_AO; reconstruct smooth", "[weno_ao][math]") {
   // The reason for the second order convergence is the linear weights. They
   // allow too much pollution from the second order stencils.
   cases.push_back({{2.0, 3.8},
-                   false /* empirically is not non-oscillatory */,
+                   false, /* empirically is not non-oscillatory */
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
                     {10.0, 1.0, 1.0, 1.0},
                     eps,
@@ -68,7 +68,7 @@ TEST_CASE("WENO_AO; reconstruct smooth", "[weno_ao][math]") {
 
   // Which can be remedied by increasing the central weight.
   cases.push_back({{3.9, 4.4},
-                   false /* not non-oscillatory */,
+                   true,
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
                     {1000.0, 1.0, 1.0, 1.0},
                     eps,

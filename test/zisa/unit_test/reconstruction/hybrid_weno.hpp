@@ -53,8 +53,19 @@ void test_hybrid_weno_convergence(
 
   auto rates = convergence_rates(resolution, l1_errors);
 
+  auto title = string_format("RC = %s", type_name<RC>().c_str());
+  auto desc_params = indent_block(1, zisa::to_string(params));
+
+  for (int_t i = 0; i < l1_errors.size(); ++i) {
+    auto err_str = string_format(
+        "err[%d] = %e, res = %e", i, l1_errors[i], resolution[i]);
+
+    INFO(string_format(
+        "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
+    CHECK(zisa::isreal(l1_errors[i]));
+  }
+
   for (int_t i = 0; i < rates.size(); ++i) {
-    auto title = string_format("RC = %s", type_name<RC>().c_str());
     auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e",
                                  i,
                                  l1_errors[i],
@@ -63,7 +74,6 @@ void test_hybrid_weno_convergence(
                                  resolution[i]);
     err_str = indent_block(1, err_str);
 
-    auto desc_params = indent_block(1, zisa::to_string(params));
     INFO(string_format(
         "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
     CHECK(is_inside_interval(rates[i], expected_rate));

@@ -3,20 +3,19 @@
 
 #include <zisa/reconstruction/stencil.hpp>
 
-TEST_CASE("select stencil", "[stencil][weno_ao]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+void check_central_stencil(const zisa::Grid &grid) {
   zisa::int_t i_cell = 42;
   zisa::int_t n_points = 12;
-  zisa::int_t n_cells = grid->n_cells;
+  zisa::int_t n_cells = grid.n_cells;
 
   SECTION("central_stencil") {
-    const auto &x_cell = grid->cell_centers(i_cell);
+    const auto &x_cell = grid.cell_centers(i_cell);
 
-    auto stencil = zisa::central_stencil(*grid, i_cell, n_points);
+    auto stencil = zisa::central_stencil(grid, i_cell, n_points);
     REQUIRE(stencil.size() == n_points);
 
     auto dist = [&x_cell, &grid](zisa::int_t i) {
-      auto x = grid->cell_centers(i);
+      auto x = grid.cell_centers(i);
       return zisa::norm(x - x_cell);
     };
 
@@ -35,24 +34,35 @@ TEST_CASE("select stencil", "[stencil][weno_ao]") {
       REQUIRE(((dist(i) > r_max) || is_in_stencil(i)));
     }
   }
+}
 
-  SECTION("biased_stencil; k = 0") {
-    zisa::int_t k = 0;
-    auto stencil = zisa::biased_stencil(*grid, i_cell, k, n_points);
-    REQUIRE(stencil.size() == n_points);
-  }
+void check_biased_stencil(const zisa::Grid &grid) {
+  auto max_neighbours = grid.max_neighbours;
 
-  SECTION("biased_stencil; k = 1") {
-    zisa::int_t k = 1;
-    auto stencil = zisa::biased_stencil(*grid, i_cell, k, n_points);
-    REQUIRE(stencil.size() == n_points);
-  }
+  zisa::int_t i_cell = 42;
+  zisa::int_t n_points = 12;
 
-  SECTION("biased_stencil; k = 2") {
-    zisa::int_t k = 2;
-    auto stencil = zisa::biased_stencil(*grid, i_cell, k, n_points);
-    REQUIRE(stencil.size() == n_points);
+  for (zisa::int_t k = 0; k < max_neighbours; ++k) {
+    SECTION(string_format("biased_stencil; k = %d", k)) {
+      zisa::int_t k = 0;
+      auto stencil = zisa::biased_stencil(grid, i_cell, k, n_points);
+      REQUIRE(stencil.size() == n_points);
+    }
   }
+}
+
+TEST_CASE("select stencil", "[stencil][weno_ao]") {
+  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+
+  check_central_stencil(*grid);
+  check_biased_stencil(*grid);
+}
+
+TEST_CASE("select stencil, 3D", "[stencil][weno_ao][3d]") {
+  auto grid = zisa::load_gmsh("grids/convergence/unit_cube_1.msh");
+
+  check_central_stencil(*grid);
+  check_biased_stencil(*grid);
 }
 
 TEST_CASE("Stencil API", "[stencil]") {

@@ -242,11 +242,27 @@ TEST_CASE("Grid; iterators", "[grid]") {
 
   SECTION("cells") {
     zisa::int_t count = 0;
-    for (const auto &[i, cell] : cells(*grid)) {
+    for (const auto &[i, cell] : zisa::cells(*grid)) {
       ++count;
     }
 
     REQUIRE(count == grid->n_cells);
+  }
+}
+
+TEST_CASE("Grid; cell-centeres", "[grid][3d]") {
+  auto grid = zisa::load_gmsh("grids/convergence/unit_cube_0.msh", 1);
+
+  zisa::int_t i = 3971;
+  PRINT(grid->cell_centers(i));
+  for(zisa::int_t k = 0; k < 4; ++k) {
+    if(grid->is_valid(i, k)) {
+      auto j = grid->neighbours(i, k);
+      PRINT(grid->cell_centers(j));
+    }
+    else {
+      PRINT("bad neighbour");
+    }
   }
 }
 
@@ -351,5 +367,32 @@ TEST_CASE("Grid; fail to locate", "[grid][locate]") {
 }
 
 TEST_CASE("Grid; tets", "[grid]") {
-  auto grid = zisa::load_gmsh("grids/cube.msh", 2);
+  auto grid_names = std::vector<std::string>{
+      "grids/convergence/unit_cube_1.msh", "grids/convergence/unit_cube_2.msh"};
+
+  for (const auto &grid_name : grid_names) {
+    auto grid = zisa::load_gmsh(grid_name);
+
+    auto n_cells = grid->n_cells;
+
+    for (zisa::int_t i = 0; i < n_cells; ++i) {
+      for (zisa::int_t l = 0; l < 4; ++l) {
+        if (grid->is_valid(i, l)) {
+          int j = grid->neighbours(i, l);
+
+          bool found_i = false;
+          for (zisa::int_t k = 0; k < 4; ++k) {
+            if (grid->is_valid(j, k)) {
+              if (grid->neighbours(j, k) == i) {
+                found_i = true;
+              }
+            }
+          }
+
+          INFO(grid_name);
+          REQUIRE(found_i);
+        }
+      }
+    }
+  }
 }

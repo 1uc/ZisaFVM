@@ -10,14 +10,16 @@
 #include <zisa/unit_test/grid/test_grid_factory.hpp>
 #include <zisa/unit_test/math/convergence_rates.hpp>
 
-static void check_convergence(double expected, double atol, zisa::int_t deg) {
-  auto grid_names = zisa::TestGridFactory::unit_square();
-
+static void check_convergence(const std::vector<std::string> &grid_names,
+                              double expected,
+                              double atol,
+                              zisa::int_t deg) {
   auto f = [](const zisa::XYZ &x) {
-    return zisa::sin(0.5 * zisa::pi * x[0]) + zisa::sin(0.5 * zisa::pi * x[1]);
+    return zisa::sin(0.5 * zisa::pi * x[0]) + zisa::sin(0.5 * zisa::pi * x[1])
+           + x[2];
   };
 
-  auto exact = 4.0 / zisa::pi;
+  auto exact = 4.0 / zisa::pi + 0.5;
   std::vector<double> error;
   std::vector<double> resolution;
 
@@ -37,11 +39,29 @@ static void check_convergence(double expected, double atol, zisa::int_t deg) {
   }
 }
 
-TEST_CASE("Quadrature; smooth f", "[math]") {
-  SECTION("p == 1") { check_convergence(2.0, 1e-14, 1); }
-  SECTION("p == 2") { check_convergence(3.0, 1e-14, 2); }
-  SECTION("p == 3") { check_convergence(4.0, 1e-14, 3); }
-  SECTION("p == 4") { check_convergence(5.0, 1e-14, 4); }
+static void
+check_convergence_unit_square(double expected, double atol, zisa::int_t deg) {
+  auto grid_names = zisa::TestGridFactory::unit_square();
+  check_convergence(grid_names, expected, atol, deg);
+}
+
+static void
+check_convergence_unit_cube(double expected, double atol, zisa::int_t deg) {
+  auto grid_names = zisa::TestGridFactory::unit_cube();
+  check_convergence(grid_names, expected, atol, deg);
+}
+
+TEST_CASE("Quadrature 2D; smooth f", "[math]") {
+  SECTION("p == 1") { check_convergence_unit_square(2.0, 1e-14, 1); }
+  SECTION("p == 2") { check_convergence_unit_square(3.0, 1e-14, 2); }
+  SECTION("p == 3") { check_convergence_unit_square(4.0, 1e-14, 3); }
+  SECTION("p == 4") { check_convergence_unit_square(5.0, 1e-14, 4); }
+}
+
+TEST_CASE("Quadrature 3D; smooth f", "[math][3d]") {
+  SECTION("p == 1") { check_convergence_unit_cube(2.0, 1e-14, 1); }
+  SECTION("p == 2") { check_convergence_unit_cube(3.0, 1e-14, 2); }
+  SECTION("p == 3") { check_convergence_unit_cube(4.0, 1e-14, 3); }
 }
 
 TEST_CASE("Quadrature; physical domain") {
