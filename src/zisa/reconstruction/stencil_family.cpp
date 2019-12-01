@@ -24,14 +24,27 @@ StencilFamily::StencilFamily(const std::shared_ptr<Grid> &grid,
     }
   }
 
-  combined_stencil_size_ = l2g.size();
-
   order_ = 0;
   for (int_t i = 0; i < size(); ++i) {
-    order_ = zisa::max(order_, (*this)[i].order());
+    auto stencil_order = (*this)[i].order();
+
+//    if(stencil_order == 1 && params.orders[i] != 1) {
+//      PRINT("truncating");
+//      truncate_all_stencils_to_first_order(i_cell);
+//      break;
+//    }
+
+    order_ = std::max(order_, stencil_order);
   }
 
+  combined_stencil_size_ = l2g.size();
   k_high_ = highest_order_central_stencil(*this);
+}
+
+void StencilFamily::truncate_all_stencils_to_first_order(int_t i_cell) {
+  for(auto &stencil : stencils_) {
+    stencil = Stencil(i_cell);
+  }
 }
 
 const Stencil &StencilFamily::operator[](int_t k) const {

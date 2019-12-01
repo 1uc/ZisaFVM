@@ -38,6 +38,10 @@ public:
   auto begin() const -> decltype(stencils_.begin());
   auto end() const -> decltype(stencils_.end());
 
+protected:
+  /// This sets the order of every stencil to 1.
+  void truncate_all_stencils_to_first_order(int_t i_cell);
+
 private:
   std::vector<int_t> l2g;
 

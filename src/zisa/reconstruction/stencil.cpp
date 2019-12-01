@@ -7,6 +7,19 @@
 
 namespace zisa {
 
+Stencil::Stencil(int_t i_cell)
+    : max_order_(1),
+      order_(1),
+      size_(1),
+      max_size_(1),
+      bias_(StencilBias::central),
+      overfit_factor_(1.0),
+      local_(1),
+      global_(1) {
+  local_[0] = 0;
+  global_[0] = i_cell;
+}
+
 Stencil::Stencil(std::vector<int_t> &l2g,
                  const std::shared_ptr<Grid> &grid,
                  int_t i_cell,

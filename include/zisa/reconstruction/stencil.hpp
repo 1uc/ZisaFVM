@@ -16,6 +16,9 @@ class Stencil {
 public:
   Stencil() = default;
 
+  /// Simplified constructor for one point stencils.
+  explicit Stencil(int_t i_cell);
+
   Stencil(std::vector<int_t> &l2g,
           const std::shared_ptr<Grid> &grid,
           int_t i_cell,
