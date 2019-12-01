@@ -243,7 +243,8 @@ void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
                                 const Stencil &stencil) {
 
   int order = stencil.order();
-  if (order == 0) {
+  LOG_ERR_IF(order == 0, "Invalid stencil");
+  if (order == 1) {
     return;
   }
 
@@ -331,18 +332,18 @@ void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
             + 2.0 * x * lj_2 * Cj(i_101)
             + lj_3 * Cj(i_201);
 
+        A(ii_, eint(i_021 - 1))
+                = x_021 - C0(i_021)
+                  + z * lj_2 * Cj(i_020)
+                  + 2.0 * y * lj_2 * Cj(i_011)
+                  + lj_3 * Cj(i_021);
+
         A(ii_, eint(i_111 - 1))
             = x_111 - C0(i_111)
             + z * lj_2 * Cj(i_110)
             + y * lj_2 * Cj(i_101)
             + x * lj_2 * Cj(i_011)
             + lj_3 * Cj(i_111);
-
-        A(ii_, eint(i_021 - 1))
-            = x_021 - C0(i_021)
-            + z * lj_2 * Cj(i_020)
-            + 2.0 * y * lj_2 * Cj(i_011)
-            + lj_3 * Cj(i_021);
         // clang-format on
       }
     }

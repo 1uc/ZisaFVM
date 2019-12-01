@@ -29,7 +29,7 @@ make_point_locator(const std::shared_ptr<Grid> &grid) {
   auto n_cells = grid->n_cells;
   auto bb = bounding_box(*grid);
 
-  auto coord = [&bb](const XYZ rel) {
+  auto coord = [&bb](const XYZ &rel) {
     const auto &[m, M] = bb;
     return XYZ(m + rel * (M - m));
   };
