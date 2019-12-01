@@ -81,6 +81,14 @@ void save(HDF5Writer &writer, const Grid &grid);
 double volume(const Grid &grid);
 Triangle triangle(const Grid &grid, int_t i);
 
+Triangle triangle(const array<XYZ, 1> &vertices,
+                  const array<int_t, 2> &vertex_indices,
+                  int_t i);
+
+Tetrahedron tetrahedron(const array<XYZ, 1> &vertices,
+                        const array<int_t, 2> &vertex_indices,
+                        int_t i);
+
 bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x);
 
 std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess = 0);
