@@ -634,9 +634,7 @@ Edge Grid::edge(int_t e) const {
 Edge Grid::edge(int_t i, int_t k) const { return edge(edge_indices(i, k)); }
 Face Grid::face(int_t i, int_t k) const { return faces(edge_indices(i, k)); }
 
-double Grid::characteristic_length(int_t i) const {
-  return zisa::characteristic_length(triangle(i));
-}
+double Grid::characteristic_length(int_t i) const { return circum_radii[i]; }
 
 std::string Grid::str() const {
   double dx_min = smallest_inradius(*this);

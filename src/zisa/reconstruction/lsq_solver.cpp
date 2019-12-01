@@ -32,8 +32,7 @@ WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
   const auto &x_center = grid->cell_centers(i_cell);
   double length = grid->characteristic_length(i_cell);
 
-  // FIXME
-  int n_dims = 2;
+  int n_dims = grid->n_dims();
 
   if (order == 1) {
     return WENOPoly(0, {0.0}, x_center, length, n_dims);
