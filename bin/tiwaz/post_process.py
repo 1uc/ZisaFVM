@@ -4,7 +4,9 @@ import glob
 import numpy as np
 import h5py
 
-from . launch_params import folder_name
+from .launch_params import folder_name
+from .xdmf import generate_xdmf, xml_to_string
+
 
 class Grid:
     def __init__(self, grid_name):
@@ -166,3 +168,22 @@ def load_results(coarse_runs, reference_run):
             columns.append({"order": o, "wb": wb})
 
     return results, columns
+
+
+def find_components(data_file):
+    keys = ["rho", "mv1", "mv2", "mv3", "E", "cs", "h", "p", "s"]
+    with h5py.File(data_file) as h5:
+        return [k for k in keys if k in h5]
+
+
+def write_xdmf(scheme):
+    dirname = folder_name(scheme)
+    grid_name = find_grid(dirname)
+    xdmf_name = f"{dirname}/{scheme['experiment']['name']}.xdmf"
+
+    data_files = find_data_files(dirname)
+    components = find_components(data_files[0])
+
+    xdmf_str = xml_to_string(generate_xdmf(grid_name, data_files, components))
+    with open(xdmf_name, "w") as f:
+        f.write(xdmf_str)
