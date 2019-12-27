@@ -4,6 +4,8 @@ import os
 import shutil
 import glob
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 import tiwaz
@@ -19,6 +21,7 @@ from tiwaz.post_process import load_data, load_grid
 from tiwaz.post_process import find_data_files, find_last_data_file
 from tiwaz.post_process import find_steady_state_file
 from tiwaz.tri_plot import tri_plot
+from tiwaz.scatter_plot import scatter_plot
 from tiwaz.gmsh import generate_circular_grids
 
 
@@ -28,8 +31,8 @@ class RayleighTaylorExperiment(sc.Subsection):
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "drho": 0.2,
-                    "amplitude": 2.0,
+                    "drho": 0.01,
+                    "amplitude": 0.001,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -47,12 +50,12 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
-time = sc.Time(t_end=9.77e-02)
-io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=200)
+time = sc.Time(t_end=5.0)
+io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=100)
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
-radius = 0.5
-mesh_levels = list(range(0, 6))
+radius = 0.6
+mesh_levels = list(range(0, 4))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 
@@ -72,7 +75,7 @@ def generate_grids():
     generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
 
 
-coarse_grid_levels = list(range(5, 6))
+coarse_grid_levels = list(range(3, 4))
 coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -83,8 +86,8 @@ reference_grid = sc.Grid("grids/polytrope-4.msh", 4)
 
 independent_choices = {
     "euler": [euler],
-    "flux-bc": [sc.FluxBC("constant")],
-    "well-balancing": [sc.WellBalancing("constant")],  # sc.WellBalancing("constant"),
+    "flux-bc": [sc.FluxBC("isentropic")],
+    "well-balancing": [sc.WellBalancing("constant")],
     "io": [io],
     "time": [time],
 }
@@ -98,11 +101,11 @@ dependent_choices = {
     "ode": [
         # sc.ODE("ForwardEuler"),
         # sc.ODE("SSP3")
-        sc.ODE("SSP2", cfl_number=0.9)
+        sc.ODE("SSP3", cfl_number=0.9)
     ],
     "quadrature": [
         # sc.Quadrature(1),
-        sc.Quadrature(1)
+        sc.Quadrature(2)
         # sc.Quadrature(3)
     ],
 }
@@ -167,14 +170,30 @@ all_runs = [make_runs(param) for param in experiment_params]
 
 
 def post_process(coarse_runs, reference_run):
-    coarse_run = coarse_runs[0]
-    coarse_dir = folder_name(coarse_run)
-    coarse_grid = load_grid(coarse_dir)
+    for coarse_run in coarse_runs:
+        coarse_dir = folder_name(coarse_run)
+        coarse_grid = load_grid(coarse_dir)
+        data_files = find_data_files(coarse_dir)
 
-    for filename in find_data_files(coarse_dir):
-        u_coarse = load_data(filename, find_steady_state_file(coarse_dir))
-        tri_plot(coarse_grid, u_coarse.cvars["rho"])
-        plt.savefig(filename[:-3] + "-rho.png")
+        for filename in [
+            data_files[10 * i] for i in range(0, 11) if i * 10 < len(data_files)
+        ]:
+            u_coarse = load_data(filename, find_steady_state_file(coarse_dir))
+
+            rho = u_coarse.cvars["rho"]
+            drho = u_coarse.dvars["rho"]
+
+            plot = tri_plot(coarse_grid, rho)
+            plot.save(filename[:-3] + "-rho.png")
+
+            plot = tri_plot(coarse_grid, drho)
+            plot.save(filename[:-3] + "-drho.png")
+
+            plot = scatter_plot(coarse_grid, rho)
+            plot.save(filename[:-3] + "-scatter-rho.png")
+
+            plot = scatter_plot(coarse_grid, drho)
+            plot.save(filename[:-3] + "-scatter-drho.png")
 
 
 class TableLabels:

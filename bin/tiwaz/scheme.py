@@ -85,6 +85,16 @@ class FluxBC(Subsection):
         super().__init__({"mode": mode})
 
 
+class NoGravity(Subsection):
+    def __init__(self):
+        super().__init__({"mode": "no_gravity"})
+
+
+class ConstantGravity(Subsection):
+    def __init__(self, g=1.0):
+        super().__init__({"mode": "constant", "g": g})
+
+
 class PolytropeGravity(Subsection):
     def __init__(self, rhoC=1.0, K=1.0, G=1.0):
         super().__init__({"mode": "polytrope", "rhoC": rhoC, "K": K, "G": G})

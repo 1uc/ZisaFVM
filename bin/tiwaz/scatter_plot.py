@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from . post_process import extract_solver_data
+from .post_process import extract_solver_data
+
 
 class ScatterPlot:
     def __init__(self):
@@ -12,13 +13,15 @@ class ScatterPlot:
 
     def __call__(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
+
+        plt.figure(self.fig.number)
         plt.plot(radii, data, "k*", markersize=2)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
 
         plt.figure(self.fig.number)
-        plt.plot(radii[::100], data[::100], 'k.', markersize=2)
+        plt.plot(radii[::100], data[::100], "k.", markersize=2)
 
     def save(self, filename):
         plt.figure(self.fig.number)
@@ -34,6 +37,13 @@ class ScatterPlot:
 
         text = "t = {:.3e}".format(time)
         ax.text(0.05, 0.05, text, transform=ax.transAxes)
+
+
+def scatter_plot(grid, data):
+    plot = ScatterPlot()
+    plot(grid, data)
+
+    return plot
 
 
 def plot_visual_convergence(data, solvers, labels, filename):

@@ -5,7 +5,7 @@ import re
 
 hosts_with_slurm = ["daint"]
 hosts_with_lsf = ["euler"]
-hosts_without_queue = ["rogui", "liara", "ada"]
+hosts_without_queue = ["rogui", "liara", "ada", "aoifa"]
 
 
 def has_slurm():
@@ -42,7 +42,7 @@ def zisa_home_directory():
 def get_host():
     """Return the name of the host, strip names like `daint01`, `daint02`."""
 
-    known_hosts = ["daint", "liara", "rogui", "eu-login", "ada"]
+    known_hosts = ["daint", "liara", "rogui", "eu-login", "ada", "aoifa"]
     hostname = socket.gethostname()
     match = re.match("^({:s}).*".format("|".join(known_hosts)), hostname)
 
@@ -91,12 +91,10 @@ class MPIHeuristics:
         self.max_cores = self.max_nodes * self.cores_per_node
 
     def n_tasks(self, launch_param):
-        n_cells = int(launch_param['nx']) * int(launch_param['ny'])
-        n_proc = int(n_cells / self.min_block_size**2)
+        n_cells = int(launch_param["nx"]) * int(launch_param["ny"])
+        n_proc = int(n_cells / self.min_block_size ** 2)
 
         # Always ask for an entire node.
         cpn = self.cores_per_node
-        n_proc = ((n_proc + cpn-1) // cpn) * cpn
+        n_proc = ((n_proc + cpn - 1) // cpn) * cpn
         return max(1, min(n_proc, self.max_cores))
-
-
