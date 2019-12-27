@@ -27,6 +27,10 @@ template <class Gravity>
 Gravity make_gravity(const InputParameters &);
 
 template <>
+NoGravity
+make_gravity<NoGravity>(const InputParameters &input_params);
+
+template <>
 ConstantGravityRadial
 make_gravity<ConstantGravityRadial>(const InputParameters &input_params);
 

@@ -36,6 +36,14 @@ JankaEOS make_eos<JankaEOS>(const InputParameters &params) {
 }
 
 template <>
+NoGravity make_gravity<NoGravity>(const InputParameters &params) {
+  std::string mode = params["euler"]["gravity"]["mode"];
+  LOG_ERR_IF(mode != "no_gravity", "Incompatible gravity.");
+
+  return NoGravity{};
+}
+
+template <>
 ConstantGravityRadial
 make_gravity<ConstantGravityRadial>(const InputParameters &params) {
   LOG_ERR_IF(params["euler"]["gravity"]["mode"] != "constant",
