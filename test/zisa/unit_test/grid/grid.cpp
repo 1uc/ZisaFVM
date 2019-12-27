@@ -224,8 +224,8 @@ static void check_volume(const std::string &gridname) {
 }
 
 TEST_CASE("Grid; volume", "[grid]") {
-  SECTION("square") { check_volume("grids/convergence/unit_square_1.msh"); }
-  SECTION("cube") { check_volume("grids/cube.msh"); }
+  SECTION("square") { check_volume("grids/convergence/unit_square_0.msh"); }
+  SECTION("cube") { check_volume("grids/convergence/unit_cube_0.msh"); }
 }
 
 TEST_CASE("Grid; iterators", "[grid]") {
@@ -247,22 +247,6 @@ TEST_CASE("Grid; iterators", "[grid]") {
     }
 
     REQUIRE(count == grid->n_cells);
-  }
-}
-
-TEST_CASE("Grid; cell-centeres", "[grid][3d]") {
-  auto grid = zisa::load_gmsh("grids/convergence/unit_cube_0.msh", 1);
-
-  zisa::int_t i = 3971;
-  PRINT(grid->cell_centers(i));
-  for(zisa::int_t k = 0; k < 4; ++k) {
-    if(grid->is_valid(i, k)) {
-      auto j = grid->neighbours(i, k);
-      PRINT(grid->cell_centers(j));
-    }
-    else {
-      PRINT("bad neighbour");
-    }
   }
 }
 

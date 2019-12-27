@@ -32,7 +32,7 @@ void test_hybrid_weno_convergence(
   std::vector<double> l1_errors;
   std::vector<double> linf_errors;
 
-  auto quad_deg = zisa::max(1, max_order(params) - 1);
+  auto quad_deg = zisa::max(3, max_order(params) - 1);
 
   for (auto &&grid_name : grid_names) {
     auto grid = load_gmsh(grid_name, quad_deg);

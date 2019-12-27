@@ -46,23 +46,3 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
   }
 }
 
-TEST_CASE("LSQSolver; troublesome example", "[lsq][3d]") {
-  auto params = zisa::StencilFamilyParams({2}, {"c"}, {4.0});
-  auto grid = zisa::load_gmsh("grids/convergence/unit_cube_0.msh");
-
-  auto n_cells = grid->n_cells;
-  zisa::int_t i_cell = 3971;
-
-  auto stencils = zisa::StencilFamily(grid, i_cell, params);
-  PRINT(stencils.order());
-  PRINT(zisa::poly_index(1, 0, 0));
-  PRINT(zisa::poly_index(0, 1, 0));
-  PRINT(grid->n_dims());
-
-  double magic_value = -12345.6;
-
-  for (const auto &stencil : stencils) {
-    auto A = zisa::allocate_weno_ao_matrix(*grid, stencil);
-    zisa::assemble_weno_ao_matrix(A, *grid, stencil);
-  }
-}
