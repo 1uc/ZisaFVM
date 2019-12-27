@@ -19,10 +19,7 @@ class Grid:
 
 
 class Snapshot:
-    def __init__(self,
-                 data_filename,
-                 delta_filename=None,
-                 steady_state_filename=None):
+    def __init__(self, data_filename, delta_filename=None, steady_state_filename=None):
 
         cvar_keys = ["rho", "mv1", "mv2", "E"]
         xvar_keys = ["p", "cs", "h", "s", "E_th", "E_p", "p_p", "p_th"]
@@ -58,8 +55,10 @@ class Snapshot:
                 for key in cvar_keys:
                     self.dvars[key] = self.cvars[key] - np.array(h5[key])
 
+
 def load_grid(directory):
     return Grid(find_grid(directory))
+
 
 def load_reference(reference_dir, grid_name):
     stem, _ = os.path.splitext(os.path.basename(grid_name))
@@ -68,20 +67,26 @@ def load_reference(reference_dir, grid_name):
     delta_filename = os.path.join(down_dir, "delta.h5")
     return Snapshot(ref_filename, delta_filename=delta_filename)
 
+
 def load_data(data_name, steady_state_filename=None):
     return Snapshot(data_name, steady_state_filename=steady_state_filename)
+
 
 def find_grid(directory):
     return os.path.join(directory, "grid.h5")
 
+
 def find_data_files(directory):
     return sorted(glob.glob(os.path.join(directory, "*_data-*.h5")))
+
 
 def find_last_data_file(directory):
     return max(find_data_files(directory))
 
+
 def find_steady_state_file(directory):
     return os.path.join(directory, "steady_state.h5")
+
 
 def extract_solver_data(solver, data):
     """Returns the sub sequence of data for one solver.
@@ -107,13 +112,13 @@ def extract_solver_data(solver, data):
     filtered_data = filter(lambda r: all(r[key] == solver[key] for key in solver), data)
     return sorted(filtered_data, key=lambda r: r["grid_level"])
 
+
 def load_results(coarse_runs, reference_run):
     results = list()
 
-    ref_dir =  folder_name(reference_run)
+    ref_dir = folder_name(reference_run)
     fine_grid = load_grid(ref_dir)
-    u_exact = load_data(find_last_data_file(ref_dir),
-                        find_steady_state_file(ref_dir))
+    u_exact = load_data(find_last_data_file(ref_dir), find_steady_state_file(ref_dir))
     t_end = u_exact.time
 
     for coarse_run in coarse_runs:
@@ -122,8 +127,9 @@ def load_results(coarse_runs, reference_run):
         coarse_grid = load_grid(coarse_dir)
         volumes = coarse_grid.volumes
 
-        u_approx = load_data(find_last_data_file(coarse_dir),
-                             find_steady_state_file(coarse_dir))
+        u_approx = load_data(
+            find_last_data_file(coarse_dir), find_steady_state_file(coarse_dir)
+        )
         u_ref = load_reference(ref_dir, coarse_run.grid_filename())
 
         rho_approx = u_approx.cvars["rho"]
@@ -132,32 +138,30 @@ def load_results(coarse_runs, reference_run):
         rho_ref = u_ref.cvars["rho"]
         drho_ref = u_ref.dvars["rho"]
 
-        l1_err = np.sum(volumes*np.abs(rho_approx - rho_ref))
-        l1_eq_err = np.sum(volumes*np.abs(drho_approx - drho_ref))
+        l1_err = np.sum(volumes * np.abs(rho_approx - rho_ref))
+        l1_eq_err = np.sum(volumes * np.abs(drho_approx - drho_ref))
 
-        if np.abs(u_approx.time - t_end) > 1e-8*t_end:
+        if np.abs(u_approx.time - t_end) > 1e-8 * t_end:
             l1_err = np.nan * l1_err
             l1_eq_err = np.nan * l1_eq_err
 
-        results.append({
-            "order": coarse_run.order(),
-            "wb": coarse_run.well_balancing(),
-            "grid_level": coarse_run.grid_level(),
-            "dx_max": coarse_grid.dx_max,
-
-            "grid": coarse_grid,
-            "fine_grid": fine_grid,
-
-            "u_approx": u_approx,
-            "u_ref": u_ref,
-            "u_exact": u_exact,
-
-            "l1_error": l1_err,
-            "l1_eq_error": l1_eq_err
-        })
+        results.append(
+            {
+                "order": coarse_run.order(),
+                "wb": coarse_run.well_balancing(),
+                "grid_level": coarse_run.grid_level(),
+                "dx_max": coarse_grid.dx_max,
+                "grid": coarse_grid,
+                "fine_grid": fine_grid,
+                "u_approx": u_approx,
+                "u_ref": u_ref,
+                "u_exact": u_exact,
+                "l1_error": l1_err,
+                "l1_eq_error": l1_eq_err,
+            }
+        )
 
         print(results[-1])
-
 
     orders = sorted(set(r["order"] for r in results))
     wbs = sorted(set(r["wb"] for r in results))
