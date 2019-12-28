@@ -4,7 +4,7 @@ import re
 
 class SLURM(object):
     def __init__(self, queue_args):
-        assert(has_slurm())
+        assert has_slurm()
         self.queue_args = queue_args
 
     def restart(self, launch_param, directory, cmd):
@@ -16,14 +16,14 @@ class SLURM(object):
     def submit(self, directory, cmd):
         output = subprocess.check_output(cmd)
         print(output.decode().strip())
-        m = re.match(b'Submitted batch job ([0-9]+)$', output)
+        m = re.match(b"Submitted batch job ([0-9]+)$", output)
         pid = m.group(1).decode()
 
-        with open(self.pid_file(directory), 'w') as f:
+        with open(self.pid_file(directory), "w") as f:
             f.write(pid)
 
     def pid(self, output_directory):
-        with open(self.pid_file(output_directory), 'r') as f:
+        with open(self.pid_file(output_directory), "r") as f:
             return f.read()
 
     def pid_file(self, output_directory):
@@ -32,7 +32,7 @@ class SLURM(object):
     def is_pid_in_queue(self, pid):
         cmd = ["squeue", "-o", "'%i'"]
         output = subprocess.check_output(cmd)
-        output = output.decode().split('\n')
+        output = output.decode().split("\n")
         output = [x[1:-1] for x in output]
         return str(pid) in output
 
@@ -62,4 +62,3 @@ class SLURM(object):
             c += queue_args["slurm_args"]
 
         return c + [sbatch_file] + cmd
-

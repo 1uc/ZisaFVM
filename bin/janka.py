@@ -27,10 +27,10 @@ from tiwaz.tri_plot import TriPlot
 from tiwaz.hd2d import hd2d
 
 polytropic_index_n = 3.0
-polytropic_gamma = (polytropic_index_n + 1.0)/polytropic_index_n
+polytropic_gamma = (polytropic_index_n + 1.0) / polytropic_index_n
 polytrope_radius = 1.45e8
 rho_center = 1e10
-K_center = 4.897e+14
+K_center = 4.897e14
 gamma1 = 1.325
 # gamma1 = 1.25
 
@@ -38,23 +38,24 @@ mesh_levels = list(range(0, 2))
 coarse_grid_levels = list(range(1, 2))
 
 
-janka_params = dict(rho_bounce = 2e14,
-                    gamma1 = gamma1,
-                    gamma2 = 2.5,
-                    gamma_thermal = 1.5,
-                    E1 = K_center / (gamma1 - 1.0))
+janka_params = dict(
+    rho_bounce=2e14,
+    gamma1=gamma1,
+    gamma2=2.5,
+    gamma_thermal=1.5,
+    E1=K_center / (gamma1 - 1.0),
+)
+
 
 class JankaExperiment(sc.Subsection):
     def __init__(self):
-        super().__init__({
-            "name": "janka",
-            "initial_conditions": {
-                "gamma": polytropic_gamma
-            }
-        })
+        super().__init__(
+            {"name": "janka", "initial_conditions": {"gamma": polytropic_gamma}}
+        )
 
     def short_id(self):
         return self["name"]
+
 
 # This is just in case we want to run the same experiment with many parameters.
 experiment_params = [None]
@@ -64,7 +65,7 @@ gravity = sc.GeneralPolytropeGravity(
     rho_center=rho_center,
     polytropic_index_n=polytropic_index_n,
     radius=polytrope_radius,
-    G=6.674e-8
+    G=6.674e-8,
 )
 euler = sc.Euler(eos, gravity)
 
@@ -72,41 +73,35 @@ time = sc.Time(t_end=0.5)
 io = sc.IO("hdf5", "janka", steps_per_frame=100)
 # io = sc.IO("opengl", "janka", steps_per_frame=1)
 
+
 def grid_name_stem(l):
     return "grids/janka-{}".format(l)
+
 
 def grid_name(l):
     return grid_name_stem(l) + ".msh"
 
+
 def geo_grid_name(l):
     return grid_name_stem(l) + ".geo"
 
-mesh_sizes = [(1e-3 * 0.5**l, 0.3e-1 * 0.5**l) for l in mesh_levels]
+
+mesh_sizes = [(1e-3 * 0.5 ** l, 0.3e-1 * 0.5 ** l) for l in mesh_levels]
 coarse_grid_names = [grid_name(level) for level in coarse_grid_levels]
 
-coarse_grid_choices = {
-    "grid": [
-        sc.Grid(grid_name(l), l) for l in coarse_grid_levels
-    ]
-}
+coarse_grid_choices = {"grid": [sc.Grid(grid_name(l), l) for l in coarse_grid_levels]}
 coarse_grids = all_combinations(coarse_grid_choices)
 reference_grid = sc.Grid(grid_name(mesh_levels[-1]), mesh_levels[-1])
 
 independent_choices = {
     "euler": [euler],
-
     # "flux-bc": [sc.FluxBC("isentropic")],
     "flux-bc": [sc.FluxBC("constant")],
-
     # "well-balancing": [ sc.WellBalancing("isentropic") ],
-
-    "well-balancing": [ sc.WellBalancing("constant") ],
-
+    "well-balancing": [sc.WellBalancing("constant")],
     # "well-balancing": [ sc.WellBalancing("constant"),
     #                     sc.WellBalancing("isentropic")],
-
     "io": [io],
-
     "time": [time],
 }
 
@@ -114,23 +109,23 @@ dependent_choices = {
     "reconstruction": [
         # sc.Reconstruction("CWENO-AO", [1]),
         # sc.Reconstruction("CWENO-AO", [2, 2, 2, 2])
-        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2], overfit_factors = [3.0, 2.0, 2.0, 2.0])
+        sc.Reconstruction(
+            "CWENO-AO", [3, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
+        )
         # sc.Reconstruction("CWENO-AO", [5, 2, 2, 2], overfit_factors = [3.0, 2.0, 2.0, 2.0])
     ],
-
     "ode": [
         # sc.ODE("ForwardEuler")
         sc.ODE("SSP3", cfl_number=0.8)
         # sc.ODE("SSP3")
         # sc.ODE("SSP3")
     ],
-
     "quadrature": [
         # sc.Quadrature(1),
         # sc.Quadrature(1)
         sc.Quadrature(1)
         # sc.Quadrature(4)
-    ]
+    ],
 }
 
 reference_choices = {
@@ -143,7 +138,7 @@ reference_choices = {
     "ode": [sc.ODE("SSP3")],
     "quadrature": [sc.Quadrature(4)],
     "grid": [reference_grid],
-    "reference": [sc.Reference("isentropic", coarse_grid_names)]
+    "reference": [sc.Reference("isentropic", coarse_grid_names)],
 }
 
 base_choices = all_combinations(independent_choices)
@@ -152,24 +147,25 @@ model_choices = base_choices.product(pointwise_combinations(dependent_choices))
 coarse_runs_ = model_choices.product(coarse_grids)
 reference_runs_ = all_combinations(reference_choices)
 
-def make_runs(params):
-    coarse_runs = coarse_runs_.product([{
-        "experiment": JankaExperiment()
-    }])
 
-    reference_runs = reference_runs_.product([{
-        "experiment": JankaExperiment()
-    }])
+def make_runs(params):
+    coarse_runs = coarse_runs_.product([{"experiment": JankaExperiment()}])
+
+    reference_runs = reference_runs_.product([{"experiment": JankaExperiment()}])
 
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]
     reference_runs = [sc.Scheme(choice) for choice in reference_runs]
 
     return coarse_runs, reference_runs
 
+
 all_runs = [make_runs(param) for param in experiment_params]
 
+
 def post_process(coarse_runs, reference_run):
-    ref_dir = os.path.expandvars("${SCRATCH}/1d_reference/janka/hd2d_collapse_4Luc/data")
+    ref_dir = os.path.expandvars(
+        "${SCRATCH}/1d_reference/janka/hd2d_collapse_4Luc/data"
+    )
 
     # a = hd2d(ref_dir, "test1d", 201)
     #
@@ -206,10 +202,6 @@ def post_process(coarse_runs, reference_run):
     # plt.legend()
     # plt.show()
 
-
-
-
-
     for coarse_run in coarse_runs:
         coarse_dir = folder_name(coarse_run)
         coarse_grid = load_grid(coarse_dir)
@@ -217,7 +209,7 @@ def post_process(coarse_runs, reference_run):
         output_dir = "{}/img".format(coarse_dir)
         os.makedirs(output_dir, exist_ok=True)
 
-        x, y = coarse_grid.cell_centers[:,0], coarse_grid.cell_centers[:,1]
+        x, y = coarse_grid.cell_centers[:, 0], coarse_grid.cell_centers[:, 1]
 
         # u_ideal = load_data(coarse_dir + "/ic_ideal_gas_eos.h5", None)
         # u_janka = load_data(coarse_dir + "/ic_janka_eos.h5", None)
@@ -234,17 +226,15 @@ def post_process(coarse_runs, reference_run):
         # plt.title("p")
         # plt.show()
 
-
         data_files = find_data_files(coarse_dir)
 
         u0 = load_data(data_files[0], find_steady_state_file(coarse_dir))
         for k, data_file in enumerate(data_files[:]):
-            u_coarse = load_data(data_file,
-                                 find_steady_state_file(coarse_dir))
+            u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
 
             t = u_coarse.time
 
-            a = hd2d(ref_dir, "test1d", int(round(t*1000)))
+            a = hd2d(ref_dir, "test1d", int(round(t * 1000)))
             print(t)
             print(a.time)
 
@@ -254,7 +244,7 @@ def post_process(coarse_runs, reference_run):
             drho = u_coarse.dvars["rho"]
             vx = u_coarse.cvars["mv1"] / rho
             vy = u_coarse.cvars["mv2"] / rho
-            v = (vx*x + vy*y) / (x**2 + y**2)**0.5
+            v = (vx * x + vy * y) / (x ** 2 + y ** 2) ** 0.5
             p = u_coarse.xvars["p"]
             p0 = u0.xvars["p"]
             cs = u_coarse.xvars["cs"]
@@ -340,6 +330,7 @@ class TableLabels:
     def __call__(self, col):
         return " ".join(str(v) for v in col.values())
 
+
 def generate_grids():
     gmsh_template = read_txt("grids/janka.tmpl")
 
@@ -352,13 +343,14 @@ def generate_grids():
 
     gmsh.generate_grids([geo_grid_name(l) for l in mesh_levels])
 
+
 def main():
     parser = default_cli_parser("'janka' numerical experiment.")
 
     parser.add_argument(
         "--config-only",
-        action='store_true',
-        help="Write the config file to the working directory."
+        action="store_true",
+        help="Write the config file to the working directory.",
     )
 
     args = parser.parse_args()
@@ -383,7 +375,6 @@ def main():
             if args.reference:
                 restart_all(r, args.restart_from)
 
-
     if args.post_process:
         for c, r in all_runs:
             post_process(c, r)
@@ -407,12 +398,6 @@ def main():
             for f in files:
                 shutil.copy(f, os.path.join(dir, os.path.basename(f)))
 
+
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-

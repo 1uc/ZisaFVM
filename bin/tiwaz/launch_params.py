@@ -4,8 +4,8 @@ import subprocess
 import glob
 import multiprocessing
 
-from . site_details import get_host
-from . utils import merge_dict
+from .site_details import get_host
+from .utils import merge_dict
 
 
 class LaunchParams(object):
@@ -76,7 +76,7 @@ def newest_output_file(directory):
 
 def all_combinations(choices):
     keys = list(choices.keys())
-    lp = LaunchParams( [{keys[0]: val} for val in choices[keys[0]]] )
+    lp = LaunchParams([{keys[0]: val} for val in choices[keys[0]]])
 
     for key in keys[1:]:
         lp = lp.product([{key: val} for val in choices[key]])
@@ -90,7 +90,7 @@ def all_pointwise_combinations(choices):
 
     lp = LaunchParams()
     for k in range(n_options):
-        lp = lp.union(LaunchParams([{key : choices[key][k] for key in choices}]))
+        lp = lp.union(LaunchParams([{key: choices[key][k] for key in choices}]))
 
     return lp
 

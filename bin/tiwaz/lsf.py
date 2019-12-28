@@ -1,11 +1,12 @@
 import subprocess
 
-from . site_details import has_lsf
-from . utils import hhmm, read_txt, write_txt
+from .site_details import has_lsf
+from .utils import hhmm, read_txt, write_txt
+
 
 class LSF(object):
     def __init__(self, queue_args):
-        assert(has_lsf())
+        assert has_lsf()
         self.queue_args = queue_args
 
     def submit(self, directory, launch_param, cmd):
@@ -34,5 +35,3 @@ class LSF(object):
             c += ["-n", "1"]
 
         return c + cmd
-
-

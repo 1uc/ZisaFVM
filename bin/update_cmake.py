@@ -7,31 +7,41 @@ import os.path
 
 SUFFIXES = [".c", ".C", ".cpp", ".c++"]
 
+
 def find_files(folder, suffix):
     files = sum((glob.glob("{}*{}".format(folder, s)) for s in SUFFIXES), [])
     return [os.path.basename(f) for f in sorted(files)]
 
+
 def find_source_files(folder):
     return find_files(folder, ".cpp")
+
 
 def find_subdirectories(folder):
     dirs = sorted(glob.glob(folder + "*/"))
     return [d for d in dirs if "CMake" not in d]
+
 
 def format_sources(target, sources):
     ret = ""
 
     line_pattern = "  PRIVATE ${{CMAKE_CURRENT_LIST_DIR}}/{:s}\n"
     if sources:
-        ret += "".join(["target_sources(" + target + "\n",
-                        "".join(line_pattern.format(s) for s in sources),
-                        ")\n\n"])
+        ret += "".join(
+            [
+                "target_sources(" + target + "\n",
+                "".join(line_pattern.format(s) for s in sources),
+                ")\n\n",
+            ]
+        )
 
     return ret
 
+
 def add_subdirectory(folder):
     line_pattern = "add_subdirectory({:s})\n"
-    return  line_pattern.format(os.path.basename(folder[:-1]))
+    return line_pattern.format(os.path.basename(folder[:-1]))
+
 
 def remove_file(filename):
     try:
@@ -40,9 +50,11 @@ def remove_file(filename):
         if e.errno != errno.ENOENT:
             raise
 
+
 def append_to_file(filename, text):
-    with open(filename, 'a') as f:
+    with open(filename, "a") as f:
         f.write(text)
+
 
 def recurse(base_directory, target):
     cmake_file = base_directory + "CMakeLists.txt"
@@ -55,12 +67,15 @@ def recurse(base_directory, target):
         recurse(d, target)
         append_to_file(cmake_file, add_subdirectory(base_directory + d))
 
+
 def add_executable(cmake_file, target, source_file):
     line = """
 target_sources({}
   PRIVATE ${{CMAKE_CURRENT_SOURCE_DIR}}/{}
 )
-""".format(target, source_file)
+""".format(
+        target, source_file
+    )
     append_to_file(cmake_file, line)
 
 

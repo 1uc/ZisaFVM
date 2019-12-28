@@ -1,16 +1,16 @@
 import shutil
 import glob
 
-from . site_details import *
-from . queue import make_queue
-from . launch_params import folder_name
-from . post_process import find_data_files, find_grid
+from .site_details import *
+from .queue import make_queue
+from .launch_params import folder_name
+from .post_process import find_data_files, find_grid
 
 
 class LaunchJob(object):
     """Base class for launching jobs."""
 
-    def __init__(self, base_directory, queue_args = None):
+    def __init__(self, base_directory, queue_args=None):
         """Create a `LaunchJob`.
 
         :base_directory: store the output in subfolders of `base_directory`.
@@ -41,7 +41,7 @@ class LaunchJob(object):
 class LaunchNewJob(LaunchJob):
     """Takes care of everything required to launch a new simulation."""
 
-    def __init__(self, zisa_home, base_directory, force, queue_args = None):
+    def __init__(self, zisa_home, base_directory, force, queue_args=None):
         super().__init__(base_directory, queue_args)
 
         self.zisa_home = zisa_home
@@ -104,10 +104,11 @@ class LaunchNewJob(LaunchJob):
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             shutil.copy(os.path.join(src, f), filename)
 
+
 class RestartJob(LaunchJob):
     """Takes care of everything required to launch a new simulation."""
 
-    def __init__(self, base_directory, queue_args = None):
+    def __init__(self, base_directory, queue_args=None):
         super().__init__(base_directory, queue_args)
 
     def __call__(self, launch_param):
@@ -122,13 +123,13 @@ class RestartJob(LaunchJob):
 
 
 def launch_all(launch_params, force, queue_args=None):
-    launch_job = LaunchNewJob(zisa_home_directory(),
-                              todays_scratch_directory(),
-                              force,
-                              queue_args)
+    launch_job = LaunchNewJob(
+        zisa_home_directory(), todays_scratch_directory(), force, queue_args
+    )
 
     for param in launch_params:
         launch_job(param)
+
 
 def restart_all(launch_params, restart_index, queue_args=None):
     cwd = os.getcwd()

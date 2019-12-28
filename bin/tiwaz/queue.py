@@ -1,6 +1,6 @@
-from . slurm import SLURM
-from . no_queue import NoQueue
-from . site_details import has_lsf, has_slurm, has_no_queue
+from .slurm import SLURM
+from .no_queue import NoQueue
+from .site_details import has_lsf, has_slurm, has_no_queue
 
 
 def make_queue(queue_args):
@@ -14,4 +14,3 @@ def make_queue(queue_args):
         return NoQueue(queue_args)
 
     raise Exception("Can't determine the queue to use.")
-

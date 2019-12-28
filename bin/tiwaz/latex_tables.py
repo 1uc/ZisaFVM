@@ -6,23 +6,27 @@ import matplotlib.pyplot as plt
 
 # for plots
 from matplotlib import rcParams
-rcParams.update({ 'font.family': 'sans-serif',
-                  'font.size': 18,
-                  'xtick.labelsize': 18,
-                  'ytick.labelsize': 18,
-                  'figure.autolayout': True,
-                  'axes.formatter.limits': (-1, 3)})
+
+rcParams.update(
+    {
+        "font.family": "sans-serif",
+        "font.size": 18,
+        "xtick.labelsize": 18,
+        "ytick.labelsize": 18,
+        "figure.autolayout": True,
+        "axes.formatter.limits": (-1, 3),
+    }
+)
 
 
-from . post_process import extract_solver_data
+from .post_process import extract_solver_data
+
 
 class LatexConvergenceTable(object):
     """Format convergence data as LaTeX `tabular`."""
 
     def __init__(self, x_labels, data):
-        self.table = "".join([self.header(x_labels),
-                              self.content(data),
-                              self.footer()])
+        self.table = "".join([self.header(x_labels), self.content(data), self.footer()])
 
     def write(self, filename):
         with open(filename, "w+") as f:
@@ -32,14 +36,20 @@ class LatexConvergenceTable(object):
         n = len(x_labels)
 
         header = "".join(
-            ["\\begin{tabular}{l\n",
-            n*"                S[table-format=3.2e2]\n",
-            "}\n",
-            "\\toprule\n",
-            "$\Delta x$ & ",
-            " & ".join("\multicolumn{1}{S[table-format=3.2e2]}{" + l + "}" for l in x_labels),
-            " \\\\\n",
-            "\\midrule\n"])
+            [
+                "\\begin{tabular}{l\n",
+                n * "                S[table-format=3.2e2]\n",
+                "}\n",
+                "\\toprule\n",
+                "$\Delta x$ & ",
+                " & ".join(
+                    "\multicolumn{1}{S[table-format=3.2e2]}{" + l + "}"
+                    for l in x_labels
+                ),
+                " \\\\\n",
+                "\\midrule\n",
+            ]
+        )
         return header
 
     def error_subheader(self):
@@ -56,7 +66,7 @@ class LatexConvergenceTable(object):
         for k, row in enumerate(data):
             content += " & ".join(row) + "  \\\\\n"
 
-            if k % 2 == 1 and k != len(data)-1:
+            if k % 2 == 1 and k != len(data) - 1:
                 content += "\midrule\n"
 
         return content
@@ -65,70 +75,61 @@ class LatexConvergenceTable(object):
 def convergence_rate(res, err):
     log_err = np.log(err)
     log_res = np.log(res)
-    return (log_err[1:] - log_err[:-1])/(log_res[1:] - log_res[:-1])
+    return (log_err[1:] - log_err[:-1]) / (log_res[1:] - log_res[:-1])
 
 
 def format_table_contents(solver_keys, resolutions, l1_errors, rates):
     return format_x_err_y_solver_rate(solver_keys, resolutions, l1_errors, rates)
 
+
 def format_x_err_y_solver_rate(solver_keys, resolutions, l1_errors, rates):
     max_str_len = 32
     dtype = "<U" + str(max_str_len)
-    table = np.empty((2*len(solver_keys), 1 + len(resolutions)), dtype=dtype)
+    table = np.empty((2 * len(solver_keys), 1 + len(resolutions)), dtype=dtype)
 
     width = max(len(key) for key in solver_keys) + 2
-    assert(width <= max_str_len)
+    assert width <= max_str_len
 
-    table[:-1:2,0] = [key.ljust(width) for key in solver_keys]
-    table[1::2,0] = "rate"
+    table[:-1:2, 0] = [key.ljust(width) for key in solver_keys]
+    table[1::2, 0] = "rate"
 
     for k, l1_err in enumerate(l1_errors):
-        table[2*k,1:] = ["{:8.2e}".format(err) for err in l1_err]
+        table[2 * k, 1:] = ["{:8.2e}".format(err) for err in l1_err]
 
-    table[1::2,1] = "\\multicolumn{1}{c}{--}"
+    table[1::2, 1] = "\\multicolumn{1}{c}{--}"
     for k, rate in enumerate(rates):
-        table[2*k+1,2:] = ["{:8.2f}".format(r) for r in rate]
+        table[2 * k + 1, 2:] = ["{:8.2f}".format(r) for r in rate]
 
     return table
+
 
 def format_x_err_rate_y_solver(solver_keys, resolutions, l1_errors, rates):
     max_str_len = 32
     dtype = "<U" + str(max_str_len)
-    table = np.empty((len(solver_keys), 1 + 2*len(resolutions)), dtype=dtype)
+    table = np.empty((len(solver_keys), 1 + 2 * len(resolutions)), dtype=dtype)
 
     width = max(len(key) for key in solver_keys) + 2
-    assert(width <= max_str_len)
+    assert width <= max_str_len
 
-    table[:,0] = [key.ljust(width) for key in solver_keys]
+    table[:, 0] = [key.ljust(width) for key in solver_keys]
 
     for k, l1_err in enumerate(l1_errors):
-        table[k,1:-1:2] = ["{:8.2e}".format(err) for err in l1_err]
+        table[k, 1:-1:2] = ["{:8.2e}".format(err) for err in l1_err]
 
-    table[:,2] = "--"
+    table[:, 2] = "--"
     for k, rate in enumerate(rates):
-        table[k,4::2] = ["{:8.2f}".format(r) for r in rate]
+        table[k, 4::2] = ["{:8.2f}".format(r) for r in rate]
 
     return table
 
 
 def linestyle(wb):
-    if wb == 'constant':
-        kwargs = {
-            "marker": '+',
-            'mew': 7,
-            'ms': 3,
-            'linewidth': 3,
-            "color": "#003380"
-        }
+    if wb == "constant":
+        kwargs = {"marker": "+", "mew": 7, "ms": 3, "linewidth": 3, "color": "#003380"}
     else:
-        kwargs = {
-            "marker": 'o',
-            'linewidth': 3,
-            "color": '#d40000'
-        }
+        kwargs = {"marker": "o", "linewidth": 3, "color": "#d40000"}
 
     return kwargs
-
 
 
 def write_convergence_table(results, columns, labels, filename):
@@ -151,7 +152,7 @@ def write_convergence_table(results, columns, labels, filename):
             all_errors.append(l1_err)
             all_rates.append(rate)
 
-            kwargs = linestyle(col['wb'])
+            kwargs = linestyle(col["wb"])
             plt.loglog(resolutions, l1_err, **kwargs)
 
         l1_errors = np.array(all_errors)
@@ -166,20 +167,21 @@ def write_convergence_table(results, columns, labels, filename):
         plt.minorticks_off()
 
         f_ = matplotlib.ticker.ScalarFormatter(useOffset=False, useMathText=True)
-        g_ = lambda x,pos : "${}$".format(f_._formatSciNotation('%1.2e' % x))
+        g_ = lambda x, pos: "${}$".format(f_._formatSciNotation("%1.2e" % x))
 
         plt.xticks(resolutions, [g_(res, None) for res in resolutions])
         plt.xlabel(r"Resolution $\Delta x$")
         plt.ylabel(r"$err_1(\Delta \rho)$")
 
-
-        wb_line = matplotlib.lines.Line2D([], [], **linestyle("isentropic"), label='isentropic')
-        const_line = matplotlib.lines.Line2D([], [], **linestyle("constant"), label='constant')
-
+        wb_line = matplotlib.lines.Line2D(
+            [], [], **linestyle("isentropic"), label="isentropic"
+        )
+        const_line = matplotlib.lines.Line2D(
+            [], [], **linestyle("constant"), label="constant"
+        )
 
         plt.legend(handles=[wb_line, const_line])
         plt.savefig(filename + "_" + key + ".png")
         plt.close()
         # print(filename + "_" + key + ".png")
         # plt.show()
-
