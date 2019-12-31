@@ -36,6 +36,8 @@ private:
   };
 
 public:
+  explicit PlainIndexRange(int_t i_end) : i0(0), i_end(i_end) {}
+
   PlainIndexRange(int_t i0, int_t i_end) : i0(i0), i_end(i_end) {
     assert(i0 <= i_end);
   }
