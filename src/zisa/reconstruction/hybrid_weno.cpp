@@ -11,7 +11,7 @@ namespace zisa {
 HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
                        int_t i_cell,
                        const HybridWENOParams &params)
-    : stencils(grid, i_cell, params.stencil_family_params),
+    : stencils(*grid, i_cell, params.stencil_family_params),
       lsq_solvers(grid, stencils),
       polys(stencils.size()),
       linear_weights(stencils.size()),

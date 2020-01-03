@@ -20,12 +20,12 @@ public:
   explicit Stencil(int_t i_cell);
 
   Stencil(std::vector<int_t> &l2g,
-          const std::shared_ptr<Grid> &grid,
+          const Grid &grid,
           int_t i_cell,
           const StencilParams &params);
 
   Stencil(std::vector<int_t> &l2g,
-          const std::shared_ptr<Grid> &grid,
+          const Grid &grid,
           int_t i_cell,
           int_t k,
           const StencilParams &params);

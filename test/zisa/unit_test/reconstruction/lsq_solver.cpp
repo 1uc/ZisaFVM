@@ -21,7 +21,7 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
 
   auto n_cells = grid->n_cells;
   for (zisa::int_t i_cell = 0; i_cell < n_cells; ++i_cell) {
-    auto stencils = zisa::StencilFamily(grid, i_cell, params);
+    auto stencils = zisa::StencilFamily(*grid, i_cell, params);
 
     double magic_value = -12345.6;
 

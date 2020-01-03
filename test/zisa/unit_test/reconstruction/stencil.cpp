@@ -75,7 +75,7 @@ TEST_CASE("Stencil API", "[stencil]") {
 
   SECTION("central_stencil") {
     // this is how one should generate a stencil
-    auto approx = zisa::Stencil(l2g, grid, i_cell, params);
+    auto approx = zisa::Stencil(l2g, *grid, i_cell, params);
     REQUIRE(approx.size() > 0);
 
     // this is internal API, just a vector of int_t.
@@ -97,10 +97,10 @@ TEST_CASE("Stencil API", "[stencil]") {
     auto l2g = std::vector<zisa::int_t>();
     auto stencils = std::vector<zisa::Stencil>();
 
-    auto exact = zisa::Stencil(l2g, grid, i_cell, params);
+    auto exact = zisa::Stencil(l2g, *grid, i_cell, params);
 
     for (zisa::int_t i = 0; i < n_stencils; ++i) {
-      stencils.emplace_back(l2g, grid, i_cell, params);
+      stencils.emplace_back(l2g, *grid, i_cell, params);
     }
 
     REQUIRE(stencils.size() == n_stencils);

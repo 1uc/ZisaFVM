@@ -4,12 +4,12 @@
 #include <zisa/testing/testing_framework.hpp>
 
 void check_uniqueness(const zisa::StencilFamily &stencils, zisa::int_t i_cell) {
-    const auto &l2g = stencils.local2global();
+  const auto &l2g = stencils.local2global();
 
-    REQUIRE(l2g[0] == i_cell);
-    for(zisa::int_t i = 1; i < l2g.size(); ++i){
-        REQUIRE(l2g[i] != i_cell);
-    }
+  REQUIRE(l2g[0] == i_cell);
+  for (zisa::int_t i = 1; i < l2g.size(); ++i) {
+    REQUIRE(l2g[i] != i_cell);
+  }
 }
 
 TEST_CASE("StencilFamily", "[weno_ao]") {
@@ -18,43 +18,43 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
     auto grid = zisa::load_gmsh("grids/convergence/unit_cube_0.msh");
 
     SECTION("is_unique") {
-        for(zisa::int_t i_cell = 0; i_cell < grid->n_cells; ++i_cell) {
-            auto biases = std::vector<std::string>{"c", "b"};
-            for (auto &&b : biases) {
-                auto o1_stencils = zisa::StencilFamily(grid, i_cell, {{1},
-                                                                      {b},
-                                                                      {2.0}});
-                INFO(string_format("[% 4d] bias = %s", i_cell, b.c_str()));
-                check_uniqueness(o1_stencils, i_cell);
+      for (zisa::int_t i_cell = 0; i_cell < grid->n_cells; ++i_cell) {
+        auto biases = std::vector<std::string>{"c", "b"};
+        for (auto &&b : biases) {
+          auto o1_stencils
+              = zisa::StencilFamily(*grid, i_cell, {{1}, {b}, {2.0}});
+          INFO(string_format("[% 4d] bias = %s", i_cell, b.c_str()));
+          check_uniqueness(o1_stencils, i_cell);
 
-                auto o2_stencils = zisa::StencilFamily(grid, i_cell, {{2},
-                                                                      {b},
-                                                                      {2.0}});
-                INFO(string_format("[% 4d] bias = %s", i_cell, b.c_str()));
-                check_uniqueness(o2_stencils, i_cell);
+          auto o2_stencils
+              = zisa::StencilFamily(*grid, i_cell, {{2}, {b}, {2.0}});
+          INFO(string_format("[% 4d] bias = %s", i_cell, b.c_str()));
+          check_uniqueness(o2_stencils, i_cell);
 
-                auto o3_stencils = zisa::StencilFamily(grid, i_cell, {{3},
-                                                                      {b},
-                                                                      {2.0}});
-                INFO(string_format("[% 4d] bias = %s", i_cell, b.c_str()));
-                check_uniqueness(o3_stencils, i_cell);
-            }
+          auto o3_stencils
+              = zisa::StencilFamily(*grid, i_cell, {{3}, {b}, {2.0}});
+          INFO(string_format("[% 4d] bias = %s", i_cell, b.c_str()));
+          check_uniqueness(o3_stencils, i_cell);
         }
+      }
     }
 
     zisa::int_t i_cell = 20;
     SECTION("single stencil") {
       auto biases = std::vector<std::string>{"c", "b"};
       for (auto &&b : biases) {
-        auto o1_stencils = zisa::StencilFamily(grid, i_cell, {{1}, {b}, {2.0}});
+        auto o1_stencils
+            = zisa::StencilFamily(*grid, i_cell, {{1}, {b}, {2.0}});
         INFO(string_format("bias = %s", b.c_str()));
         REQUIRE(o1_stencils.order() == 1);
 
-        auto o2_stencils = zisa::StencilFamily(grid, i_cell, {{2}, {b}, {2.0}});
+        auto o2_stencils
+            = zisa::StencilFamily(*grid, i_cell, {{2}, {b}, {2.0}});
         INFO(string_format("bias = %s", b.c_str()));
         REQUIRE(o2_stencils.order() == 2);
 
-        auto o3_stencils = zisa::StencilFamily(grid, i_cell, {{3}, {b}, {2.0}});
+        auto o3_stencils
+            = zisa::StencilFamily(*grid, i_cell, {{3}, {b}, {2.0}});
         INFO(string_format("bias = %s", b.c_str()));
         REQUIRE(o3_stencils.order() == 3);
       }
@@ -62,7 +62,7 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
 
     SECTION("mixed stencil") {
       auto o311_stencils = zisa::StencilFamily(
-          grid, i_cell, {{3, 1, 1}, {"c", "b", "b"}, {2.0, 1.5, 1.5}});
+          *grid, i_cell, {{3, 1, 1}, {"c", "b", "b"}, {2.0, 1.5, 1.5}});
 
       REQUIRE(o311_stencils.order() == 3);
     }
@@ -75,7 +75,7 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
 
       auto stencils = std::vector<zisa::StencilFamily>();
       for (const auto &[i, cell] : cells(*grid)) {
-        stencils.emplace_back(grid, i, params);
+        stencils.emplace_back(*grid, i, params);
       }
 
       REQUIRE(stencils.size() == grid->n_cells);
@@ -92,7 +92,7 @@ TEST_CASE("StencilFamily, 3D", "[weno_ao][stencil][3d]") {
 
   SECTION("mixed stencil") {
     for (auto i_cell : cell_indices) {
-      auto stencils = zisa::StencilFamily(grid,
+      auto stencils = zisa::StencilFamily(*grid,
                                           i_cell,
                                           {{3, 2, 2, 2, 2},
                                            {"c", "b", "b", "b", "b"},

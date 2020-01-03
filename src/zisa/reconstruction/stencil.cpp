@@ -21,18 +21,18 @@ Stencil::Stencil(int_t i_cell)
 }
 
 Stencil::Stencil(std::vector<int_t> &l2g,
-                 const std::shared_ptr<Grid> &grid,
+                 const Grid &grid,
                  int_t i_cell,
                  const StencilParams &params)
     : max_order_(params.order),
       bias_(deduce_bias(params.bias)),
       overfit_factor_(params.overfit_factor) {
 
-  int n_dims = grid->n_dims();
+  int n_dims = grid.n_dims();
   max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
 
   assert(bias() == StencilBias::central);
-  assign_local_indices(central_stencil(*grid, i_cell, max_size()), l2g);
+  assign_local_indices(central_stencil(grid, i_cell, max_size()), l2g);
 
   assert(local_.size() == global_.size());
   order_ = deduce_max_order(local_.size(), overfit_factor(), n_dims);
@@ -40,18 +40,18 @@ Stencil::Stencil(std::vector<int_t> &l2g,
 }
 
 Stencil::Stencil(std::vector<int_t> &l2g,
-                 const std::shared_ptr<Grid> &grid,
+                 const Grid &grid,
                  int_t i_cell,
                  int_t k,
                  const StencilParams &params)
     : max_order_(params.order),
       bias_(deduce_bias(params.bias)),
       overfit_factor_(params.overfit_factor) {
-  int n_dims = grid->n_dims();
+  int n_dims = grid.n_dims();
   max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
 
   assert(bias() == StencilBias::one_sided);
-  assign_local_indices(biased_stencil(*grid, i_cell, k, max_size()), l2g);
+  assign_local_indices(biased_stencil(grid, i_cell, k, max_size()), l2g);
 
   assert(local_.size() == global_.size());
   order_ = deduce_max_order(local_.size(), overfit_factor(), n_dims);

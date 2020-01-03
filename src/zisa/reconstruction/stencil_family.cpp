@@ -8,7 +8,7 @@ namespace zisa {
 
 int_t highest_order_central_stencil(const StencilFamily &stencils);
 
-StencilFamily::StencilFamily(const std::shared_ptr<Grid> &grid,
+StencilFamily::StencilFamily(const Grid &grid,
                              int_t i_cell,
                              const StencilFamilyParams &params)
     : stencils_(shape_t<1>{params.n_stencils()}) {

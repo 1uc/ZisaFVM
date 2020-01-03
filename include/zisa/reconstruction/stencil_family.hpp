@@ -13,7 +13,7 @@ private:
 
 public:
   StencilFamily() = default;
-  StencilFamily(const std::shared_ptr<Grid> &grid,
+  StencilFamily(const Grid &grid,
                 int_t i_cell,
                 const StencilFamilyParams &params);
 
