@@ -8,9 +8,9 @@ namespace zisa {
 /// Base class for reading GMSH files.
 class GMSHReader {
 protected:
-  using index_t = std::size_t;
-  using vertices_t = std::vector<std::array<double, 3>>;
-  using vertex_indices_t = std::vector<std::vector<index_t>>;
+  using index_t = int_t;
+  using vertices_t = array<XYZ, 1>;
+  using vertex_indices_t = array<int_t, 2>;
 
 public:
   virtual ~GMSHReader() = default;
@@ -38,9 +38,13 @@ protected:
 
   void load_element(vertex_indices_t &vertex_indices,
                     const std::string &line,
-                    GMSHElementType element_type) const;
+                    GMSHElementType element_type,
+                    index_t &i) const;
 
-  void load_vertex(vertices_t &vertices, const std::string &line) const;
+  index_t count_cells(GMSHElementType element_type) const;
+
+  void
+  load_vertex(vertices_t &vertices, const std::string &line, index_t i) const;
 };
 
 namespace gmsh {
@@ -186,12 +190,10 @@ GMSHData GMSHReader::load(const std::string &filename) const {
   auto vertex_indices = load_elements(element_type);
   auto vertices = load_vertices();
 
-  return GMSHData{vertices, vertex_indices, element_type};
+  return GMSHData{std::move(vertices), std::move(vertex_indices), element_type};
 }
 
 auto GMSHReader2::load_vertices() const -> vertices_t {
-  auto vertices = vertices_t{};
-
   auto msh = gmsh::open_msh(filename);
   gmsh::skip_to(msh, "$Nodes");
 
@@ -199,24 +201,25 @@ auto GMSHReader2::load_vertices() const -> vertices_t {
   msh >> n_vertices;
   auto discard = gmsh::getline(msh);
 
-  vertices.reserve(n_vertices);
+  auto vertices = vertices_t(n_vertices);
 
   for (index_t i = 0; (i < n_vertices) && msh.good(); ++i) {
-    load_vertex(vertices, gmsh::getline(msh));
+    load_vertex(vertices, gmsh::getline(msh), i);
   }
 
   return vertices;
 }
 
 void GMSHReader2::load_vertex(vertices_t &vertices,
-                              const std::string &line_) const {
+                              const std::string &line_,
+                              index_t i) const {
   auto line = std::istringstream(line_);
 
   int discard;
   double x, y, z;
   line >> discard >> x >> y >> z;
 
-  vertices.push_back({x, y, z});
+  vertices(i) = XYZ{x, y, z};
 }
 
 GMSHElementType GMSHReader2::load_element_type() const {
@@ -242,9 +245,33 @@ GMSHElementType GMSHReader2::load_element_type() const {
   return GMSHElementType::triangle;
 }
 
+int_t GMSHReader2::count_cells(GMSHElementType expected_element_type) const {
+  auto msh = gmsh::open_msh(filename);
+  gmsh::skip_to(msh, "$Elements");
+
+  index_t n_elements;
+  msh >> n_elements;
+  gmsh::getline(msh);
+
+  int_t n_cells = 0;
+  for (index_t i = 0; (i < n_elements) && msh.good(); ++i) {
+    auto line = std::istringstream(gmsh::getline(msh));
+
+    int_t discard, element_type;
+    line >> discard;
+    line >> element_type;
+    if (element_type == index_t(expected_element_type)) {
+      n_cells += 1;
+    }
+  }
+
+  return n_cells;
+}
+
 auto GMSHReader2::load_elements(GMSHElementType element_type) const
     -> vertex_indices_t {
-  auto vertex_indices = vertex_indices_t{};
+
+  int_t n_cells = count_cells(element_type);
 
   auto msh = gmsh::open_msh(filename);
   gmsh::skip_to(msh, "$Elements");
@@ -253,10 +280,12 @@ auto GMSHReader2::load_elements(GMSHElementType element_type) const
   msh >> n_elements;
   auto discard = gmsh::getline(msh);
 
-  vertex_indices.reserve(n_elements);
+  index_t max_vertices = GMSHElementInfo::n_vertices(element_type);
+  auto vertex_indices = vertex_indices_t({n_cells, max_vertices});
 
+  int_t i_cell = 0;
   for (index_t i = 0; (i < n_elements) && msh.good(); ++i) {
-    load_element(vertex_indices, gmsh::getline(msh), element_type);
+    load_element(vertex_indices, gmsh::getline(msh), element_type, i_cell);
   }
 
   return vertex_indices;
@@ -264,7 +293,8 @@ auto GMSHReader2::load_elements(GMSHElementType element_type) const
 
 void GMSHReader2::load_element(vertex_indices_t &vertex_indices,
                                const std::string &line_,
-                               GMSHElementType expected_element_type) const {
+                               GMSHElementType expected_element_type,
+                               index_t &i) const {
   index_t n_vertices = GMSHElementInfo::n_vertices(expected_element_type);
   index_t n_tags, discard, element_type;
 
@@ -276,26 +306,29 @@ void GMSHReader2::load_element(vertex_indices_t &vertex_indices,
   }
 
   line >> n_tags;
-  for (index_t i = 0; i < n_tags; ++i) {
+  for (index_t k = 0; k < n_tags; ++k) {
     line >> discard;
   }
 
-  vertex_indices.emplace_back(n_vertices);
-  auto &triangle = vertex_indices.back();
-
-  for (index_t i = 0; i < n_vertices; ++i) {
-    line >> triangle[i];
-    --triangle[i];
+  for (index_t k = 0; k < n_vertices; ++k) {
+    line >> vertex_indices(i, k);
+    vertex_indices(i, k) -= 1;
   }
+
+  i += 1;
 }
 
 std::ostream &operator<<(std::ostream &os, const GMSHData &data) {
   auto &vertex_indices = data.vertex_indices;
 
   os << "[ \n";
-  for (auto &&triangle : vertex_indices) {
-    os << "  [" << triangle[0] << ", " << triangle[1] << ", " << triangle[2]
-       << "]\n";
+  for (int_t i = 0; i < vertex_indices.shape(0); ++i) {
+    os << "  [";
+    for (int_t k = 0; k < vertex_indices.shape(1); ++k) {
+      os << vertex_indices(i, k);
+      os << (k < vertex_indices.shape(1) - 1 ? ", " : "");
+    }
+    os << "]\n";
   }
   os << "]";
 
@@ -306,8 +339,8 @@ GMSHData::GMSHData(const std::string &filename) {
   (*this) = make_gmsh_reader(filename)->load(filename);
 }
 
-GMSHData::GMSHData(std::vector<std::array<double, 3>> vertices,
-                   std::vector<std::vector<GMSHData::index_t>> vertex_indices,
+GMSHData::GMSHData(array<XYZ, 1> vertices,
+                   array<index_t, 2> vertex_indices,
                    GMSHElementType element_type)
     : vertices(std::move(vertices)),
       vertex_indices(std::move(vertex_indices)),

@@ -787,29 +787,9 @@ std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg) {
   quad_deg = zisa::max(1ul, quad_deg);
 
   auto gmsh = GMSHData(filename);
-
-  auto max_neighbours = GMSHElementInfo::n_vertices(gmsh.element_type);
-  auto n_vertices = gmsh.vertices.size();
-  auto n_cells = gmsh.vertex_indices.size();
-
-  auto vertices = array<XYZ, 1>(shape_t<1>{n_vertices});
-  auto vertex_indices = array<int_t, 2>(shape_t<2>{n_cells, max_neighbours});
-
-  for (int_t i = 0; i < n_vertices; ++i) {
-    const auto &v = gmsh.vertices[i];
-    vertices(i) = {v[0], v[1], v[2]};
-  }
-
-  for (int_t i = 0; i < n_cells; ++i) {
-    const auto &v = gmsh.vertex_indices[i];
-    for (int_t k = 0; k < max_neighbours; ++k) {
-      vertex_indices(i, k) = v[k];
-    }
-  }
-
   return std::make_shared<Grid>(gmsh.element_type,
-                                std::move(vertices),
-                                std::move(vertex_indices),
+                                std::move(gmsh.vertices),
+                                std::move(gmsh.vertex_indices),
                                 quad_deg);
 }
 
