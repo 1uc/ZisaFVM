@@ -28,11 +28,11 @@ StencilFamily::StencilFamily(const Grid &grid,
   for (int_t i = 0; i < size(); ++i) {
     auto stencil_order = (*this)[i].order();
 
-//    if(stencil_order == 1 && params.orders[i] != 1) {
-//      PRINT("truncating");
-//      truncate_all_stencils_to_first_order(i_cell);
-//      break;
-//    }
+    //    if(stencil_order == 1 && params.orders[i] != 1) {
+    //      PRINT("truncating");
+    //      truncate_all_stencils_to_first_order(i_cell);
+    //      break;
+    //    }
 
     order_ = std::max(order_, stencil_order);
   }
@@ -42,7 +42,7 @@ StencilFamily::StencilFamily(const Grid &grid,
 }
 
 void StencilFamily::truncate_all_stencils_to_first_order(int_t i_cell) {
-  for(auto &stencil : stencils_) {
+  for (auto &stencil : stencils_) {
     stencil = Stencil(i_cell);
   }
 }
@@ -62,9 +62,18 @@ int_t StencilFamily::combined_stencil_size() const {
 
 int StencilFamily::order() const { return order_; }
 
+auto StencilFamily::begin() -> decltype(stencils_.begin()) {
+  return stencils_.begin();
+}
+
 auto StencilFamily::begin() const -> decltype(stencils_.begin()) {
   return stencils_.begin();
 }
+
+auto StencilFamily::end() -> decltype(stencils_.end()) {
+  return stencils_.end();
+}
+
 auto StencilFamily::end() const -> decltype(stencils_.end()) {
   return stencils_.end();
 }
@@ -81,6 +90,18 @@ bool operator==(const StencilFamily &lhs, const StencilFamily &rhs) {
 
 bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs) {
   return !(lhs == rhs);
+}
+
+array<StencilFamily, 1>
+compute_stencil_families(const Grid &grid,
+                         const StencilFamilyParams &params) {
+  auto stencil_families = array<StencilFamily, 1>(grid.n_cells);
+  for_each(flat_range(stencil_families),
+           [&stencil_families, &grid, &params](int_t i) {
+             stencil_families(i) = StencilFamily(grid, i, params);
+           });
+
+  return stencil_families;
 }
 
 int_t highest_order_central_stencil(const StencilFamily &stencils) {

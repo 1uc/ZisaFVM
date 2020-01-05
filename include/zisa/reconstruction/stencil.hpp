@@ -48,6 +48,14 @@ public:
   /// Size of the stencil.
   int_t size() const;
 
+  /// Apply a permutation to the global indices.
+  template<class F>
+  void apply_permutation(const F &f) {
+    for(auto &i : global_) {
+      i = f(i);
+    }
+  }
+
 protected:
   int_t max_size() const;
   void assign_local_indices(const std::vector<int_t> &global_indices,

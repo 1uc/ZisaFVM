@@ -35,8 +35,21 @@ public:
   /// Returns the highest order possible for the given stencils.
   int order() const;
 
+  auto begin() -> decltype(stencils_.begin());
   auto begin() const -> decltype(stencils_.begin());
+
+  auto end() -> decltype(stencils_.end());
   auto end() const -> decltype(stencils_.end());
+
+  template<class F>
+  void apply_permutation(const F &f) {
+    for(auto &s : (*this)) {
+      s.apply_permutation(f);
+    }
+    for(auto &i : l2g) {
+      i = f(i);
+    }
+  }
 
 protected:
   /// This sets the order of every stencil to 1.
@@ -52,6 +65,10 @@ private:
 
 bool operator==(const StencilFamily &lhs, const StencilFamily &rhs);
 bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs);
+
+array<StencilFamily, 1>
+compute_stencil_families(const Grid &grid,
+                         const StencilFamilyParams &params);
 
 } // namespace zisa
 #endif /* end of include guard */

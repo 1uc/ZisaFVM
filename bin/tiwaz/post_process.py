@@ -13,9 +13,15 @@ class Grid:
         with h5py.File(grid_name, "r") as h5:
             self.vertex_indices = np.array(h5["vertex_indices"])
             self.vertices = np.array(h5["vertices"])
-            self.cell_centers = np.array(h5["cell_centers"])
-            self.volumes = np.array(h5["volumes"])
-            self.dx_max = h5["dx_max"][()]
+
+            if "cell_centers" in h5:
+                self.cell_centers = np.array(h5["cell_centers"])
+
+            if "volumes" in h5:
+                self.volumes = np.array(h5["volumes"])
+
+            if "dx_max" in h5:
+                self.dx_max = h5["dx_max"][()]
 
 
 class Snapshot:
@@ -56,8 +62,13 @@ class Snapshot:
                     self.dvars[key] = self.cvars[key] - np.array(h5[key])
 
 
-def load_grid(directory):
-    return Grid(find_grid(directory))
+def load_grid(path):
+    if os.path.isfile(path):
+        return Grid(path)
+    elif os.path.isdir(path):
+        return Grid(find_grid(directory))
+    else:
+        raise Exception(f"Invalid path. [{path}]")
 
 
 def load_reference(reference_dir, grid_name):
