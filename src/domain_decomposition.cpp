@@ -1,6 +1,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
+#include <tuple>
 
 #include <metis.h>
 #include <mpi.h>
@@ -323,8 +324,7 @@ extract_subgrid(const Grid &grid,
     for (int_t i = 0; i < remote_indices.shape(0); ++i) {
       remote_indices(i) = nbs[i] - boundaries[p];
     }
-    remote_halos.push_back(
-        HaloRemoteInfo{std::move(remote_indices), int(p)});
+    remote_halos.push_back(HaloRemoteInfo{std::move(remote_indices), int(p)});
   }
 
   // Halo (local)
@@ -419,10 +419,10 @@ extract_subgrid(const Grid &grid,
     local_vertices(i) = grid.vertices(vi_local2old[i]);
   }
 
-  return {std::move(local_vertex_indices),
-          std::move(local_vertices),
-          std::move(local_stencils),
-          {std::move(remote_halos), std::move(local_halos)}};
+  return std::tuple{std::move(local_vertex_indices),
+                    std::move(local_vertices),
+                    std::move(local_stencils),
+                    Halo{std::move(remote_halos), std::move(local_halos)}};
 }
 
 void save_partitioned_grid(const std::string &filename,

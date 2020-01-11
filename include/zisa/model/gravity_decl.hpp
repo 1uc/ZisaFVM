@@ -70,7 +70,6 @@ void save(HDF5Writer &writer, const Gravity<GravityBase, Alignment> &gravity) {
   save(writer, gravity.alignment);
   writer.close_group();
 }
-
 class RadialAlignment {
 public:
   RadialAlignment() = default;
