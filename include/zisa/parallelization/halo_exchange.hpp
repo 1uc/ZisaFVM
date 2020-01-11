@@ -4,23 +4,9 @@
 #include <zisa/config.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/model/all_variables.hpp>
+#include <zisa/parallelization/mpi.hpp>
 
 namespace zisa {
-
-namespace mpi {
-int size(const MPI_Comm &mpi_comm) {
-  int mpi_ranks = -1;
-  MPI_Comm_size(mpi_comm, &mpi_ranks);
-  return mpi_ranks;
-}
-
-int rank(const MPI_Comm &mpi_comm) {
-  int rank = -1;
-  MPI_Comm_rank(mpi_comm, &rank);
-  return rank;
-}
-
-}
 
 struct HaloRemoteInfo {
   array<int_t, 1> cell_indices; ///< index local to the remote.
@@ -35,19 +21,7 @@ struct HaloLocalInfo {
   int_t i_end;
 };
 
-class HaloExchangeRequest {
-public:
-  HaloExchangeRequest(std::unique_ptr<MPI_Request> request)
-      : request(std::move(request)) {}
-
-  /// Wait until the data transfer is complete.
-  void wait() const {
-    MPI_Wait(request.get(), nullptr);
-  }
-
-private:
-  std::unique_ptr<MPI_Request> request;
-};
+using HaloExchangeRequest = zisa::mpi::Request;
 
 class HaloSendPart {
 private:
@@ -55,23 +29,17 @@ private:
   static constexpr int n_dims = 2;
 
 public:
-  HaloSendPart(HaloRemoteInfo remote_info)
-      : remote_info(std::move(remote_info)) {}
+  explicit HaloSendPart(HaloRemoteInfo remote_info)
+      : remote_info(std::move(remote_info)), send_request(nullptr) {}
 
-  void send(const array<T, n_dims, row_major> &out_data, int tag) {
+  void send(const array_const_view<T, n_dims, row_major> &out_data, int tag) {
     wait_for_send_buffer();
     ensure_valid_buffer_size(out_data.shape());
     pack_buffer(out_data);
 
-    auto size = send_buffer.size() * sizeof(T);
-
-    MPI_Isend(send_buffer.raw(),
-              size,
-              MPI_BYTE,
-              remote_info.receiver_rank,
-              tag,
-              mpi_comm,
-              send_request.get());
+    auto receiver = remote_info.receiver_rank;
+    auto const_view = array_const_view(send_buffer);
+    send_request = zisa::mpi::isend(const_view, receiver, tag, mpi_comm);
   }
 
 protected:
@@ -85,14 +53,10 @@ protected:
   }
 
   void wait_for_send_buffer() {
-    if (send_request != nullptr) {
-      MPI_Wait(send_request.get(), nullptr);
-    } else {
-      send_request = std::make_unique<MPI_Request>();
-    }
+    send_request.wait();
   }
 
-  void pack_buffer(const array<T, n_dims, row_major> &out_data) {
+  void pack_buffer(const array_const_view<T, n_dims, row_major> &out_data) {
     const auto &cell_indices = remote_info.cell_indices;
 
     for (int_t i = 0; i < cell_indices.size(); ++i) {
@@ -106,7 +70,7 @@ private:
   HaloRemoteInfo remote_info;
 
   array<T, n_dims, row_major> send_buffer;
-  std::unique_ptr<MPI_Request> send_request = nullptr;
+  zisa::mpi::Request send_request;
   MPI_Comm mpi_comm = MPI_COMM_WORLD;
 };
 
@@ -116,23 +80,13 @@ private:
   static constexpr int n_dims = 2;
 
 public:
-  HaloReceivePart(HaloLocalInfo local_info)
-      : local_info(std::move(local_info)) {}
+  explicit HaloReceivePart(const HaloLocalInfo &local_info)
+      : local_info(local_info) {}
 
-  HaloExchangeRequest receive(array<T, n_dims, row_major> &in_data, int tag) {
-    void *ptr = (void *)&in_data(local_info.i_start, 0);
-    auto size = in_data.shape(1) * (local_info.i_end - local_info.i_start) * sizeof(T);
-
-    auto mpi_request = std::make_unique<MPI_Request>();
-    MPI_Irecv(ptr,
-              size,
-              MPI_BYTE,
-              local_info.sender_rank,
-              tag,
-              mpi_comm,
-              mpi_request.get());
-
-    return HaloExchangeRequest(std::move(mpi_request));
+  HaloExchangeRequest receive(array_view<T, n_dims, row_major> &in_data,
+                              int tag) {
+    auto sub_array = slice(in_data, local_info.i_start, local_info.i_end);
+    return zisa::mpi::irecv(sub_array, local_info.sender_rank, tag, mpi_comm);
   }
 
 private:
@@ -177,7 +131,7 @@ public:
     exchange(all_vars.cvars, cvars_tag);
   }
 
-  void exchange(array<T, n_dims, row_major> &data, int tag) {
+  void exchange(array_view<T, n_dims, row_major> data, int tag) {
     std::vector<HaloExchangeRequest> requests;
     requests.reserve(receive_parts.size());
 
