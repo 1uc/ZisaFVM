@@ -106,4 +106,7 @@ SphericalGravity SphericalGravity::load(HDF5Reader &reader) {
   return SphericalGravity(std::move(radii_), std::move(phi_));
 }
 
+void save(HDF5Writer &, const NoGravity &) { return; }
+
+
 } // zisa

@@ -350,6 +350,8 @@ public:
   inline std::string str() const { return "No gravity."; }
 };
 
+void save(HDF5Writer &writer, const NoGravity &gravity);
+
 } // namespace zisa
 
 #endif /* end of include guard */
