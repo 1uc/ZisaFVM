@@ -92,7 +92,6 @@ if __name__ == "__main__":
     add_executable(cmake_file, "zisa", "zisa.cpp")
     add_executable(cmake_file, "domain-decomposition", "domain_decomposition.cpp")
     add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
-    add_executable(cmake_file, "distributed-grid-demo", "distributed_grid_demo.cpp")
 
     recurse("test/", "unit_tests")
     recurse("benchmarks/", "micro_benchmarks")
