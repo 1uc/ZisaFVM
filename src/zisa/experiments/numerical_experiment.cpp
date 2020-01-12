@@ -11,18 +11,20 @@
 namespace zisa {
 
 NumericalExperiment::NumericalExperiment(const InputParameters &params)
-    : params(params),
-      grid(choose_grid()),
-      file_name_generator(choose_file_name_generator()) {}
+    : params(params), file_name_generator(choose_file_name_generator()) {}
 
 void NumericalExperiment::run() { do_run(); }
 void NumericalExperiment::post_process() { do_post_process(); }
 
-std::shared_ptr<Grid> NumericalExperiment::choose_grid() {
-  LOG_ERR_IF(!has_key(params, "quadrature"), "Missing section 'quadrature'.");
-  LOG_ERR_IF(!has_key(params["quadrature"], "volume"),
-             "Missing element 'volume'.");
+std::shared_ptr<Grid> NumericalExperiment::choose_grid() const {
+  if (grid_ == nullptr) {
+    grid_ = compute_grid();
+  }
 
+  return grid_;
+}
+
+std::shared_ptr<Grid> NumericalExperiment::compute_grid() const {
   int_t quad_deg = params["quadrature"]["volume"];
   return load_grid(params["grid"]["file"], quad_deg);
 }
@@ -38,18 +40,19 @@ NumericalExperiment::choose_file_name_generator() {
   return fng;
 }
 
-void NumericalExperiment::write_grid() const {
+void NumericalExperiment::write_grid() {
   auto writer = HDF5SerialWriter("grid.h5");
-  save(writer, *grid);
+  save(writer, *choose_grid());
 }
 
 void NumericalExperiment::do_run() {
+  auto grid = choose_grid();
+
   if (!is_restart()) {
     write_grid();
   }
 
-  std::cout << " --- Grid ---------- \n";
-  std::cout << grid->str() << "\n";
+  print_grid_info();
 
   auto u0 = choose_initial_conditions();
   auto time_loop = choose_time_loop();
@@ -57,6 +60,11 @@ void NumericalExperiment::do_run() {
   auto u1 = (*time_loop)(u0);
 
   do_post_run(u1);
+}
+
+void NumericalExperiment::print_grid_info() {
+  std::cout << " --- Grid ---------- \n";
+  std::cout << choose_grid()->str() << "\n";
 }
 
 std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {

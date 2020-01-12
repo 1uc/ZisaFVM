@@ -22,6 +22,7 @@ std::shared_ptr<AllVariables>
 Polytrope::compute_initial_conditions(double amp, double width) {
   auto dims = choose_all_variable_dims();
   auto all_variables = std::make_shared<AllVariables>(dims);
+  auto grid = choose_grid();
 
   auto qr = choose_volume_rule();
   const auto &eos = euler->eos;
@@ -64,6 +65,7 @@ std::shared_ptr<AllVariables>
 JankaBump::compute_initial_conditions(double amp, double width) {
   auto dims = choose_all_variable_dims();
   auto all_variables = std::make_shared<AllVariables>(dims);
+  auto grid = choose_grid();
 
   auto qr = choose_volume_rule();
   const auto &eos = euler->eos;

@@ -25,6 +25,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
   auto dims = choose_all_variable_dims();
   auto all_variables = std::make_shared<AllVariables>(dims);
   const auto &eos = euler->eos;
+  auto grid = choose_grid();
 
   const auto &gravity_params = params["euler"]["gravity"];
   auto rhoK = RhoEntropy{gravity_params["rhoC"], gravity_params["K_inner"]};

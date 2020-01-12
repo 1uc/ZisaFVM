@@ -28,14 +28,18 @@ public:
   void post_process();
 
 protected:
-  virtual void write_grid() const;
+  virtual void write_grid();
   virtual void do_run();
   virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) = 0;
   virtual void do_post_process() = 0;
 
   bool is_restart() const { return has_key(params, "restart"); }
 
-  std::shared_ptr<Grid> choose_grid();
+  std::shared_ptr<Grid> choose_grid() const;
+  virtual std::shared_ptr<Grid> compute_grid() const;
+
+  virtual void print_grid_info();
+
   std::shared_ptr<FileNameGenerator> choose_file_name_generator();
 
   std::shared_ptr<AllVariables> choose_initial_conditions();
@@ -76,9 +80,10 @@ protected:
 
 protected:
   InputParameters params;
-
-  std::shared_ptr<Grid> grid;
   std::shared_ptr<FileNameGenerator> file_name_generator;
+
+private:
+  mutable std::shared_ptr<Grid> grid_;
 };
 
 } // namespace zisa

@@ -65,7 +65,7 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
 
 template <class EOS, class Gravity>
 void EulerExperiment<EOS, Gravity>::do_post_process() {
-  grid = choose_grid();
+  choose_grid();
   file_name_generator = choose_file_name_generator();
 
   auto data_filename = find_last_data_file(*file_name_generator);
@@ -94,6 +94,7 @@ EulerExperiment<EOS, Gravity>::deduce_reference_solution_eq(
     const Equilibrium &eq,
     const Scaling &scaling) const {
 
+  auto grid = choose_grid();
   return std::make_shared<EulerReferenceSolution<Equilibrium, Scaling>>(
       grid, u1, eq, scaling);
 }
@@ -124,12 +125,15 @@ EulerExperiment<EOS, Gravity>::choose_cfl_condition() {
              "Missing section 'ode/cfl_number'.");
 
   double cfl_number = params["ode"]["cfl_number"];
+  auto grid = choose_grid();
   return std::make_shared<LocalCFL<euler_t>>(grid, euler, cfl_number);
 }
 
 template <class EOS, class Gravity>
 std::shared_ptr<Visualization>
 EulerExperiment<EOS, Gravity>::choose_visualization() {
+  auto grid = choose_grid();
+
   if (params["io"]["mode"] == "none") {
     return std::make_shared<NoVisualization>();
   } else if (params["io"]["mode"] == "opengl") {
@@ -152,6 +156,7 @@ EulerExperiment<EOS, Gravity>::choose_sanity_check() {
 template <class EOS, class Gravity>
 AllVariablesDimensions
 EulerExperiment<EOS, Gravity>::choose_all_variable_dims() {
+  auto grid = choose_grid();
   return {grid->n_cells, euler_t::cvars_t::size(), int_t(0)};
 }
 
@@ -159,6 +164,7 @@ template <class EOS, class Gravity>
 std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_bc() {
 
   std::string flux_bc = params["flux-bc"]["mode"];
+  auto grid = choose_grid();
 
   if (flux_bc == "constant") {
     return std::make_shared<FluxBC<euler_t>>(euler, grid);
@@ -195,6 +201,7 @@ std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_loop(
         &rc) {
 
   using grc_t = EulerGlobalReconstruction<Equilibrium, RC, scaling_t>;
+  auto grid = choose_grid();
 
   auto edge_rule = choose_edge_rule();
   return std::make_shared<FluxLoop<euler_t, flux_t, grc_t>>(
@@ -211,6 +218,7 @@ EulerExperiment<EOS, Gravity>::choose_gravity_source_loop(
   int_t edge_deg = params["quadrature"]["edge"];
   int_t volume_deg = params["quadrature"]["volume"];
 
+  auto grid = choose_grid();
   auto edge_rule = choose_edge_rule();
   return std::make_shared<
       GravitySourceLoop<Equilibrium, RC, euler_t, scaling_t>>(
@@ -275,6 +283,7 @@ auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
                          rc_params["smoothness_indicator"]["epsilon"],
                          rc_params["smoothness_indicator"]["exponent"]);
 
+  auto grid = choose_grid();
   auto eq = Equilibrium(euler);
   auto scaling = EulerScaling(euler);
   return std::make_shared<
