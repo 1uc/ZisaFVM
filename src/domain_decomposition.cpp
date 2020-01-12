@@ -12,8 +12,15 @@
 #include <zisa/loops/for_each.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/memory/array_view.hpp>
+#include <zisa/model/euler.hpp>
 #include <zisa/parallelization/halo_exchange.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
+
+// I/O related includes
+#include <zisa/io/dump_snapshot.hpp>
+#include <zisa/io/gathered_visualization.hpp>
+#include <zisa/parallelization/all_variables_gatherer.hpp>
+#include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
 
 namespace po = boost::program_options;
 
@@ -436,6 +443,9 @@ void save_partitioned_grid(const std::string &filename,
   auto vertex_indices
       = renumbered_vertex_indices(grid.vertex_indices, permutation);
 
+  auto renumbered_grid = Grid(
+      GMSHElementType::triangle, grid.vertices, vertex_indices, 1);
+
   const auto &partition = partitioned_grid.partition;
   const auto &boundaries = partitioned_grid.boundaries;
 
@@ -444,7 +454,8 @@ void save_partitioned_grid(const std::string &filename,
     auto [local_vertex_indices, local_vertices, local_stencils, halo]
         = extract_subgrid(grid, partitioned_grid, stencils, mpi_rank);
 
-    auto remote_info = zisa::exchange_halo_info(halo.remote_info, MPI_COMM_WORLD);
+    auto remote_info
+        = zisa::exchange_halo_info(halo.remote_info, MPI_COMM_WORLD);
     auto &local_info = halo.local_info;
 
     auto halo_exchange
@@ -459,14 +470,49 @@ void save_partitioned_grid(const std::string &filename,
         element_type, local_vertices, local_vertex_indices, quad_deg);
 
     auto n_cells_local = local_grid.n_cells;
-    auto data_local = zisa::array<double, 2>({n_cells_local, 2});
+    auto data_local = GridVariables({n_cells_local, 5});
     zisa::fill(data_local, double(mpi_rank));
 
     halo_exchange.exchange(data_local, /* tag = */ 239);
 
+    int_t n_owned_cells = partitioned_grid.boundaries[mpi_rank + 1]
+                          - partitioned_grid.boundaries[mpi_rank];
+
+    auto array_info
+        = std::make_shared<DistributedArrayInfo>(partitioned_grid.boundaries);
+    auto cvars_gatherer
+        = std::make_unique<MPISingleNodeArrayGatherer<double, 2>>(
+            array_info, MPI_COMM_WORLD, 388932);
+    auto avars_gatherer
+        = std::make_unique<MPISingleNodeArrayGatherer<double, 2>>(
+            array_info, MPI_COMM_WORLD, 333292);
+    auto all_vars_gatherer = std::make_shared<AllVariablesGatherer>(
+        std::move(cvars_gatherer), std::move(avars_gatherer), n_owned_cells);
+
+    auto all_vars_local = AllVariables({n_cells_local, 5, 0});
+    all_vars_local.cvars = data_local;
+
+    auto euler = std::make_shared<Euler<IdealGasEOS, NoGravity>>();
+    auto fng = std::make_shared<FileNameGenerator>("f", "%d", ".h5");
+
+    std::shared_ptr<Visualization> euler_visualization = nullptr;
+    if (mpi_rank == 0) {
+      euler_visualization
+          = std::make_shared<SerialDumpSnapshot<Euler<IdealGasEOS, NoGravity>>>(
+              euler, fng);
+    }
+    auto gathered_visualization = std::make_shared<GatheredVisualization>(
+        std::move(all_vars_gatherer),
+        std::move(euler_visualization),
+        AllVariablesDimensions{grid.n_cells, 5ul, 0ul});
+
+    auto simulation_clock = SerialSimulationClock(nullptr, nullptr);
+
+    (*gathered_visualization)(all_vars_local, simulation_clock);
+
     if (mpi_rank == 0) {
       auto writer = zisa::HDF5SerialWriter("grid_full.h5");
-      save(writer, grid);
+      save(writer, renumbered_grid);
     }
 
     {
@@ -485,7 +531,12 @@ void save_partitioned_grid(const std::string &filename,
 }
 
 int main(int argc, char *argv[]) {
-  MPI_Init(&argc, &argv);
+  int requested = MPI_THREAD_MULTIPLE;
+  int provided = -1;
+
+  MPI_Init_thread(&argc, &argv, requested, &provided);
+  LOG_ERR_IF(requested > provided,
+             "MPI does not support the requested level of multi-threading.");
 
   po::variables_map options;
 
