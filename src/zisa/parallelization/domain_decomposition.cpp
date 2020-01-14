@@ -44,13 +44,13 @@ compute_partition_full_stencil(const Grid &grid,
 
   int_t k_edge = 0;
   for (int_t i = 0; i < n_cells; ++i) {
-    xadj[i] = k_edge;
+    xadj[i] = integer_cast<metis_idx_t>(k_edge);
     for (int_t j : graph[i]) {
-      adjncy[k_edge] = j;
+      adjncy[k_edge] = integer_cast<metis_idx_t>(j);
       k_edge += 1;
     }
   }
-  xadj[n_cells] = n_edges;
+  xadj[n_cells] = integer_cast<metis_idx_t>(n_edges);
 
   auto nparts = metis_idx_t(n_parts);
   auto objval = metis_idx_t(-1);
@@ -86,7 +86,8 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
     eptr[i] = 3 * metis_idx_t(i);
 
     for (int_t k = 0; k < max_neighbours; ++k) {
-      eind[eptr[i] + k] = vertex_indices(i, k);
+      eind[integer_cast<int_t>(eptr[i]) + k]
+          = integer_cast<metis_idx_t>(vertex_indices(i, k));
     }
   }
   eptr[n_cells] = 3 * metis_idx_t(n_cells);
@@ -191,11 +192,13 @@ PartitionedGrid compute_partitioned_grid(
   std::vector<std::vector<int_t>> effective_stencils
       = compute_effective_stencils(stencils);
 
-  auto cell_partition
-      = compute_partition_full_stencil(grid, effective_stencils, n_parts);
+  auto cell_partition = compute_partition_full_stencil(
+      grid, effective_stencils, integer_cast<int>(n_parts));
+
   auto sigma = compute_cell_permutation(grid, cell_partition);
 
-  auto boundaries = compute_partition_boundaries(cell_partition, n_parts);
+  auto boundaries = compute_partition_boundaries(cell_partition,
+                                                 integer_cast<int>(n_parts));
 
   return PartitionedGrid{
       std::move(cell_partition), std::move(boundaries), std::move(sigma)};
@@ -345,8 +348,10 @@ extract_subgrid(const Grid &grid,
             vi_local2old.begin());
 
   std::sort(vi_local2old.begin(), vi_local2old.end());
-  vi_local2old.resize(std::unique(vi_local2old.begin(), vi_local2old.end())
-                      - vi_local2old.begin());
+
+  auto n_unique = std::unique(vi_local2old.begin(), vi_local2old.end())
+                   - vi_local2old.begin();
+  vi_local2old.resize(integer_cast<size_t>(n_unique));
 
   std::map<int_t, int_t> vi_old2local;
   for (int_t i = 0; i < vi_local2old.size(); ++i) {

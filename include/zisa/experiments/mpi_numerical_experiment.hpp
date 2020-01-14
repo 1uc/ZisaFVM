@@ -151,7 +151,10 @@ protected:
     auto partitioned_grid = partition_grid(full_grid, *stencils);
 
     auto [local_vertex_indices, local_vertices, local_stencils, halo]
-        = extract_subgrid(full_grid, *partitioned_grid, *stencils, mpi_rank);
+        = extract_subgrid(full_grid,
+                          *partitioned_grid,
+                          *stencils,
+                          integer_cast<int_t>(mpi_rank));
 
     if (mpi_rank == 0) {
       compute_full_renumbered_grid(full_grid);

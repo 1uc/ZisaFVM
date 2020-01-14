@@ -29,12 +29,10 @@ template <class T, int n_dims>
 void MPISingleNodeArrayGatherer<T, n_dims>::receive(
     const MPISingleNodeArrayGatherer::view_t &view) const {
   std::vector<zisa::mpi::Request> requests;
-  requests.reserve(comm_size);
+  requests.reserve(integer_cast<size_t>(comm_size));
 
-  auto n_ranks = integer_cast<int_t>(comm_size);
-
-  for (int_t sender_rank = 0; sender_rank < n_ranks; ++sender_rank) {
-    if (sender_rank != integer_cast<int_t>(rank)) {
+  for (int sender_rank = 0; sender_rank < comm_size; ++sender_rank) {
+    if (sender_rank != rank) {
       auto i0 = (*array_info).partition[sender_rank];
       auto i1 = (*array_info).partition[sender_rank + 1];
       auto sub_array = slice(view, i0, i1);
