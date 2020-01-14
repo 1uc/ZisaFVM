@@ -51,7 +51,7 @@ gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
 time = sc.Time(t_end=5.0)
-io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=100)
+io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20)
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
 radius = 0.6
@@ -75,7 +75,7 @@ def generate_grids():
     generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
 
 
-coarse_grid_levels = list(range(3, 4))
+coarse_grid_levels = list(range(2, 3))
 coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -214,8 +214,8 @@ def main():
         for c, r in all_runs:
             launch_all(c, force=args.force)
 
-            if args.reference:
-                launch_all(r, force=args.force)
+            # if args.reference:
+            #     launch_all(r, force=args.force)
 
     if args.post_process:
         for c, r in all_runs:

@@ -66,7 +66,7 @@ def load_grid(path):
     if os.path.isfile(path):
         return Grid(path)
     elif os.path.isdir(path):
-        return Grid(find_grid(directory))
+        return Grid(find_grid(path))
     else:
         raise Exception(f"Invalid path. [{path}]")
 
