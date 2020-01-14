@@ -92,7 +92,7 @@ protected:
                   std::move(vertex_indices_gbl),
                   quad_deg);
     }
-  };
+  }
 
   std::shared_ptr<PartitionedGrid>
   partition_grid(const Grid &full_grid,
@@ -186,8 +186,13 @@ protected:
     LOG_ERR("Implement first.");
   }
 
+  std::shared_ptr<StepRejection> choose_step_rejection() override {
+    // Only RejectNothing works without implementing more.
+    return std::dynamic_pointer_cast<RejectNothing>(
+        super::choose_step_rejection());
+  }
+
   std::shared_ptr<Visualization> choose_visualization() override {
-    //    return std::make_shared<NoVisualization>();
     auto single_node_vis = super::choose_visualization();
 
     auto array_info

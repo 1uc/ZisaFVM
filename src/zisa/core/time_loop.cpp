@@ -135,12 +135,11 @@ void TimeLoop::write_output(const AllVariables &all_variables) {
 }
 
 void TimeLoop::sanity_check(const AllVariables &all_variables) const {
-  // TODO enable checks.
-//  if (!(*is_sane)(all_variables)) {
-//    //    (*visualization)(all_variables, *simulation_clock);
-//    LOG_ERR(string_format("[%d] Values aren't plausible.\n",
-//                          simulation_clock->current_step()));
-//  }
+  if (!(*is_sane)(all_variables)) {
+    //    (*visualization)(all_variables, *simulation_clock);
+    LOG_ERR(string_format("[%d] Values aren't plausible.\n",
+                          simulation_clock->current_step()));
+  }
 }
 
 std::string TimeLoop::str() const {
