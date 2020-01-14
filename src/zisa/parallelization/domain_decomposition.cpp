@@ -6,6 +6,13 @@
 namespace zisa {
 using metis_idx_t = ::idx_t;
 
+PartitionedGrid::PartitionedGrid(array<int_t, 1> partition,
+                                 array<int_t, 1> boundaries,
+                                 array<int_t, 1> permutation)
+    : partition(std::move(partition)),
+      boundaries(std::move(boundaries)),
+      permutation(std::move(permutation)) {}
+
 array<int_t, 1>
 compute_partition_full_stencil(const Grid &grid,
                                const std::vector<std::vector<int_t>> &stencils,
@@ -38,8 +45,8 @@ compute_partition_full_stencil(const Grid &grid,
   int_t k_edge = 0;
   for (int_t i = 0; i < n_cells; ++i) {
     xadj[i] = k_edge;
-    for (int_t k = 0; k < graph[i].size(); ++k) {
-      adjncy[k_edge] = stencils[i][k];
+    for (int_t j : graph[i]) {
+      adjncy[k_edge] = j;
       k_edge += 1;
     }
   }
@@ -307,7 +314,7 @@ extract_subgrid(const Grid &grid,
   }
 
   for (int_t i = 0; i < n_cells_part; ++i) {
-    int_t i_old = sigma(boundaries[k_part] + i);
+    int_t i_old = local2old[i];
     local_stencils(i) = stencils(i_old);
 
     // and now the ones just outside.

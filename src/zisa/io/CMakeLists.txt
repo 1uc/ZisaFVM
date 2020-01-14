@@ -7,6 +7,7 @@ target_sources(zisa_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/gathered_visualization.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/hdf5_file.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/hdf5_serial_writer.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/mpi_progress_bar.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/no_visualization.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/progress_bar.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/scalar_plot.cpp

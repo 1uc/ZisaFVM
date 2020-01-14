@@ -17,6 +17,13 @@ public:
   virtual bool operator()(const AllVariables &all_variables) const = 0;
 };
 
+class NoSanityCheck : public SanityCheck {
+public:
+  bool operator()(const AllVariables &) const override {
+    return true;
+  }
+};
+
 } // namespace zisa
 
 #endif /* end of include guard: SANITY_CHECK_H_LPN4SI6H */

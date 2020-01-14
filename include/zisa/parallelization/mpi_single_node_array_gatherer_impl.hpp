@@ -3,6 +3,8 @@
 
 #include "mpi_single_node_array_gatherer_decl.hpp"
 
+#include <zisa/utils/integer_cast.hpp>
+
 namespace zisa {
 
 template <class T, int n_dims>
@@ -29,8 +31,10 @@ void MPISingleNodeArrayGatherer<T, n_dims>::receive(
   std::vector<zisa::mpi::Request> requests;
   requests.reserve(comm_size);
 
-  for (int_t sender_rank = 0; sender_rank < comm_size; ++sender_rank) {
-    if (sender_rank != rank) {
+  auto n_ranks = integer_cast<int_t>(comm_size);
+
+  for (int_t sender_rank = 0; sender_rank < n_ranks; ++sender_rank) {
+    if (sender_rank != integer_cast<int_t>(rank)) {
       auto i0 = (*array_info).partition[sender_rank];
       auto i1 = (*array_info).partition[sender_rank + 1];
       auto sub_array = slice(view, i0, i1);

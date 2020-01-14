@@ -8,9 +8,12 @@ GatheredVisualization::GatheredVisualization(
     std::shared_ptr<AllVariablesGatherer> all_vars_gatherer,
     std::shared_ptr<Visualization> visualization,
     const AllVariablesDimensions &all_var_dims)
-    : buffer(all_var_dims),
-      gatherer(std::move(all_vars_gatherer)),
-      visualization(std::move(visualization)) {}
+    : gatherer(std::move(all_vars_gatherer)),
+      visualization(std::move(visualization)) {
+
+  PRINT(all_var_dims);
+  buffer = AllVariables(all_var_dims);
+}
 
 GatheredVisualization::~GatheredVisualization() {
   if (job != nullptr && job->joinable()) {
@@ -24,7 +27,7 @@ void GatheredVisualization::do_visualization(
   LOG_ERR_IF(all_variables.avars.shape(1) != 0,
              "Implement advected variables first.");
 
-  if(gatherer->is_this_rank_gathering()) {
+  if (gatherer->is_this_rank_gathering()) {
     gatherer->copy_local_patch(buffer, all_variables);
 
     if (job != nullptr) {
@@ -35,8 +38,7 @@ void GatheredVisualization::do_visualization(
       gatherer->receive(buffer);
       (*visualization)(buffer, simulation_clock);
     });
-  }
-  else {
+  } else {
     gatherer->send(all_variables);
   }
 }

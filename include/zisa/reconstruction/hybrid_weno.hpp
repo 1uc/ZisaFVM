@@ -39,6 +39,11 @@ public:
              int_t i_cell,
              const HybridWENOParams &params);
 
+  HybridWENO(const std::shared_ptr<Grid> &grid,
+             StencilFamily stencil_family,
+             int_t i_cell,
+             const HybridWENOParams &params);
+
   auto local2global() const -> decltype(stencils.local2global());
   int_t combined_stencil_size() const;
 

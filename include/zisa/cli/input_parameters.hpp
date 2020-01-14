@@ -32,6 +32,12 @@ inline bool has_key(const InputParameters &params, const std::string &key) {
   return params.has_key(key);
 }
 
+inline bool is_mpi(const InputParameters &params) {
+  return has_key(params, "parallelization")
+         && has_key(params["parallelization"], "mode")
+         && params["parallelization"]["mode"] == "mpi";
+}
+
 } // namespace zisa
 
 #endif /* end of include guard */

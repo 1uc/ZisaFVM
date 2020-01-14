@@ -14,40 +14,25 @@ namespace zisa {
 
 class ProgressBar {
 public:
-  ProgressBar();
-  ProgressBar(int unit_size);
+  virtual ~ProgressBar() = default;
+
+  virtual void write_progress(std::ostream &out, const std::string &msg) = 0;
+  virtual void activate() = 0;
+  virtual void deactivate() = 0;
+  virtual void reset() = 0;
+};
+
+class SerialProgressBar : public ProgressBar {
+public:
+  SerialProgressBar();
+  explicit SerialProgressBar(int unit_size);
 
   /// Write progress into stream.
-  template <class Stream>
-  void write_progress(Stream &out, const std::string &msg) {
-    // if not active, do nothing.
-    if (!is_active) {
-      return;
-    }
+  void write_progress(std::ostream &out, const std::string &msg) override;
 
-    ++step;
-
-    if (step % unit_size == 0) {
-      out << unit_symbol;
-    }
-    if (step % (5 * unit_size) == 0) {
-      out << " ";
-    }
-    if (step % (10 * unit_size) == 0) {
-      auto elapsed = elapsed_seconds_since(t_start);
-      auto time_formatted = duration_format(elapsed);
-
-      out << " " << msg;
-      out << " (";
-      out << time_formatted;
-      out << "; " << step << ")\n";
-    }
-    out.flush();
-  }
-
-  inline void activate() { is_active = true; }
-  inline void deactivate() { is_active = false; }
-  void reset(void);
+  void activate() override;
+  void deactivate() override;
+  void reset() override;
 
 private:
   int unit_size = 100;

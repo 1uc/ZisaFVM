@@ -6,6 +6,10 @@
 #include <zisa/experiments/rayleigh_taylor.hpp>
 #include <zisa/experiments/shock_bubble.hpp>
 
+#ifdef ZISA_HAS_MPI
+#include <zisa/experiments/mpi_numerical_experiment.hpp>
+#endif
+
 namespace zisa {
 
 class NumericalExperimentFactory {
@@ -38,9 +42,22 @@ void NumericalExperimentFactory::register_generic(
 
 template <class Experiment>
 void NumericalExperimentFactory::register_simple(const key_type &key) {
+#ifndef ZISA_HAS_MPI
   register_generic(key, [](const InputParameters &params) {
     return std::make_unique<Experiment>(params);
   });
+#else
+  register_generic(
+      key,
+      [](const InputParameters &params)
+          -> std::unique_ptr<NumericalExperiment> {
+        if (is_mpi(params)) {
+          return std::make_unique<MPINumericalExperiment<Experiment>>(params);
+        } else {
+          return std::make_unique<Experiment>(params);
+        }
+      });
+#endif
 }
 
 bool NumericalExperimentFactory::is_good_key(const key_type &key) const {

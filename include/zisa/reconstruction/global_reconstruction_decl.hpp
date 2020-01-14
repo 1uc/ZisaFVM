@@ -8,6 +8,7 @@
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/reconstruction/hybrid_weno_params.hpp>
 #include <zisa/reconstruction/local_reconstruction.hpp>
+#include <zisa/reconstruction/stencil_family.hpp>
 #include <zisa/reconstruction/weno_poly.hpp>
 
 namespace zisa {
@@ -29,6 +30,12 @@ private:
 
 public:
   EulerGlobalReconstruction(std::shared_ptr<Grid> grid,
+                            const HybridWENOParams &params,
+                            const Equilibrium &eq,
+                            const Scaling &scaling);
+
+  EulerGlobalReconstruction(std::shared_ptr<Grid> grid,
+                            const array<StencilFamily, 1> &stencils,
                             const HybridWENOParams &params,
                             const Equilibrium &eq,
                             const Scaling &scaling);

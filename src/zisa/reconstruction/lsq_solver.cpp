@@ -9,8 +9,8 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil);
 
 void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
-                                        const Grid &grid,
-                                        const Stencil &stencil);
+                             const Grid &grid,
+                             const Stencil &stencil);
 
 void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
                                 const Grid &grid,

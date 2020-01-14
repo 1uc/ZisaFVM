@@ -109,6 +109,7 @@ std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
   auto sanity_check = choose_sanity_check();
   auto visualization = choose_visualization();
   auto cfl_condition = choose_cfl_condition();
+  auto progress_bar = choose_progress_bar();
 
   return std::make_shared<TimeLoop>(time_integration,
                                     instantaneous_physics,
@@ -116,7 +117,8 @@ std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
                                     simulation_clock,
                                     cfl_condition,
                                     sanity_check,
-                                    visualization);
+                                    visualization,
+                                    progress_bar);
 }
 
 std::shared_ptr<BoundaryCondition>
@@ -124,19 +126,20 @@ NumericalExperiment::choose_boundary_condition() {
   return std::make_shared<NoBoundaryCondition>();
 }
 
-EdgeRule NumericalExperiment::choose_edge_rule() {
-  LOG_ERR_IF(!has_key(params, "quadrature"), "Missing section 'quadrature'.");
-  LOG_ERR_IF(!has_key(params["quadrature"], "edge"), "Missing element 'edge'.");
+int_t NumericalExperiment::choose_volume_deg() const {
+  return params["quadrature"]["volume"];
+}
 
-  return cached_edge_quadrature_rule(params["quadrature"]["edge"]);
+EdgeRule NumericalExperiment::choose_edge_rule() {
+  return cached_edge_quadrature_rule(choose_edge_deg());
+}
+
+int_t NumericalExperiment::choose_edge_deg() const {
+  return params["quadrature"]["edge"];
 }
 
 TriangularRule NumericalExperiment::choose_volume_rule() {
-  LOG_ERR_IF(!has_key(params, "quadrature"), "Missing section 'quadrature'.");
-  LOG_ERR_IF(!has_key(params["quadrature"], "volume"),
-             "Missing element 'volume'.");
-
-  return cached_triangular_quadrature_rule(params["quadrature"]["volume"]);
+  return cached_triangular_quadrature_rule(choose_volume_deg());
 }
 
 std::shared_ptr<TimeIntegration>
@@ -182,6 +185,10 @@ NumericalExperiment::choose_instantaneous_physics() {
 
 std::shared_ptr<StepRejection> NumericalExperiment::choose_step_rejection() {
   return std::make_shared<RejectNothing>();
+}
+
+std::shared_ptr<ProgressBar> NumericalExperiment::choose_progress_bar() {
+  return std::make_shared<SerialProgressBar>(1);
 }
 
 } // namespace zisa

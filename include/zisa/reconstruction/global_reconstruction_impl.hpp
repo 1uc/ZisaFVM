@@ -35,6 +35,47 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
 }
 
 template <class Equilibrium, class RC, class Scaling>
+EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
+    std::shared_ptr<Grid> grid,
+    const array<StencilFamily, 1> &stencils,
+    const HybridWENOParams &params,
+    const Equilibrium &eq,
+    const Scaling &scaling)
+    : params(params),
+      rc(shape_t<1>{grid->n_cells}),
+      allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)) {
+
+  max_stencil_size = 0;
+
+  auto o1_stencil_params = StencilFamilyParams({1}, {"c"}, {1.0});
+
+  auto o1_params = HybridWENOParams({{1}, {"c"}, {1.0}},
+                                    {1.0}, params.epsilon, params.exponent);
+
+  for (int_t i = 0; i < grid->n_cells; ++i) {
+    if(stencils[i].size() == 1 && stencils[i].order() == 1) {
+      rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(grid,
+                                                            LocalEquilibrium(eq),
+                                                            RC(grid, stencils[i], i, o1_params),
+                                                            grid->cells(i),
+                                                            scaling);
+
+    }
+    else {
+      rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(
+          grid,
+          LocalEquilibrium(eq),
+          RC(grid, stencils[i], i, params),
+          grid->cells(i),
+          scaling);
+    }
+
+    max_stencil_size
+        = zisa::max(rc[i].combined_stencil_size(), max_stencil_size);
+  }
+}
+
+template <class Equilibrium, class RC, class Scaling>
 const LocalReconstruction<Equilibrium, RC, Scaling> &
 EulerGlobalReconstruction<Equilibrium, RC, Scaling>::operator()(int_t i) const {
   return rc(i);

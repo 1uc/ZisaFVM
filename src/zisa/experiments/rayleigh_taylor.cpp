@@ -11,10 +11,12 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
   int n_bumps = params["experiment"]["initial_conditions"]["n_bumps"];
 
   auto all_variables = compute_initial_conditions(amp, width, n_bumps);
-  auto steady_state = compute_initial_conditions(0.0, width, n_bumps);
 
-  auto writer = HDF5SerialWriter(file_name_generator->steady_state_filename);
-  save(writer, *steady_state, all_labels<euler_var_t>());
+  // TODO enable
+//  auto steady_state = compute_initial_conditions(0.0, width, n_bumps);
+//
+//  auto writer = HDF5SerialWriter(file_name_generator->steady_state_filename);
+//  save(writer, *steady_state, all_labels<euler_var_t>());
 
   return all_variables;
 }
@@ -58,7 +60,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
     double rho = rho_eq;
     double vx = v * zisa::cos(alpha);
     double vy = v * zisa::sin(alpha);
-    double p = p_eq;
+    double p = p_eq + 1.0 * zisa::exp(-zisa::pow<2>(r / width));
     double E = euler->energy(rho, vx, vy, p);
 
     return euler_var_t{rho, rho * vx, rho * vy, 0.0, E};
@@ -67,7 +69,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
   auto qr = choose_volume_rule();
   auto &u0 = all_variables->cvars;
 
-  zisa::for_each(triangles(*grid),
+  zisa::for_each(serial_policy{},  triangles(*grid),
                  [&u0, &ic, &qr](int_t i, const Triangle &tri) {
                    u0(i) = average(qr, ic, tri);
                  });

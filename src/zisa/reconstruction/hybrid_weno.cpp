@@ -31,6 +31,30 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
   }
 }
 
+HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
+                       StencilFamily stencil_family,
+                       int_t i_cell,
+                       const HybridWENOParams &params)
+    : stencils(std::move(stencil_family)),
+      lsq_solvers(grid, stencils),
+      polys(stencils.size()),
+      linear_weights(stencils.size()),
+      non_linear_weights(stencils.size()),
+      epsilon(params.epsilon),
+      exponent(params.exponent),
+      i_cell(i_cell) {
+
+  rhs = array<double, 2, row_major>(
+      shape_t<2>{stencils.combined_stencil_size(), WENOPoly::n_vars()});
+
+  auto tot = std::accumulate(
+      params.linear_weights.begin(), params.linear_weights.end(), 0.0);
+
+  for (int_t i = 0; i < linear_weights.size(); ++i) {
+    linear_weights[i] = params.linear_weights[i] / tot;
+  }
+}
+
 int_t HybridWENO::combined_stencil_size() const {
   return stencils.combined_stencil_size();
 }

@@ -46,16 +46,27 @@ void run_zisa(const std::string &mode, const zisa::InputParameters &params) {
 int main(int argc, char *argv[]) {
   signal(SIGSEGV, handler); // install our handler
 
+#if ZISA_HAS_MPI == 1
+  int requested = MPI_THREAD_MULTIPLE;
+  int provided = -1;
+
+  MPI_Init_thread(&argc, &argv, requested, &provided);
+  LOG_ERR_IF(requested > provided,
+             "MPI does not support the requested level of multi-threading.");
+#endif
+
 #if ZISA_HAS_OPENGL == 1
   glewExperimental = true;
-  if (!glfwInit()) {
-    std::cerr << "Failed to initialize GLFW.\n";
-    return -1;
-  }
+  auto glfw_status = glfwInit();
+  LOG_ERR_IF(!glfw_status, "Failed to initialize GLFW.\n");
 #endif
 
   auto [mode, input_parameters] = zisa::parse_command_line(argc, argv);
   run_zisa(mode, input_parameters);
+
+#if ZISA_HAS_MPI == 1
+  MPI_Finalize();
+#endif
 
   return EXIT_SUCCESS;
 }

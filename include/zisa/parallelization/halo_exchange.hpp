@@ -7,6 +7,7 @@
 namespace zisa {
 class HaloExchange {
 public:
+  virtual ~HaloExchange() = default;
   virtual void operator()(AllVariables &all_vars) = 0;
 };
 

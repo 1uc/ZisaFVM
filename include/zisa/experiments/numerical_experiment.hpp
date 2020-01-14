@@ -16,6 +16,8 @@
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/step_rejection.hpp>
 #include <zisa/ode/time_integration.hpp>
+#include <zisa/reconstruction/stencil_family.hpp>
+#include <zisa/reconstruction/stencil_family_params.hpp>
 
 namespace zisa {
 
@@ -37,6 +39,31 @@ protected:
 
   std::shared_ptr<Grid> choose_grid() const;
   virtual std::shared_ptr<Grid> compute_grid() const;
+
+  virtual std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const {
+    if (stencils_ == nullptr) {
+      auto grid = choose_grid();
+      stencils_ = compute_stencils(*grid);
+    }
+
+    return stencils_;
+  }
+
+  virtual std::shared_ptr<array<StencilFamily, 1>>
+  compute_stencils(const Grid &grid) const {
+    assert(grid_ != nullptr);
+
+    auto stencil_params = choose_stencil_params();
+
+    return std::make_shared<array<StencilFamily, 1>>(
+        compute_stencil_families(grid, stencil_params));
+  }
+
+  virtual StencilFamilyParams choose_stencil_params() const {
+    const auto &rc_params = params["reconstruction"];
+    return StencilFamilyParams(
+        rc_params["orders"], rc_params["biases"], rc_params["overfit_factors"]);
+  }
 
   virtual void print_grid_info();
 
@@ -73,17 +100,22 @@ protected:
   virtual EdgeRule choose_edge_rule();
   virtual TriangularRule choose_volume_rule();
 
+  int_t choose_volume_deg() const;
+  int_t choose_edge_deg() const;
+
   virtual std::shared_ptr<TimeIntegration> choose_time_integration();
   virtual std::shared_ptr<SimulationClock> choose_simulation_clock();
   virtual std::shared_ptr<BoundaryCondition> choose_boundary_condition();
   virtual std::shared_ptr<TimeLoop> choose_time_loop();
+  virtual std::shared_ptr<ProgressBar> choose_progress_bar();
 
 protected:
   InputParameters params;
   std::shared_ptr<FileNameGenerator> file_name_generator;
 
-private:
+protected:
   mutable std::shared_ptr<Grid> grid_;
+  mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
 };
 
 } // namespace zisa

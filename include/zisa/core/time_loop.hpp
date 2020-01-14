@@ -30,7 +30,8 @@ public:
            const std::shared_ptr<SimulationClock> &simulation_clock,
            const std::shared_ptr<CFLCondition> &cfl_condition,
            const std::shared_ptr<SanityCheck> &sanity_check,
-           const std::shared_ptr<Visualization> &visualization);
+           const std::shared_ptr<Visualization> &visualization,
+           const std::shared_ptr<ProgressBar> &progress_bar);
 
   virtual ~TimeLoop() = default;
 
@@ -67,8 +68,7 @@ protected:
   std::shared_ptr<Visualization> visualization;
   std::shared_ptr<CFLCondition> cfl_condition;
   std::shared_ptr<SanityCheck> is_sane;
-
-  ProgressBar progress_bar;
+  std::shared_ptr<ProgressBar> progress_bar;
 
   time_stamp_t start_time;
   time_stamp_t end_time;

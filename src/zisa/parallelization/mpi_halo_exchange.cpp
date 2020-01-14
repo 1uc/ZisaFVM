@@ -1,3 +1,4 @@
+#include <zisa/io/format_as_list.hpp>
 #include <zisa/parallelization/mpi_halo_exchange.hpp>
 
 namespace zisa {
@@ -5,37 +6,37 @@ namespace zisa {
 std::vector<std::pair<int, size_t>>
 exchange_sizes(const std::vector<std::pair<int, size_t>> &bytes_to_send,
                const MPI_Comm &mpi_comm) {
-    auto mpi_rank = zisa::mpi::rank(mpi_comm);
-    auto mpi_ranks = zisa::mpi::size(mpi_comm);
-    std::vector<size_t> send_buffer(mpi_ranks, size_t(0));
+  auto mpi_rank = zisa::mpi::rank(mpi_comm);
+  auto mpi_ranks = zisa::mpi::size(mpi_comm);
+  std::vector<size_t> send_buffer(mpi_ranks, size_t(0));
 
-    for (const auto &[rank, size] : bytes_to_send) {
-        send_buffer[rank] = size;
+  for (const auto &[rank, size] : bytes_to_send) {
+    send_buffer[rank] = size;
+  }
+
+  std::vector<size_t> recv_buffer(mpi_ranks);
+  for (int i = 0; i < mpi_ranks; ++i) {
+    auto status = MPI_Scatter(send_buffer.data(),
+                              sizeof(size_t),
+                              MPI_BYTE,
+                              (void *)&recv_buffer[i],
+                              sizeof(size_t),
+                              MPI_BYTE,
+                              i,
+                              mpi_comm);
+    LOG_ERR_IF(status != MPI_SUCCESS,
+               string_format(
+                   "MPI_Scatter failed (root = %d). [%d]", mpi_rank, status));
+  }
+
+  std::vector<std::pair<int, size_t>> bytes_to_receive;
+  for (int i = 0; i < mpi_ranks; ++i) {
+    if (recv_buffer[i] != 0) {
+      bytes_to_receive.emplace_back(i, recv_buffer[i]);
     }
+  }
 
-    std::vector<size_t> recv_buffer(mpi_ranks);
-    for (int i = 0; i < mpi_ranks; ++i) {
-        auto status = MPI_Scatter(send_buffer.data(),
-                                  sizeof(size_t),
-                                  MPI_BYTE,
-                                  (void *)&recv_buffer[i],
-                                  sizeof(size_t),
-                                  MPI_BYTE,
-                                  i,
-                                  mpi_comm);
-        LOG_ERR_IF(status != MPI_SUCCESS,
-                   string_format(
-                           "MPI_Scatter failed (root = %d). [%d]", mpi_rank, status));
-    }
-
-    std::vector<std::pair<int, size_t>> bytes_to_receive;
-    for (int i = 0; i < mpi_ranks; ++i) {
-        if (recv_buffer[i] != 0) {
-            bytes_to_receive.emplace_back(i, recv_buffer[i]);
-        }
-    }
-
-    return bytes_to_receive;
+  return bytes_to_receive;
 }
 
 std::vector<HaloRemoteInfo>
@@ -58,6 +59,7 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
   // Post all receives
   std::vector<HaloRemoteInfo> received_remote_info;
   std::vector<zisa::mpi::Request> recv_requests;
+  recv_requests.reserve(bytes_to_receive.size());
   for (auto [rank, size] : bytes_to_receive) {
     int_t n_cells_halo = size / sizeof(int_t);
     received_remote_info.emplace_back(
@@ -69,9 +71,10 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
   }
 
   std::vector<zisa::mpi::Request> send_requests;
+  send_requests.reserve(send_requests.size());
   for (const auto &r : remote_info) {
-    send_requests.push_back(
-        zisa::mpi::isend(array_const_view(r.cell_indices), r.receiver_rank, xfer_tag, mpi_comm));
+    send_requests.push_back(zisa::mpi::isend(
+        array_const_view(r.cell_indices), r.receiver_rank, xfer_tag, mpi_comm));
   }
 
   zisa::mpi::wait_all(send_requests);
@@ -81,7 +84,8 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
 }
 
 HaloSendPart::HaloSendPart(HaloRemoteInfo remote_info)
-    : remote_info(std::move(remote_info)), send_request(nullptr) {}
+    : remote_info(std::move(remote_info)),
+      send_request(nullptr) {}
 
 void HaloSendPart::send(const array_const_view<T, n_dims, row_major> &out_data,
                         int tag) {
@@ -91,6 +95,7 @@ void HaloSendPart::send(const array_const_view<T, n_dims, row_major> &out_data,
 
   auto receiver = remote_info.receiver_rank;
   auto const_view = array_const_view(send_buffer);
+
   send_request = zisa::mpi::isend(const_view, receiver, tag, mpi_comm);
 }
 
@@ -128,6 +133,7 @@ HaloReceivePart::receive(array_view<T, n_dims, row_major> &in_data, int tag) {
 
 MPIHaloExchange::MPIHaloExchange(std::vector<HaloRemoteInfo> remote_info,
                                  const std::vector<HaloLocalInfo> &local_info) {
+
   send_parts.reserve(remote_info.size());
   for (auto &r : remote_info) {
     send_parts.emplace_back(std::move(r));

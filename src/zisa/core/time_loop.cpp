@@ -21,7 +21,8 @@ TimeLoop::TimeLoop(
     const std::shared_ptr<SimulationClock> &simulation_clock,
     const std::shared_ptr<CFLCondition> &cfl_condition,
     const std::shared_ptr<SanityCheck> &sanity_check,
-    const std::shared_ptr<Visualization> &visualization)
+    const std::shared_ptr<Visualization> &visualization,
+    const std::shared_ptr<ProgressBar> &progress_bar)
     : time_integration(time_integration),
       instantaneous_physics(instantaneous_physics),
       step_rejection(step_rejection),
@@ -29,15 +30,16 @@ TimeLoop::TimeLoop(
       visualization(visualization),
       cfl_condition(cfl_condition),
       is_sane(sanity_check),
-      progress_bar(1) {}
+      progress_bar(progress_bar) {}
 
-std::shared_ptr<AllVariables> TimeLoop::
-operator()(std::shared_ptr<AllVariables> u0) {
+std::shared_ptr<AllVariables>
+TimeLoop::operator()(std::shared_ptr<AllVariables> u0) {
   start_timer();
   print_welcome_message();
-  progress_bar.reset();
+  progress_bar->reset();
 
-  write_output(*u0);
+  (*visualization)(*u0, *simulation_clock);
+  //  write_output(*u0);
   sanity_check(*u0);
 
   pick_time_step(*u0);
@@ -98,8 +100,8 @@ void TimeLoop::print_welcome_message() const {
 }
 
 void TimeLoop::print_progress_message() {
-  progress_bar.write_progress(std::cout,
-                              simulation_clock->compact_progess_string());
+  progress_bar->write_progress(std::cout,
+                               simulation_clock->compact_progess_string());
 }
 
 void TimeLoop::print_goodbye_message() const {
@@ -133,11 +135,12 @@ void TimeLoop::write_output(const AllVariables &all_variables) {
 }
 
 void TimeLoop::sanity_check(const AllVariables &all_variables) const {
-  if (!(*is_sane)(all_variables)) {
-    (*visualization)(all_variables, *simulation_clock);
-    LOG_ERR(string_format("[%d] Values aren't plausible.\n",
-                          simulation_clock->current_step()));
-  }
+  // TODO enable checks.
+//  if (!(*is_sane)(all_variables)) {
+//    //    (*visualization)(all_variables, *simulation_clock);
+//    LOG_ERR(string_format("[%d] Values aren't plausible.\n",
+//                          simulation_clock->current_step()));
+//  }
 }
 
 std::string TimeLoop::str() const {

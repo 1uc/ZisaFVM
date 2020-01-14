@@ -275,6 +275,7 @@ template <class EOS, class Gravity>
 template <class Equilibrium, class RC, class RCParams>
 auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
     const RCParams &rc_params) -> decltype(auto) {
+
   auto hybrid_weno_params
       = HybridWENOParams(StencilFamilyParams(rc_params["orders"],
                                              rc_params["biases"],
@@ -284,11 +285,12 @@ auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
                          rc_params["smoothness_indicator"]["exponent"]);
 
   auto grid = choose_grid();
+  auto stencils = choose_stencils();
   auto eq = Equilibrium(euler);
   auto scaling = EulerScaling(euler);
   return std::make_shared<
       EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>(
-      grid, hybrid_weno_params, eq, scaling);
+      grid, *stencils, hybrid_weno_params, eq, scaling);
 }
 
 } // namespace zisa
