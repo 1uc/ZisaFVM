@@ -53,6 +53,7 @@ protected:
   virtual void print_welcome_message() const;
   virtual void print_progress_message();
   virtual void print_goodbye_message() const;
+  virtual void print(const std::string &str) const;
 
   virtual void sanity_check(const AllVariables &all_variables) const;
   virtual void pick_time_step(const AllVariables &all_variables);

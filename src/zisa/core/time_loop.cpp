@@ -12,6 +12,10 @@
 #include <zisa/model/all_variables.hpp>
 #include <zisa/model/sanity_check.hpp>
 
+#if ZISA_HAS_MPI == 1
+#include <zisa/parallelization/mpi.hpp>
+#endif
+
 namespace zisa {
 
 TimeLoop::TimeLoop(
@@ -86,17 +90,20 @@ void TimeLoop::post_update(AllVariables &u0) {
 }
 
 void TimeLoop::print_welcome_message() const {
-  std::string date = date_format(time(nullptr));
+  std::stringstream ss;
 
+  std::string date = date_format(time(nullptr));
   if (simulation_clock->current_time() == 0.0) {
-    std::cout << "-------- New run --------- \n";
+    ss << "-------- New run --------- \n";
   } else {
-    std::cout << "-------- Continued run --------- \n";
+    ss << "-------- Continued run --------- \n";
   }
-  std::cout << "     Date: " << date << "\n";
-  std::cout << "-------- Solver --------\n";
-  std::cout << str() << "\n";
-  std::cout << "------------------------\n";
+  ss << "     Date: " << date << "\n";
+  ss << "-------- Solver --------\n";
+  ss << str() << "\n";
+  ss << "------------------------\n";
+
+  print(ss.str());
 }
 
 void TimeLoop::print_progress_message() {
@@ -105,24 +112,40 @@ void TimeLoop::print_progress_message() {
 }
 
 void TimeLoop::print_goodbye_message() const {
-  std::cout << "\n ---- ----- ----\n";
-  std::cout << "total steps: " << simulation_clock->current_step() << "\n";
-  std::cout << " final time: " << simulation_clock->current_time() << "\n";
+  std::stringstream ss;
+
+  ss << "\n ---- ----- ----\n";
+  ss << "total steps: " << simulation_clock->current_step() << "\n";
+  ss << " final time: " << simulation_clock->current_time() << "\n";
 
   std::string date = date_format(time(nullptr));
 
   auto elapsed = elapsed_seconds(end_time, start_time);
   std::string duration = duration_format(elapsed);
 
-  std::cout << "-------------------------- \n";
-  std::cout << "     Date: " << date << "\n";
-  std::cout << " Duration: " << duration << "\n";
+  ss << "-------------------------- \n";
+  ss << "     Date: " << date << "\n";
+  ss << " Duration: " << duration << "\n";
   if (simulation_clock->is_interrupted()) {
-    std::cout << "-------- to be continued --------- \n";
+    ss << "-------- to be continued --------- \n";
   } else {
-    std::cout << "-------- End of run --------- \n";
+    ss << "-------- End of run --------- \n";
   }
+
+  print(ss.str());
 }
+
+void TimeLoop::print(const std::string &str) const {
+#if ZISA_HAS_MPI == 1
+  static int mpi_rank = zisa::mpi::rank(MPI_COMM_WORLD);
+  if(mpi_rank == 0) {
+    std::cout << str;
+  }
+#else
+  std::cout << str;
+#endif
+}
+
 
 void TimeLoop::start_timer() { start_time = current_time_stamp(); }
 
