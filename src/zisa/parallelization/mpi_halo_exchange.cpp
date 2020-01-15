@@ -8,21 +8,24 @@ exchange_sizes(const std::vector<std::pair<int, size_t>> &bytes_to_send,
                const MPI_Comm &mpi_comm) {
   auto mpi_rank = zisa::mpi::rank(mpi_comm);
   auto mpi_ranks = zisa::mpi::size(mpi_comm);
-  std::vector<size_t> send_buffer(mpi_ranks, size_t(0));
+
+  auto n_ranks = integer_cast<size_t>(mpi_ranks);
+
+  std::vector<size_t> send_buffer(n_ranks, size_t(0));
 
   for (const auto &[rank, size] : bytes_to_send) {
-    send_buffer[rank] = size;
+    send_buffer[integer_cast<size_t>(rank)] = size;
   }
 
-  std::vector<size_t> recv_buffer(mpi_ranks);
-  for (int i = 0; i < mpi_ranks; ++i) {
+  std::vector<size_t> recv_buffer(n_ranks);
+  for (size_t i = 0; i < n_ranks; ++i) {
     auto status = MPI_Scatter(send_buffer.data(),
                               sizeof(size_t),
                               MPI_BYTE,
                               (void *)&recv_buffer[i],
                               sizeof(size_t),
                               MPI_BYTE,
-                              i,
+                              integer_cast<int>(i),
                               mpi_comm);
     LOG_ERR_IF(status != MPI_SUCCESS,
                string_format(
@@ -30,7 +33,7 @@ exchange_sizes(const std::vector<std::pair<int, size_t>> &bytes_to_send,
   }
 
   std::vector<std::pair<int, size_t>> bytes_to_receive;
-  for (int i = 0; i < mpi_ranks; ++i) {
+  for (size_t i = 0; i < n_ranks; ++i) {
     if (recv_buffer[i] != 0) {
       bytes_to_receive.emplace_back(i, recv_buffer[i]);
     }
