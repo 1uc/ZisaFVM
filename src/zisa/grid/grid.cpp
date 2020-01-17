@@ -639,16 +639,20 @@ double Grid::characteristic_length(int_t i) const { return circum_radii[i]; }
 std::string Grid::str() const {
   double dx_min = smallest_inradius(*this);
   double dx_max = largest_circum_radius(*this);
+
   return string_format("n_cells : %d\n"
                        "n_vertices : %d\n"
                        "n_edges : %d\n"
                        "dx_min : %e\n"
-                       "dx_max : %e\n",
+                       "dx_max : %e\n"
+                       "memory : %.2e GB\n",
                        n_cells,
                        n_vertices,
                        n_edges,
                        dx_min,
-                       dx_max);
+                       dx_max,
+                       double(size_in_bytes()) * 1e-9
+                       );
 }
 
 template <class Predicate, class Ranking>
@@ -872,6 +876,23 @@ const XYZ &Grid::face_center(int_t i, int_t k) const {
 int Grid::n_dims() const {
   // FIXME only correct if triangles and tetrahedra are the only elements.
   return (max_neighbours == 3 ? 2 : 3);
+}
+
+size_t Grid::size_in_bytes() const {
+  return vertex_indices.size() * sizeof(vertex_indices[0])
+         + edge_indices.size() * sizeof(edge_indices[0])
+         + left_right.size() * sizeof(left_right[0])
+         + neighbours.size() * sizeof(neighbours[0])
+         + is_valid.size() * sizeof(is_valid[0])
+         + vertices.size() * sizeof(vertices[0])
+         + cell_centers.size() * sizeof(cell_centers[0])
+         + face_centers.size() * sizeof(face_centers[0])
+         + cells.size() * sizeof(cells[0]) + faces.size() * sizeof(faces[0])
+         + volumes.size() * sizeof(volumes[0])
+         + inradii.size() * sizeof(inradii[0])
+         + circum_radii.size() * sizeof(circum_radii[0])
+         + normals.size() * sizeof(normals[0])
+         + tangentials.size() * sizeof(tangentials[0]);
 }
 
 array<double, 1>

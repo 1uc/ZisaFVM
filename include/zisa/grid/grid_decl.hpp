@@ -49,6 +49,8 @@ struct Grid {
 
   array<array<double, 1>, 1> normalized_moments;
 
+  size_t size_in_bytes() const;
+
   Grid() = default;
 
   /// Generate a grid optionally with quadrature rules.
