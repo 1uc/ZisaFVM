@@ -110,12 +110,14 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
 
 array<int_t, 1>
 compute_cell_permutation(const Grid &grid,
-                         const array<int_t, 1> &cell_partition) {
+                         const array_const_view<int_t, 1> &cell_partition) {
 
   assert(grid.n_cells < int_t(std::numeric_limits<int>::max));
 
   auto n_cells = grid.n_cells;
-  auto cell_mini_partitions = compute_partitions_mesh(grid, int(n_cells) / 16);
+
+  int n_mini_patches = zisa::max(2, int(n_cells) / 512);
+  auto cell_mini_partitions = compute_partitions_mesh(grid, n_mini_patches);
 
   array<int_t, 1> sigma(n_cells);
   for_each(flat_range(sigma), [&sigma](int_t i) { sigma[i] = i; });
