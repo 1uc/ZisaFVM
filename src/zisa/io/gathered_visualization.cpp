@@ -11,7 +11,6 @@ GatheredVisualization::GatheredVisualization(
     : gatherer(std::move(all_vars_gatherer)),
       visualization(std::move(visualization)) {
 
-  PRINT(all_var_dims);
   buffer = AllVariables(all_var_dims);
 }
 

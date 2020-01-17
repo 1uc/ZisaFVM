@@ -15,6 +15,6 @@ namespace zisa {
  */
 std::string exec(const std::string &cmd);
 
-} // namespace tyr
+}
 
 #endif /* end of include guard: EXEC_H_GIT5YS0K */

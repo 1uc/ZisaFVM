@@ -15,6 +15,6 @@ namespace zisa {
  */
 std::string backtrace(void);
 
-} // namespace tyr
+}
 
 #endif /* end of include guard: BACKTRACE_H_DMH02QWB */

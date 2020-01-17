@@ -10,5 +10,5 @@ class GridVariables;
 struct AllVariablesDimensions;
 class AllVariables;
 
-} // namespace tyr
+}
 #endif /* end of include guard: ALL_VARIABLES_FWD_H_WCNVRL92 */
