@@ -80,7 +80,7 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
   auto nn = metis_idx_t(n_vertices);
 
   array<metis_idx_t, 1> eptr(n_cells + 1);
-  array<metis_idx_t, 1> eind({n_cells * max_neighbours});
+  array<metis_idx_t, 1> eind(shape_t<1>{n_cells * max_neighbours});
 
   for (int_t i = 0; i < n_cells; ++i) {
     eptr[i] = 3 * metis_idx_t(i);
@@ -96,8 +96,8 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
   auto nparts = metis_idx_t(n_parts);
 
   metis_idx_t objval;
-  array<metis_idx_t, 1> epart({n_cells});
-  array<metis_idx_t, 1> npart({n_vertices});
+  array<metis_idx_t, 1> epart(shape_t<1>{n_cells});
+  array<metis_idx_t, 1> npart(shape_t<1>{n_vertices});
 
   // clang-format off
   METIS_PartMeshDual(&ne, &nn, eptr.raw(), eind.raw(), nullptr, nullptr,
@@ -310,7 +310,7 @@ extract_subgrid(const Grid &grid,
 
   int_t n_cells_halo = i_end - n_cells_part;
 
-  array<StencilFamily, 1> local_stencils({n_cells_part + n_cells_halo});
+  array<StencilFamily, 1> local_stencils(shape_t<1>{n_cells_part + n_cells_halo});
   for (int_t i = n_cells_part; i < n_cells_part + n_cells_halo; ++i) {
     int_t i_old = local2old[i];
     local_stencils[i] = StencilFamily(grid, i_old, {{1}, {"c"}, {1.0}});
