@@ -19,7 +19,9 @@ auto max(omp_policy, const Range &range, const Transform &transform) {
   using ret_type = detail::return_t<Range, Transform>;
   ret_type ret = std::numeric_limits<ret_type>::lowest();
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel for reduction(max : ret)
+#endif
   for (int_t i = i_start; i < i_end; ++i) {
     if constexpr (range_traits<Range>::has_item) {
       ret = zisa::max(ret, transform(i, range.item(i)));

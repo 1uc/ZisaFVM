@@ -92,11 +92,15 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
     const AllVariables &current_state) {
   auto n_cells = current_state.cvars.shape(0);
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel
+#endif
   {
     auto qbar_local = allocator->allocate(shape_t<1>{max_stencil_size});
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp for ZISA_OMP_FOR_SCHEDULE_DEFAULT
+#endif
     for (int_t i = 0; i < n_cells; ++i) {
       set_qbar_local(*qbar_local, current_state, i);
       rc[i].compute(*qbar_local);

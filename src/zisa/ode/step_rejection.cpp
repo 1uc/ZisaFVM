@@ -19,7 +19,9 @@ void RejectLargeDensityChange::check(const AllVariables &all_vars0,
   int_t n_cells = u0.shape(0);
 
   bool is_this_step_good = true;
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel for reduction(&& : is_this_step_good)
+#endif
   for (int_t i = 0; i < n_cells; ++i) {
     if (zisa::abs(u0(i, 0) - u1(i, 0)) > drho_crit_rel * u0(i, 0)) {
       is_this_step_good = false;

@@ -12,7 +12,9 @@ void for_each(omp_policy, const Range &range, const Body &body) {
   auto i0 = range.start_index();
   auto i_end = range.end_index();
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
+#endif
   for (auto i = i0; i < i_end; ++i) {
     if constexpr (range_traits<Range>::has_item) {
       body(i, range.item(i));

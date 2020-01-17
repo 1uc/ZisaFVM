@@ -61,7 +61,9 @@ double RadialPoissonSolver::layer_mass(const Rho &rho,
   double rho_avg = 0.0;
   double volume_shell = 0.0;
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel for reduction(+ : rho_avg)
+#endif
   for (int_t i_loc = 0; i_loc < n_cells_per_layer; ++i_loc) {
     int_t i = cell_indices[layer][i_loc];
 

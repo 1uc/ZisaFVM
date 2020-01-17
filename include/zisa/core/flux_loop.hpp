@@ -36,7 +36,9 @@ public:
 
     auto n_interior_edges = grid->n_interior_edges;
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel for ZISA_OMP_FOR_SCHEDULE_DEFAULT
+#endif
     for (int_t e = 0; e < n_interior_edges; ++e) {
       auto face = grid->faces(e);
 
@@ -62,11 +64,15 @@ public:
 
       for (int_t k = 0; k < cvars_t::size(); ++k) {
         auto nfL = nf(k) / grid->volumes(iL);
+#if ZISA_HAS_OPENMP == 1
 #pragma omp atomic
+#endif
         tendency.cvars(iL, k) -= nfL;
 
         auto nfR = nf(k) / grid->volumes(iR);
+#if ZISA_HAS_OPENMP == 1
 #pragma omp atomic
+#endif
         tendency.cvars(iR, k) += nfR;
       }
     }
