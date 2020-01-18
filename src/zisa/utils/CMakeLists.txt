@@ -1,7 +1,7 @@
-target_sources(zisa_obj
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/indent_block.cpp
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/logging.cpp
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/parse_duration.cpp
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/replace_all.cpp
+target_sources(zisa_generic_obj
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/indent_block.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/logging.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/parse_duration.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/replace_all.cpp
 )
 

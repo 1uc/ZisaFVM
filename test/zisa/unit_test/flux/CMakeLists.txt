@@ -1,4 +1,4 @@
 target_sources(unit_tests
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/hllc.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hllc.cpp
 )
 

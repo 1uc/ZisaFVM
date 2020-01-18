@@ -1,6 +1,7 @@
 #ifndef ZISA_MPI_NUMERICAL_EXPERIMENT_HPP
 #define ZISA_MPI_NUMERICAL_EXPERIMENT_HPP
 
+#if ZISA_HAS_MPI == 1
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/cli/input_parameters.hpp>
 #include <zisa/io/gathered_visualization.hpp>
@@ -259,5 +260,22 @@ protected:
   mutable std::shared_ptr<HaloExchange> halo_exchange_ = nullptr;
 };
 }
+#else
+#include <zisa/cli/input_parameters.hpp>
 
+namespace zisa {
+
+template <class NMExp>
+class MPINumericalExperiment : public NMExp {
+private:
+  using super = NMExp;
+
+public:
+  explicit MPINumericalExperiment(const InputParameters &) {
+    LOG_ERR("MPI requested, but not build with `-DZISA_HAS_MPI=1`.");
+  }
+};
+}
+
+#endif
 #endif // ZISA_MPI_NUMERICAL_EXPERIMENT_HPP

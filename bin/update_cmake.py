@@ -8,13 +8,13 @@ import os.path
 SUFFIXES = [".c", ".C", ".cpp", ".c++"]
 
 
-def find_files(folder, suffix):
+def find_files(folder):
     files = sum((glob.glob("{}*{}".format(folder, s)) for s in SUFFIXES), [])
     return [os.path.basename(f) for f in sorted(files)]
 
 
 def find_source_files(folder):
-    return find_files(folder, ".cpp")
+    return find_files(folder)
 
 
 def find_subdirectories(folder):
@@ -25,7 +25,8 @@ def find_subdirectories(folder):
 def format_sources(target, sources):
     ret = ""
 
-    line_pattern = "  PRIVATE ${{CMAKE_CURRENT_LIST_DIR}}/{:s}\n"
+    line_pattern = "  PUBLIC ${{CMAKE_CURRENT_LIST_DIR}}/{:s}\n"
+
     if sources:
         ret += "".join(
             [
@@ -56,16 +57,39 @@ def append_to_file(filename, text):
         f.write(text)
 
 
-def recurse(base_directory, target):
+def recurse(base_directory, targets):
     cmake_file = base_directory + "CMakeLists.txt"
     remove_file(cmake_file)
 
     source_files = find_source_files(base_directory)
-    append_to_file(cmake_file, format_sources(target, source_files))
+
+    for dependency, target in targets.items():
+        filtered_sources = list(filter(select_for(dependency), source_files))
+        append_to_file(cmake_file, format_sources(target, filtered_sources))
 
     for d in find_subdirectories(base_directory):
-        recurse(d, target)
+        recurse(d, targets)
         append_to_file(cmake_file, add_subdirectory(base_directory + d))
+
+
+def is_mpi_file(path):
+    filename = os.path.basename(path)
+    return filename.startswith("mpi_") or filename == "mpi.cpp"
+
+
+def is_generic_file(path):
+    return not is_mpi_file(path)
+
+
+def select_for(dependency):
+    if dependency == "mpi":
+        return is_mpi_file
+
+    elif dependency == "generic":
+        return is_generic_file
+
+    else:
+        raise Exception(f"Unknown dependency. [{dependency}]")
 
 
 def add_executable(cmake_file, target, source_file):
@@ -86,12 +110,12 @@ if __name__ == "__main__":
 
     base_directory = "src/"
     for d in find_subdirectories(base_directory):
-        recurse(d, "zisa_obj")
+        recurse(d, {"generic": "zisa_generic_obj", "mpi": "zisa_mpi_obj"})
         append_to_file(cmake_file, add_subdirectory(base_directory + d))
 
     add_executable(cmake_file, "zisa", "zisa.cpp")
     add_executable(cmake_file, "domain-decomposition", "domain_decomposition.cpp")
     add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
 
-    recurse("test/", "unit_tests")
-    recurse("benchmarks/", "micro_benchmarks")
+    recurse("test/", {"generic": "unit_tests"})
+    recurse("benchmarks/", {"generic": "micro_benchmarks"})

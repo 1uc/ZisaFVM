@@ -1,3 +1,4 @@
+#if ZISA_HAS_MPI == 1
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
@@ -221,3 +222,10 @@ int main(int argc, char *argv[]) {
 
   MPI_Finalize();
 }
+
+#else
+#include <zisa/config.hpp>
+int main() {
+  LOG_ERR("Must be compiled with `-DZISA_HAS_MPI=1`.");
+}
+#endif

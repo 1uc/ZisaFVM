@@ -1,5 +1,5 @@
-target_sources(zisa_obj
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/halo_exchange_bc.cpp
-  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/no_boundary_condition.cpp
+target_sources(zisa_generic_obj
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/halo_exchange_bc.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/no_boundary_condition.cpp
 )
 

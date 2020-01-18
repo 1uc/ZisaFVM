@@ -42,11 +42,7 @@ void NumericalExperimentFactory::register_generic(
 
 template <class Experiment>
 void NumericalExperimentFactory::register_simple(const key_type &key) {
-#ifndef ZISA_HAS_MPI
-  register_generic(key, [](const InputParameters &params) {
-    return std::make_unique<Experiment>(params);
-  });
-#else
+#if ZISA_HAS_MPI == 1
   register_generic(
       key,
       [](const InputParameters &params)
@@ -57,6 +53,10 @@ void NumericalExperimentFactory::register_simple(const key_type &key) {
           return std::make_unique<Experiment>(params);
         }
       });
+#else
+  register_generic(key, [](const InputParameters &params) {
+    return std::make_unique<Experiment>(params);
+  });
 #endif
 }
 
