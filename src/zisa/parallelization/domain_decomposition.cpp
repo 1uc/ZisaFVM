@@ -315,7 +315,8 @@ extract_subgrid(const Grid &grid,
 
   int_t n_cells_halo = i_end - n_cells_part;
 
-  array<StencilFamily, 1> local_stencils(shape_t<1>{n_cells_part + n_cells_halo});
+  array<StencilFamily, 1> local_stencils(
+      shape_t<1>{n_cells_part + n_cells_halo});
   for (int_t i = n_cells_part; i < n_cells_part + n_cells_halo; ++i) {
     int_t i_old = local2old[i];
     local_stencils[i] = StencilFamily(grid, i_old, {{1}, {"c"}, {1.0}});
@@ -355,7 +356,7 @@ extract_subgrid(const Grid &grid,
   std::sort(vi_local2old.begin(), vi_local2old.end());
 
   auto n_unique = std::unique(vi_local2old.begin(), vi_local2old.end())
-                   - vi_local2old.begin();
+                  - vi_local2old.begin();
   vi_local2old.resize(integer_cast<size_t>(n_unique));
 
   std::map<int_t, int_t> vi_old2local;
