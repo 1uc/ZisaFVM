@@ -4,6 +4,8 @@ import os
 import shutil
 import glob
 
+from datetime import timedelta
+
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -23,6 +25,7 @@ from tiwaz.post_process import find_steady_state_file
 from tiwaz.tri_plot import tri_plot
 from tiwaz.scatter_plot import scatter_plot
 from tiwaz.gmsh import generate_circular_grids
+from tiwaz.queue_args import MPIQueueArgs
 
 
 class RayleighTaylorExperiment(sc.Subsection):
@@ -55,7 +58,7 @@ io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20)
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
 radius = 0.6
-mesh_levels = list(range(0, 4))
+mesh_levels = list(range(0, 6))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 
@@ -75,7 +78,32 @@ def generate_grids():
     generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
 
 
-coarse_grid_levels = list(range(2, 3))
+class ScaledWorkEstimate:
+    """Estimates the parallelizable work and time required by one CPU. """
+
+    def __init__(
+        self, w0, n_dims, t0, t_min=timedelta(minutes=1), t_max=timedelta(days=1)
+    ):
+        self.n_dims = n_dims
+        self.w0, self.t0 = w0, t0
+        self.t_min, self.t_max = t_min, t_max
+
+    def cpu_hours(self, launch_params):
+        l = launch_params["grid"]["level"]
+
+        cpu_hours = self.t0 * 2 ** ((self.n_dims + 1) * l)
+        return max(min(cpu_hours, self.t_max), self.t_min)
+
+    def work(self, launch_params):
+        l = launch_params["grid"]["level"]
+        return self.w0 * 2 ** (self.n_dims * l)
+
+
+work_estimate = ScaledWorkEstimate(
+    w0=0.5, n_dims=2, t0=timedelta(minutes=5), t_max=timedelta(hours=4)
+)
+
+coarse_grid_levels = list(range(5, 6))
 coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -90,13 +118,15 @@ independent_choices = {
     "well-balancing": [sc.WellBalancing("constant")],
     "io": [io],
     "time": [time],
+    "parallelization": [{"mode": "mpi"}],
 }
 
 dependent_choices = {
     "reconstruction": [
         # sc.Reconstruction("CWENO-AO", [1]),
-        #         sc.Reconstruction("CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]),
-        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2])
+        sc.Reconstruction(
+            "CWENO-AO", [3, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
+        ),
     ],
     "ode": [
         # sc.ODE("ForwardEuler"),
@@ -212,10 +242,10 @@ def main():
         build_zisa()
 
         for c, r in all_runs:
-            launch_all(c, force=args.force)
+            launch_all(c, force=args.force, queue_args=MPIQueueArgs(work_estimate))
 
             # if args.reference:
-            #     launch_all(r, force=args.force)
+            #     launch_all(r, force=args.force, queue_args=MPIQueueArgs(work_estimate))
 
     if args.post_process:
         for c, r in all_runs:

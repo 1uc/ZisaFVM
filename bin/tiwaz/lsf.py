@@ -11,23 +11,26 @@ class LSF(object):
 
     def submit(self, directory, launch_param, cmd):
         lsf_cmd = self.wrap(launch_param, cmd)
-        subprocess.call(cmd, cwd=directory)
+        print(" ".join(lsf_cmd))
+        # subprocess.call(cmd, cwd=directory)
 
     def wrap(self, launch_param, cmd):
         queue_args = self.queue_args
 
         c = ["bsub", "-J", launch_param.short_id()]
 
-        if "lsf_args" in queue_args:
+        if hasattr(queue_args, "lsf_args"):
             c += queue_args["lsf_args"]
 
-        if "wall-clock" in queue_args:
-            c += ["-W", hhmm(queue_args["wall-clock"])]
+        if hasattr(queue_args, "wall_clock"):
+            c += ["-W", hhmm(queue_args.wall_clock(launch_param))]
 
-        if "n_mpi_tasks" in queue_args:
+        if hasattr(queue_args, "n_mpi_tasks"):
             # MPI has been requested.
-            raise Exception("Implement first.")
-        elif "n_omp_threads" in queue_args:
+            c += ["-n", str(queue_args.n_mpi_tasks(launch_param))]
+            cmd = ["mpirun " + " ".join(cmd)]
+
+        elif hasattr(queue_args, "n_omp_threads"):
             # OpenMP has been requested.
             raise Exception("Implement first.")
         else:

@@ -34,7 +34,7 @@ class Scheme:
     def grid_filename(self):
         return self["grid"]["file"]
 
-    def folder_name(self):
+    def short_id(self):
         subsections = [
             "experiment",
             "reconstruction",
@@ -46,9 +46,10 @@ class Scheme:
 
         subsections = [s for s in subsections if s in self]
 
-        name = "_".join([self[key].short_id() for key in subsections])
+        return "_".join([self[key].short_id() for key in subsections])
 
-        return name
+    def folder_name(self):
+        return self.short_id()
 
     def save(self, filename):
         with open(filename, "w") as f:
@@ -216,8 +217,12 @@ class IO(Subsection):
 
 
 class Grid(Subsection):
-    def __init__(self, grid_name, level):
+    def __init__(self, grid_name, level, w0=0.25, n_dims=2):
         super().__init__({"file": grid_name, "level": level})
+
+    def work(self):
+        l, n_dims = self["level"], self.n_dims
+        return self.w0 * 2 ** (n_dims * l)
 
     def short_id(self):
         l = self["level"]

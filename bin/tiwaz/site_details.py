@@ -62,39 +62,43 @@ class MPIHeuristics:
         if host == "euler":
             self.cores_per_node = 12
             self.max_nodes = 8
-            self.min_block_size = 128
+            self.work_per_core = 4.0
 
         elif host == "daint":
             self.cores_per_node = 12
             self.max_nodes = 160
-            self.min_block_size = 64
+            self.work_per_core = 2.0
 
         elif host == "rogui":
             self.cores_per_node = 1
             self.max_nodes = 6
-            self.min_block_size = 32
+            self.work_per_core = 1.0
 
         elif host == "liara":
             self.cores_per_node = 1
             self.max_nodes = 1
-            self.min_block_size = 32
+            self.work_per_core = 1.0
+
+        elif host == "aoifa":
+            self.cores_per_node = 1
+            self.max_nodes = 12
+            self.work_per_core = 1.0
 
         elif host == "ada":
             nproc = int(subprocess.check_output(["nproc"]))
             self.cores_per_node = 2
             self.max_nodes = nproc // 2
-            self.min_block_size = 32
+            self.work_per_core = 1.0
 
         else:
             raise Exception("Unknown host [{:s}]".format(get_host()))
 
         self.max_cores = self.max_nodes * self.cores_per_node
 
-    def n_tasks(self, launch_param):
-        n_cells = int(launch_param["nx"]) * int(launch_param["ny"])
-        n_proc = int(n_cells / self.min_block_size ** 2)
+    def n_tasks(self, work):
+        n_proc = int(work / self.work_per_core ** 2)
 
         # Always ask for an entire node.
         cpn = self.cores_per_node
         n_proc = ((n_proc + cpn - 1) // cpn) * cpn
-        return max(1, min(n_proc, self.max_cores))
+        return max(2, min(n_proc, self.max_cores))

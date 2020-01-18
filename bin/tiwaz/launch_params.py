@@ -117,9 +117,9 @@ def build_target(target):
         # subprocess.check_call(cmd, shell=True)
 
     elif host == "euler":
-        raise Exception("Implement proper build instruction for 'euler'.")
-        # cmd = "bash -l -c 'source ~/bin/build_env.sh; make -j12'"
-        # subprocess.check_call(cmd, shell=True)
+        nproc = multiprocessing.cpu_count()
+        cmd = "cd build-release; make -j{} {:s}".format(nproc, target)
+        subprocess.check_call(cmd, shell=True)
 
     else:
         nproc = multiprocessing.cpu_count()

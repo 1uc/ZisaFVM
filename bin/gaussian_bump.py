@@ -40,9 +40,9 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravity()
 euler = sc.Euler(eos, gravity)
 
-time = sc.Time(t_end=9000)
-# io = sc.IO("hdf5", "gaussian_bump", n_snapshots=1)
-io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
+time = sc.Time(t_end=0.09)
+io = sc.IO("hdf5", "gaussian_bump", n_snapshots=1)
+# io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
 
 
 def grid_name_stem(l):
@@ -181,11 +181,11 @@ def main():
         generate_grids()
 
     if args.run:
-        build_zisa()
+        # build_zisa()
         queue_args = None
 
         for c, r in all_runs:
-            launch_all(c, force=args.force, queue_args=queue_args)
+            # launch_all(c, force=args.force, queue_args=queue_args)
 
             if args.reference:
                 launch_all(r, force=args.force, queue_args=queue_args)

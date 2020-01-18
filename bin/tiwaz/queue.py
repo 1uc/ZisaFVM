@@ -1,4 +1,5 @@
 from .slurm import SLURM
+from .lsf import LSF
 from .no_queue import NoQueue
 from .site_details import has_lsf, has_slurm, has_no_queue
 
