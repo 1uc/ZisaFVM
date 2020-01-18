@@ -76,7 +76,7 @@ case $remote in
     dest="lucg@${remote}:/userdata/lucg/"
     ;;
   euler)
-    dest="lucg@euler.ethz.ch:~"
+    dest="lucg@euler.ethz.ch:/cluster/scratch/lucg"
     ;;
   rogui)
     dest='lucg@rogui:copy-up'
