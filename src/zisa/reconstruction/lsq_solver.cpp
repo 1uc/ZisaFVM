@@ -118,17 +118,15 @@ void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
   }
 
   auto n_dims = grid.n_dims();
-  auto n_rows = int_t(A.rows());
+  auto n_rows = integer_cast<int_t>(A.rows());
 
   auto i0 = stencil.global(0);
   auto x0 = grid.cell_centers(i0);
   auto l0 = grid.characteristic_length(i0);
   const auto &C0 = grid.normalized_moments(i0);
 
-  assert(n_rows <= std::numeric_limits<Eigen::Index>::max());
   auto eint = [](zisa::int_t i) {
-    assert(i <= std::numeric_limits<Eigen::Index>::max());
-    return Eigen::Index(i);
+    return integer_cast<Eigen::Index>(i);
   };
 
   auto idx = [n_dims](int i, int j) {
