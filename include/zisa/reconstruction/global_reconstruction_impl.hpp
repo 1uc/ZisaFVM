@@ -18,8 +18,12 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
     const Scaling &scaling)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
-      allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)) {
+      qbar_allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)),
+      polys_allocator(
+          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128))
+{
 
+  n_polys = params.linear_weights.size();
   max_stencil_size = 0;
 
   for (int_t i = 0; i < grid->n_cells; ++i) {
@@ -43,25 +47,28 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
     const Scaling &scaling)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
-      allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)) {
+      qbar_allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)),
+      polys_allocator(
+          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128))
+{
 
+  n_polys = params.linear_weights.size();
   max_stencil_size = 0;
 
   auto o1_stencil_params = StencilFamilyParams({1}, {"c"}, {1.0});
-
-  auto o1_params = HybridWENOParams({{1}, {"c"}, {1.0}},
-                                    {1.0}, params.epsilon, params.exponent);
+  auto o1_params = HybridWENOParams(
+      {{1}, {"c"}, {1.0}}, {1.0}, params.epsilon, params.exponent);
 
   for (int_t i = 0; i < grid->n_cells; ++i) {
-    if(stencils[i].size() == 1 && stencils[i].order() == 1) {
-      rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(grid,
-                                                            LocalEquilibrium(eq),
-                                                            RC(grid, stencils[i], i, o1_params),
-                                                            grid->cells(i),
-                                                            scaling);
+    if (stencils[i].size() == 1 && stencils[i].order() == 1) {
+      rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(
+          grid,
+          LocalEquilibrium(eq),
+          RC(grid, stencils[i], i, o1_params),
+          grid->cells(i),
+          scaling);
 
-    }
-    else {
+    } else {
       rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(
           grid,
           LocalEquilibrium(eq),
@@ -82,8 +89,8 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::operator()(int_t i) const {
 }
 
 template <class Equilibrium, class RC, class Scaling>
-euler_var_t EulerGlobalReconstruction<Equilibrium, RC, Scaling>::
-operator()(int_t i, const XYZ &x) const {
+euler_var_t EulerGlobalReconstruction<Equilibrium, RC, Scaling>::operator()(
+    int_t i, const XYZ &x) const {
   return rc(i)(x);
 }
 
@@ -96,14 +103,15 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
 #pragma omp parallel
 #endif
   {
-    auto qbar_local = allocator->allocate(shape_t<1>{max_stencil_size});
+    auto qbar_local = qbar_allocator->allocate(shape_t<1>{max_stencil_size});
+    auto polys = polys_allocator->allocate(shape_t<1>{n_polys});
 
 #if ZISA_HAS_OPENMP == 1
 #pragma omp for ZISA_OMP_FOR_SCHEDULE_DEFAULT
 #endif
     for (int_t i = 0; i < n_cells; ++i) {
       set_qbar_local(*qbar_local, current_state, i);
-      rc[i].compute(*qbar_local);
+      rc[i].compute(*polys, *qbar_local);
     }
   }
 }

@@ -22,7 +22,6 @@ protected:
   StencilFamily stencils;
   LSQSolverFamily lsq_solvers;
 
-  mutable array<WENOPoly, 1> polys;
   mutable array<double, 2, row_major> rhs;
 
   array<double, 1> linear_weights;
@@ -54,10 +53,10 @@ public:
   bool operator!=(const HybridWENO &other) const;
 
 protected:
-  void compute_polys(const array<cvars_t, 1> &qbar) const;
-  WENOPoly hybridize() const;
-  WENOPoly eno_hybridize() const;
-  WENOPoly tau_hybridize() const;
+  void compute_polys(array<WENOPoly, 1> &polys, const array<cvars_t, 1> &qbar) const;
+  WENOPoly hybridize(array<WENOPoly, 1> &polys) const;
+  WENOPoly eno_hybridize(array<WENOPoly, 1> &polys) const;
+  WENOPoly tau_hybridize(array<WENOPoly, 1> &polys) const;
 };
 
 } // namespace zisa

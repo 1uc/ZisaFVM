@@ -18,6 +18,7 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
 
   auto qbar_local = array<euler_var_t, 1>{shape_t<1>{1024ul}};
   auto qbar = array<euler_var_t, 1>(shape_t<1>{grid.n_cells});
+  auto polys = array<WENOPoly, 1>(shape_t<1>{16});
 
   for (const auto &[i, cell] : cells(grid)) {
     qbar(i) = zisa::average(cell.qr, f);
@@ -38,7 +39,7 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
       }
     }
 
-    auto p = rc[i].reconstruct(qbar_local);
+    auto p = rc[i].reconstruct(polys, qbar_local);
 
     auto diff = [&p, &f](const XYZ &x) {
       return Cartesian<n_vars>{zisa::abs(p(x) - f(x))};

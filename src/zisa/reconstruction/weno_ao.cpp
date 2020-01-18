@@ -8,11 +8,12 @@
 
 namespace zisa {
 
-auto WENO_AO::reconstruct(const array<cvars_t, 1> &qbar) const
-    -> decltype(hybridize()) {
+auto WENO_AO::reconstruct(array<WENOPoly, 1> &polys,
+                          const array<cvars_t, 1> &qbar) const
+    -> decltype(hybridize(polys)) {
 
-  compute_polys(qbar);
-  return hybridize();
+  compute_polys(polys, qbar);
+  return hybridize(polys);
 }
 
 } // namespace zisa

@@ -13,7 +13,6 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
                        const HybridWENOParams &params)
     : stencils(*grid, i_cell, params.stencil_family_params),
       lsq_solvers(grid, stencils),
-      polys(stencils.size()),
       linear_weights(stencils.size()),
       non_linear_weights(stencils.size()),
       epsilon(params.epsilon),
@@ -37,7 +36,6 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
                        const HybridWENOParams &params)
     : stencils(std::move(stencil_family)),
       lsq_solvers(grid, stencils),
-      polys(stencils.size()),
       linear_weights(stencils.size()),
       non_linear_weights(stencils.size()),
       epsilon(params.epsilon),
@@ -59,7 +57,8 @@ int_t HybridWENO::combined_stencil_size() const {
   return stencils.combined_stencil_size();
 }
 
-void HybridWENO::compute_polys(const array<cvars_t, 1> &qbar_local) const {
+void HybridWENO::compute_polys(array<WENOPoly, 1> &polys,
+                               const array<cvars_t, 1> &qbar_local) const {
 
   const auto &qbar_cell = qbar_local(int_t(0));
 
@@ -80,9 +79,9 @@ void HybridWENO::compute_polys(const array<cvars_t, 1> &qbar_local) const {
   }
 }
 
-WENOPoly HybridWENO::hybridize() const { return eno_hybridize(); }
+WENOPoly HybridWENO::hybridize(array<WENOPoly, 1> &polys) const { return eno_hybridize(polys); }
 
-WENOPoly HybridWENO::eno_hybridize() const {
+WENOPoly HybridWENO::eno_hybridize(array<WENOPoly, 1> &polys) const {
   double al_tot = 0.0;
   for (int_t k = 0; k < stencils.size(); ++k) {
     auto IS = zisa::maximum(smoothness_indicator(polys[k]));
@@ -102,7 +101,7 @@ WENOPoly HybridWENO::eno_hybridize() const {
   return p;
 }
 
-WENOPoly HybridWENO::tau_hybridize() const {
+WENOPoly HybridWENO::tau_hybridize(array<WENOPoly, 1> &) const {
   LOG_ERR("Not implemented.");
   // auto k_high = stencils.highest_order_stencil();
 

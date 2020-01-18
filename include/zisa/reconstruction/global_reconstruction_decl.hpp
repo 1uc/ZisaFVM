@@ -55,9 +55,11 @@ private:
 private:
   HybridWENOParams params;
   int_t max_stencil_size;
+  int_t n_polys;
 
   array<lrc_t, 1> rc;
-  std::shared_ptr<block_allocator<array<cvars_t, 1>>> allocator;
+  std::shared_ptr<block_allocator<array<cvars_t, 1>>> qbar_allocator;
+  std::shared_ptr<block_allocator<array<WENOPoly, 1>>> polys_allocator;
 };
 
 } // namespace zisa

@@ -11,7 +11,7 @@ bool implicit_conversion(const array_const_view<double, 3> &view) {
   return view.raw() != nullptr;
 }
 
-TEST_CASE("array; basics") {
+TEST_CASE("array; basics", "[array]") {
   auto a = array<double, 3>({3ul, 3ul, 2ul}, device_type::cpu);
   auto b = array<double, 3>({3ul, 3ul, 2ul}, device_type::cpu);
 
@@ -33,7 +33,7 @@ TEST_CASE("array; basics") {
   REQUIRE(implicit_conversion(a));
 }
 
-TEST_CASE("array; write to file") {
+TEST_CASE("array; write to file", "[array]") {
 
   auto filename = "__unit_tests--array-to-hdf5.h5";
   auto label = "a";
@@ -63,7 +63,7 @@ TEST_CASE("array; write to file") {
   }
 }
 
-TEST_CASE("array; builds for general Indexing.") {
+TEST_CASE("array; builds for general Indexing.", "[array]") {
 
   // The point is to check that `array<double, 3, Indexing>`
   // compiles fine. Despite the fact that `save` and `load` only

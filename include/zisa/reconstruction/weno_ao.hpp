@@ -19,8 +19,9 @@ private:
 public:
   using super::super;
 
-  auto reconstruct(const array<cvars_t, 1> &qbar) const
-      -> decltype(hybridize());
+  auto reconstruct(array<WENOPoly, 1> &polys,
+                   const array<cvars_t, 1> &qbar) const
+      -> decltype(hybridize(polys));
 };
 
 } // namespace zisa
