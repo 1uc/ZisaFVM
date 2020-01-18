@@ -45,18 +45,22 @@ TEST_CASE("array; write to file") {
     a[i] = i;
   }
 
-  auto writer = HDF5SerialWriter(filename);
-  zisa::save(writer, a, label);
-
-  auto reader = HDF5SerialReader(filename);
-  auto dims = reader.dims(label);
-
-  for (zisa::int_t k = 0; k < 3; ++k) {
-    REQUIRE(shape[0] == static_cast<zisa::int_t>(dims[0]));
+  {
+    auto writer = HDF5SerialWriter(filename);
+    zisa::save(writer, a, label);
   }
 
-  auto b = zisa::array<double, 3>::load(reader, label);
-  REQUIRE(b == a);
+  {
+    auto reader = HDF5SerialReader(filename);
+    auto dims = reader.dims(label);
+
+    for (zisa::int_t k = 0; k < 3; ++k) {
+      REQUIRE(shape[0] == static_cast<zisa::int_t>(dims[0]));
+    }
+
+    auto b = zisa::array<double, 3>::load(reader, label);
+    REQUIRE(b == a);
+  }
 }
 
 TEST_CASE("array; builds for general Indexing.") {

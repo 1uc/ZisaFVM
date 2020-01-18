@@ -47,8 +47,10 @@ TEST_CASE("AllVariables; load/store", "[memory]") {
 
   auto filename = std::string("__unit_tests-all_variables.h5");
 
-  auto writer = zisa::HDF5SerialWriter(filename);
-  zisa::save(writer, all_vars_store, zisa::all_labels<zisa::euler_var_t>());
+  { // Only one (1) HDF5 write may exist at a time.
+    auto writer = zisa::HDF5SerialWriter(filename);
+    zisa::save(writer, all_vars_store, zisa::all_labels<zisa::euler_var_t>());
+  }
 
   auto reader = zisa::HDF5SerialReader(filename);
   auto all_vars_load
