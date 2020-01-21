@@ -27,8 +27,6 @@ protected:
   double epsilon;
   double exponent;
 
-  int_t i_cell;
-
 public:
   HybridWENO() = default;
 
