@@ -651,8 +651,7 @@ std::string Grid::str() const {
                        n_edges,
                        dx_min,
                        dx_max,
-                       double(size_in_bytes()) * 1e-9
-                       );
+                       double(size_in_bytes()) * 1e-9);
 }
 
 template <class Predicate, class Ranking>

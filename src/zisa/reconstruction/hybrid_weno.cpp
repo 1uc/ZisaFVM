@@ -74,7 +74,9 @@ void HybridWENO::compute_polys(array<double, 2, row_major> &rhs,
   }
 }
 
-WENOPoly HybridWENO::hybridize(array<WENOPoly, 1> &polys) const { return eno_hybridize(polys); }
+WENOPoly HybridWENO::hybridize(array<WENOPoly, 1> &polys) const {
+  return eno_hybridize(polys);
+}
 
 WENOPoly HybridWENO::eno_hybridize(array<WENOPoly, 1> &polys) const {
   double al_tot = 0.0;
