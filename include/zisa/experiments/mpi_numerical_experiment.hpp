@@ -58,9 +58,13 @@ protected:
     int_t quad_deg = this->choose_volume_deg();
 
     if (mpi_rank == 0) {
-      auto gmsh_data = GMSHData(this->params["grid"]["file"]);
-      auto &vertex_indices_gbl = gmsh_data.vertex_indices;
-      auto &vertices_gbl = gmsh_data.vertices;
+      auto vertex_indices_gbl = array<int_t, 2>{};
+      auto vertices_gbl = array<XYZ, 1>{};
+      {
+        auto reader = HDF5SerialReader(this->params["grid"]["file"]);
+        vertex_indices_gbl = array<int_t, 2>::load(reader, "vertex_indices");
+        vertices_gbl = array<XYZ, 1>::load(reader, "vertices");
+      }
 
       auto n_cells = vertex_indices_gbl.shape(0);
       auto max_neighbours = vertex_indices_gbl.shape(1);

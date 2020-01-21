@@ -775,6 +775,17 @@ std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
 
   if (filename.substr(len - 4) == ".msh") {
     return load_gmsh(filename, quad_deg);
+  } else if (filename.substr(len - 7) == ".msh.h5") {
+    auto reader = HDF5SerialReader(filename);
+
+    int n_dims = reader.read_scalar<int>("n_dims");
+    auto element_type = (n_dims == 2 ? GMSHElementType::triangle
+                                     : GMSHElementType::tetrahedron);
+
+    auto vertex_indices = array<int_t, 2>::load(reader, "vertex_indices");
+    auto vertices = array<XYZ, 1>::load(reader, "vertices");
+    return std::make_shared<Grid>(
+        element_type, std::move(vertices), std::move(vertex_indices), quad_deg);
   } else if (filename.substr(len - 3) == ".h5") {
     auto reader = HDF5SerialReader(filename);
     return std::make_shared<Grid>(Grid::load(reader));
