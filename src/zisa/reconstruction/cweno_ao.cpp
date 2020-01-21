@@ -8,11 +8,12 @@
 
 namespace zisa {
 
-auto CWENO_AO::reconstruct(array<WENOPoly, 1> &polys,
+auto CWENO_AO::reconstruct(array<double, 2, row_major> &rhs,
+                           array<WENOPoly, 1> &polys,
                            const array<cvars_t, 1> &qbar) const
     -> decltype(hybridize(polys)) {
 
-  compute_polys(polys, qbar);
+  compute_polys(rhs, polys, qbar);
 
   auto k_high = stencils.highest_order_stencil();
   for (int_t k = 0; k < stencils.size(); ++k) {

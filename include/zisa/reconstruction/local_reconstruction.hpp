@@ -24,7 +24,9 @@ public:
                       Scaling scaling)
       : grid(grid), eq(eq), rc(rc), cell_ref(cell_ref), scaling(scaling) {}
 
-  void compute(array<WENOPoly, 1> &polys, array<cvars_t, 1> &u_local) {
+  void compute(array<double, 2, row_major> &rhs,
+               array<WENOPoly, 1> &polys,
+               array<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
     auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
     eq.solve(rhoE_self, cell_ref);
@@ -41,7 +43,7 @@ public:
       u_local(il) = u_local(il) / scale;
     }
 
-    weno_poly = rc.reconstruct(polys, u_local);
+    weno_poly = rc.reconstruct(rhs, polys, u_local);
   }
 
   cvars_t operator()(const XYZ &x) const {

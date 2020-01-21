@@ -20,8 +20,9 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
       rc(shape_t<1>{grid->n_cells}),
       qbar_allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)),
       polys_allocator(
-          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128))
-{
+          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128)),
+      rhs_allocator(
+          std::make_unique<block_allocator<array<double, 2, row_major>>>(128)) {
 
   n_polys = params.linear_weights.size();
   max_stencil_size = 0;
@@ -49,8 +50,9 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
       rc(shape_t<1>{grid->n_cells}),
       qbar_allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)),
       polys_allocator(
-          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128))
-{
+          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128)),
+      rhs_allocator(
+          std::make_unique<block_allocator<array<double, 2, row_major>>>(128)) {
 
   n_polys = params.linear_weights.size();
   max_stencil_size = 0;
@@ -105,13 +107,15 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
   {
     auto qbar_local = qbar_allocator->allocate(shape_t<1>{max_stencil_size});
     auto polys = polys_allocator->allocate(shape_t<1>{n_polys});
+    auto rhs = rhs_allocator->allocate(
+        shape_t<2>{max_stencil_size, WENOPoly::n_vars()});
 
 #if ZISA_HAS_OPENMP == 1
 #pragma omp for ZISA_OMP_FOR_SCHEDULE_DEFAULT
 #endif
     for (int_t i = 0; i < n_cells; ++i) {
       set_qbar_local(*qbar_local, current_state, i);
-      rc[i].compute(*polys, *qbar_local);
+      rc[i].compute(*rhs, *polys, *qbar_local);
     }
   }
 }

@@ -19,9 +19,6 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       exponent(params.exponent),
       i_cell(i_cell) {
 
-  rhs = array<double, 2, row_major>(
-      shape_t<2>{stencils.combined_stencil_size(), WENOPoly::n_vars()});
-
   auto tot = std::accumulate(
       params.linear_weights.begin(), params.linear_weights.end(), 0.0);
 
@@ -42,9 +39,6 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       exponent(params.exponent),
       i_cell(i_cell) {
 
-  rhs = array<double, 2, row_major>(
-      shape_t<2>{stencils.combined_stencil_size(), WENOPoly::n_vars()});
-
   auto tot = std::accumulate(
       params.linear_weights.begin(), params.linear_weights.end(), 0.0);
 
@@ -57,17 +51,18 @@ int_t HybridWENO::combined_stencil_size() const {
   return stencils.combined_stencil_size();
 }
 
-void HybridWENO::compute_polys(array<WENOPoly, 1> &polys,
-                               const array<cvars_t, 1> &qbar_local) const {
+void HybridWENO::compute_polys(array<double, 2, row_major> &rhs,
+                               array<WENOPoly, 1> &polys,
+                               const array<cvars_t, 1> &qbar) const {
 
-  const auto &qbar_cell = qbar_local(int_t(0));
+  const auto &qbar_cell = qbar(int_t(0));
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     for (int_t ig = 0; ig < stencils[k].size() - 1; ++ig) {
       int_t il = stencils[k].local(ig + 1);
 
       for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
-        rhs(ig, k_var) = qbar_local(il)[k_var] - qbar_cell[k_var];
+        rhs(ig, k_var) = qbar(il)[k_var] - qbar_cell[k_var];
       }
     }
 

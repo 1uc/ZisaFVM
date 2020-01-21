@@ -19,7 +19,8 @@ private:
 public:
   using super::super;
 
-  auto reconstruct(array<WENOPoly, 1> &polys,
+  auto reconstruct(array<double, 2, row_major> &rhs,
+                   array<WENOPoly, 1> &polys,
                    const array<cvars_t, 1> &qbar) const
       -> decltype(hybridize(polys));
 };

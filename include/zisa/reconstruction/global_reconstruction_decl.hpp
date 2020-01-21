@@ -60,6 +60,7 @@ private:
   array<lrc_t, 1> rc;
   std::shared_ptr<block_allocator<array<cvars_t, 1>>> qbar_allocator;
   std::shared_ptr<block_allocator<array<WENOPoly, 1>>> polys_allocator;
+  std::shared_ptr<block_allocator<array<double, 2, row_major>>> rhs_allocator;
 };
 
 } // namespace zisa
