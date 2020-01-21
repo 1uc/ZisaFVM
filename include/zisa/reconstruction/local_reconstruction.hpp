@@ -20,16 +20,16 @@ public:
   LocalReconstruction(std::shared_ptr<Grid> &grid,
                       const LocalEquilibrium<Equilibrium> &eq,
                       const RC &rc,
-                      const Cell &cell_ref,
+                      int_t i_cell,
                       Scaling scaling)
-      : grid(grid), eq(eq), rc(rc), cell_ref(cell_ref), scaling(scaling) {}
+      : grid(grid), eq(eq), rc(rc), i_cell(i_cell), scaling(scaling) {}
 
   void compute(array<double, 2, row_major> &rhs,
                array<WENOPoly, 1> &polys,
                array<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
     auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
-    eq.solve(rhoE_self, cell_ref);
+    eq.solve(rhoE_self, grid->cells(i_cell));
 
     scale = scaling(rhoE_self);
 
@@ -70,7 +70,7 @@ private:
   std::shared_ptr<Grid> grid;
   LocalEquilibrium<Equilibrium> eq;
   RC rc;
-  Cell cell_ref;
+  int_t i_cell;
   WENOPoly weno_poly;
   Scaling scaling;
   cvars_t scale = cvars_t::zeros();

@@ -28,11 +28,8 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
   max_stencil_size = 0;
 
   for (int_t i = 0; i < grid->n_cells; ++i) {
-    rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(grid,
-                                                          LocalEquilibrium(eq),
-                                                          RC(grid, i, params),
-                                                          grid->cells(i),
-                                                          scaling);
+    rc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(
+        grid, LocalEquilibrium(eq), RC(grid, i, params), i, scaling);
 
     max_stencil_size
         = zisa::max(rc[i].combined_stencil_size(), max_stencil_size);
@@ -67,7 +64,7 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
           grid,
           LocalEquilibrium(eq),
           RC(grid, stencils[i], i, o1_params),
-          grid->cells(i),
+          i,
           scaling);
 
     } else {
@@ -75,7 +72,7 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
           grid,
           LocalEquilibrium(eq),
           RC(grid, stencils[i], i, params),
-          grid->cells(i),
+          i,
           scaling);
     }
 
