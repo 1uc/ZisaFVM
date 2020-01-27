@@ -57,7 +57,7 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
 
   auto bytes_to_receive = exchange_sizes(bytes_to_send, mpi_comm);
 
-  int xfer_tag = 200;
+  int xfer_tag = ZISA_MPI_TAG_EXCHANGE_HALO_INFO_XFER;
 
   // Post all receives
   std::vector<HaloRemoteInfo> received_remote_info;

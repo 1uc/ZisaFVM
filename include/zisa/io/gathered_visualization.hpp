@@ -4,6 +4,7 @@
 #include <thread>
 #include <zisa/config.hpp>
 #include <zisa/io/visualization.hpp>
+#include <zisa/math/permutation.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
 
 namespace zisa {
@@ -17,7 +18,8 @@ namespace zisa {
  */
 class GatheredVisualization : public Visualization {
 public:
-  GatheredVisualization(std::shared_ptr<AllVariablesGatherer> all_vars_gatherer,
+  GatheredVisualization(std::unique_ptr<AllVariablesGatherer> all_vars_gatherer,
+                        std::shared_ptr<Permutation> permutation,
                         std::shared_ptr<Visualization> visualization,
                         const AllVariablesDimensions &all_var_dims);
 
@@ -27,9 +29,16 @@ protected:
   void do_visualization(const AllVariables &all_variables,
                         const SimulationClock &simulation_clock) override;
 
+  void do_steady_state(const AllVariables &all_variables) override;
+
+private:
+  template <class Vis>
+  void gather_and_visualize(const AllVariables &all_vars, const Vis &vis);
+
 private:
   AllVariables buffer;
-  std::shared_ptr<AllVariablesGatherer> gatherer;
+  std::unique_ptr<AllVariablesGatherer> gatherer;
+  std::shared_ptr<Permutation> permutation;
   std::shared_ptr<Visualization> visualization;
   std::unique_ptr<std::thread> job = nullptr;
 };

@@ -19,10 +19,15 @@ public:
   void operator()(const AllVariables &all_variables,
                   const SimulationClock &simulation_clock);
 
+  /// Visualize the steady-state.
+  void steady_state(const AllVariables &all_variables);
+
 protected:
   virtual void do_visualization(const AllVariables &all_variables,
                                 const SimulationClock &simulation_clock)
       = 0;
+
+  virtual void do_steady_state(const AllVariables &);
 };
 
 } // namespace zisa

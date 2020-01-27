@@ -12,11 +12,9 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
 
   auto all_variables = compute_initial_conditions(amp, width, n_bumps);
 
-  // TODO enable
-//  auto steady_state = compute_initial_conditions(0.0, width, n_bumps);
-//
-//  auto writer = HDF5SerialWriter(file_name_generator->steady_state_filename);
-//  save(writer, *steady_state, all_labels<euler_var_t>());
+  auto steady_state = compute_initial_conditions(0.0, width, n_bumps);
+  auto vis = choose_visualization();
+  vis->steady_state(*steady_state);
 
   return all_variables;
 }

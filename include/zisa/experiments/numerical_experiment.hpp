@@ -40,6 +40,9 @@ protected:
   std::shared_ptr<Grid> choose_grid() const;
   virtual std::shared_ptr<Grid> compute_grid() const;
 
+  std::shared_ptr<Grid> choose_full_grid() const;
+  virtual std::shared_ptr<Grid> compute_full_grid() const;
+
   virtual std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const {
     if (stencils_ == nullptr) {
       auto grid = choose_grid();
@@ -92,7 +95,10 @@ protected:
   virtual std::shared_ptr<InstantaneousPhysics> choose_instantaneous_physics();
   virtual std::shared_ptr<StepRejection> choose_step_rejection();
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() = 0;
-  virtual std::shared_ptr<Visualization> choose_visualization() = 0;
+
+  virtual std::shared_ptr<Visualization> choose_visualization();
+  virtual std::shared_ptr<Visualization> compute_visualization() = 0;
+
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() = 0;
   virtual AllVariablesDimensions choose_all_variable_dims() = 0;
   virtual std::shared_ptr<RateOfChange> choose_flux_bc() = 0;
@@ -115,6 +121,8 @@ protected:
 
 protected:
   mutable std::shared_ptr<Grid> grid_;
+  mutable std::shared_ptr<Grid> full_grid_;
+  mutable std::shared_ptr<Visualization> visualization_;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
 };
 

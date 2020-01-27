@@ -16,6 +16,7 @@
 #include <zisa/model/euler.hpp>
 #include <zisa/parallelization/halo_exchange.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
+#include <zisa/math/permutation.hpp>
 
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/boundary/no_boundary_condition.hpp>
@@ -23,6 +24,7 @@
 // I/O related includes
 #include <zisa/io/dump_snapshot.hpp>
 #include <zisa/io/gathered_visualization.hpp>
+#include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
 #include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
 
@@ -32,34 +34,6 @@ namespace po = boost::program_options;
 
 namespace zisa {
 using metis_idx_t = ::idx_t;
-
-template <class Int = int_t>
-class TopologicalGridView {
-public:
-  array_const_view<Int, 2> vertex_indices;
-  array_const_view<Int, 2> neighbours;
-  Int n_cells;
-  Int n_vertices;
-  Int max_neighbours;
-
-public:
-  TopologicalGridView(const array_const_view<Int, 2> &vertex_indices,
-                      const array_const_view<Int, 2> &neighbours,
-                      Int n_vertices,
-                      Int max_neighbours)
-      : vertex_indices(vertex_indices),
-        neighbours(neighbours),
-        n_cells(vertex_indices.shape(0)),
-        n_vertices(n_vertices),
-        max_neighbours(max_neighbours) {}
-};
-
-TopologicalGridView<int_t> make_topological_grid_view(const Grid &grid) {
-  return {grid.vertex_indices,
-          grid.neighbours,
-          grid.n_vertices,
-          grid.max_neighbours};
-}
 
 void save_partitioned_grid(const std::string &filename,
                            const Grid &grid,
@@ -94,25 +68,20 @@ void save_partitioned_grid(const std::string &filename,
     auto n_cells_local = local_grid.n_cells;
     int_t n_owned_cells = partitioned_grid.boundaries[mpi_rank + 1]
                           - partitioned_grid.boundaries[mpi_rank];
+    int_t n_cells_total = grid.n_cells;
 
     auto data_local = GridVariables({n_cells_local, 5});
     zisa::fill(data_local, -123.0);
-    for(int_t i = 0; i < n_owned_cells; ++i) {
-      for(int_t k = 0; k < data_local.shape(1); ++k) {
+    for (int_t i = 0; i < n_owned_cells; ++i) {
+      for (int_t k = 0; k < data_local.shape(1); ++k) {
         data_local(i, k) = double(mpi_rank);
       }
     }
 
-    auto array_info
-        = std::make_shared<DistributedArrayInfo>(partitioned_grid.boundaries);
-    auto cvars_gatherer
-        = std::make_unique<MPISingleNodeArrayGatherer<double, 2>>(
-            array_info, MPI_COMM_WORLD, 388932);
-    auto avars_gatherer
-        = std::make_unique<MPISingleNodeArrayGatherer<double, 2>>(
-            array_info, MPI_COMM_WORLD, 333292);
-    auto all_vars_gatherer = std::make_shared<AllVariablesGatherer>(
-        std::move(cvars_gatherer), std::move(avars_gatherer), n_owned_cells);
+    auto all_vars_gatherer = make_mpi_all_variables_gatherer(
+        ZISA_MPI_TAG_DOMAIN_DECOMPOSITION_ALL_VARS,
+        MPI_COMM_WORLD,
+        partitioned_grid.boundaries);
 
     auto all_vars_local = AllVariables({n_cells_local, 5, 0});
     all_vars_local.cvars = data_local;
@@ -134,8 +103,11 @@ void save_partitioned_grid(const std::string &filename,
               euler, fng);
     }
 
+    auto factored_permutation = std::make_shared<Permutation>(factor_permutation(permutation));
+
     auto gathered_visualization = std::make_shared<GatheredVisualization>(
         std::move(all_vars_gatherer),
+        std::move(factored_permutation),
         std::move(euler_visualization),
         AllVariablesDimensions{grid.n_cells, 5ul, 0ul});
 
@@ -225,7 +197,5 @@ int main(int argc, char *argv[]) {
 
 #else
 #include <zisa/config.hpp>
-int main() {
-  LOG_ERR("Must be compiled with `-DZISA_HAS_MPI=1`.");
-}
+int main() { LOG_ERR("Must be compiled with `-DZISA_HAS_MPI=1`."); }
 #endif

@@ -50,9 +50,9 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
   down_sample_euler_reference(
       *reference_solution, coarse_grid_paths, "reference.h5");
 
-  HDF5SerialReader reader(file_name_generator->steady_state_filename);
-  auto u_delta = std::make_shared<AllVariables>(
-      AllVariables::load(reader, all_labels<euler_var_t>()));
+  auto steady_state_filename = file_name_generator->steady_state_filename;
+  auto u_delta = std::make_shared<AllVariables>(load_serial<AllVariables>(
+      steady_state_filename, all_labels<euler_var_t>()));
 
   for (int_t i = 0; i < u_delta->size(); ++i) {
     (*u_delta)[i] = (*u1)[i] - (*u_delta)[i];
@@ -65,7 +65,6 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
 
 template <class EOS, class Gravity>
 void EulerExperiment<EOS, Gravity>::do_post_process() {
-  choose_grid();
   file_name_generator = choose_file_name_generator();
 
   auto data_filename = find_last_data_file(*file_name_generator);
@@ -94,7 +93,7 @@ EulerExperiment<EOS, Gravity>::deduce_reference_solution_eq(
     const Equilibrium &eq,
     const Scaling &scaling) const {
 
-  auto grid = choose_grid();
+  auto grid = choose_full_grid();
   return std::make_shared<EulerReferenceSolution<Equilibrium, Scaling>>(
       grid, u1, eq, scaling);
 }
@@ -131,7 +130,7 @@ EulerExperiment<EOS, Gravity>::choose_cfl_condition() {
 
 template <class EOS, class Gravity>
 std::shared_ptr<Visualization>
-EulerExperiment<EOS, Gravity>::choose_visualization() {
+EulerExperiment<EOS, Gravity>::compute_visualization() {
   auto grid = choose_grid();
 
   if (params["io"]["mode"] == "none") {

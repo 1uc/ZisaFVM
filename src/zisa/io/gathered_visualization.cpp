@@ -1,14 +1,17 @@
 #include <zisa/io/gathered_visualization.hpp>
 
+#include <zisa/math/permutation.hpp>
 #include <zisa/parallelization/mpi.hpp>
 
 namespace zisa {
 
 GatheredVisualization::GatheredVisualization(
-    std::shared_ptr<AllVariablesGatherer> all_vars_gatherer,
+    std::unique_ptr<AllVariablesGatherer> all_vars_gatherer,
+    std::shared_ptr<Permutation> permutation,
     std::shared_ptr<Visualization> visualization,
     const AllVariablesDimensions &all_var_dims)
     : gatherer(std::move(all_vars_gatherer)),
+      permutation(std::move(permutation)),
       visualization(std::move(visualization)) {
 
   buffer = AllVariables(all_var_dims);
@@ -20,9 +23,9 @@ GatheredVisualization::~GatheredVisualization() {
   }
 }
 
-void GatheredVisualization::do_visualization(
-    const AllVariables &all_variables,
-    const SimulationClock &simulation_clock) {
+template <class Vis>
+void GatheredVisualization::gather_and_visualize(
+    const AllVariables &all_variables, const Vis &vis) {
   LOG_ERR_IF(all_variables.avars.shape(1) != 0,
              "Implement advected variables first.");
 
@@ -33,12 +36,36 @@ void GatheredVisualization::do_visualization(
       job->join();
     }
 
-    job = std::make_unique<std::thread>([this, &simulation_clock]() {
+    job = std::make_unique<std::thread>([this, &vis]() {
       gatherer->receive(buffer);
-      (*visualization)(buffer, simulation_clock);
+
+      apply_permutation(array_view(buffer.cvars), *permutation);
+      apply_permutation(array_view(buffer.avars), *permutation);
+
+      vis(buffer);
     });
   } else {
     gatherer->send(all_variables);
   }
 }
+
+void GatheredVisualization::do_visualization(
+    const AllVariables &all_variables,
+    const SimulationClock &simulation_clock) {
+
+  auto vis = [this, &simulation_clock](const AllVariables &full_vars) {
+    (*visualization)(full_vars, simulation_clock);
+  };
+
+  gather_and_visualize(all_variables, vis);
+}
+
+void GatheredVisualization::do_steady_state(const AllVariables &all_variables) {
+  auto vis = [this](const AllVariables &full_vars) {
+    visualization->steady_state(full_vars);
+  };
+
+  gather_and_visualize(all_variables, vis);
+}
+
 }

@@ -38,7 +38,7 @@ protected:
   virtual std::shared_ptr<RateOfChange> choose_fvm_rate_of_change();
   virtual std::shared_ptr<RateOfChange> choose_rate_of_change() override;
   virtual std::shared_ptr<RateOfChange> choose_flux_bc() override;
-  virtual std::shared_ptr<Visualization> choose_visualization() override;
+  virtual std::shared_ptr<Visualization> compute_visualization() override;
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() override;
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() override;
   virtual AllVariablesDimensions choose_all_variable_dims() override;

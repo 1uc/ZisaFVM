@@ -11,13 +11,16 @@ class AllVariablesGatherer {
 public:
   AllVariablesGatherer(std::unique_ptr<ArrayGatherer<double, 2>> cvars_gatherer,
                        std::unique_ptr<ArrayGatherer<double, 2>> avars_gatherer,
-                       int_t n_cells_local);
+                       int_t n_cells_local,
+                       int_t n_cells_global);
 
   void copy_local_patch(AllVariables &out, const AllVariables &in);
 
   void send(const AllVariables &all_variables);
 
   void receive(AllVariables &all_variables);
+
+  AllVariables gather(AllVariables &all_vars_part);
 
   bool is_this_rank_gathering() const;
 
@@ -29,8 +32,8 @@ private:
   std::unique_ptr<ArrayGatherer<double, 2>> cvars_gatherer;
   std::unique_ptr<ArrayGatherer<double, 2>> avars_gatherer;
   int_t n_cells_local;
+  int_t n_cells_global;
 };
 
 }
-
 #endif // ZISA_ALL_VARIABLES_GATHERER_HPP

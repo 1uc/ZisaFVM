@@ -89,7 +89,7 @@ private:
   std::vector<HaloReceivePart> receive_parts;
   std::vector<HaloSendPart> send_parts;
 
-  int cvars_tag = 1000;
+  int cvars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_CVARS;
 };
 
 /// Prepare for data exchange.

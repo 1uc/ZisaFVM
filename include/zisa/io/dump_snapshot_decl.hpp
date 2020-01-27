@@ -22,6 +22,8 @@ protected:
   do_visualization(const AllVariables &all_variables,
                    const SimulationClock &simulation_clock) override;
 
+  virtual void do_steady_state(const AllVariables &steady_state) override;
+
 protected:
   virtual std::unique_ptr<HDF5Writer> pick_writer(const std::string &file_name)
       = 0;

@@ -12,6 +12,7 @@
 #include <zisa/parallelization/all_variables_gatherer.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
 #include <zisa/parallelization/mpi_all_reduce.hpp>
+#include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
 #include <zisa/parallelization/mpi_halo_exchange.hpp>
 #include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
 
@@ -37,7 +38,7 @@ protected:
   void write_grid() override {
     if (mpi_rank == 0) {
       auto writer = HDF5SerialWriter("grid.h5");
-      save(writer, *full_renumbered_grid_);
+      save(writer, *this->full_grid_);
     }
   }
 
@@ -47,14 +48,30 @@ protected:
     }
   }
 
-  void do_post_run(const std::shared_ptr<AllVariables> &) override {
-    PRINT("Implement first.");
-    //    LOG_ERR("Implement first.");
+  void do_post_run(const std::shared_ptr<AllVariables> &u1) override {
+    // Check to see if it needs gathering.
+    if (u1->dims().n_cells == this->full_grid_->n_cells) {
+      super::do_post_process();
+    } else {
+      const auto &boundaries = partitioned_grid_->boundaries;
+      auto gatherer = make_mpi_all_variables_gatherer(
+          ZISA_MPI_TAG_ALL_VARS_POSTPROCESS, mpi_comm, boundaries);
+
+      auto full_all_vars
+          = std::make_shared<AllVariables>(gatherer->gather(*u1));
+      if (mpi_rank == 0) {
+        super::do_post_run(full_all_vars);
+      }
+    }
   }
 
-  void do_post_process() override { PRINT("Implement first."); }
+  void do_post_process() override {
+    if (mpi_rank == 0) {
+      super::do_post_process();
+    }
+  }
 
-  Grid load_full_grid() const {
+  std::shared_ptr<Grid> compute_full_grid() const override {
     int_t quad_deg = this->choose_volume_deg();
 
     if (mpi_rank == 0) {
@@ -75,10 +92,10 @@ protected:
       zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
       zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
 
-      return Grid(deduce_element_type(max_neighbours),
-                  std::move(vertices_gbl),
-                  std::move(vertex_indices_gbl),
-                  quad_deg);
+      return std::make_shared<Grid>(deduce_element_type(max_neighbours),
+                                    std::move(vertices_gbl),
+                                    std::move(vertex_indices_gbl),
+                                    quad_deg);
     } else {
       auto sizes = shape_t<3>{};
       mpi::bcast(array_view(sizes.shape(), sizes.raw()), 0, mpi_comm);
@@ -92,10 +109,10 @@ protected:
       zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
       zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
 
-      return Grid(deduce_element_type(max_neighbours),
-                  std::move(vertices_gbl),
-                  std::move(vertex_indices_gbl),
-                  quad_deg);
+      return std::make_shared<Grid>(deduce_element_type(max_neighbours),
+                                    std::move(vertices_gbl),
+                                    std::move(vertex_indices_gbl),
+                                    quad_deg);
     }
   }
 
@@ -135,13 +152,13 @@ protected:
         compute_stencil_families(grid, stencil_params));
   }
 
-  void compute_full_renumbered_grid(const Grid &grid) const {
+  std::shared_ptr<Grid> compute_full_renumbered_grid(const Grid &grid) const {
     const auto &vertices = grid.vertices;
     const auto &vertex_indices = grid.vertex_indices;
     auto element_type = deduce_element_type(grid.max_neighbours);
     auto quad_deg = this->choose_volume_deg();
 
-    full_renumbered_grid_ = std::make_shared<Grid>(
+    return std::make_shared<Grid>(
         element_type,
         vertices,
         renumbered_vertex_indices(vertex_indices,
@@ -150,20 +167,16 @@ protected:
   }
 
   std::shared_ptr<Grid> compute_grid() const override {
-    auto full_grid = load_full_grid();
-    auto stencils = compute_stencils(full_grid);
+    auto full_grid = this->choose_full_grid();
+    auto stencils = compute_stencils(*full_grid);
 
-    auto partitioned_grid = partition_grid(full_grid, *stencils);
+    auto partitioned_grid = partition_grid(*full_grid, *stencils);
 
     auto [local_vertex_indices, local_vertices, local_stencils, halo]
-        = extract_subgrid(full_grid,
+        = extract_subgrid(*full_grid,
                           *partitioned_grid,
                           *stencils,
                           integer_cast<int_t>(mpi_rank));
-
-    if (mpi_rank == 0) {
-      compute_full_renumbered_grid(full_grid);
-    }
 
     halo_exchange_ = std::make_shared<MPIHaloExchange>(
         make_mpi_halo_exchange(halo, mpi_comm));
@@ -197,30 +210,23 @@ protected:
         super::choose_step_rejection());
   }
 
-  std::shared_ptr<Visualization> choose_visualization() override {
-    auto single_node_vis = super::choose_visualization();
+  std::shared_ptr<Visualization> compute_visualization() override {
+    auto single_node_vis = super::compute_visualization();
 
-    auto array_info
-        = std::make_shared<DistributedArrayInfo>(partitioned_grid_->boundaries);
-
-    auto cvars_gatherer
-        = std::make_unique<MPISingleNodeArrayGatherer<double, 2>>(
-            array_info, mpi_comm, 932);
-
-    auto avars_gatherer
-        = std::make_unique<MPISingleNodeArrayGatherer<double, 2>>(
-            array_info, mpi_comm, 491);
-
-    auto n_owned_cells = partitioned_grid_->boundaries[mpi_rank + 1]
-                         - partitioned_grid_->boundaries[mpi_rank];
-
-    auto gatherer = std::make_shared<AllVariablesGatherer>(
-        std::move(cvars_gatherer), std::move(avars_gatherer), n_owned_cells);
+    const auto &boundaries = partitioned_grid_->boundaries;
+    auto gatherer = make_mpi_all_variables_gatherer(
+        ZISA_MPI_TAG_ALL_VARS_VISUALIZATION, mpi_comm, boundaries);
 
     auto all_var_dims = this->choose_all_variable_dims();
     all_var_dims.n_cells = partitioned_grid_->boundaries[mpi_comm_size];
-    return std::make_shared<GatheredVisualization>(
-        gatherer, single_node_vis, all_var_dims);
+
+    auto permutation = std::make_shared<Permutation>(
+        factor_permutation(partitioned_grid_->permutation));
+
+    return std::make_shared<GatheredVisualization>(std::move(gatherer),
+                                                   std::move(permutation),
+                                                   single_node_vis,
+                                                   all_var_dims);
   }
 
   std::shared_ptr<SimulationClock> choose_simulation_clock() override {
@@ -259,7 +265,6 @@ protected:
   int mpi_rank;
   int mpi_comm_size;
 
-  mutable std::shared_ptr<Grid> full_renumbered_grid_ = nullptr;
   mutable std::shared_ptr<PartitionedGrid> partitioned_grid_ = nullptr;
   mutable std::shared_ptr<HaloExchange> halo_exchange_ = nullptr;
 };

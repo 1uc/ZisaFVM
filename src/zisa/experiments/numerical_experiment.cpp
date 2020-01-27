@@ -29,6 +29,18 @@ std::shared_ptr<Grid> NumericalExperiment::compute_grid() const {
   return load_grid(params["grid"]["file"], quad_deg);
 }
 
+std::shared_ptr<Grid> NumericalExperiment::choose_full_grid() const {
+  if (full_grid_ == nullptr) {
+    full_grid_ = compute_full_grid();
+  }
+
+  return full_grid_;
+}
+
+std::shared_ptr<Grid> NumericalExperiment::compute_full_grid() const {
+  return choose_grid();
+}
+
 std::shared_ptr<FileNameGenerator>
 NumericalExperiment::choose_file_name_generator() {
   auto fng = make_file_name_generator(params["io"]["filename"]);
@@ -189,6 +201,14 @@ std::shared_ptr<StepRejection> NumericalExperiment::choose_step_rejection() {
 
 std::shared_ptr<ProgressBar> NumericalExperiment::choose_progress_bar() {
   return std::make_shared<SerialProgressBar>(1);
+}
+
+std::shared_ptr<Visualization> NumericalExperiment::choose_visualization() {
+    if(visualization_ == nullptr) {
+        visualization_ = compute_visualization();
+    }
+
+    return visualization_;
 }
 
 } // namespace zisa

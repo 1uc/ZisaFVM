@@ -31,8 +31,13 @@ void DumpSnapshot<Model>::do_visualization(
   auto n_steps = simulation_clock.current_step();
 
   auto writer = pick_writer(file_name_generator->next_name());
-
   save_full_state(*writer, *model, all_variables, t, n_steps);
+}
+
+template <class Model>
+void DumpSnapshot<Model>::do_steady_state(const AllVariables &steady_state) {
+  auto writer = pick_writer(file_name_generator->steady_state_filename);
+  save(*writer, steady_state, all_labels<typename Model::cvars_t>());
 }
 
 template <class Model>
