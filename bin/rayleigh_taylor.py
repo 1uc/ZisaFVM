@@ -3,6 +3,7 @@
 import os
 import shutil
 import glob
+import h5py
 
 from datetime import timedelta
 
@@ -26,6 +27,8 @@ from tiwaz.tri_plot import tri_plot
 from tiwaz.scatter_plot import scatter_plot
 from tiwaz.gmsh import generate_circular_grids
 from tiwaz.queue_args import MPIQueueArgs
+
+from tiwaz.work_estimate import ZisaWorkEstimate
 
 
 class RayleighTaylorExperiment(sc.Subsection):
@@ -53,8 +56,9 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
-time = sc.Time(t_end=5.0)
-io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20)
+t_end = 1e-2
+time = sc.Time(t_end=t_end)
+io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=0)
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
 radius = 0.6
@@ -71,46 +75,38 @@ def grid_name_geo(l):
 
 
 def grid_name_msh(l):
-    return grid_name_stem(l) + ".msh"
+    return grid_name_stem(l) + ".msh.h5"
+
+
+def grid_name_hdf5(l):
+    return grid_name_stem(l) + ".msh.h5"
 
 
 def generate_grids():
     generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
 
 
-class ScaledWorkEstimate:
-    """Estimates the parallelizable work and time required by one CPU. """
+def make_work_estimate():
+    n0 = sc.read_n_cells(grid_name_hdf5(4))
 
-    def __init__(
-        self, w0, n_dims, t0, t_min=timedelta(minutes=1), t_max=timedelta(days=1)
-    ):
-        self.n_dims = n_dims
-        self.w0, self.t0 = w0, t0
-        self.t_min, self.t_max = t_min, t_max
+    # measured on Euler on L=4 with 96 cores.
+    t0 = 2 * timedelta(seconds=t_end / 1e-1 * 30 * 96)
 
-    def cpu_hours(self, launch_params):
-        l = launch_params["grid"]["level"]
+    # measured on Euler on L=4 with 2 and 96 cores.
+    b0 = 7.0 * 1e9
+    o0 = 0.05 * 1e9
 
-        cpu_hours = self.t0 * 2 ** ((self.n_dims + 1) * l)
-        return max(min(cpu_hours, self.t_max), self.t_min)
-
-    def work(self, launch_params):
-        l = launch_params["grid"]["level"]
-        return self.w0 * 2 ** (self.n_dims * l)
+    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-work_estimate = ScaledWorkEstimate(
-    w0=0.5, n_dims=2, t0=timedelta(minutes=5), t_max=timedelta(hours=4)
-)
-
-coarse_grid_levels = list(range(5, 6))
+coarse_grid_levels = list(range(1, 5))
 coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
     "grid": [sc.Grid(grid_name_msh(l), l) for l in coarse_grid_levels]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid("grids/polytrope-4.msh", 4)
+reference_grid = sc.Grid(grid_name_msh(2), 2)
 
 independent_choices = {
     "euler": [euler],
@@ -174,6 +170,7 @@ reference_choices = {
     "quadrature": [sc.Quadrature(4)],
     "grid": [reference_grid],
     "reference": [sc.Reference("isentropic", coarse_grid_names)],
+    "parallelization": [{"mode": "mpi"}],
 }
 
 base_choices = all_combinations(independent_choices)
@@ -241,11 +238,17 @@ def main():
     if args.run:
         build_zisa()
 
-        for c, r in all_runs:
-            launch_all(c, force=args.force, queue_args=MPIQueueArgs(work_estimate))
+        t_min = timedelta(minutes=10)
+        t_max = timedelta(hours=4)
+        work_estimate = make_work_estimate()
 
-            # if args.reference:
-            #     launch_all(r, force=args.force, queue_args=MPIQueueArgs(work_estimate))
+        queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
+
+        for c, r in all_runs:
+            launch_all(c, force=args.force, queue_args=queue_args)
+
+            if args.reference:
+                launch_all(r, force=args.force, queue_args=queue_args)
 
     if args.post_process:
         for c, r in all_runs:

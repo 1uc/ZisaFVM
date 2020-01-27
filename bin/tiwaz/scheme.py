@@ -1,4 +1,5 @@
 import json
+import h5py
 
 
 class Subsection(dict):
@@ -234,3 +235,8 @@ class Reference(Subsection):
         super().__init__(
             {"equilibrium": equilibrium, "coarse_grids": coarse_grid_names}
         )
+
+
+def read_n_cells(filename):
+    with h5py.File(filename, "r") as h5:
+        return h5["vertex_indices"].shape[0]

@@ -61,8 +61,8 @@ class MPIHeuristics:
 
         if host == "euler":
             self.cores_per_node = 12
-            self.max_nodes = 8
-            self.work_per_core = 4.0
+            self.max_nodes = 20
+            self.work_per_core = 2.0
 
         elif host == "daint":
             self.cores_per_node = 12
@@ -102,3 +102,6 @@ class MPIHeuristics:
         cpn = self.cores_per_node
         n_proc = ((n_proc + cpn - 1) // cpn) * cpn
         return max(2, min(n_proc, self.max_cores))
+
+    def memory_per_core(self, overhead_per_process, total_memory, n_tasks):
+        return overhead_per_process + total_memory / n_tasks
