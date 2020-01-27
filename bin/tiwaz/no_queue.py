@@ -14,7 +14,7 @@ class NoQueue:
 
         raw_cmd = " ".join([str(c) for c in wrapped_command])
         with open("runjobs.sh", "a") as f:
-            f.write(f"cd {directory} && {raw_cmd} ; cd -")
+            f.write(f"cd {directory} && {raw_cmd} ; cd - \n")
 
         print(raw_cmd)
         # subprocess.run(wrapped_command, cwd=directory, check=True)

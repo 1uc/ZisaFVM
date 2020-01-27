@@ -12,8 +12,8 @@ std::shared_ptr<AllVariables> Polytrope::compute_initial_conditions() {
   auto all_variables = compute_initial_conditions(amp, width);
   auto steady_state = compute_initial_conditions(0.0, width);
 
-  auto writer = HDF5SerialWriter(file_name_generator->steady_state_filename);
-  save(writer, *steady_state, all_labels<euler_var_t>());
+  auto vis = choose_visualization();
+  vis->steady_state(*steady_state);
 
   return all_variables;
 }
