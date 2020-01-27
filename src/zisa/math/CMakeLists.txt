@@ -13,6 +13,7 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/geometric_spacing.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/linear_spacing.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/newton.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/permutation.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/poly2d.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/reference_solution.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/tetrahedral_rule.cpp
