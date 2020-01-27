@@ -17,7 +17,7 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
   auto params = zisa::StencilFamilyParams(
       {3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5, 1.5});
 
-  auto grid = zisa::load_gmsh("grids/convergence/unit_cube_1.msh");
+  auto grid = zisa::load_grid("grids/convergence/unit_cube_1.msh");
 
   auto n_cells = grid->n_cells;
   for (zisa::int_t i_cell = 0; i_cell < n_cells; ++i_cell) {

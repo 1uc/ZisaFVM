@@ -41,7 +41,7 @@ std::shared_ptr<AllVariables> initial_conditions(const Grid &grid,
 }
 
 TEST_CASE("ReferenceSolution; basic API", "[math]") {
-  auto fine_grid = zisa::load_gmsh("grids/convergence/unit_square_3.msh", 4);
+  auto fine_grid = zisa::load_grid("grids/convergence/unit_square_3.msh", 4);
   auto coarse_gridnames
       = std::vector<std::string>{"grids/convergence/unit_square_0.msh",
                                  "grids/convergence/unit_square_1.msh"};
@@ -61,7 +61,7 @@ TEST_CASE("ReferenceSolution; basic API", "[math]") {
   zisa::int_t k_var = 0;
 
   for (const auto &coarse_gridname : coarse_gridnames) {
-    auto coarse_grid = zisa::load_gmsh(coarse_gridname, 4);
+    auto coarse_grid = zisa::load_grid(coarse_gridname, 4);
     auto n_cells = coarse_grid->n_cells;
 
     auto approx = ref.average(*coarse_grid);

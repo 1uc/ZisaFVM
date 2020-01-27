@@ -99,8 +99,7 @@ double largest_circum_radius(const Grid &grid);
 double smallest_inradius(const Grid &grid);
 
 std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg);
-std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg);
-std::shared_ptr<Grid> load_gmsh(const std::string &filename);
+std::shared_ptr<Grid> load_grid(const std::string &filename);
 
 /// Generate all moment for a 2D poly of degree 'deg'.
 array<double, 1>

@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
   auto n_parts = options["partitions"].as<int>();
   auto gmsh_file = options["grid"].as<std::string>();
   auto part_file = options["output"].as<std::string>();
-  auto grid = zisa::load_gmsh(gmsh_file);
+  auto grid = zisa::load_grid(gmsh_file);
 
   auto stencil_params = zisa::StencilFamilyParams(
       {3, 2, 2, 2}, {"c", "b", "b", "b"}, {5.0, 2.0, 2.0, 2.0});

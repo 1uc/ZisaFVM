@@ -16,7 +16,7 @@ int main() {
 
   auto window = std::make_shared<zisa::opengl::Window>("OpenGL demo", 600, 600);
 
-  auto grid = zisa::load_gmsh("grids/convergence/unit_square_2.msh");
+  auto grid = zisa::load_grid("grids/convergence/unit_square_2.msh");
   zisa::opengl::TriPlot plot(window, grid->vertices, grid->vertex_indices);
 
   auto colors

@@ -9,7 +9,7 @@
 namespace zisa {
 
 TEST_CASE("for_each; saxpy-like update") {
-  auto grid = zisa::load_gmsh(zisa::TestGridFactory::unit_square(0), 1);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_square(0));
 
   zisa::int_t n_vars = 3;
   zisa::int_t n_cells = grid->n_cells;

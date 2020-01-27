@@ -33,7 +33,7 @@ static void check_convergence(double expected, double atol, zisa::int_t deg) {
   std::vector<double> resolution;
 
   for (auto &&grid_name : grid_names) {
-    auto grid = zisa::load_gmsh(grid_name, deg);
+    auto grid = zisa::load_grid(grid_name, deg);
 
     error.push_back(zisa::abs(zisa::quadrature(f, *grid) - exact));
     resolution.push_back(zisa::largest_circum_radius(*grid));

@@ -12,7 +12,7 @@
 TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
   auto quad_deg = zisa::int_t(2);
-  auto grid = zisa::load_gmsh("grids/unit_tests/polytrope.msh", quad_deg);
+  auto grid = zisa::load_grid("grids/unit_tests/polytrope.msh", quad_deg);
   auto n_cells = grid->n_cells;
   auto n_cvars = zisa::int_t(5);
   auto n_avars = zisa::int_t(0);

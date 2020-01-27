@@ -768,23 +768,37 @@ double volume(const Grid &grid) {
       zisa::cells(grid), [](int_t, const Cell &cell) { return volume(cell); });
 }
 
-std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
+std::shared_ptr<Grid> load_grid_gmsh(const std::string &filename, int_t deg) {
+  deg = zisa::max(1ul, deg);
 
+  auto gmsh = GMSHData(filename);
+  return std::make_shared<Grid>(gmsh.element_type,
+                                std::move(gmsh.vertices),
+                                std::move(gmsh.vertex_indices),
+                                deg);
+}
+
+std::shared_ptr<Grid> load_grid_gmsh_h5(const std::string &filename,
+                                        int_t deg) {
+  auto reader = HDF5SerialReader(filename);
+
+  int n_dims = reader.read_scalar<int>("n_dims");
+  auto element_type = (n_dims == 2 ? GMSHElementType::triangle
+                                   : GMSHElementType::tetrahedron);
+
+  auto vertex_indices = array<int_t, 2>::load(reader, "vertex_indices");
+  auto vertices = array<XYZ, 1>::load(reader, "vertices");
+  return std::make_shared<Grid>(
+      element_type, std::move(vertices), std::move(vertex_indices), deg);
+}
+
+std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
   auto len = filename.size();
 
   if (filename.substr(len - 4) == ".msh") {
-    return load_gmsh(filename, quad_deg);
+    return load_grid_gmsh(filename, quad_deg);
   } else if (filename.substr(len - 7) == ".msh.h5") {
-    auto reader = HDF5SerialReader(filename);
-
-    int n_dims = reader.read_scalar<int>("n_dims");
-    auto element_type = (n_dims == 2 ? GMSHElementType::triangle
-                                     : GMSHElementType::tetrahedron);
-
-    auto vertex_indices = array<int_t, 2>::load(reader, "vertex_indices");
-    auto vertices = array<XYZ, 1>::load(reader, "vertices");
-    return std::make_shared<Grid>(
-        element_type, std::move(vertices), std::move(vertex_indices), quad_deg);
+    return load_grid_gmsh_h5(filename, quad_deg);
   } else if (filename.substr(len - 3) == ".h5") {
     auto reader = HDF5SerialReader(filename);
     return std::make_shared<Grid>(Grid::load(reader));
@@ -793,18 +807,8 @@ std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
   LOG_ERR(string_format("Unknown filetype. [%s]", filename.c_str()));
 }
 
-std::shared_ptr<Grid> load_gmsh(const std::string &filename) {
-  return load_gmsh(filename, 1);
-}
-
-std::shared_ptr<Grid> load_gmsh(const std::string &filename, int_t quad_deg) {
-  quad_deg = zisa::max(1ul, quad_deg);
-
-  auto gmsh = GMSHData(filename);
-  return std::make_shared<Grid>(gmsh.element_type,
-                                std::move(gmsh.vertices),
-                                std::move(gmsh.vertex_indices),
-                                quad_deg);
+std::shared_ptr<Grid> load_grid(const std::string &filename) {
+  return load_grid(filename, 1);
 }
 
 void save(HDF5Writer &writer, const Grid &grid) {

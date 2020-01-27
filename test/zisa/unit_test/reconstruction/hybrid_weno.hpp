@@ -35,7 +35,7 @@ void test_hybrid_weno_convergence(
   auto quad_deg = zisa::max(3, max_order(params) - 1);
 
   for (auto &&grid_name : grid_names) {
-    auto grid = load_gmsh(grid_name, quad_deg);
+    auto grid = load_grid(grid_name, quad_deg);
 
     auto rc = std::vector<RC>();
     rc.reserve(grid->n_cells);
@@ -130,7 +130,7 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
 
     constexpr int_t n_vars = 5;
 
-    auto grid = load_gmsh(grid_name, quad_deg);
+    auto grid = load_grid(grid_name, quad_deg);
     auto rc = EulerGlobalReconstruction<NoEquilibrium, RC, scaling_t>(
         grid, params, NoEquilibrium{}, scaling);
 

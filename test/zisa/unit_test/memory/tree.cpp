@@ -3,7 +3,7 @@
 #include <zisa/testing/testing_framework.hpp>
 
 TEST_CASE("Tree; basic API", "[.][memory][tree]") {
-  auto grid = zisa::load_gmsh("grids/small.msh", 0);
+  auto grid = zisa::load_grid("grids/small.msh");
 
   auto tree = zisa::Tree<int, 4>{};
   auto f = [&grid](zisa::int_t i, zisa::int_t j) {

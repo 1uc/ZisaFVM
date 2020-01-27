@@ -23,7 +23,7 @@ static void check_convergence(const std::vector<std::string> &grid_names,
   std::vector<double> resolution;
 
   for (auto &&grid_name : grid_names) {
-    auto grid = zisa::load_gmsh(grid_name, deg);
+    auto grid = zisa::load_grid(grid_name, deg);
 
     auto approx = zisa::quadrature(f, *grid);
     error.push_back(zisa::abs(approx - exact));
