@@ -36,7 +36,7 @@ void GatheredVisualization::gather_and_visualize(
       job->join();
     }
 
-    job = std::make_unique<std::thread>([this, &vis]() {
+    job = std::make_unique<std::thread>([this, vis]() {
       gatherer->receive(buffer);
 
       apply_permutation(array_view(buffer.cvars), *permutation);
