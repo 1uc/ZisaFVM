@@ -14,6 +14,10 @@ GatheredVisualization::GatheredVisualization(
       permutation(std::move(permutation)),
       visualization(std::move(visualization)) {
 
+  LOG_ERR_IF(this->gatherer == nullptr, "Received a `nullptr`.");
+  LOG_ERR_IF(this->permutation == nullptr, "Received a `nullptr`.");
+  LOG_ERR_IF(this->visualization == nullptr, "Received a `nullptr`.");
+
   buffer = AllVariables(all_var_dims);
 }
 
@@ -52,6 +56,9 @@ void GatheredVisualization::gather_and_visualize(
 void GatheredVisualization::do_visualization(
     const AllVariables &all_variables,
     const SimulationClock &simulation_clock) {
+
+  LOG_ERR_IF(all_variables.avars.shape(1) != 0,
+             "Implement advected variables first.");
 
   auto vis = [this, &simulation_clock](const AllVariables &full_vars) {
     (*visualization)(full_vars, simulation_clock);

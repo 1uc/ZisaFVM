@@ -20,10 +20,10 @@ struct Cycle {
   explicit Cycle(int_t cycle_length) : cycle(shape_t<1>(cycle_length)) {}
 
   int_t operator()(int_t i) const { return cycle(i); }
-  int_t & operator()(int_t i) { return cycle(i); }
+  int_t &operator()(int_t i) { return cycle(i); }
 
   int_t operator[](int_t i) const { return cycle(i); }
-  int_t & operator[](int_t i) { return cycle(i); }
+  int_t &operator[](int_t i) { return cycle(i); }
 
   int_t size() const { return cycle.size(); }
 
