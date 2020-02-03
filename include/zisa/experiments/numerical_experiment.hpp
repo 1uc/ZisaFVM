@@ -111,7 +111,10 @@ protected:
 
   virtual std::shared_ptr<TimeIntegration> choose_time_integration();
   virtual std::shared_ptr<SimulationClock> choose_simulation_clock();
-  virtual std::shared_ptr<BoundaryCondition> choose_boundary_condition();
+
+  std::shared_ptr<BoundaryCondition> choose_boundary_condition();
+  virtual std::shared_ptr<BoundaryCondition> compute_boundary_condition();
+
   virtual std::shared_ptr<TimeLoop> choose_time_loop();
   virtual std::shared_ptr<ProgressBar> choose_progress_bar();
 
@@ -123,6 +126,7 @@ protected:
   mutable std::shared_ptr<Grid> grid_;
   mutable std::shared_ptr<Grid> full_grid_;
   mutable std::shared_ptr<Visualization> visualization_;
+  mutable std::shared_ptr<BoundaryCondition> boundary_condition_;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
 };
 

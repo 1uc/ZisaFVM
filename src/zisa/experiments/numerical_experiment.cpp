@@ -66,7 +66,10 @@ void NumericalExperiment::do_run() {
 
   print_grid_info();
 
+  auto bc = choose_boundary_condition();
   auto u0 = choose_initial_conditions();
+  bc->apply(*u0, /* t = */ 0.0);
+
   auto time_loop = choose_time_loop();
 
   auto u1 = (*time_loop)(u0);
@@ -135,6 +138,14 @@ std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
 
 std::shared_ptr<BoundaryCondition>
 NumericalExperiment::choose_boundary_condition() {
+  if(boundary_condition_ == nullptr) {
+    boundary_condition_ = compute_boundary_condition();
+  }
+  return boundary_condition_;
+}
+
+std::shared_ptr<BoundaryCondition>
+NumericalExperiment::compute_boundary_condition() {
   return std::make_shared<NoBoundaryCondition>();
 }
 

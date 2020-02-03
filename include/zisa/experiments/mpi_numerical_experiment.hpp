@@ -250,8 +250,8 @@ protected:
     return std::make_shared<DistributedCFLCondition>(cfl, all_reduce);
   }
 
-  std::shared_ptr<BoundaryCondition> choose_boundary_condition() override {
-    auto bc = super::choose_boundary_condition();
+  std::shared_ptr<BoundaryCondition> compute_boundary_condition() override {
+    auto bc = super::compute_boundary_condition();
     return std::make_shared<HaloExchangeBC>(bc, halo_exchange_);
   }
 
