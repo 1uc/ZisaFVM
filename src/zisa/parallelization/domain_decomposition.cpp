@@ -245,10 +245,13 @@ extract_subgrid(const Grid &grid,
     for (int_t k = 0; k < max_neighbours; ++k) {
       int_t j = neighbours(sigma(boundaries[k_part] + i), k);
       if (j < n_cells) {
-        int_t p = partition(j);
-        if (p != k_part) {
-          if (std::find(m[p].cbegin(), m[p].cend(), j) == m[p].cend()) {
-            m[p].push_back(j);
+        const auto &l2g = stencils[j].local2global();
+        for (auto jj : l2g) {
+          int_t p = partition(jj);
+          if (p != k_part) {
+            if (std::find(m[p].cbegin(), m[p].cend(), jj) == m[p].cend()) {
+              m[p].push_back(jj);
+            }
           }
         }
       }
