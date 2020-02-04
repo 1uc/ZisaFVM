@@ -27,11 +27,11 @@ compute_partition_full_stencil(const Grid &grid,
     for (int_t k = 0; k < stencils[i].size(); ++k) {
       int_t j = stencils[i][k];
 
-      if(std::find(graph[i].cbegin(), graph[i].cend(), j) == graph[i].cend()) {
+      if (std::find(graph[i].cbegin(), graph[i].cend(), j) == graph[i].cend()) {
         graph[i].push_back(j);
       }
 
-      if(std::find(graph[j].cbegin(), graph[j].cend(), i) == graph[j].cend()) {
+      if (std::find(graph[j].cbegin(), graph[j].cend(), i) == graph[j].cend()) {
         graph[j].push_back(i);
       }
     }
@@ -214,6 +214,7 @@ extract_subgrid(const Grid &grid,
                 const PartitionedGrid &partitioned_grid,
                 const array<StencilFamily, 1> &stencils,
                 int_t k_part) {
+
   const auto &neighbours = grid.neighbours;
   const auto &sigma = partitioned_grid.permutation;
   auto tau = compute_inverse_permutation(sigma);

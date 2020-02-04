@@ -138,14 +138,13 @@ void TimeLoop::print_goodbye_message() const {
 void TimeLoop::print(const std::string &str) const {
 #if ZISA_HAS_MPI == 1
   static int mpi_rank = zisa::mpi::rank(MPI_COMM_WORLD);
-  if(mpi_rank == 0) {
+  if (mpi_rank == 0) {
     std::cout << str;
   }
 #else
   std::cout << str;
 #endif
 }
-
 
 void TimeLoop::start_timer() { start_time = current_time_stamp(); }
 

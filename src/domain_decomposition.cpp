@@ -12,11 +12,11 @@
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/loops/for_each.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/math/permutation.hpp>
 #include <zisa/memory/array_view.hpp>
 #include <zisa/model/euler.hpp>
 #include <zisa/parallelization/halo_exchange.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
-#include <zisa/math/permutation.hpp>
 
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/boundary/no_boundary_condition.hpp>
@@ -24,8 +24,8 @@
 // I/O related includes
 #include <zisa/io/dump_snapshot.hpp>
 #include <zisa/io/gathered_visualization.hpp>
-#include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
+#include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
 #include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
 
 #include <zisa/parallelization/domain_decomposition.hpp>

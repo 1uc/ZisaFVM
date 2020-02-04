@@ -33,12 +33,8 @@ public:
   int_t local(int_t k) const;
   int_t global(int_t k) const;
 
-  array<int_t, 1> local() const {
-    return local_;
-  }
-  array<int_t, 1> global() const {
-    return global_;
-  }
+  const array<int_t, 1> &local() const { return local_; }
+  const array<int_t, 1> &global() const { return global_; }
 
   /// Factor by which the LSQ problem is over determined.
   double overfit_factor() const;
@@ -56,9 +52,9 @@ public:
   int_t size() const;
 
   /// Apply a permutation to the global indices.
-  template<class F>
+  template <class F>
   void apply_permutation(const F &f) {
-    for(auto &i : global_) {
+    for (auto &i : global_) {
       i = f(i);
     }
   }

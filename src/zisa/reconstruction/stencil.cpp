@@ -99,7 +99,6 @@ int_t Stencil::max_size() const { return max_size_; }
 
 StencilBias Stencil::bias() const { return bias_; }
 double Stencil::overfit_factor() const { return overfit_factor_; }
-
 bool operator==(const Stencil &a, const Stencil &b) {
   if (a.size() != b.size()) {
     return false;
