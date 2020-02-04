@@ -15,7 +15,7 @@ class ScatterPlot:
         radii = np.linalg.norm(grid.cell_centers, axis=1)
 
         plt.figure(self.fig.number)
-        plt.plot(radii, data, "k*", markersize=2)
+        plt.plot(radii, data, "r*", markersize=2)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
@@ -55,8 +55,7 @@ def plot_visual_convergence(data, solvers, labels, filename):
 
             for d in sdata:
                 plot(d["grid"], d["u_approx"].dvars[var])
-
-            plot.reference(d["fine_grid"], d["u_exact"].dvars[var])
+            # plot.reference(sdata[0]["fine_grid"], sdata[0]["u_exact"].dvars[var])
 
             label = labels(solver)
             plot.finalize(label)

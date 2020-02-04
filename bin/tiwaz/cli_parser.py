@@ -41,6 +41,12 @@ def default_cli_parser(parser_help):
     )
 
     parser.add_argument(
+        "--reference-only",
+        action="store_true",
+        help="Only compute the reference solution.",
+    )
+
+    parser.add_argument(
         "--generate-grids",
         action="store_true",
         help="Generate the GMSH .geo / .msh files required.",

@@ -32,8 +32,8 @@ with open("test.xdmf", "w") as f:
     f.write(xdmf.xml_to_string(xdmf.generate_xdmf(grid_file, data_files, components)))
 
 # test the subgrid
-grid_files = [f"grid_part-{n:04d}.h5" for n in range(3)]
-data_files = [f"data_part-{n:04d}.h5" for n in range(3)]
+grid_files = [f"grid_part-{n:04d}.h5" for n in range(12)]
+data_files = [f"data_part-{n:04d}.h5" for n in range(12)]
 
 for grid_file, data_file in zip(grid_files, data_files):
     grid = load_grid(grid_file)
