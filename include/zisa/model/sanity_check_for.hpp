@@ -23,7 +23,14 @@ public:
       auto u = cvars_t(cvars(i));
 
       if (!isplausible(u)) {
+#if ZISA_HAS_MPI == 1
+        std::cout << string_format("[PE %d] (%d) %s\n",
+                                   zisa::mpi::rank(MPI_COMM_WORLD),
+                                   i,
+                                   format_as_list(u).c_str());
+#else
         std::cout << string_format("(%d) [", i) << u << "]\n";
+#endif
         return false;
       }
     }
