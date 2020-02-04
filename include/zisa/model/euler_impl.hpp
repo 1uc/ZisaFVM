@@ -86,19 +86,11 @@ std::string Euler<EOS, Gravity>::str() const {
 }
 
 ANY_DEVICE_INLINE bool notplausible(const euler_var_t &u) {
-  if (u(0) <= 0 || u(4) <= 0 || !isreal(u)) {
-    return true;
-  }
-
-  return false;
+  return u(0) <= 0 || u(4) <= 0 || !isreal(u);
 }
 
 ANY_DEVICE_INLINE bool isplausible(const euler_var_t &u) {
-  if (u(0) <= 0 || u(4) <= 0 || !isreal(u)) {
-    return false;
-  }
-
-  return true;
+  return !notplausible(u);
 }
 
 } // namespace zisa
