@@ -32,8 +32,12 @@ TEST_CASE("Permuation", "[math]") {
   CHECK(cycles(2)(1) == 6);
 
   std::vector<double> original{0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0};
+  std::vector<double> to_permute = original;
   std::vector<double> permutated{0.0, 20.0, 40.0, 60.0, 50.0, 10.0, 30.0};
 
-  zisa::apply_permutation(zisa::array_view(original), permutation);
-  CHECK(original == permutated);
+  zisa::apply_permutation(zisa::array_view(to_permute), permutation);
+  CHECK(to_permute == permutated);
+
+  zisa::reverse_permutation(zisa::array_view(to_permute), permutation);
+  CHECK(to_permute == original);
 }
