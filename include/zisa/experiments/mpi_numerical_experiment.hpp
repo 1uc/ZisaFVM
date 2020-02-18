@@ -59,7 +59,13 @@ protected:
 
       auto full_all_vars
           = std::make_shared<AllVariables>(gatherer->gather(*u1));
+
       if (mpi_rank == 0) {
+        // Restore original order.
+        const auto &sigma = factor_permutation(partitioned_grid_->permutation);
+        reverse_permutation(array_view(full_all_vars->cvars), sigma);
+        reverse_permutation(array_view(full_all_vars->avars), sigma);
+
         super::do_post_run(full_all_vars);
       }
     }
