@@ -92,8 +92,7 @@ bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs) {
 }
 
 array<StencilFamily, 1>
-compute_stencil_families(const Grid &grid,
-                         const StencilFamilyParams &params) {
+compute_stencil_families(const Grid &grid, const StencilFamilyParams &params) {
   auto stencil_families = array<StencilFamily, 1>(grid.n_cells);
   for_each(flat_range(stencil_families),
            [&stencil_families, &grid, &params](int_t i) {
