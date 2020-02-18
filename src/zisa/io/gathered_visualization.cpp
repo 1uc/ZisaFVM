@@ -34,11 +34,11 @@ void GatheredVisualization::gather_and_visualize(
              "Implement advected variables first.");
 
   if (gatherer->is_this_rank_gathering()) {
-    gatherer->copy_local_patch(buffer, all_variables);
-
     if (job != nullptr) {
       job->join();
     }
+
+    gatherer->copy_local_patch(buffer, all_variables);
 
     job = std::make_unique<std::thread>([this, vis]() {
       gatherer->receive(buffer);
