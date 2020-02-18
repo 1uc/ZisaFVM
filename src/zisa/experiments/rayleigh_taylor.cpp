@@ -58,7 +58,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
     double rho = rho_eq;
     double vx = v * zisa::cos(alpha);
     double vy = v * zisa::sin(alpha);
-    double p = p_eq + 1.0 * zisa::exp(-zisa::pow<2>(r / width));
+    double p = p_eq;
     double E = euler->energy(rho, vx, vy, p);
 
     return euler_var_t{rho, rho * vx, rho * vy, 0.0, E};
