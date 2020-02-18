@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from .post_process import extract_solver_data
+from .colors import graded_colors
 
 
 class ScatterPlot:
@@ -11,11 +12,11 @@ class ScatterPlot:
     def __del__(self):
         plt.close(fig=self.fig)
 
-    def __call__(self, grid, data):
+    def __call__(self, grid, data, color=None):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
 
         plt.figure(self.fig.number)
-        plt.plot(radii, data, "r*", markersize=2)
+        plt.plot(radii, data, "*", markersize=2, color=color)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
@@ -49,13 +50,14 @@ def scatter_plot(grid, data):
 def plot_visual_convergence(data, solvers, labels, filename):
     for solver in solvers:
         sdata = extract_solver_data(solver, data)
+        colors = graded_colors("blue", len(sdata))
 
         for var in ["rho", "E"]:
             plot = ScatterPlot()
 
-            for d in sdata:
-                plot(d["grid"], d["u_approx"].dvars[var])
-            # plot.reference(sdata[0]["fine_grid"], sdata[0]["u_exact"].dvars[var])
+            for d, c in zip(sdata, colors):
+                plot(d["grid"], d["u_approx"].dvars[var], color=c)
+            plot.reference(d["fine_grid"], d["u_exact"].dvars[var])
 
             label = labels(solver)
             plot.finalize(label)

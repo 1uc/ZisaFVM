@@ -28,7 +28,7 @@ class MPIQueueArgs(QueueArgs):
         estimate = self.work_estimate.cpu_hours(launch_param) / n_tasks
 
         if estimate > self.t_max:
-            print("Warning: estimated runtime exceeds maximum.")
+            raise RuntimeError("Warning: estimated runtime exceeds maximum.")
 
         return min(max(estimate, self.t_min), self.t_max)
 

@@ -18,6 +18,7 @@ from tiwaz.post_process import load_results
 from tiwaz.cli_parser import default_cli_parser
 from tiwaz.launch_job import launch_all
 from tiwaz.latex_tables import write_convergence_table
+from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_circular_grids
 from tiwaz.work_estimate import ZisaWorkEstimate
@@ -43,8 +44,7 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-# amplitudes = [0.0, 1e-6, 1e-2]
-amplitudes = [1e-4]
+amplitudes = [0.0, 1e-6, 1e-2]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
@@ -63,9 +63,8 @@ def make_work_estimate():
     # measured on Euler on L=4 with 96 cores.
     t0 = 2 * timedelta(seconds=t_end / 1e-1 * 30 * 96)
 
-    # measured on Euler on L=4 with 2 and 96 cores.
-    b0 = 7.0 * 1e9
-    o0 = 0.05 * 1e9
+    b0 = 0.5 * 1e9
+    o0 = 1.0 * 1e9
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
@@ -83,10 +82,10 @@ def grid_name_hdf5(l):
 
 
 radius = 0.5
-mesh_levels = list(range(0, 5))
+mesh_levels = list(range(0, 6))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
-coarse_grid_levels = list(range(0, 3))
+coarse_grid_levels = list(range(0, 4))
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -106,19 +105,19 @@ independent_choices = {
 
 dependent_choices = {
     "reconstruction": [
-        # sc.Reconstruction("CWENO-AO", [1]),
+        sc.Reconstruction("CWENO-AO", [1]),
         sc.Reconstruction(
             "CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
         ),
-        # sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
-        # sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
+        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
+        sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
     ],
-    "ode": [sc.ODE("SSP2")],
+    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("SSP3")],
     "quadrature": [
-        # sc.Quadrature(1),
+        sc.Quadrature(1),
         sc.Quadrature(2),
-        # sc.Quadrature(3),
-        # sc.Quadrature(4),
+        sc.Quadrature(3),
+        sc.Quadrature(4),
     ],
 }
 
@@ -167,26 +166,36 @@ def post_process(coarse_runs, reference_run):
 
     filename = coarse_runs[0]["experiment"].short_id()
     write_convergence_table(results, columns, labels, filename)
+    write_convergence_plots(results, columns, labels, filename)
     plot_visual_convergence(results, columns, labels, filename)
 
-    # coarse_run = coarse_runs[0]
-    # coarse_dir = folder_name(coarse_run)
-    # coarse_grid = load_grid(coarse_dir)
+    for coarse_run in coarse_runs:
+        coarse_dir = folder_name(coarse_run)
+        coarse_grid = load_grid(coarse_dir)
 
-    # data_files = find_data_files(coarse_dir)
+        data_files = find_data_files(coarse_dir)
 
-    # for data_file in data_files:
-    #     u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+        key = "rho"
+        for l, data_file in enumerate(data_files):
+            u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
 
-    #     rho = u_coarse.cvars["rho"]
-    #     vx = u_coarse.cvars["mv1"] / rho
-    #     vy = u_coarse.cvars["mv2"] / rho
+            rho = u_coarse.cvars[key]
+            drho = u_coarse.dvars[key]
 
-    #     trip = TriPlot()
-    #     trip.color_plot(coarse_grid, rho)
-    #     trip.quiver(coarse_grid, vx, vy)
+            # vx = u_coarse.cvars["mv1"] / rho
+            # vy = u_coarse.cvars["mv2"] / rho
 
-    #     plt.show()
+            trip = TriPlot()
+            trip.color_plot(coarse_grid, rho)
+            # trip.quiver(coarse_grid, vx, vy)
+
+            plt.savefig(f"gaussian_bump_scatter_{key}.png", dpi=300)
+
+            trip = TriPlot()
+            trip.color_plot(coarse_grid, drho)
+            # trip.quiver(coarse_grid, vx, vy)
+
+            plt.savefig(f"{coarse_dir}_d{key}_{l:04d}.png", dpi=300)
 
 
 class TableLabels:

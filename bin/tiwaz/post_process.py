@@ -152,9 +152,9 @@ def load_results(coarse_runs, reference_run):
         l1_err = np.sum(volumes * np.abs(rho_approx - rho_ref))
         l1_eq_err = np.sum(volumes * np.abs(drho_approx - drho_ref))
 
-        if np.abs(u_approx.time - t_end) > 1e-8 * t_end:
-            l1_err = np.nan * l1_err
-            l1_eq_err = np.nan * l1_eq_err
+        # if np.abs(u_approx.time - t_end) > 1e-8 * t_end:
+        #     l1_err = np.nan * l1_err
+        #     l1_eq_err = np.nan * l1_eq_err
 
         results.append(
             {

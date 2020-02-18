@@ -37,8 +37,8 @@ class RayleighTaylorExperiment(sc.Subsection):
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "drho": 0.01,
-                    "amplitude": 0.001,
+                    "drho": 0.1,
+                    "amplitude": 0.0001,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -56,13 +56,13 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
-t_end = 1e-2
+t_end = 5.0
 time = sc.Time(t_end=t_end)
-io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=0)
+io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20)
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
 radius = 0.6
-mesh_levels = list(range(0, 6))
+mesh_levels = list(range(1, 6))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 
@@ -93,13 +93,13 @@ def make_work_estimate():
     t0 = 2 * timedelta(seconds=t_end / 1e-1 * 30 * 96)
 
     # measured on Euler on L=4 with 2 and 96 cores.
-    b0 = 7.0 * 1e9
-    o0 = 0.05 * 1e9
+    b0 = 0.0 * 1e9
+    o0 = 2.0 * 1e9
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-coarse_grid_levels = list(range(1, 5))
+coarse_grid_levels = list(range(2, 5))
 coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -111,7 +111,7 @@ reference_grid = sc.Grid(grid_name_msh(2), 2)
 independent_choices = {
     "euler": [euler],
     "flux-bc": [sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("constant")],
+    "well-balancing": [sc.WellBalancing("isentropic")],
     "io": [io],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
@@ -127,7 +127,7 @@ dependent_choices = {
     "ode": [
         # sc.ODE("ForwardEuler"),
         # sc.ODE("SSP3")
-        sc.ODE("SSP3", cfl_number=0.9)
+        sc.ODE("SSP3", cfl_number=0.8)
     ],
     "quadrature": [
         # sc.Quadrature(1),
@@ -202,9 +202,7 @@ def post_process(coarse_runs, reference_run):
         coarse_grid = load_grid(coarse_dir)
         data_files = find_data_files(coarse_dir)
 
-        for filename in [
-            data_files[10 * i] for i in range(0, 11) if i * 10 < len(data_files)
-        ]:
+        for filename in data_files:
             u_coarse = load_data(filename, find_steady_state_file(coarse_dir))
 
             rho = u_coarse.cvars["rho"]
@@ -243,6 +241,7 @@ def main():
         work_estimate = make_work_estimate()
 
         queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
+        # queue_args = dict()
 
         for c, r in all_runs:
             launch_all(c, force=args.force, queue_args=queue_args)
