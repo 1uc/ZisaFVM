@@ -4,6 +4,8 @@ import os
 import shutil
 import glob
 
+from datetime import timedelta
+
 import matplotlib.pyplot as plt
 
 import tiwaz
@@ -27,6 +29,9 @@ from tiwaz.post_process import find_steady_state_file
 from tiwaz.post_process import write_xdmf
 from tiwaz.tri_plot import TriPlot
 
+from tiwaz.queue_args import MPIQueueArgs
+from tiwaz.work_estimate import ZisaFixedMemoryWorkEstimate
+
 
 class ShockBubbleExperiment(sc.Subsection):
     def __init__(self, amplitude, width):
@@ -49,7 +54,8 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.ConstantGravity()
 euler = sc.Euler(eos, gravity)
 
-time = sc.Time(t_end=0.09)
+t_end = 0.09
+time = sc.Time(t_end=t_end)
 io = sc.IO("hdf5", "shock_bubble", n_snapshots=1)
 
 
@@ -61,22 +67,22 @@ def grid_name_geo(l):
     return grid_name_stem(l) + ".geo"
 
 
-def grid_name_msh(l):
-    return grid_name_stem(l) + ".msh"
+def grid_name_hdf5(l):
+    return grid_name_stem(l) + ".msh.h5"
 
 
 mesh_width = 1.0
-mesh_levels = list(range(0, 3))
+mesh_levels = list(range(0, 6))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
-coarse_grid_levels = list(range(0, 1))
-coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
+coarse_grid_levels = list(range(5, 6))
+coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
-    "grid": [sc.Grid(grid_name_msh(l), l) for l in coarse_grid_levels]
+    "grid": [sc.Grid(grid_name_hdf5(l), l) for l in coarse_grid_levels]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_name_msh(4), 4)
+reference_grid = sc.Grid(grid_name_hdf5(4), 4)
 
 independent_choices = {
     "euler": [euler],
@@ -84,6 +90,7 @@ independent_choices = {
     "well-balancing": [sc.WellBalancing("constant")],
     "io": [io],
     "time": [time],
+    "parallelization": [{"mode": "mpi"}],
 }
 
 dependent_choices = {
@@ -126,8 +133,7 @@ def make_runs(amplitude):
     )
 
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]
-    # reference_runs = [sc.Scheme(choice) for choice in reference_runs]
-    reference_runs = []
+    reference_runs = [sc.Scheme(choice) for choice in reference_runs]
 
     return coarse_runs, reference_runs
 
@@ -164,6 +170,15 @@ def generate_grids():
     generate_cube_grids(grid_name_geo, mesh_width, lc_rel, mesh_levels)
 
 
+def make_work_estimate():
+    n0 = 200_000
+    t0 = 2 * timedelta(seconds=t_end / 1e-1 * 30 * 96)
+    b0 = 0.0 * 1e9
+    o0 = 2.0 * 1e9
+
+    return ZisaFixedMemoryWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
+
+
 def main():
     parser = default_cli_parser("'shock_bubble' numerical experiment.")
     args = parser.parse_args()
@@ -173,7 +188,13 @@ def main():
 
     if args.run:
         build_zisa()
-        queue_args = None
+
+        t_min = timedelta(minutes=10)
+        t_max = timedelta(hours=4)
+        work_estimate = make_work_estimate()
+
+        queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
+        # queue_args = dict()
 
         for c, r in all_runs:
             launch_all(c, force=args.force, queue_args=queue_args)

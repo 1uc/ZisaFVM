@@ -63,3 +63,28 @@ class ZisaWorkEstimate:
         total_memory = n_cells / self.n0 * self.b0
 
         return overhead_per_process, total_memory
+
+
+class ZisaFixedMemoryWorkEstimate:
+    """Estimates the parallelizable work and time required by one CPU. """
+
+    def __init__(self, n0, t0, b0, o0):
+        self.n0, self.t0 = n0, t0
+        self.b0, self.o0 = b0, o0
+
+    def cpu_hours(self, launch_params):
+        n_cells = self.n_cells(launch_params)
+        return self.t0 * n_cells / self.n0
+
+    def n_cells(self, launch_params):
+        return read_n_cells(launch_params["grid"]["file"])
+
+    def work(self, launch_param):
+        n_cells = self.n_cells(launch_param)
+        return n_cells / 1024
+
+    def memory_usage(self, launch_param):
+        overhead_per_process = self.o0
+        total_memory = self.b0
+
+        return overhead_per_process, total_memory
