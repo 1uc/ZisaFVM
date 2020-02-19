@@ -178,7 +178,7 @@ def post_process(coarse_runs, reference_run):
     #     r = np.array(h5["model/gravity/radii"])[:-1]
     #     rho = np.array(h5["rho"])
     #
-    # with h5py.File("grid.h5") as h5:
+    # with h5py.File("grid.h5", "r") as h5:
     #     x = np.linalg.norm(np.array(h5["cell_centers"]), axis=1)
     #
     # plt.plot(r_ref, phi_ref - phi_ref[0], label="ref")

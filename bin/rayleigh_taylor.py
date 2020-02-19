@@ -74,10 +74,6 @@ def grid_name_geo(l):
     return grid_name_stem(l) + ".geo"
 
 
-def grid_name_msh(l):
-    return grid_name_stem(l) + ".msh.h5"
-
-
 def grid_name_hdf5(l):
     return grid_name_stem(l) + ".msh.h5"
 
@@ -100,13 +96,13 @@ def make_work_estimate():
 
 
 coarse_grid_levels = list(range(2, 5))
-coarse_grid_names = [grid_name_msh(level) for level in coarse_grid_levels]
+coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
-    "grid": [sc.Grid(grid_name_msh(l), l) for l in coarse_grid_levels]
+    "grid": [sc.Grid(grid_name_hdf5(l), l) for l in coarse_grid_levels]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_name_msh(2), 2)
+reference_grid = sc.Grid(grid_name_hdf5(2), 2)
 
 independent_choices = {
     "euler": [euler],

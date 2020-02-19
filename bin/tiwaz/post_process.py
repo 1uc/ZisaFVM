@@ -197,7 +197,7 @@ def load_results(coarse_runs, reference_run):
 
 def find_components(data_file):
     keys = ["rho", "mv1", "mv2", "mv3", "E", "cs", "h", "p", "s"]
-    with h5py.File(data_file) as h5:
+    with h5py.File(data_file, "r") as h5:
         return [k for k in keys if k in h5]
 
 

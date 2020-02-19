@@ -189,6 +189,7 @@ def post_process(coarse_runs, reference_run):
             trip.color_plot(coarse_grid, rho)
             # trip.quiver(coarse_grid, vx, vy)
 
+            raise Exception("next line is broken. fix first.")
             plt.savefig(f"gaussian_bump_scatter_{key}.png", dpi=300)
 
             trip = TriPlot()
