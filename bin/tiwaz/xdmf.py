@@ -71,12 +71,13 @@ def generate_xdmf(grid_file, data_files, components):
     top = ET.SubElement(
         domain, "Topology", TopologyType=element, NumberOfElements=n_cells
     )
-    data_item(
-        top, (n_cells, max_neighbours), "int", "HDF", f"{grid_file}:/vertex_indices"
-    )
+
+    vertex_indices = f"{os.path.basename(grid_file)}:/vertex_indices"
+    data_item(top, (n_cells, max_neighbours), "int", "HDF", vertex_indices)
 
     geo = ET.SubElement(domain, "Geometry", GeometryType="XYZ")
-    data_item(geo, (n_vertices, "3"), "double", "HDF", f"{grid_file}:/vertices")
+    vertices = f"{os.path.basename(grid_file)}:/vertices"
+    data_item(geo, (n_vertices, "3"), "double", "HDF", vertices)
 
     temporal = ET.SubElement(
         domain, "Grid", GridType="Collection", CollectionType="Temporal"

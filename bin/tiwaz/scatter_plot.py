@@ -28,6 +28,9 @@ class ScatterPlot:
         plt.figure(self.fig.number)
         plt.savefig(filename)
 
+    def filename(self, data_filename, variable_key):
+        return data_filename[:-3] + f"_scatter-{variable_key}.png"
+
     def finalize(self, label):
         plt.figure(self.fig.number)
         plt.title(label)

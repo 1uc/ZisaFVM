@@ -61,6 +61,16 @@ class Snapshot:
                 for key in cvar_keys:
                     self.dvars[key] = self.cvars[key] - np.array(h5[key])
 
+    def __getitem__(self, key):
+        if key in self.cvars:
+            return self.cvars[key]
+        elif key in self.xvars:
+            return self.xvars[key]
+        elif key[1:] in self.dvars:
+            return self.dvars[key[1:]]
+        else:
+            raise Exception(f"Unknown variable. [{key}]")
+
 
 def load_grid(path):
     if os.path.isfile(path):

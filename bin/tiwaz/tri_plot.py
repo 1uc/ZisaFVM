@@ -32,6 +32,9 @@ class TriPlot:
     def save(self, filename, dpi=300):
         plt.savefig(filename, dpi=dpi)
 
+    def filename(self, data_filename, variable_key):
+        return data_filename[:-3] + f"_tri-{variable_key}.png"
+
 
 def tri_plot(grid, data):
     plot = TriPlot()
