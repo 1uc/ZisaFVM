@@ -19,6 +19,8 @@ class TriPlot:
         x, y = grid.vertices[:, 0], grid.vertices[:, 1]
         I = grid.vertex_indices
 
+        assert I.shape[1] == 3, "These can't be triangles."
+
         masked_data = np.ma.masked_invalid(data)
 
         ax = plt.gca()

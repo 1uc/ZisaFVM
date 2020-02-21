@@ -3,6 +3,7 @@
 import os
 import sys
 
+import h5py
 import numpy as np
 import argparse
 
@@ -26,6 +27,11 @@ def load(data_file):
     return tiwaz.post_process.load_data(data_file, steady_state_file)
 
 
+def load_array(h5_file, key):
+    with h5py.File(h5_file, "r") as h5:
+        return np.array(h5[key])
+
+
 def tri_plot(grid, q):
     plot = TriPlot()
     plot.color_plot(grid, q)
@@ -38,6 +44,7 @@ def plot_all(grid, data_files, keys):
 
         for key in keys:
             plot = TriPlot()
+
             plot.color_plot(grid, u[key])
             plot.save(plot.filename(f, key))
 
@@ -64,7 +71,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "data_files",
-        nargs="?",
+        nargs="+",
         type=str,
         default=["."],
         help="Either the directory to visualize, or the datafiles.",
@@ -76,7 +83,7 @@ if __name__ == "__main__":
         base_directory = args.data_files[0]
         files = find_data_files(base_directory)
     else:
-        base_directory = os.path.basedir(args.data_files[0])
+        base_directory = os.path.dirname(args.data_files[0])
         files = args.data_files
 
     grid = load_grid(args.grid or find_grid(base_directory))
