@@ -43,30 +43,12 @@ protected:
   std::shared_ptr<Grid> choose_full_grid() const;
   virtual std::shared_ptr<Grid> compute_full_grid() const;
 
-  virtual std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const {
-    if (stencils_ == nullptr) {
-      auto grid = choose_grid();
-      stencils_ = compute_stencils(*grid);
-    }
-
-    return stencils_;
-  }
+  virtual std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const;
 
   virtual std::shared_ptr<array<StencilFamily, 1>>
-  compute_stencils(const Grid &grid) const {
-    assert(grid_ != nullptr);
+  compute_stencils(const Grid &grid) const;
 
-    auto stencil_params = choose_stencil_params();
-
-    return std::make_shared<array<StencilFamily, 1>>(
-        compute_stencil_families(grid, stencil_params));
-  }
-
-  virtual StencilFamilyParams choose_stencil_params() const {
-    const auto &rc_params = params["reconstruction"];
-    return StencilFamilyParams(
-        rc_params["orders"], rc_params["biases"], rc_params["overfit_factors"]);
-  }
+  virtual StencilFamilyParams choose_stencil_params() const;
 
   virtual void print_grid_info();
 

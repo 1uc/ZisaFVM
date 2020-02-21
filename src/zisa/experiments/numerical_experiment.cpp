@@ -116,6 +116,32 @@ NumericalExperiment::choose_simulation_clock() {
   return simulation_clock;
 }
 
+StencilFamilyParams NumericalExperiment::choose_stencil_params() const {
+  const auto &rc_params = params["reconstruction"];
+  return StencilFamilyParams(
+      rc_params["orders"], rc_params["biases"], rc_params["overfit_factors"]);
+}
+
+std::shared_ptr<array<StencilFamily, 1>>
+NumericalExperiment::choose_stencils() const {
+  if (stencils_ == nullptr) {
+    auto grid = choose_grid();
+    stencils_ = compute_stencils(*grid);
+  }
+
+  return stencils_;
+}
+
+std::shared_ptr<array<StencilFamily, 1>>
+NumericalExperiment::compute_stencils(const Grid &grid) const {
+  assert(grid_ != nullptr);
+
+  auto stencil_params = choose_stencil_params();
+
+  return std::make_shared<array<StencilFamily, 1>>(
+      compute_stencil_families(grid, stencil_params));
+}
+
 std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
   auto simulation_clock = choose_simulation_clock();
   auto time_integration = choose_time_integration();
