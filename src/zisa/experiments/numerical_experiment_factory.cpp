@@ -4,7 +4,7 @@
 #include <zisa/experiments/janka.hpp>
 #include <zisa/experiments/polytrope.hpp>
 #include <zisa/experiments/rayleigh_taylor.hpp>
-#include <zisa/experiments/shock_bubble.hpp>
+#include <zisa/experiments/smooth_bubble.hpp>
 
 #ifdef ZISA_HAS_MPI
 #include <zisa/experiments/mpi_numerical_experiment.hpp>
@@ -74,7 +74,7 @@ auto NumericalExperimentFactory::make(const key_type &key,
 static NumericalExperimentFactory make_factory() {
   NumericalExperimentFactory factory;
 
-  factory.register_simple<ShockBubble>("shock_bubble");
+  factory.register_simple<SmoothBubble>("smooth_bubble");
   factory.register_simple<Polytrope>("gaussian_bump");
   factory.register_simple<JankaBump>("janka_bump");
   factory.register_simple<RayleighTaylor>("rayleigh_taylor");

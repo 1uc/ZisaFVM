@@ -33,11 +33,11 @@ from tiwaz.queue_args import MPIQueueArgs
 from tiwaz.work_estimate import ZisaFixedMemoryWorkEstimate
 
 
-class ShockBubbleExperiment(sc.Subsection):
+class SmoothBubbleExperiment(sc.Subsection):
     def __init__(self, amplitude, width):
         super().__init__(
             {
-                "name": "shock_bubble",
+                "name": "smooth_bubble",
                 "initial_conditions": {"amplitude": amplitude, "width": width},
             }
         )
@@ -47,8 +47,8 @@ class ShockBubbleExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [1e-2]
-bump_width = 0.05
+amplitudes = [1e-1]
+bump_width = 0.2
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.ConstantGravity()
@@ -56,11 +56,11 @@ euler = sc.Euler(eos, gravity)
 
 t_end = 0.09
 time = sc.Time(t_end=t_end)
-io = sc.IO("hdf5", "shock_bubble", n_snapshots=1)
+io = sc.IO("hdf5", "smooth_bubble", n_snapshots=1)
 
 
 def grid_name_stem(l):
-    return "grids/shock_bubble-{}".format(l)
+    return "grids/smooth_bubble-{}".format(l)
 
 
 def grid_name_geo(l):
@@ -72,10 +72,10 @@ def grid_name_hdf5(l):
 
 
 mesh_width = 1.0
-mesh_levels = list(range(0, 6))
+mesh_levels = list(range(0, 4))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
-coarse_grid_levels = list(range(5, 6))
+coarse_grid_levels = list(range(2, 3))
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -125,11 +125,11 @@ reference_runs_ = all_combinations(reference_choices)
 
 def make_runs(amplitude):
     coarse_runs = coarse_runs_.product(
-        [{"experiment": ShockBubbleExperiment(amplitude, bump_width)}]
+        [{"experiment": SmoothBubbleExperiment(amplitude, bump_width)}]
     )
 
     reference_runs = reference_runs_.product(
-        [{"experiment": ShockBubbleExperiment(amplitude, bump_width)}]
+        [{"experiment": SmoothBubbleExperiment(amplitude, bump_width)}]
     )
 
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]
@@ -180,7 +180,7 @@ def make_work_estimate():
 
 
 def main():
-    parser = default_cli_parser("'shock_bubble' numerical experiment.")
+    parser = default_cli_parser("'smooth_bubble' numerical experiment.")
     args = parser.parse_args()
 
     if args.generate_grids:

@@ -8,7 +8,7 @@
 
 namespace zisa {
 
-class ShockBubble : public EulerExperiment<IdealGasEOS, ConstantGravityRadial> {
+class SmoothBubble : public EulerExperiment<IdealGasEOS, ConstantGravityRadial> {
 private:
   using super = EulerExperiment<IdealGasEOS, ConstantGravityRadial>;
 
