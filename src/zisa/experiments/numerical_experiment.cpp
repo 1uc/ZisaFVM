@@ -62,6 +62,7 @@ void NumericalExperiment::do_run() {
 
   if (!is_restart()) {
     write_grid();
+    write_debug_output();
   }
 
   print_grid_info();
@@ -246,6 +247,29 @@ std::shared_ptr<Visualization> NumericalExperiment::choose_visualization() {
     }
 
     return visualization_;
+}
+
+void NumericalExperiment::write_debug_output() {
+  if(has_key(params, "debug")) {
+    if(params["debug"].value("global_indices", false)) {
+      write_global_indices();
+    }
+  }
+}
+
+void NumericalExperiment::write_global_indices() {
+
+  const auto &full_grid = choose_full_grid();
+  auto n_cells = full_grid->n_cells;
+
+  array<int_t, 1> global_indices(n_cells);
+
+  for(int_t i = 0; i < n_cells; ++i) {
+    global_indices(i) = i;
+  }
+
+  auto writer = HDF5SerialWriter("global_indices.h5");
+  save(writer, global_indices, "global_indices");
 }
 
 } // namespace zisa

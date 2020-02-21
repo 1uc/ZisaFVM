@@ -266,6 +266,12 @@ protected:
     return std::make_shared<MPIProgressBar>(serial_bar, mpi_comm);
   }
 
+  void write_debug_output() override {
+    if(mpi_rank == 0) {
+      super::write_debug_output();
+    }
+  }
+
 protected:
   MPI_Comm mpi_comm = MPI_COMM_WORLD;
   int mpi_rank;

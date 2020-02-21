@@ -100,6 +100,9 @@ protected:
   virtual std::shared_ptr<TimeLoop> choose_time_loop();
   virtual std::shared_ptr<ProgressBar> choose_progress_bar();
 
+  virtual void write_debug_output();
+  virtual void write_global_indices();
+
 protected:
   InputParameters params;
   std::shared_ptr<FileNameGenerator> file_name_generator;
