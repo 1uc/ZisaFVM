@@ -267,7 +267,7 @@ protected:
   }
 
   void write_debug_output() override {
-    if(mpi_rank == 0) {
+    if (mpi_rank == 0) {
       super::write_debug_output();
     }
   }

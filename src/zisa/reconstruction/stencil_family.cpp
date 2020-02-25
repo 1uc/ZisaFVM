@@ -15,7 +15,6 @@ StencilFamily::StencilFamily(const Grid &grid,
 
   int_t k_biased = 0;
   for (int_t i = 0; i < size(); ++i) {
-
     if (deduce_bias(params.biases[i]) == StencilBias::one_sided) {
       stencils_(i) = Stencil(l2g, grid, i_cell, k_biased, extract(params, i));
       ++k_biased;

@@ -165,7 +165,7 @@ std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
 
 std::shared_ptr<BoundaryCondition>
 NumericalExperiment::choose_boundary_condition() {
-  if(boundary_condition_ == nullptr) {
+  if (boundary_condition_ == nullptr) {
     boundary_condition_ = compute_boundary_condition();
   }
   return boundary_condition_;
@@ -242,16 +242,16 @@ std::shared_ptr<ProgressBar> NumericalExperiment::choose_progress_bar() {
 }
 
 std::shared_ptr<Visualization> NumericalExperiment::choose_visualization() {
-    if(visualization_ == nullptr) {
-        visualization_ = compute_visualization();
-    }
+  if (visualization_ == nullptr) {
+    visualization_ = compute_visualization();
+  }
 
-    return visualization_;
+  return visualization_;
 }
 
 void NumericalExperiment::write_debug_output() {
-  if(has_key(params, "debug")) {
-    if(params["debug"].value("global_indices", false)) {
+  if (has_key(params, "debug")) {
+    if (params["debug"].value("global_indices", false)) {
       write_global_indices();
     }
   }
@@ -264,7 +264,7 @@ void NumericalExperiment::write_global_indices() {
 
   array<int_t, 1> global_indices(n_cells);
 
-  for(int_t i = 0; i < n_cells; ++i) {
+  for (int_t i = 0; i < n_cells; ++i) {
     global_indices(i) = i;
   }
 
