@@ -203,6 +203,9 @@ class IO(Subsection):
             "suffix": ".h5",
         }
 
+        if "parallel_strategy" in kwargs:
+            self["parallel_strategy"] = kwargs["parallel_strategy"]
+
         if mode == "opengl":
             self.activate_opengl()
 

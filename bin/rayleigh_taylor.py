@@ -37,8 +37,8 @@ class RayleighTaylorExperiment(sc.Subsection):
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "drho": 0.1,
-                    "amplitude": 0.0001,
+                    "drho": 0.01,
+                    "amplitude": 1e-4,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -56,9 +56,9 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
-t_end = 5.0
+t_end = 10.0
 time = sc.Time(t_end=t_end)
-io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20)
+io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20, parallel_strategy="gathered")
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
 radius = 0.6
@@ -95,7 +95,7 @@ def make_work_estimate():
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-coarse_grid_levels = list(range(2, 5))
+coarse_grid_levels = list(range(3, 4))
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -111,19 +111,21 @@ independent_choices = {
     "io": [io],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
+    "debug": [{"global_indices": True, "stencils": True}],
 }
 
 dependent_choices = {
     "reconstruction": [
         # sc.Reconstruction("CWENO-AO", [1]),
         sc.Reconstruction(
-            "CWENO-AO", [3, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
+            "CWENO-AO", [3, 2, 2, 2], overfit_factors=[3.0, 3.0, 3.0, 3.0]
         ),
+        # sc.Reconstruction("CWENO-AO", [1], overfit_factors=[1.0],),
     ],
     "ode": [
         # sc.ODE("ForwardEuler"),
         # sc.ODE("SSP3")
-        sc.ODE("SSP3", cfl_number=0.8)
+        sc.ODE("SSP3", cfl_number=0.4)
     ],
     "quadrature": [
         # sc.Quadrature(1),

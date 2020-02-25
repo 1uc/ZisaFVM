@@ -20,7 +20,7 @@ from tiwaz.tri_plot import TriPlot
 
 
 def load(data_file):
-    steady_state_file = find_steady_state_file(".")
+    steady_state_file = find_steady_state_file(os.path.dirname(data_file))
     if not os.path.isfile(steady_state_file):
         steady_state_file = None
 
