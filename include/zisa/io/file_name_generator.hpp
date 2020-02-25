@@ -67,11 +67,11 @@ private:
   int count_;
 };
 
-template <class Map>
-std::shared_ptr<FileNameGenerator> make_file_name_generator(const Map &map) {
-  return std::make_shared<FileNameGenerator>(
-      map["stem"], map["pattern"], map["suffix"]);
-}
+std::shared_ptr<FileNameGenerator>
+make_file_name_generator(const std::string &dir,
+                         const std::string &stem,
+                         const std::string &pattern,
+                         const std::string &suffix);
 
 std::string find_last_data_file(FileNameGenerator &fng);
 

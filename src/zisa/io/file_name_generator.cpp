@@ -60,4 +60,12 @@ std::string find_last_data_file(FileNameGenerator &fng) {
   return std::string(fs::relative(*m));
 }
 
+std::shared_ptr<FileNameGenerator>
+make_file_name_generator(const std::string &dir,
+                         const std::string &stem,
+                         const std::string &pattern,
+                         const std::string &suffix) {
+  return std::make_shared<FileNameGenerator>(dir, stem, pattern, suffix);
+}
+
 } // namespace zisa

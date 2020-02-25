@@ -44,6 +44,7 @@ protected:
   virtual std::shared_ptr<Grid> compute_full_grid() const;
 
   virtual std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const;
+  virtual std::shared_ptr<array<StencilFamily, 1>> choose_full_stencils() const;
 
   virtual std::shared_ptr<array<StencilFamily, 1>>
   compute_stencils(const Grid &grid) const;
@@ -53,6 +54,7 @@ protected:
   virtual void print_grid_info();
 
   std::shared_ptr<FileNameGenerator> choose_file_name_generator();
+  virtual std::shared_ptr<FileNameGenerator> compute_file_name_generator();
 
   std::shared_ptr<AllVariables> choose_initial_conditions();
   virtual std::shared_ptr<AllVariables> compute_initial_conditions() = 0;
@@ -101,11 +103,12 @@ protected:
   virtual std::shared_ptr<ProgressBar> choose_progress_bar();
 
   virtual void write_debug_output();
+  virtual void write_stencils();
   virtual void write_global_indices();
 
 protected:
   InputParameters params;
-  std::shared_ptr<FileNameGenerator> file_name_generator;
+  std::shared_ptr<FileNameGenerator> file_name_generator_;
 
 protected:
   mutable std::shared_ptr<Grid> grid_;
@@ -113,6 +116,7 @@ protected:
   mutable std::shared_ptr<Visualization> visualization_;
   mutable std::shared_ptr<BoundaryCondition> boundary_condition_;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
+  mutable std::shared_ptr<array<StencilFamily, 1>> full_stencils_ = nullptr;
 };
 
 } // namespace zisa

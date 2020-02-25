@@ -11,7 +11,7 @@
 namespace zisa {
 
 NumericalExperiment::NumericalExperiment(const InputParameters &params)
-    : params(params), file_name_generator(choose_file_name_generator()) {}
+    : params(params) {}
 
 void NumericalExperiment::run() { do_run(); }
 void NumericalExperiment::post_process() { do_post_process(); }
@@ -43,14 +43,26 @@ std::shared_ptr<Grid> NumericalExperiment::compute_full_grid() const {
 
 std::shared_ptr<FileNameGenerator>
 NumericalExperiment::choose_file_name_generator() {
-  auto fng = make_file_name_generator(params["io"]["filename"]);
-
-  if (is_restart()) {
-    fng->advance_to(std::string(params["restart"]["file"]));
+  if(file_name_generator_ == nullptr) {
+    file_name_generator_ = compute_file_name_generator();
   }
 
+  return file_name_generator_;
+}
+
+
+std::shared_ptr<FileNameGenerator>
+NumericalExperiment::compute_file_name_generator() {
+  // needs to be implemented.
+  assert(!is_restart());
+
+  const auto &fn_params = params["io"]["filename"];
+
+  auto fng = make_file_name_generator(
+      "./", fn_params["stem"], fn_params["pattern"], fn_params["suffix"]);
   return fng;
 }
+
 
 void NumericalExperiment::write_grid() {
   auto writer = HDF5SerialWriter("grid.h5");
@@ -128,9 +140,16 @@ NumericalExperiment::choose_stencils() const {
   if (stencils_ == nullptr) {
     auto grid = choose_grid();
     stencils_ = compute_stencils(*grid);
+    full_stencils_ = stencils_;
   }
 
   return stencils_;
+}
+
+std::shared_ptr<array<StencilFamily, 1>>
+NumericalExperiment::choose_full_stencils() const {
+  assert(full_stencils_ != nullptr);
+  return full_stencils_;
 }
 
 std::shared_ptr<array<StencilFamily, 1>>
@@ -254,6 +273,10 @@ void NumericalExperiment::write_debug_output() {
     if (params["debug"].value("global_indices", false)) {
       write_global_indices();
     }
+
+    if (params["debug"].value("stencils", false)) {
+      write_stencils();
+    }
   }
 }
 
@@ -270,6 +293,22 @@ void NumericalExperiment::write_global_indices() {
 
   auto writer = HDF5SerialWriter("global_indices.h5");
   save(writer, global_indices, "global_indices");
+}
+
+void NumericalExperiment::write_stencils() {
+  const auto &stencils = choose_full_stencils();
+  auto n_cells = (*stencils).shape(0);
+
+  auto writer = HDF5SerialWriter("stencils.h5");
+  for (int_t i = 0; i < n_cells; ++i) {
+    writer.open_group(string_format("%d", i));
+
+    const auto &sf = (*stencils)[i];
+    for (int_t k = 0; k < sf.size(); ++k) {
+      save(writer, sf[k].global(), string_format("%d", k));
+    }
+    writer.close_group();
+  }
 }
 
 } // namespace zisa

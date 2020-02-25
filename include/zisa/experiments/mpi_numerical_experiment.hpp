@@ -35,10 +35,31 @@ protected:
                                : GMSHElementType::tetrahedron;
   }
 
+  std::string parallel_visualization_strategy() const {
+    return this->params["io"].value("parallel_strategy",
+                                    std::string("gathered"));
+  }
+
+  bool is_gathered_visualization() const {
+    return parallel_visualization_strategy() == "gathered";
+  }
+
+  bool is_split_visualization() const {
+    return parallel_visualization_strategy() == "split";
+  }
+
   void write_grid() override {
-    if (mpi_rank == 0) {
-      auto writer = HDF5SerialWriter("grid.h5");
-      save(writer, *this->full_grid_);
+    if (is_gathered_visualization()) {
+      if (mpi_rank == 0) {
+        auto writer = HDF5SerialWriter("grid.h5");
+        save(writer, *this->full_grid_);
+      }
+    } else if (is_split_visualization()) {
+      auto dir = string_format("part-%04d/", mpi_rank);
+      create_directory(dir);
+
+      auto writer = HDF5SerialWriter(dir + "grid.h5");
+      save(writer, *this->grid_);
     }
   }
 
@@ -187,6 +208,7 @@ protected:
     halo_exchange_ = std::make_shared<MPIHaloExchange>(
         make_mpi_halo_exchange(halo, mpi_comm));
 
+    this->full_stencils_ = stencils;
     this->stencils_
         = std::make_shared<array<StencilFamily, 1>>(std::move(local_stencils));
 
@@ -217,6 +239,18 @@ protected:
   }
 
   std::shared_ptr<Visualization> compute_visualization() override {
+    if (is_gathered_visualization()) {
+      return compute_gathered_visualization();
+    }
+
+    if (is_split_visualization()) {
+      return super::compute_visualization();
+    }
+
+    LOG_ERR("Invalid config for visualization.");
+  }
+
+  std::shared_ptr<Visualization> compute_gathered_visualization() {
     auto single_node_vis = super::compute_visualization();
 
     const auto &boundaries = partitioned_grid_->boundaries;
@@ -264,6 +298,18 @@ protected:
   std::shared_ptr<ProgressBar> choose_progress_bar() override {
     auto serial_bar = super::choose_progress_bar();
     return std::make_shared<MPIProgressBar>(serial_bar, mpi_comm);
+  }
+
+  std::shared_ptr<FileNameGenerator> compute_file_name_generator() override {
+    const auto &fn_params = this->params["io"]["filename"];
+
+    std::string stem = fn_params["stem"];
+    std::string dir
+        = (is_split_visualization() ? string_format("part-%04d/", mpi_rank)
+                                    : std::string("./"));
+
+    return make_file_name_generator(
+        dir, stem, fn_params["pattern"], fn_params["suffix"]);
   }
 
   void write_debug_output() override {

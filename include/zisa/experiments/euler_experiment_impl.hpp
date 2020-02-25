@@ -50,7 +50,8 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
   down_sample_euler_reference(
       *reference_solution, coarse_grid_paths, "reference.h5");
 
-  auto steady_state_filename = file_name_generator->steady_state_filename;
+  auto fng = choose_file_name_generator();
+  auto steady_state_filename = fng->steady_state_filename;
   auto u_delta = std::make_shared<AllVariables>(load_serial<AllVariables>(
       steady_state_filename, all_labels<euler_var_t>()));
 
@@ -65,9 +66,9 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
 
 template <class EOS, class Gravity>
 void EulerExperiment<EOS, Gravity>::do_post_process() {
-  file_name_generator = choose_file_name_generator();
+  auto fng = choose_file_name_generator();
 
-  auto data_filename = find_last_data_file(*file_name_generator);
+  auto data_filename = find_last_data_file(*fng);
   auto reader = HDF5SerialReader(data_filename);
   auto u1 = std::make_shared<AllVariables>(
       AllVariables::load(reader, all_labels<euler_var_t>()));
@@ -139,7 +140,7 @@ EulerExperiment<EOS, Gravity>::compute_visualization() {
     auto delay = parse_duration_ms(params["io"]["opengl"]["delay"]);
     return std::make_shared<EulerPlots>(*grid, delay);
   } else if (params["io"]["mode"] == "hdf5") {
-    const auto &fng = file_name_generator;
+    const auto &fng = choose_file_name_generator();
     return std::make_shared<SerialDumpSnapshot<euler_t>>(euler, fng);
   }
 

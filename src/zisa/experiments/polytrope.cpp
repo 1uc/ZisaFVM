@@ -55,7 +55,8 @@ std::shared_ptr<AllVariables> JankaBump::compute_initial_conditions() {
   auto all_variables = compute_initial_conditions(amp, width);
   auto steady_state = compute_initial_conditions(0.0, width);
 
-  auto writer = HDF5SerialWriter(file_name_generator->steady_state_filename);
+  auto fng = choose_file_name_generator();
+  auto writer = HDF5SerialWriter(fng->steady_state_filename);
   save(writer, *steady_state, all_labels<euler_var_t>());
 
   return all_variables;
