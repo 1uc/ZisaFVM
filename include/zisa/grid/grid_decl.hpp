@@ -15,6 +15,7 @@
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/loops/reduction/min.hpp>
 
 namespace zisa {
 
@@ -92,6 +93,7 @@ Tetrahedron tetrahedron(const array<XYZ, 1> &vertices,
                         int_t i);
 
 bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x);
+bool is_boundary_cell(const Grid &grid, int_t i);
 
 std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess = 0);
 
@@ -108,6 +110,19 @@ normalized_moments(const Triangle &tri, int deg, int_t quad_deg);
 /// Generate all moment for a 3D poly of degree 'deg'.
 array<double, 1>
 normalized_moments(const Tetrahedron &tet, int deg, int_t quad_deg);
+
+/// Distance to boundary in number of cells.
+/** Returns minimum number of cell-interfaces one must cross to reach a cell
+ *  which touches the boundary. Therefore a cell touching the boundary has
+ *  distance 0 and a cell which touches the boundary via one cell has distance
+ *  1, etc.
+ *
+ *  Note: Intended for small values of `max_distance` only.
+ *
+ *  Returns:
+ *    min(distance(grid, i), max_distance)
+ */
+int_t distance_to_boundary(const Grid &grid, int_t i, int_t max_distance);
 
 } // namespace zisa
 

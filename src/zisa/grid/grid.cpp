@@ -11,8 +11,10 @@
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/grid/grid_decl.hpp>
 #include <zisa/grid/grid_impl.hpp>
+#include <zisa/grid/neighbour_range.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/io/hdf5_writer.hpp>
+#include <zisa/loops/reduction/any.hpp>
 #include <zisa/loops/reduction/max.hpp>
 #include <zisa/loops/reduction/min.hpp>
 #include <zisa/loops/reduction/sum.hpp>
@@ -949,6 +951,28 @@ normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
   }
 
   return moments;
+}
+
+bool is_boundary_cell(const Grid &grid, int_t i) {
+  auto is_boundary_edge = [&grid, i](int_t k) { return grid.is_valid(i, k); };
+
+  return zisa::reduce::any(
+      serial_policy{}, zisa::neighbour_index_range(grid), is_boundary_edge);
+}
+
+int_t distance_to_boundary(const Grid &grid, int_t i, int_t max_distance) {
+  if (max_distance == 1) {
+    return is_boundary_cell(grid, i) ? 0 : max_distance;
+  }
+
+  auto distance = [&grid, &i, &max_distance](int_t k) {
+    return 1
+           + distance_to_boundary(
+               grid, grid.neighbours(i, k), max_distance - 1);
+  };
+
+  return zisa::reduce::min(
+      serial_policy{}, zisa::neighbour_index_range(grid), distance);
 }
 
 } // namespace zisa
