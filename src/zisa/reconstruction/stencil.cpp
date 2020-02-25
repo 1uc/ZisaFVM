@@ -149,8 +149,10 @@ int_t required_stencil_size(int deg, double factor, int n_dims) {
     return 1;
   }
 
-  // The polynomials being fitted all have zero mean.
-  return int_t(double(poly_dof(deg, n_dims) - 1) * factor);
+  // The actual polynomials being fitted have zero mean. Hence, one degree of
+  // freedom less. However, cell itself is included in the stencil. Hence we
+  // need one point more.
+  return int_t(double(poly_dof(deg, n_dims) - 1) * factor) + 1;
 }
 
 std::vector<int_t>
