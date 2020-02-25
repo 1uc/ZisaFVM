@@ -5,6 +5,7 @@ set -e
 if [[ $# -ne 1 ]]; then
   echo "Usage:"
   echo "    ${0} INSTALL_PREFIX"
+  exit -1
 fi
 
 INSTALL_PREFIX=$1
