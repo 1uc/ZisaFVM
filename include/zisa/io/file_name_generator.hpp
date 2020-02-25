@@ -39,6 +39,11 @@ public:
                     const std::string &pattern,
                     const std::string &suffix);
 
+  FileNameGenerator(const std::string &dir,
+                    const std::string &stem,
+                    const std::string &pattern,
+                    const std::string &suffix);
+
   /// Generate the next numbered file name.
   std::string next_name();
 
@@ -51,10 +56,11 @@ public:
    */
   int generation(const std::filesystem::path &path);
 
+  const std::string output_directory;      ///< output_directory.
   const std::string filename_stem;         ///< First part of all filenames.
-  const std::string steady_state_filename; ///< Name of the steady-state.
-  const std::string reference_filename;    ///< Name of the reference solution.
-  const std::string grid_filename;         ///< Name of the grid.
+  const std::string steady_state_filename; ///< Path of the steady-state.
+  const std::string reference_filename;    ///< Path of the reference solution.
+  const std::string grid_filename;         ///< Path of the grid.
 
 private:
   std::string pattern_;

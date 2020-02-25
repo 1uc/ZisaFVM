@@ -1,14 +1,20 @@
 #include <zisa/io/file_name_generator.hpp>
 
 namespace zisa {
-
 FileNameGenerator::FileNameGenerator(const std::string &stem,
                                      const std::string &pattern,
                                      const std::string &suffix)
-    : filename_stem(stem),
-      steady_state_filename("steady_state" + suffix),
-      reference_filename(stem + "_reference" + suffix),
-      grid_filename("grid" + suffix),
+    : FileNameGenerator("", stem, pattern, suffix) {}
+
+FileNameGenerator::FileNameGenerator(const std::string &dir,
+                                     const std::string &stem,
+                                     const std::string &pattern,
+                                     const std::string &suffix)
+    : output_directory(dir),
+      filename_stem(stem),
+      steady_state_filename(dir + "steady_state" + suffix),
+      reference_filename(dir + stem + "_reference" + suffix),
+      grid_filename(dir + "grid" + suffix),
       pattern_(stem + pattern + suffix),
       count_(0) {}
 
@@ -16,7 +22,7 @@ std::string FileNameGenerator::next_name() {
   std::string file_name = string_format(pattern_, count_);
 
   ++count_;
-  return file_name;
+  return output_directory + file_name;
 }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
