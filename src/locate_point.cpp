@@ -61,6 +61,6 @@ int main(int argc, char *argv[]) {
     std::exit(EXIT_FAILURE);
   }
 
-  std::cout << i.value();
+  std::cout << i.value() << "\n";
   std::exit(EXIT_SUCCESS);
 }
