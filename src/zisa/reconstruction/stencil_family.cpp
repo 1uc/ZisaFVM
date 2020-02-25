@@ -23,15 +23,14 @@ StencilFamily::StencilFamily(const Grid &grid,
     }
   }
 
+  auto d = distance_to_boundary(grid, i_cell, /* max_distance = */ 2);
+  if (d <= 1) {
+    truncate_all_stencils_to_first_order(i_cell);
+  }
+
   order_ = 1;
   for (int_t i = 0; i < size(); ++i) {
     auto stencil_order = (*this)[i].order();
-
-    if (stencil_order == 1 && params.orders[i] != 1) {
-      truncate_all_stencils_to_first_order(i_cell);
-      break;
-    }
-
     order_ = std::max(order_, stencil_order);
   }
 
