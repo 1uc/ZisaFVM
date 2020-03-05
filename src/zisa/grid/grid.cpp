@@ -954,7 +954,7 @@ normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
 }
 
 bool is_boundary_cell(const Grid &grid, int_t i) {
-  auto is_boundary_edge = [&grid, i](int_t k) { return grid.is_valid(i, k); };
+  auto is_boundary_edge = [&grid, i](int_t k) { return !grid.is_valid(i, k); };
 
   return zisa::reduce::any(
       serial_policy{}, zisa::neighbour_index_range(grid), is_boundary_edge);
