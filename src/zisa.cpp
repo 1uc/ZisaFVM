@@ -45,6 +45,7 @@ void run_zisa(const std::string &mode, const zisa::InputParameters &params) {
 
 int main(int argc, char *argv[]) {
   signal(SIGSEGV, handler); // install our handler
+  signal(SIGABRT, handler); // install our handler
 
 #if ZISA_HAS_MPI == 1
   int requested = MPI_THREAD_MULTIPLE;
