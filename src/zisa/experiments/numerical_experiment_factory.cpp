@@ -68,6 +68,9 @@ auto NumericalExperimentFactory::make(const key_type &key,
                                       const argument_type &args) const
     -> return_type {
 
+  LOG_ERR_IF(registry_.find(key) == registry_.cend(),
+             string_format("Unknown numerical experiment. [%s]", key.c_str()));
+
   return registry_.at(key)(args);
 }
 
