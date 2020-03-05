@@ -9,12 +9,16 @@ StencilFamilyParams::StencilFamilyParams(std::vector<int> orders,
                                          std::vector<double> overfit_factors)
     : orders(std::move(orders)),
       biases(std::move(biases)),
-      overfit_factors(std::move(overfit_factors)) {}
+      overfit_factors(std::move(overfit_factors)) {
+
+  auto size_ = this->orders.size();
+  assert(size_ == this->biases.size());
+  assert(size_ == this->overfit_factors.size());
+
+  ZISA_UNUSED(size_);
+}
 
 int_t StencilFamilyParams::n_stencils() const {
-  assert(orders.size() == biases.size());
-  assert(overfit_factors.size() == biases.size());
-
   return orders.size();
 }
 

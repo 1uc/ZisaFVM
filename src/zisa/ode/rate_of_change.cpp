@@ -5,13 +5,10 @@
  */
 #ifndef RATE_OF_CHANGE_CPP_UYNX1QZJ
 #define RATE_OF_CHANGE_CPP_UYNX1QZJ
-#include <limits>
 
 #include <zisa/config.hpp>
-#include <zisa/math/comparison.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/ode/rate_of_change.hpp>
-#include <zisa/parallelization/omp.h>
 
 namespace zisa {
 

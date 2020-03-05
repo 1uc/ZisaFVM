@@ -43,7 +43,7 @@ public:
       for (int_t k = 0; k < grid->max_neighbours; ++k) {
         auto face = grid->face(i, k);
 
-        auto s_eq = [&x_cell, &rc, &eos, &face = face](XYZ x) {
+        auto s_eq = [&x_cell, &rc, &eos, &face = face](const XYZ &x) {
           auto u_eq = rc.background(x);
           auto p_eq = eos.pressure(RhoE{u_eq[0], u_eq[4]});
 
@@ -57,7 +57,7 @@ public:
       }
 
       // delta terms
-      auto s_delta = [&rc, &gravity](XYZ x) {
+      auto s_delta = [&rc, &gravity](const XYZ &x) {
         static_assert(XYZ::size() == 3);
 
         auto u_eq = rc.background(x);

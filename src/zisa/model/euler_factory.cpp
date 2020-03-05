@@ -49,7 +49,8 @@ make_gravity<ConstantGravityRadial>(const InputParameters &params) {
   LOG_ERR_IF(params["euler"]["gravity"]["mode"] != "constant",
              "Incompatible gravity.");
 
-  return ConstantGravityRadial(double(params["euler"]["gravity"]["g"]));
+  double g = params["euler"]["gravity"]["g"];
+  return ConstantGravityRadial(g);
 }
 
 template <>

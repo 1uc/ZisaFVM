@@ -965,7 +965,7 @@ int_t distance_to_boundary(const Grid &grid, int_t i, int_t max_distance) {
     return is_boundary_cell(grid, i) ? 0 : max_distance;
   }
 
-  auto distance = [&grid, &i, &max_distance](int_t k) {
+  auto distance = [&grid, i, max_distance](int_t k) {
     return 1
            + distance_to_boundary(
                grid, grid.neighbours(i, k), max_distance - 1);
