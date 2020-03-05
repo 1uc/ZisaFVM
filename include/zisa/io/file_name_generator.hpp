@@ -56,7 +56,6 @@ public:
    */
   int generation(const std::filesystem::path &path);
 
-  const std::string output_directory;      ///< output_directory.
   const std::string filename_stem;         ///< First part of all filenames.
   const std::string steady_state_filename; ///< Path of the steady-state.
   const std::string reference_filename;    ///< Path of the reference solution.

@@ -10,19 +10,18 @@ FileNameGenerator::FileNameGenerator(const std::string &dir,
                                      const std::string &stem,
                                      const std::string &pattern,
                                      const std::string &suffix)
-    : output_directory(dir),
-      filename_stem(stem),
+    : filename_stem(stem),
       steady_state_filename(dir + "steady_state" + suffix),
       reference_filename(dir + stem + "_reference" + suffix),
       grid_filename(dir + "grid" + suffix),
-      pattern_(stem + pattern + suffix),
+      pattern_(dir + stem + pattern + suffix),
       count_(0) {}
 
 std::string FileNameGenerator::next_name() {
   std::string file_name = string_format(pattern_, count_);
 
   ++count_;
-  return output_directory + file_name;
+  return file_name;
 }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
@@ -33,11 +32,12 @@ void FileNameGenerator::advance_to(const std::string &filename) {
   advance_to(k + 1);
 }
 
-int FileNameGenerator::generation(const std::filesystem::path &path) {
+int FileNameGenerator::generation(const std::filesystem::path &rel_path) {
   int gen = -1;
 
-  std::string pattern = std::filesystem::absolute(pattern_);
-  auto status = sscanf(std::string(path).c_str(), pattern.c_str(), &gen);
+  auto path = std::string(std::filesystem::absolute(rel_path));
+  auto pattern = std::string(std::filesystem::absolute(pattern_));
+  auto status = sscanf(path.c_str(), pattern.c_str(), &gen);
 
   return (status == 1 ? gen : -1);
 }
@@ -56,7 +56,7 @@ std::string find_last_data_file(FileNameGenerator &fng) {
         return fng.generation(p1) < fng.generation(p2);
       });
 
-  LOG_ERR_IF(fng.generation((*m)) < 0, "Not a data-file.");
+  LOG_ERR_IF(fng.generation(*m) < 0, "Not a data-file.");
   return std::string(fs::relative(*m));
 }
 
