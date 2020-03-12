@@ -215,14 +215,10 @@ EulerExperiment<EOS, Gravity>::choose_gravity_source_loop(
     const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
         &rc) {
 
-  int_t edge_deg = params["quadrature"]["edge"];
-  int_t volume_deg = params["quadrature"]["volume"];
-
   auto grid = choose_grid();
-  auto edge_rule = choose_edge_rule();
   return std::make_shared<
       GravitySourceLoop<Equilibrium, RC, euler_t, scaling_t>>(
-      grid, euler, rc, edge_deg, volume_deg);
+      grid, euler, rc);
 }
 
 template <class EOS, class Gravity>

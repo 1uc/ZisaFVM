@@ -17,14 +17,10 @@ private:
 public:
   GravitySourceLoop(std::shared_ptr<Grid> grid,
                     std::shared_ptr<euler_t> euler,
-                    std::shared_ptr<grc_t> global_reconstruction,
-                    int_t edge_deg,
-                    int_t volume_deg)
+                    std::shared_ptr<grc_t> global_reconstruction)
       : euler(std::move(euler)),
         grid(std::move(grid)),
-        global_reconstruction(std::move(global_reconstruction)),
-        edge_deg(edge_deg),
-        volume_deg(volume_deg) {}
+        global_reconstruction(std::move(global_reconstruction)) {}
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables & /* current_state */,
@@ -87,10 +83,6 @@ public:
 
   virtual std::string str() const override {
     return "Gravity source term:\n"
-           + indent_block(1,
-                          string_format("edge degree: %d\nvolume degree: %d\n",
-                                        edge_deg,
-                                        volume_deg))
            + indent_block(1, type_name<Equilibrium>()) + "\n"
            + indent_block(1, type_name<RC>());
   }
@@ -99,9 +91,6 @@ private:
   std::shared_ptr<euler_t> euler;
   std::shared_ptr<Grid> grid;
   std::shared_ptr<grc_t> global_reconstruction;
-
-  int_t edge_deg;
-  int_t volume_deg;
 };
 
 } // namespace zisa
