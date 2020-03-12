@@ -23,10 +23,10 @@ StencilFamily::StencilFamily(const Grid &grid,
     }
   }
 
-  auto d = distance_to_boundary(grid, i_cell, /* max_distance = */ 2);
-  if (d <= 1) {
-    truncate_all_stencils_to_first_order(i_cell);
-  }
+//  auto d = distance_to_boundary(grid, i_cell, /* max_distance = */ 2);
+//  if (d <= 1) {
+//    truncate_all_stencils_to_first_order(i_cell);
+//  }
 
   order_ = 1;
   for (int_t i = 0; i < size(); ++i) {
