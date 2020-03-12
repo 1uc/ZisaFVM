@@ -102,6 +102,8 @@ protected:
   virtual std::shared_ptr<TimeLoop> choose_time_loop();
   virtual std::shared_ptr<ProgressBar> choose_progress_bar();
 
+  virtual void enforce_cell_flags(Grid &grid) const;
+
   virtual void write_debug_output();
   virtual void write_stencils();
   virtual void write_global_indices();

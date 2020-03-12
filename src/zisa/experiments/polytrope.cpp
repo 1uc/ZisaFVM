@@ -1,7 +1,7 @@
 #include <zisa/experiments/ic/polytrope_ic.hpp>
-#include <zisa/experiments/numerical_experiment_factory.hpp>
 #include <zisa/experiments/polytrope.hpp>
 #include <zisa/parallelization/omp.h>
+#include <zisa/boundary/frozen_boundary_condition.hpp>
 
 namespace zisa {
 
@@ -27,7 +27,8 @@ Polytrope::compute_initial_conditions(double amp, double width) {
   auto qr = choose_volume_rule();
   const auto &eos = euler->eos;
 
-  auto ic_ = PolytropeIC(euler);
+  // FIXME revert
+  auto ic_ = GeneralPolytropeIC(euler, {1.0, 1.0});
   auto ic = [&eos, &ic_, amp, width](const auto &x) {
     // Avoid any silent conversion when the return type changes.
     RhoP rhoP = ic_(x);
@@ -46,6 +47,38 @@ Polytrope::compute_initial_conditions(double amp, double width) {
                  });
 
   return all_variables;
+}
+
+std::shared_ptr<BoundaryCondition>
+Polytrope::compute_boundary_condition() {
+  auto grid = *choose_grid();
+  enforce_cell_flags(grid);
+
+  auto u0 = *choose_initial_conditions();
+  return std::make_shared<FrozenBC>(grid, u0);
+}
+
+void Polytrope::enforce_cell_flags(Grid &grid) const {
+  auto n_cells = grid.n_cells;
+
+  // FIXME hard-coded value.
+  double r_crit = 0.5;
+
+  for(int_t i = 0; i < n_cells; ++i) {
+    if(zisa::norm(grid.cell_centers(i)) > r_crit) {
+      grid.cell_flags(i).interior = false;
+      grid.cell_flags(i).ghost_cell = true;
+    }
+  }
+}
+
+std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
+Polytrope::choose_grid_factory() {
+  return [this](const std::string &filename, int_t quad_deg) {
+    auto grid = load_grid(filename, quad_deg);
+    enforce_cell_flags(*grid);
+    return grid;
+  };
 }
 
 std::shared_ptr<AllVariables> JankaBump::compute_initial_conditions() {

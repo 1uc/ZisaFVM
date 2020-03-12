@@ -49,10 +49,16 @@ public:
       int_t i_guess = 0;
 
       for (int_t i = 0; i < n_cells; ++i) {
-        const auto &cell = coarse_grid.cells(i);
-        auto u_bar = cvars_average(cell, i_guess);
-        for (int_t k_var = 0; k_var < n_cvars; ++k_var) {
-          u_coarse(i, k_var) = u_bar[k_var];
+        if (coarse_grid.cell_flags(i).ghost_cell) {
+          for (int_t k_var = 0; k_var < n_cvars; ++k_var) {
+            u_coarse(i, k_var) = 0.0;
+          }
+        } else {
+          const auto &cell = coarse_grid.cells(i);
+          auto u_bar = cvars_average(cell, i_guess);
+          for (int_t k_var = 0; k_var < n_cvars; ++k_var) {
+            u_coarse(i, k_var) = u_bar[k_var];
+          }
         }
       }
     }

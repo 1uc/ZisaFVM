@@ -47,8 +47,10 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
   std::vector<std::string> coarse_grid_paths
       = params["reference"]["coarse_grids"];
 
+  auto grid_factory = choose_grid_factory();
+
   down_sample_euler_reference(
-      *reference_solution, coarse_grid_paths, "reference.h5");
+      *reference_solution, coarse_grid_paths, grid_factory, "reference.h5");
 
   auto fng = choose_file_name_generator();
   auto steady_state_filename = fng->steady_state_filename;
@@ -61,7 +63,7 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
 
   auto delta
       = deduce_reference_solution_eq(u_delta, NoEquilibrium{}, UnityScaling{});
-  down_sample_euler_reference(*delta, coarse_grid_paths, "delta.h5");
+  down_sample_euler_reference(*delta, coarse_grid_paths, grid_factory, "delta.h5");
 }
 
 template <class EOS, class Gravity>
@@ -287,6 +289,14 @@ auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
   return std::make_shared<
       EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>(
       grid, *stencils, hybrid_weno_params, eq, scaling);
+}
+
+template <class EOS, class Gravity>
+std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
+EulerExperiment<EOS, Gravity>::choose_grid_factory() {
+  return [](const std::string &grid_name, int_t quad_deg) {
+    return load_grid(grid_name, quad_deg);
+  };
 }
 
 } // namespace zisa

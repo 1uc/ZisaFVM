@@ -7,9 +7,12 @@
 
 namespace zisa {
 
-void down_sample_euler_reference(const ReferenceSolution &reference_solution,
-                                 const std::vector<std::string> &coarse_grids,
-                                 const std::string &filename);
+void down_sample_euler_reference(
+    const ReferenceSolution &reference_solution,
+    const std::vector<std::string> &coarse_grids,
+    const std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
+        &factory,
+    const std::string &filename);
 
 }
 

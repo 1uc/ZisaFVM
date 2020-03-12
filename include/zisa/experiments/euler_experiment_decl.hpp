@@ -42,8 +42,11 @@ protected:
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() override;
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() override;
   virtual AllVariablesDimensions choose_all_variable_dims() override;
-
   virtual std::shared_ptr<AllVariables> load_initial_conditions() override;
+
+  /// This is used for down-sampling the reference solution.
+  virtual std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
+  choose_grid_factory();
 
 private:
   template <class Equilibrium, class RC>

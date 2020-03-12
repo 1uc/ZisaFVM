@@ -26,7 +26,10 @@ std::shared_ptr<Grid> NumericalExperiment::choose_grid() const {
 
 std::shared_ptr<Grid> NumericalExperiment::compute_grid() const {
   int_t quad_deg = params["quadrature"]["volume"];
-  return load_grid(params["grid"]["file"], quad_deg);
+  auto grid = load_grid(params["grid"]["file"], quad_deg);
+  enforce_cell_flags(*grid);
+
+  return grid;
 }
 
 std::shared_ptr<Grid> NumericalExperiment::choose_full_grid() const {
@@ -314,5 +317,7 @@ void NumericalExperiment::write_stencils() {
     writer.close_group();
   }
 }
+
+void NumericalExperiment::enforce_cell_flags(Grid &) const { return; }
 
 } // namespace zisa

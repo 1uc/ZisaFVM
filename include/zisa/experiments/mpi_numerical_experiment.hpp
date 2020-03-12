@@ -119,10 +119,13 @@ protected:
       zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
       zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
 
-      return std::make_shared<Grid>(deduce_element_type(max_neighbours),
+      auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
                                     std::move(vertices_gbl),
                                     std::move(vertex_indices_gbl),
                                     quad_deg);
+      this->enforce_cell_flags(*grid);
+      return grid;
+
     } else {
       auto sizes = shape_t<3>{};
       mpi::bcast(array_view(sizes.shape(), sizes.raw()), 0, mpi_comm);
@@ -136,10 +139,12 @@ protected:
       zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
       zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
 
-      return std::make_shared<Grid>(deduce_element_type(max_neighbours),
+      auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
                                     std::move(vertices_gbl),
                                     std::move(vertex_indices_gbl),
                                     quad_deg);
+      this->enforce_cell_flags(*grid);
+      return grid;
     }
   }
 
@@ -222,10 +227,13 @@ protected:
     auto quad_deg = this->choose_volume_deg();
     auto max_neighbours = vertex_indices.shape(1);
 
-    return std::make_shared<Grid>(deduce_element_type(max_neighbours),
+    auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
                                   std::move(vertices),
                                   std::move(vertex_indices),
                                   quad_deg);
+
+    this->enforce_cell_flags(*grid);
+    return grid;
   }
 
   std::shared_ptr<AllVariables> load_initial_conditions() override {

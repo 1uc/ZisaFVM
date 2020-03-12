@@ -16,6 +16,7 @@
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/loops/reduction/min.hpp>
+#include <zisa/grid/cell_flags.hpp>
 
 namespace zisa {
 
@@ -49,6 +50,7 @@ struct Grid {
   array<XYZ, 2> tangentials;
 
   array<array<double, 1>, 1> normalized_moments;
+  array<CellFlags, 1> cell_flags;
 
   size_t size_in_bytes() const;
 

@@ -24,10 +24,10 @@
 #include <zisa/math/face_factory.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/symmetric_choices.hpp>
-#include <zisa/math/tetrahedral_rule.hpp>
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangular_rule.hpp>
 #include <zisa/utils/logging.hpp>
+#include <zisa/memory/array_cell_flags.hpp>
 
 namespace zisa {
 
@@ -633,6 +633,9 @@ Grid::Grid(GMSHElementType element_type,
 
     normalized_moments = compute_normalized_moments(*this);
   }
+
+  cell_flags = array<CellFlags, 1>(shape_t<1>{n_cells});
+  zisa::fill(cell_flags, CellFlags());
 }
 
 const XYZ &Grid::vertex(int_t i, int_t k) const {
@@ -861,6 +864,8 @@ void save(HDF5Writer &writer, const Grid &grid) {
   save(writer, grid.circum_radii, "circum_radii");
   save(writer, grid.normals, "normals");
   save(writer, grid.tangentials, "tangentials");
+
+  save(writer, grid.cell_flags, "cell_flags");
 
   writer.write_scalar(largest_circum_radius(grid), "dx_max");
   writer.write_scalar(smallest_inradius(grid), "dx_min");

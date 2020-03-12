@@ -13,10 +13,11 @@ namespace zisa {
 void down_sample_euler_reference(
     const ReferenceSolution &reference_solution,
     const std::vector<std::string> &coarse_grid_paths,
+    const std::function<std::shared_ptr<Grid>(const std::string &, int_t)> &factory,
     const std::string &filename) {
 
   for (const auto &grid_name : coarse_grid_paths) {
-    auto coarse_grid = load_grid(grid_name, /* quad_deg = */ 4);
+    auto coarse_grid = factory(grid_name, 5);
     auto all_vars_coarse = reference_solution.average(*coarse_grid);
 
     std::string stem = zisa::stem(zisa::basename(grid_name));
