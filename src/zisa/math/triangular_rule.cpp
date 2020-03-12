@@ -61,6 +61,23 @@ TriangularRule make_triangular_rule(int_t deg) {
     x1.insert(x1.end(), x2.begin(), x2.end());
 
     return make_quadrature_rule(w1, x1);
+  } else if (deg == 5) {
+
+    auto [w1, x1] = permutate(0.225, {1.0 / 3.0});
+    auto [w2, x2]
+        = permutate(0.132394152788506, {0.059715871789770, 0.470142064105115});
+    auto [w3, x3]
+        = permutate(0.125939180544827, {0.797426985353087, 0.101286507323456});
+
+    w1.reserve(w1.size() + w2.size() + w3.size());
+    w1.insert(w1.end(), w2.begin(), w2.end());
+    w1.insert(w1.end(), w3.begin(), w3.end());
+
+    x1.reserve(x1.size() + x2.size() + x3.size());
+    x1.insert(x1.end(), x2.begin(), x2.end());
+    x1.insert(x1.end(), x3.begin(), x3.end());
+
+    return make_quadrature_rule(w1, x1);
   }
 
   LOG_ERR("Implement the missing case.");

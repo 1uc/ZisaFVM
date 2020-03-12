@@ -56,6 +56,7 @@ TEST_CASE("Quadrature 2D; smooth f", "[math]") {
   SECTION("p == 2") { check_convergence_unit_square(3.0, 1e-14, 2); }
   SECTION("p == 3") { check_convergence_unit_square(4.0, 1e-14, 3); }
   SECTION("p == 4") { check_convergence_unit_square(5.0, 1e-14, 4); }
+  SECTION("p == 5") { check_convergence_unit_square(6.0, 1e-14, 5); }
 }
 
 TEST_CASE("Quadrature 3D; smooth f", "[math][3d]") {
