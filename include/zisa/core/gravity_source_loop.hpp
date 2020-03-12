@@ -48,7 +48,7 @@ public:
           auto p_eq = eos.pressure(RhoE{u_eq[0], u_eq[4]});
 
           auto n = unit_outward_normal(face, x_cell);
-          auto s = cvars_t{0.0, p_eq * n[0], p_eq * n[1], 0.0, 0.0};
+          auto s = cvars_t{0.0, p_eq * n[0], p_eq * n[1], p_eq * n[2], 0.0};
 
           return s;
         };
