@@ -5,9 +5,9 @@ namespace zisa {
 
 EdgeRule::EdgeRule(int_t deg)
 
-    : weights((deg + 1) / 2), points((deg + 1) / 2) {
+    : weights(deg / 2 + 1), points(deg / 2 + 1) {
 
-  int_t n_points = (deg + 1) / 2;
+  int_t n_points = deg / 2 + 1;
 
   if (n_points == 1) {
     init<1>();
