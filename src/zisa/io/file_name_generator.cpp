@@ -17,11 +17,13 @@ FileNameGenerator::FileNameGenerator(const std::string &dir,
       pattern_(dir + stem + pattern + suffix),
       count_(0) {}
 
-std::string FileNameGenerator::next_name() {
-  std::string file_name = string_format(pattern_, count_);
+std::string FileNameGenerator::filename(int generation) {
+  return string_format(pattern_, generation);
+}
 
-  ++count_;
-  return file_name;
+
+std::string FileNameGenerator::next_name() {
+  return filename(count_++);
 }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
@@ -45,7 +47,10 @@ int FileNameGenerator::generation(const std::filesystem::path &rel_path) {
 std::string find_last_data_file(FileNameGenerator &fng) {
   namespace fs = std::filesystem;
 
-  std::string path = zisa::dirname(fng.filename_stem);
+  std::string path = fs::relative(zisa::dirname(fs::absolute(fng.filename_stem)));
+  LOG_ERR_IF(!fs::is_directory(path),
+             string_format("Not a directory. [%s]", path.c_str()));
+
   auto files = std::vector<fs::path>{};
   for (const auto &entry : fs::directory_iterator(path)) {
     files.push_back(entry.path());
@@ -56,9 +61,14 @@ std::string find_last_data_file(FileNameGenerator &fng) {
         return fng.generation(p1) < fng.generation(p2);
       });
 
-  LOG_ERR_IF(fng.generation(*m) < 0, "Not a data-file.");
+  LOG_ERR_IF(fng.generation(*m) < 0, "No data-files.");
   return std::string(fs::relative(*m));
-}
+};
+
+std::string find_first_data_file(FileNameGenerator &fng) {
+  return fng.filename(0);
+};
+
 
 std::shared_ptr<FileNameGenerator>
 make_file_name_generator(const std::string &dir,

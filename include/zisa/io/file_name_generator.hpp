@@ -44,6 +44,9 @@ public:
                     const std::string &pattern,
                     const std::string &suffix);
 
+  /// Generate the filename of a specified generation.
+  std::string filename(int generation);
+
   /// Generate the next numbered file name.
   std::string next_name();
 
@@ -73,6 +76,7 @@ make_file_name_generator(const std::string &dir,
                          const std::string &suffix);
 
 std::string find_last_data_file(FileNameGenerator &fng);
+std::string find_first_data_file(FileNameGenerator &fng);
 
 } // namespace zisa
 #endif /* end of include guard */
