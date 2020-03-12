@@ -8,8 +8,9 @@
 
 TEST_CASE("Edge rule; basics") {
 
+  // Poly *degree* -> n_points.
   std::vector<std::pair<zisa::int_t, zisa::int_t>> deg_n_points{
-      {1, 1}, {2, 1}, {3, 2}, {4, 2}, {5, 3}, {6, 3}, {7, 4}, {8, 4}};
+      {0, 1},{1, 1}, {2, 2}, {3, 2}, {4, 3}, {5, 3}, {6, 4}, {7, 4}};
 
   for (auto &&[deg, n_points] : deg_n_points) {
 
