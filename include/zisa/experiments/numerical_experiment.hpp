@@ -117,6 +117,7 @@ protected:
   mutable std::shared_ptr<BoundaryCondition> boundary_condition_;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
   mutable std::shared_ptr<array<StencilFamily, 1>> full_stencils_ = nullptr;
+  mutable std::shared_ptr<AllVariables> all_vars_ = nullptr;
 };
 
 } // namespace zisa

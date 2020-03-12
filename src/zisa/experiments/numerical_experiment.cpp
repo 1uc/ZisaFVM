@@ -96,11 +96,15 @@ void NumericalExperiment::print_grid_info() {
 }
 
 std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {
-  if (is_restart()) {
-    return load_initial_conditions();
-  } else {
-    return compute_initial_conditions();
+  if(all_vars_ == nullptr) {
+    if (is_restart()) {
+      all_vars_ = load_initial_conditions();
+    } else {
+      all_vars_ = compute_initial_conditions();
+    }
   }
+
+  return all_vars_;
 }
 
 std::shared_ptr<SimulationClock>
