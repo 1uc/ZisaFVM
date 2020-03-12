@@ -55,13 +55,29 @@ def plot_visual_convergence(data, solvers, labels, filename):
         sdata = extract_solver_data(solver, data)
         colors = graded_colors("blue", len(sdata))
 
-        for var in ["rho", "E"]:
+        for var in ["rho", "drho", "E", "dE"]:
             plot = ScatterPlot()
 
             for d, c in zip(sdata, colors):
-                plot(d["grid"], d["u_approx"].dvars[var], color=c)
-            plot.reference(d["fine_grid"], d["u_exact"].dvars[var])
+                plot(d["grid"], d["u_approx"][var], color=c)
+            plot.reference(d["fine_grid"], d["u_exact"][var])
 
             label = labels(solver)
             plot.finalize(label)
             plot.save(filename + "_" + label.replace(" ", "_") + "_" + var + ".png")
+
+        for var in ["rho", "E"]:
+            fig = plt.figure()
+
+            for d, c in zip(sdata, colors):
+                x = np.linalg.norm(d["grid"].cell_centers, axis=1)
+                y = d["u_approx"][var] - d["u_ref"][var]
+                plt.plot(x, y, marker="s", markersize=1, linestyle="", color=c)
+                plt.yscale("symlog", linthreshy=10 ** -16)
+
+            label = labels(solver)
+            plt.savefig(
+                filename + "_" + label.replace(" ", "_") + "_err-" + var + ".png",
+                dpi=300,
+            )
+            plt.close(fig)

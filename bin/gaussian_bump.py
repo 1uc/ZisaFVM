@@ -44,11 +44,13 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [0.0, 1e-6, 1e-2]
+amplitudes = [0.1]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravity()
+# gravity = sc.NoGravity()
+# gravity = sc.ConstantGravity(g=1.0)
 euler = sc.Euler(eos, gravity)
 
 t_end = 0.09
@@ -96,14 +98,18 @@ reference_grid = sc.Grid(grid_name_hdf5(4), 4)
 
 independent_choices = {
     "euler": [euler],
-    "flux-bc": [sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
     "io": [io],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
+    "debug": [{"global_indices": False, "stencils": True}],
 }
 
-dependent_choices = {
+dependent_choices_a = {
+    "flux-bc": [sc.FluxBC("constant"), sc.FluxBC("isentropic")],
+    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
+}
+
+dependent_choices_b = {
     "reconstruction": [
         sc.Reconstruction("CWENO-AO", [1]),
         sc.Reconstruction(
@@ -112,12 +118,12 @@ dependent_choices = {
         sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
         sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
     ],
-    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("SSP3")],
+    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("Fehlberg")],
     "quadrature": [
+        sc.Quadrature(1),
         sc.Quadrature(1),
         sc.Quadrature(2),
         sc.Quadrature(3),
-        sc.Quadrature(4),
     ],
 }
 
@@ -127,16 +133,19 @@ reference_choices = {
     "well-balancing": [sc.WellBalancing("isentropic")],
     "time": [time],
     "io": [io],
-    "reconstruction": [sc.Reconstruction("CWENO-AO", [5, 2, 2, 2])],
-    "ode": [sc.ODE("SSP3")],
+    "reconstruction": [sc.Reconstruction("CWENO-AO", [4, 2, 2, 2])],
+    "ode": [sc.ODE("Fehlberg")],
     "quadrature": [sc.Quadrature(4)],
     "grid": [reference_grid],
     "reference": [sc.Reference("isentropic", coarse_grid_names)],
     "parallelization": [{"mode": "mpi"}],
+    "debug": [{"global_indices": False, "stencils": False}],
 }
 
 base_choices = all_combinations(independent_choices)
-model_choices = base_choices.product(pointwise_combinations(dependent_choices))
+choices_a = pointwise_combinations(dependent_choices_a)
+choices_b = pointwise_combinations(dependent_choices_b)
+model_choices = base_choices.product(choices_a).product(choices_b)
 
 coarse_runs_ = model_choices.product(coarse_grids)
 reference_runs_ = all_combinations(reference_choices)
@@ -165,38 +174,36 @@ def post_process(coarse_runs, reference_run):
     labels = TableLabels()
 
     filename = coarse_runs[0]["experiment"].short_id()
-    write_convergence_table(results, columns, labels, filename)
+    # write_convergence_table(results, columns, labels, filename)
     write_convergence_plots(results, columns, labels, filename)
     plot_visual_convergence(results, columns, labels, filename)
 
-    for coarse_run in coarse_runs:
-        coarse_dir = folder_name(coarse_run)
-        coarse_grid = load_grid(coarse_dir)
+    # for coarse_run in coarse_runs:
+    #     coarse_dir = folder_name(coarse_run)
+    #     coarse_grid = load_grid(coarse_dir)
 
-        data_files = find_data_files(coarse_dir)
+    #     data_files = find_data_files(coarse_dir)
 
-        key = "rho"
-        for l, data_file in enumerate(data_files):
-            u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+    #     key = "rho"
+    #     for l, data_file in enumerate(data_files):
+    #         u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
 
-            rho = u_coarse.cvars[key]
-            drho = u_coarse.dvars[key]
+    #         rho = u_coarse.cvars[key]
+    #         drho = u_coarse.dvars[key]
 
-            # vx = u_coarse.cvars["mv1"] / rho
-            # vy = u_coarse.cvars["mv2"] / rho
+    #         # vx = u_coarse.cvars["mv1"] / rho
+    #         # vy = u_coarse.cvars["mv2"] / rho
 
-            trip = TriPlot()
-            trip.color_plot(coarse_grid, rho)
-            # trip.quiver(coarse_grid, vx, vy)
+    #         trip = TriPlot()
+    #         trip.color_plot(coarse_grid, rho)
+    #         # trip.quiver(coarse_grid, vx, vy)
+    #         trip.save(f"{coarse_dir}/triplot_{key}_{l:04d}.png")
 
-            raise Exception("next line is broken. fix first.")
-            plt.savefig(f"gaussian_bump_scatter_{key}.png", dpi=300)
+    #         trip = TriPlot()
+    #         trip.color_plot(coarse_grid, drho)
+    #         # trip.quiver(coarse_grid, vx, vy)
 
-            trip = TriPlot()
-            trip.color_plot(coarse_grid, drho)
-            # trip.quiver(coarse_grid, vx, vy)
-
-            plt.savefig(f"{coarse_dir}_d{key}_{l:04d}.png", dpi=300)
+    #         trip.save(f"{coarse_dir}/triplot_d{key}_{l:04d}.png")
 
 
 class TableLabels:

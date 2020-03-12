@@ -14,11 +14,15 @@ class Grid:
             self.vertex_indices = np.array(h5["vertex_indices"])
             self.vertices = np.array(h5["vertices"])
 
+            if "cell_flags/ghost_cell" in h5:
+                self.is_ghost_cell = np.array(h5["cell_flags/ghost_cell"], dtype=bool)
+
             if "cell_centers" in h5:
                 self.cell_centers = np.array(h5["cell_centers"])
 
             if "volumes" in h5:
                 self.volumes = np.array(h5["volumes"])
+                self.volumes = np.ma.masked_array(self.volumes, mask=self.is_ghost_cell)
 
             if "dx_max" in h5:
                 self.dx_max = h5["dx_max"][()]
@@ -105,6 +109,10 @@ def find_last_data_file(directory):
     return max(find_data_files(directory))
 
 
+def find_first_data_file(directory):
+    return min(find_data_files(directory))
+
+
 def find_steady_state_file(directory):
     return os.path.join(directory, "steady_state.h5")
 
@@ -139,6 +147,7 @@ def load_results(coarse_runs, reference_run):
 
     ref_dir = folder_name(reference_run)
     fine_grid = load_grid(ref_dir)
+
     u_exact = load_data(find_last_data_file(ref_dir), find_steady_state_file(ref_dir))
     t_end = u_exact.time
 

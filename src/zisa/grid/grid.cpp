@@ -211,7 +211,6 @@ double volume(GMSHElementType element_type,
               const vertices_t &vertices,
               const vertex_indices_t &vertex_indices,
               int_t i) {
-
   if (element_type == GMSHElementType::triangle) {
     return volume(triangle(vertices, vertex_indices, i));
   } else if (element_type == GMSHElementType::tetrahedron) {
@@ -310,7 +309,6 @@ static array<XYZ, 1> compute_barycenters(const array<T, 1> &cells) {
 }
 
 int_t find_self(const neighbours_t &neighbours, int_t me, int_t other) {
-
   auto max_neighbours = neighbours.shape(1);
   for (int_t k = 0; k < max_neighbours; ++k) {
     if (neighbours(other, k) == me) {
@@ -323,7 +321,6 @@ int_t find_self(const neighbours_t &neighbours, int_t me, int_t other) {
 
 edge_indices_t compute_edge_indices(const neighbours_t &neighbours,
                                     const is_valid_t &is_valid) {
-
   auto edge_indices = empty_like(neighbours);
 
   int_t n_interior_edges = 0;
@@ -518,7 +515,6 @@ array<Face, 1> compute_faces(GMSHElementType element_type,
                              const vertices_t &vertices,
                              const vertex_indices_t &vertex_indices,
                              const edge_indices_t &edge_indices) {
-
   auto n_cells = neighbours.shape(0);
   auto max_neighbours = neighbours.shape(1);
   auto n_edges = count_edges(neighbours, is_valid);
@@ -546,7 +542,6 @@ Triangle tetrahedron_face(const vertices_t &vertices,
                           const vertex_indices_t &vertex_indices,
                           int_t i,
                           int_t k) {
-
   auto element_type = GMSHElementType::tetrahedron;
   auto k0 = GMSHElementInfo::relative_vertex_index(element_type, k, 0);
   auto k1 = GMSHElementInfo::relative_vertex_index(element_type, k, 1);
@@ -578,7 +573,6 @@ Grid::Grid(GMSHElementType element_type,
            int_t quad_deg)
     : vertex_indices(std::move(vertex_indices_)),
       vertices(std::move(vertices_)) {
-
   n_cells = vertex_indices.shape(0);
   n_vertices = vertices.shape(0);
   max_neighbours = vertex_indices.shape(1);
@@ -690,7 +684,6 @@ std::optional<int_t> depth_first_search(const Grid &grid,
                                         int_t i_guess,
                                         const Predicate &predicate,
                                         const Ranking &ranking) {
-
   if (predicate(i_guess)) {
     return i_guess;
   }
@@ -783,7 +776,6 @@ bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x) {
 }
 
 std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess) {
-
   auto predicate = [&grid, &x](int_t i) { return is_inside_cell(grid, i, x); };
 
   auto ranking = [&grid, &x](int_t i) {

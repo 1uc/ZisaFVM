@@ -111,7 +111,7 @@ independent_choices = {
     "io": [io],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
-    "debug": [{"global_indices": True, "stencils": True}],
+    "debug": [{"global_indices": False, "stencils": True}],
 }
 
 dependent_choices = {

@@ -10,6 +10,7 @@ def named_rgb_colors(key, value=None):
         "green": (23, 114, 6),
         "red": (114, 6, 6),
         "orange": (211, 126, 0),
+        "purple": (131, 52, 235),
         "black": (255, 255, 255),
     }
     colors = {k: tuple(c[k] / 256 for k in range(3)) for k, c in colors.items()}

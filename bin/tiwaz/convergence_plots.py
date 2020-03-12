@@ -6,17 +6,32 @@ import matplotlib.pyplot as plt
 from .post_process import extract_solver_data
 
 
-def linestyle(wb):
-    if wb == "constant":
-        kwargs = {"marker": "+", "mew": 7, "ms": 3, "linewidth": 3, "color": "#003380"}
-    else:
-        kwargs = {"marker": "o", "linewidth": 3, "color": "#d40000"}
+def linestyle(solver):
+    wb = solver["wb"]
+    order = np.max(solver["order"])
 
-    return kwargs
+    colors_ = {1: "green", 2: "blue", 3: "purple", 4: "red", 5: "orange"}
+
+    kwargs_ = {
+        "constant": {
+            "marker": "P",
+            "linestyle": "-",
+            "linewidth": 3,
+            "color": colors_[order],
+        },
+        "isentropic": {
+            "marker": "o",
+            "linestyle": ":",
+            "linewidth": 3,
+            "color": colors_[order],
+        },
+    }
+
+    return kwargs_[wb]
 
 
 def convergence_plot_kwargs(solver):
-    return linestyle(solver["wb"])
+    return linestyle(solver)
 
 
 class SplitConvergencePlot:
@@ -82,10 +97,10 @@ class SplitConvergencePlot:
 
     # -- Implementation ----------------------------------------------------------
     def error_style(self, method):
-        return linestyle(method["wb"])
+        return convergence_plot_kwargs(method)
 
     def rate_style(self, method):
-        return linestyle(method["wb"])
+        return convergence_plot_kwargs(method)
 
     def format_title(self, title_params):
         return title_params
@@ -136,7 +151,7 @@ class SplitConvergencePlot:
             l.set_transform(l.get_transform() + rtick_offset)
 
     def ytick_values_rate(self):
-        return [1, 2, 3]
+        return [1, 2, 3, 4]
 
     def ylim(self):
         self.ylim_error()
@@ -147,10 +162,9 @@ class SplitConvergencePlot:
         self.ax1.set_ylim((10 ** logy_min, 10 ** logy_max))
 
     def ylim_rate(self):
-        self.ax2.set_ylim((0.8, 2.2))
+        ticks = self.ytick_values_rate()
 
-    def ylim_rate(self):
-        self.ax2.set_ylim((0.8, 3.2))
+        self.ax2.set_ylim((min(ticks) - 0.2, max(ticks) + 0.2))
 
     def title(self, title_params):
         self.ax1.set_title(self.format_title(title_params))
@@ -163,12 +177,11 @@ class SplitConvergencePlot:
         self.ax2.set_ylabel(r"Rate")
 
 
-def log10_bounds(m, M, lower_clip=None):
-    k, K = int(np.floor(np.log10(m))), int(np.ceil(np.log10(M)))
-
+def log10_bounds(m, M, lower_clip=-200):
     if lower_clip is not None:
-        k = max(k, lower_clip)
+        m, M = max(m, 10 ** lower_clip), max(M, 10 ** lower_clip)
 
+    k, K = int(np.floor(np.log10(m))), int(np.ceil(np.log10(M)))
     return k, K
 
 
