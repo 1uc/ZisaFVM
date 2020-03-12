@@ -143,6 +143,30 @@ normals_t compute_normals(GMSHElementType element_type,
   return normals;
 }
 
+void enforce_standard_vertex_order(GMSHElementType element_type,
+                                   vertices_t &vertices,
+                                   vertex_indices_t &vertex_indices) {
+
+  if (element_type == GMSHElementType::tetrahedron) {
+    LOG_WARN("Implement this first.");
+    return;
+  }
+
+  auto n_cells = vertex_indices.shape(0);
+  zisa::for_each(PlainIndexRange(0, n_cells),
+                 [&vertices, &vertex_indices](int_t i) {
+                   auto v0 = vertices(vertex_indices(i, 0));
+                   auto v1 = vertices(vertex_indices(i, 1));
+                   auto v2 = vertices(vertex_indices(i, 2));
+
+                   auto n = XYZ(zisa::cross(v1 - v0, v2 - v0));
+
+                   if (n[2] < 0.0) {
+                     std::swap(vertex_indices(i, 1), vertex_indices(i, 2));
+                   }
+                 });
+}
+
 tangentials_t compute_tangentials(GMSHElementType element_type,
                                   const normals_t &normals,
                                   const vertices_t &vertices,
@@ -559,6 +583,8 @@ Grid::Grid(GMSHElementType element_type,
   n_vertices = vertices.shape(0);
   max_neighbours = vertex_indices.shape(1);
 
+  enforce_standard_vertex_order(
+      element_type, this->vertices, this->vertex_indices);
   neighbours = compute_neighbours(element_type, this->vertex_indices);
   is_valid = compute_valid_neighbours(neighbours);
 
