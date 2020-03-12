@@ -2,6 +2,7 @@
 #define ZISA_DENORMALIZEDRULE_HPP_ICPDOI
 
 #include <zisa/config.hpp>
+#include <zisa/io/format_as_list.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/memory/array.hpp>
 
@@ -20,6 +21,8 @@ struct DenormalizedRule {
   DenormalizedRule &operator=(const DenormalizedRule &qr) = default;
   DenormalizedRule &operator=(DenormalizedRule &&qr) = default;
 };
+
+std::string str(const DenormalizedRule &a);
 
 bool operator==(const DenormalizedRule &a, const DenormalizedRule &b);
 

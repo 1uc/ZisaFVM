@@ -17,4 +17,11 @@ bool operator==(const DenormalizedRule &a, const DenormalizedRule &b) {
   return (a.weights == b.weights) && (a.points == b.points)
          && (a.volume == b.volume);
 }
+
+std::string str(const DenormalizedRule &a) {
+    return string_format("w = %s, x = %s, vol = %e",
+                         format_as_list(a.weights).c_str(),
+                         format_as_list(a.points).c_str(),
+                         a.volume);
+}
 }

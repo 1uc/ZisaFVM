@@ -14,6 +14,8 @@ public:
   explicit Cell(DenormalizedRule qr) : qr(std::move(qr)) {}
 };
 
+std::string str(const Cell &cell);
+
 inline bool operator==(const Cell &a, const Cell &b) { return a.qr == b.qr; }
 inline bool operator!=(const Cell &a, const Cell &b) { return !(a == b); }
 

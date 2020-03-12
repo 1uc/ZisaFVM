@@ -22,4 +22,8 @@ double avg_moment(const Cell &cell, int x_deg, int y_deg, int z_deg) {
   return average(cell, f);
 }
 
+std::string str(const Cell &cell) {
+    return string_format("qr = {%s}", str(cell.qr).c_str());
+}
+
 }
