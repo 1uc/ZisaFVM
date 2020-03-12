@@ -68,7 +68,9 @@ protected:
 
   euler_var_t u_ref(const XYZ &x, int_t &i_guess) const {
     auto i_cell = locate(*fine_grid, x, i_guess);
-    LOG_ERR_IF(!i_cell, "Failed to locate the cell.");
+    LOG_ERR_IF(!i_cell,
+               string_format("Failed to locate the cell. x = %s",
+                             format_as_list(x).c_str()));
 
     i_guess = *i_cell;
 
