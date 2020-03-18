@@ -41,9 +41,9 @@ Polytrope::compute_initial_conditions(double amp, double width) {
   };
 
   auto &u0 = all_variables->cvars;
-  zisa::for_each(triangles(*grid),
-                 [&qr, &u0, &ic](int_t i, const Triangle &tri) {
-                   u0(i) = average(qr, ic, tri);
+  zisa::for_each(cells(*grid),
+                 [&u0, &ic](int_t i, const Cell &cell) {
+                   u0(i) = average(cell, ic);
                  });
 
   return all_variables;
