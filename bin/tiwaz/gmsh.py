@@ -6,28 +6,38 @@ import h5py
 from .utils import read_txt, write_txt
 
 
-def generate_circular_grids(filename, radius, lc_rel, levels):
-    template = read_txt("grids/circle.tmpl")
+def generate_grids_from_template(template_name, filename, substitutions, levels):
+    template = read_txt(template_name)
 
-    for l in levels:
-        geo = template.replace("RADIUS", str(radius))
-        geo = geo.replace("LC_REL", str(lc_rel[l]))
+    for l, s in zip(levels, substitutions):
+        geo = template
+        for key, value in s.items():
+            geo = geo.replace(key, value)
 
         write_txt(filename(l), geo)
 
     generate_grids(([filename(l) for l in levels]))
+
+
+def generate_spherical_grids(filename, radius, lc_rel, levels):
+    template_name = "grids/sphere.tmpl"
+    substitutions = [{"RADIUS": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
+
+    generate_grids_from_template(template_name, filename, substitutions, levels)
+
+
+def generate_circular_grids(filename, radius, lc_rel, levels):
+    template_name = "grids/circle.tmpl"
+    substitutions = [{"RADIUS": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
+
+    generate_grids_from_template(template_name, filename, substitutions, levels)
 
 
 def generate_cube_grids(filename, width, lc_rel, levels):
-    template = read_txt("grids/cube.tmpl")
+    template_name = "grids/cube.tmpl"
+    substitutions = [{"WIDTH": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
 
-    for l in levels:
-        geo = template.replace("WIDTH", str(width))
-        geo = geo.replace("LC_REL", str(lc_rel[l]))
-
-        write_txt(filename(l), geo)
-
-    generate_grids(([filename(l) for l in levels]))
+    generate_grids_from_template(template_name, filename, substitutions, levels)
 
 
 def convert_msh_to_hdf5(msh):

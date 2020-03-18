@@ -5,7 +5,7 @@ from tiwaz.scheme import read_n_cells
 class ZisaWorkEstimate:
     """Estimates the parallelizable work and time required by one CPU. """
 
-    def __init__(self, n0, t0, b0, o0):
+    def __init__(self, n0, t0, b0, o0, n_dims=2):
         """Estimates work and resources by scaling values from level L.
 
         Arguments:
@@ -17,10 +17,12 @@ class ZisaWorkEstimate:
 
         self.n0, self.t0 = n0, t0
         self.b0, self.o0 = b0, o0
+        self.n_dims = n_dims
 
     def cpu_hours(self, launch_params):
+        n_dims = self.n_dims
         n_cells = self.n_cells(launch_params)
-        return self.t0 * n_cells / self.n0
+        return self.t0 * (n_cells / self.n0) ** ((n_dims + 1) / n_dims)
 
     def n_cells(self, launch_params):
         return read_n_cells(launch_params["grid"]["file"])
@@ -68,13 +70,14 @@ class ZisaWorkEstimate:
 class ZisaFixedMemoryWorkEstimate:
     """Estimates the parallelizable work and time required by one CPU. """
 
-    def __init__(self, n0, t0, b0, o0):
+    def __init__(self, n0, t0, b0, o0, n_dims=2):
         self.n0, self.t0 = n0, t0
         self.b0, self.o0 = b0, o0
+        self.n_dims = n_dims
 
     def cpu_hours(self, launch_params):
         n_cells = self.n_cells(launch_params)
-        return self.t0 * n_cells / self.n0
+        return self.t0 * (n_cells / self.n0) ** ((n_dims + 1.0) / n_dims)
 
     def n_cells(self, launch_params):
         return read_n_cells(launch_params["grid"]["file"])

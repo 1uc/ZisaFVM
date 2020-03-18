@@ -90,12 +90,12 @@ def make_work_estimate():
 
     # measured on Euler on L=4 with 2 and 96 cores.
     b0 = 0.0 * 1e9
-    o0 = 2.0 * 1e9
+    o0 = 1e9
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-coarse_grid_levels = list(range(3, 4))
+coarse_grid_levels = [2, 5]
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -107,7 +107,7 @@ reference_grid = sc.Grid(grid_name_hdf5(2), 2)
 independent_choices = {
     "euler": [euler],
     "flux-bc": [sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("isentropic")],
+    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
     "io": [io],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
@@ -235,7 +235,7 @@ def main():
         build_zisa()
 
         t_min = timedelta(minutes=10)
-        t_max = timedelta(hours=4)
+        t_max = timedelta(hours=12)
         work_estimate = make_work_estimate()
 
         queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
