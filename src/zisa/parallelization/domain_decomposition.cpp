@@ -24,8 +24,15 @@ compute_partition_full_stencil(const Grid &grid,
 
   std::vector<std::vector<int_t>> graph(n_cells);
   for (int_t i = 0; i < n_cells; ++i) {
-    for (int_t k = 0; k < stencils[i].size(); ++k) {
-      int_t j = stencils[i][k];
+    // FIXME: currently nearest neighbours
+    //    for (int_t k = 0; k < stencils[i].size(); ++k) {
+    for (int_t k = 0; k < grid.max_neighbours; ++k) {
+      if (!grid.is_valid(i, k)) {
+        continue;
+      }
+
+      int_t j = grid.neighbours(i, k);
+      // int_t j = stencils[i][k];
 
       if (std::find(graph[i].cbegin(), graph[i].cend(), j) == graph[i].cend()) {
         graph[i].push_back(j);
