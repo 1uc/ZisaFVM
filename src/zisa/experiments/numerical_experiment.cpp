@@ -155,8 +155,7 @@ NumericalExperiment::choose_stencils() const {
 
 std::shared_ptr<array<StencilFamily, 1>>
 NumericalExperiment::choose_full_stencils() const {
-  assert(full_stencils_ != nullptr);
-  return full_stencils_;
+  return choose_stencils();
 }
 
 std::shared_ptr<array<StencilFamily, 1>>
