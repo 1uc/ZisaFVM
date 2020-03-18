@@ -44,6 +44,7 @@ compute_partition_full_stencil(const Grid &grid,
   int_t n_edges = 0;
   for (int_t i = 0; i < n_cells; ++i) {
     n_edges += graph[i].size();
+    std::sort(graph[i].begin(), graph[i].end());
   }
 
   auto xadj = array<metis_idx_t, 1>(n_cells + 1);
