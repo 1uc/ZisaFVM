@@ -147,24 +147,55 @@ void enforce_standard_vertex_order(GMSHElementType element_type,
                                    vertices_t &vertices,
                                    vertex_indices_t &vertex_indices) {
 
-  if (element_type == GMSHElementType::tetrahedron) {
-    LOG_WARN("Implement this first.");
-    return;
-  }
-
   auto n_cells = vertex_indices.shape(0);
-  zisa::for_each(PlainIndexRange(0, n_cells),
-                 [&vertices, &vertex_indices](int_t i) {
-                   auto v0 = vertices(vertex_indices(i, 0));
-                   auto v1 = vertices(vertex_indices(i, 1));
-                   auto v2 = vertices(vertex_indices(i, 2));
 
-                   auto n = XYZ(zisa::cross(v1 - v0, v2 - v0));
+  if (element_type == GMSHElementType::tetrahedron) {
+    zisa::for_each(
+        PlainIndexRange(0, n_cells),
+        [&vertices, &vertex_indices](int_t i) {
+          auto v = [&vertices, &vertex_indices, i](int_t k) {
+            return vertices[vertex_indices(i, k)];
+          };
 
-                   if (n[2] < 0.0) {
-                     std::swap(vertex_indices(i, 1), vertex_indices(i, 2));
-                   }
-                 });
+          auto cell_center = XYZ(0.25 * (v(0) + v(1) + v(2) + v(3)));
+
+          auto v_rel = [&vertices, &vertex_indices, i](int_t k, int_t l) {
+            auto ki = GMSHElementInfo::relative_vertex_index(
+                GMSHElementType::tetrahedron, k, l);
+
+            return vertices[vertex_indices(i, ki)];
+          };
+
+          for (int_t k = 0; k < 4; ++k) {
+            auto n = XYZ(zisa::cross(v_rel(k, 1) - v_rel(k, 0),
+                                     v_rel(k, 2) - v_rel(k, 0)));
+            auto face_center
+                = XYZ(1.0 / 3.0 * (v_rel(k, 0) + v_rel(k, 1) + v_rel(k, 2)));
+
+            if (zisa::dot(n, face_center - cell_center) < 0.0) {
+              std::swap(vertex_indices(i, 2), vertex_indices(i, 3));
+              break;
+            }
+          }
+        }
+    );
+  } else if (element_type == GMSHElementType::triangle) {
+    zisa::for_each(PlainIndexRange(0, n_cells),
+                   [&vertices, &vertex_indices](int_t i) {
+                     auto v0 = vertices(vertex_indices(i, 0));
+                     auto v1 = vertices(vertex_indices(i, 1));
+                     auto v2 = vertices(vertex_indices(i, 2));
+
+                     auto n = XYZ(zisa::cross(v1 - v0, v2 - v0));
+
+                     if (n[2] < 0.0) {
+                       std::swap(vertex_indices(i, 1), vertex_indices(i, 2));
+                     }
+                   });
+
+  } else {
+    LOG_ERR("Unknown `GMSHElementType`.");
+  }
 }
 
 tangentials_t compute_tangentials(GMSHElementType element_type,
