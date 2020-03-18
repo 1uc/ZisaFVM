@@ -95,7 +95,7 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
   }
   eptr[n_cells] = 3 * metis_idx_t(n_cells);
 
-  auto ncommon = metis_idx_t(max_neighbours);
+  auto ncommon = metis_idx_t(max_neighbours - 1);
   auto nparts = metis_idx_t(n_parts);
 
   metis_idx_t objval;
