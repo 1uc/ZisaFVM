@@ -29,9 +29,6 @@ compute_partition_full_stencil(const Grid &grid,
 
       if (std::find(graph[i].cbegin(), graph[i].cend(), j) == graph[i].cend()) {
         graph[i].push_back(j);
-      }
-
-      if (std::find(graph[j].cbegin(), graph[j].cend(), i) == graph[j].cend()) {
         graph[j].push_back(i);
       }
     }
