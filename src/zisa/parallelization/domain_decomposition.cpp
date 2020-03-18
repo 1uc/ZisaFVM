@@ -332,7 +332,7 @@ extract_subgrid(const Grid &grid,
       int_t j_old = neighbours(i_old, k);
       if (j_old < n_cells) {
         int_t j = old2local[j_old];
-        if(j >= n_cells_part) {
+        if (j >= n_cells_part) {
           local_stencils(j) = stencils(j_old);
         }
       }

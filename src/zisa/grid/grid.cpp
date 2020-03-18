@@ -26,8 +26,8 @@
 #include <zisa/math/symmetric_choices.hpp>
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangular_rule.hpp>
-#include <zisa/utils/logging.hpp>
 #include <zisa/memory/array_cell_flags.hpp>
+#include <zisa/utils/logging.hpp>
 
 namespace zisa {
 

@@ -53,7 +53,6 @@ NumericalExperiment::choose_file_name_generator() {
   return file_name_generator_;
 }
 
-
 std::shared_ptr<FileNameGenerator>
 NumericalExperiment::compute_file_name_generator() {
   // needs to be implemented.
@@ -65,7 +64,6 @@ NumericalExperiment::compute_file_name_generator() {
       "./", fn_params["stem"], fn_params["pattern"], fn_params["suffix"]);
   return fng;
 }
-
 
 void NumericalExperiment::write_grid() {
   auto writer = HDF5SerialWriter("grid.h5");
