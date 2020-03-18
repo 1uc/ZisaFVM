@@ -321,7 +321,7 @@ ANY_DEVICE_INLINE double dot(const CartesianExpr<E1, T> &e_,
 /// Norm induced by the inner product.
 template <class T>
 ANY_DEVICE_INLINE double norm(const T &e) {
-  return std::sqrt(dot(e, e));
+  return std::sqrt(zisa::dot(e, e));
 }
 
 /// Determinate of 3x3 matrix (e1| e2| e3).
