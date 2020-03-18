@@ -17,6 +17,7 @@ array<int_t, 1>
 compute_partition_full_stencil(const Grid &grid,
                                const std::vector<std::vector<int_t>> &stencils,
                                int n_parts) {
+  LOG_TRACE("Starting compute_partition_full_stencil");
 
   auto n_cells = grid.n_cells;
   auto nvtxs = metis_idx_t(n_cells);
@@ -65,11 +66,13 @@ compute_partition_full_stencil(const Grid &grid,
 
   array<metis_idx_t, 1> part(n_cells);
 
+  LOG_TRACE("Starting METIS");
   // clang-format off
   METIS_PartGraphKway(
       &nvtxs, &ncon, xadj.raw(), adjncy.raw(), nullptr, nullptr, nullptr,
       &nparts, nullptr, nullptr, nullptr, &objval, part.raw());
   // clang-format on
+  LOG_TRACE("METIS done");
 
   array<int_t, 1> partition(n_cells);
   for_each(flat_range(partition),
@@ -79,6 +82,7 @@ compute_partition_full_stencil(const Grid &grid,
 }
 
 array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
+  LOG_TRACE("Starting compute_partition_mesh");
   auto n_cells = grid.n_cells;
   auto n_vertices = grid.n_vertices;
   auto max_neighbours = grid.max_neighbours;
@@ -107,11 +111,13 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
   array<metis_idx_t, 1> epart(shape_t<1>{n_cells});
   array<metis_idx_t, 1> npart(shape_t<1>{n_vertices});
 
+  LOG_TRACE("Starting METIS mini");
   // clang-format off
   METIS_PartMeshDual(&ne, &nn, eptr.raw(), eind.raw(), nullptr, nullptr,
                      &ncommon, &nparts, nullptr, nullptr, &objval, epart.raw(),
                      npart.raw());
   // clang-format on
+  LOG_TRACE("METIS mini done");
 
   return epart;
 }
@@ -119,6 +125,7 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
 array<int_t, 1>
 compute_cell_permutation(const Grid &grid,
                          const array_const_view<int_t, 1> &cell_partition) {
+  LOG_TRACE("Starting compute_cell_permutation");
 
   assert(grid.n_cells < int_t(std::numeric_limits<int>::max));
 
@@ -146,6 +153,7 @@ compute_cell_permutation(const Grid &grid,
 array<int_t, 1>
 compute_partition_boundaries(const array<int_t, 1> &cell_partition,
                              int n_parts) {
+  LOG_TRACE("Starting compute_partition_boundaries");
 
   array<int_t, 1> count(n_parts);
   fill(count, int_t(0));
@@ -188,6 +196,7 @@ array<int_t, 2> renumbered_vertex_indices(const array<int_t, 2> &vertex_indices,
 
 std::vector<std::vector<int_t>>
 compute_effective_stencils(const array<StencilFamily, 1> &stencils) {
+  LOG_TRACE("Starting compute_effective_stencils");
   std::vector<std::vector<int_t>> effective_stencils(stencils.size());
   for (int_t i = 0; i < stencils.size(); ++i) {
     effective_stencils[i] = stencils(i).local2global();
@@ -198,6 +207,7 @@ compute_effective_stencils(const array<StencilFamily, 1> &stencils) {
 
 PartitionedGrid compute_partitioned_grid(
     const Grid &grid, const array<StencilFamily, 1> &stencils, int_t n_parts) {
+  LOG_TRACE("Starting compute_partitioned_grid");
 
   std::vector<std::vector<int_t>> effective_stencils
       = compute_effective_stencils(stencils);

@@ -19,6 +19,7 @@ void NumericalExperiment::post_process() { do_post_process(); }
 std::shared_ptr<Grid> NumericalExperiment::choose_grid() const {
   if (grid_ == nullptr) {
     grid_ = compute_grid();
+    LOG("computed grid");
   }
 
   return grid_;
@@ -103,6 +104,8 @@ std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {
     } else {
       all_vars_ = compute_initial_conditions();
     }
+
+    LOG("computed initial conditions");
   }
 
   return all_vars_;
@@ -146,6 +149,8 @@ NumericalExperiment::choose_stencils() const {
     auto grid = choose_grid();
     stencils_ = compute_stencils(*grid);
     full_stencils_ = stencils_;
+
+    LOG("Computed stencils.");
   }
 
   return stencils_;
