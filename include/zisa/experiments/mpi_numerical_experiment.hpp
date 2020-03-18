@@ -99,7 +99,6 @@ protected:
   }
 
   std::shared_ptr<Grid> compute_full_grid() const override {
-    LOG_TRACE("Starting compute_full_grid");
     int_t quad_deg = this->choose_volume_deg();
 
     if (mpi_rank == 0) {
@@ -116,11 +115,8 @@ protected:
       auto n_vertices = vertices_gbl.shape(0);
 
       auto sizes = shape_t<3>{n_cells, n_vertices, max_neighbours};
-      LOG_TRACE("Starting compute_full_grid::bcast 1 master");
       zisa::mpi::bcast(array_view(sizes.shape(), sizes.raw()), 0, mpi_comm);
-      LOG_TRACE("Starting compute_full_grid::bcast 2 master");
       zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
-      LOG_TRACE("Starting compute_full_grid::bcast 3 master");
       zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
 
       auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
@@ -132,7 +128,6 @@ protected:
 
     } else {
       auto sizes = shape_t<3>{};
-      LOG_TRACE("Starting compute_full_grid::bcast 1 worker");
       mpi::bcast(array_view(sizes.shape(), sizes.raw()), 0, mpi_comm);
       auto n_cells = sizes[0];
       auto n_vertices = sizes[1];
@@ -141,9 +136,7 @@ protected:
       auto vertex_indices_gbl = array<int_t, 2>({n_cells, max_neighbours});
       auto vertices_gbl = array<XYZ, 1>(n_vertices);
 
-      LOG_TRACE("Starting compute_full_grid::bcast 2 worker");
       zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
-      LOG_TRACE("Starting compute_full_grid::bcast 3 worker");
       zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
 
       auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
@@ -159,25 +152,19 @@ protected:
   partition_grid(const Grid &full_grid,
                  const array<StencilFamily, 1> &stencils) const {
 
-    LOG_TRACE("Starting partition_grid");
     if (mpi_rank == 0) {
       partitioned_grid_ = std::make_shared<PartitionedGrid>(
           compute_partitioned_grid(full_grid, stencils, int_t(mpi_comm_size)));
-      LOG_TRACE("branch partition_grid master done");
     } else {
       auto n_cells = full_grid.n_cells;
       partitioned_grid_ = std::make_shared<PartitionedGrid>(
           array<int_t, 1>(n_cells),
           array<int_t, 1>(mpi_comm_size + 1),
           array<int_t, 1>(n_cells));
-      LOG_TRACE("branch partition_grid worker done");
     }
 
-    LOG_TRACE("Starting partition_grid::bcast 1");
     zisa::mpi::bcast(array_view(partitioned_grid_->partition), 0, mpi_comm);
-    LOG_TRACE("Starting partition_grid::bcast 2");
     zisa::mpi::bcast(array_view(partitioned_grid_->boundaries), 0, mpi_comm);
-    LOG_TRACE("Starting partition_grid::bcast 3");
     zisa::mpi::bcast(array_view(partitioned_grid_->permutation), 0, mpi_comm);
 
     return partitioned_grid_;
@@ -191,7 +178,6 @@ protected:
 
   std::shared_ptr<array<StencilFamily, 1>>
   compute_stencils(const Grid &grid) const override {
-    LOG_TRACE("Starting compute_stencils");
     auto stencil_params = this->choose_stencil_params();
 
     return std::make_shared<array<StencilFamily, 1>>(
@@ -199,7 +185,6 @@ protected:
   }
 
   std::shared_ptr<Grid> compute_full_renumbered_grid(const Grid &grid) const {
-    LOG_TRACE("Starting compute_full_renumbered_grid");
     const auto &vertices = grid.vertices;
     const auto &vertex_indices = grid.vertex_indices;
     auto element_type = deduce_element_type(grid.max_neighbours);
@@ -214,20 +199,17 @@ protected:
   }
 
   std::shared_ptr<Grid> compute_grid() const override {
-    LOG_TRACE("Starting compute_grid.");
     auto full_grid = this->choose_full_grid();
     auto stencils = compute_stencils(*full_grid);
 
     auto partitioned_grid = partition_grid(*full_grid, *stencils);
 
-    LOG_TRACE("Starting extract_subgrid.");
     auto [local_vertex_indices, local_vertices, local_stencils, halo]
         = extract_subgrid(*full_grid,
                           *partitioned_grid,
                           *stencils,
                           integer_cast<int_t>(mpi_rank));
 
-    LOG_TRACE("Starting MPIHaloExchange.");
     halo_exchange_ = std::make_shared<MPIHaloExchange>(
         make_mpi_halo_exchange(halo, mpi_comm));
 
@@ -241,7 +223,6 @@ protected:
 
   std::shared_ptr<Grid> local_grid(array<int_t, 2> vertex_indices,
                                    array<XYZ, 1> vertices) const {
-    LOG_TRACE("Starting local_grid");
 
     auto quad_deg = this->choose_volume_deg();
     auto max_neighbours = vertex_indices.shape(1);
