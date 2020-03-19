@@ -47,12 +47,13 @@ def convert_msh_to_hdf5(msh):
     with h5py.File(h5_file, "w") as h5:
         h5["vertices"] = grid.points
 
-        if "tetra" in grid.cells:
+        cells = grid.cells_dict
+        if "tetra" in cells:
             h5["n_dims"] = 3
-            h5["vertex_indices"] = grid.cells["tetra"]
+            h5["vertex_indices"] = cells["tetra"]
         else:
             h5["n_dims"] = 2
-            h5["vertex_indices"] = grid.cells["triangle"]
+            h5["vertex_indices"] = cells["triangle"]
 
 
 def run_gmesh(geo):
