@@ -65,7 +65,14 @@ def recurse(base_directory, targets):
 
     for dependency, target in targets.items():
         filtered_sources = list(filter(select_for(dependency), source_files))
+
+        if dependency == "mpi":
+            append_to_file(cmake_file, "if(ZISA_HAS_MPI)\n")
+
         append_to_file(cmake_file, format_sources(target, filtered_sources))
+
+        if dependency == "mpi":
+            append_to_file(cmake_file, "endif()\n")
 
     for d in find_subdirectories(base_directory):
         recurse(d, targets)

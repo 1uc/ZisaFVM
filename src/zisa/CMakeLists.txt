@@ -2,6 +2,8 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/datetime.cpp
 )
 
+if(ZISA_HAS_MPI)
+endif()
 add_subdirectory(boundary)
 add_subdirectory(cli)
 add_subdirectory(core)
