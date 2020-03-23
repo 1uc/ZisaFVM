@@ -77,6 +77,8 @@ struct Grid {
   double characteristic_length(int_t i) const;
 
   int n_dims() const;
+  bool is_triangular() const;
+  bool is_tetrahedral() const;
 
   std::string str() const;
 };

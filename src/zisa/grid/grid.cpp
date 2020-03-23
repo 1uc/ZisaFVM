@@ -948,6 +948,10 @@ int Grid::n_dims() const {
   return (max_neighbours == 3 ? 2 : 3);
 }
 
+bool Grid::is_triangular() const { return n_dims() == 2; }
+
+bool Grid::is_tetrahedral() const { return n_dims() == 3; }
+
 size_t Grid::size_in_bytes() const {
   return vertex_indices.size() * sizeof(vertex_indices[0])
          + edge_indices.size() * sizeof(edge_indices[0])
