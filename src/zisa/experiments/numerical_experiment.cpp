@@ -7,6 +7,7 @@
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration_factory.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
+#include <zisa/boundary/boundary_condition_factory.hpp>
 
 namespace zisa {
 
@@ -196,7 +197,10 @@ NumericalExperiment::choose_boundary_condition() {
 
 std::shared_ptr<BoundaryCondition>
 NumericalExperiment::compute_boundary_condition() {
-  return std::make_shared<NoBoundaryCondition>();
+  auto grid = choose_grid();
+  auto u0 = choose_initial_conditions();
+
+  return make_boundary_condition(params, grid, u0);
 }
 
 int_t NumericalExperiment::choose_volume_deg() const {

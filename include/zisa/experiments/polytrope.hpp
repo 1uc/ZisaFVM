@@ -26,8 +26,6 @@ protected:
   std::shared_ptr<AllVariables> compute_initial_conditions(double amp,
                                                            double width);
 
-  std::shared_ptr<BoundaryCondition> compute_boundary_condition() override;
-
   /// This is used for down-sampling the reference solution.
   std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
   choose_grid_factory() override;

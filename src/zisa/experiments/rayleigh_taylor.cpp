@@ -74,4 +74,20 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
 
   return all_variables;
 }
+
+
+void RayleighTaylor::enforce_cell_flags(Grid &grid) const {
+    auto n_cells = grid.n_cells;
+
+    // FIXME hard-coded value.
+    double r_crit = 0.6;
+
+    for(int_t i = 0; i < n_cells; ++i) {
+        if(zisa::norm(grid.cell_centers(i)) > r_crit) {
+            grid.cell_flags(i).interior = false;
+            grid.cell_flags(i).ghost_cell = true;
+        }
+    }
+}
+
 }

@@ -23,6 +23,8 @@ protected:
   virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
   std::shared_ptr<AllVariables>
   compute_initial_conditions(double amp, double width, int n_bumps);
+
+  void enforce_cell_flags(Grid &grid) const override;
 };
 
 }

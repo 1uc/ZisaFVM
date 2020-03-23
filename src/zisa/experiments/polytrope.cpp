@@ -49,15 +49,6 @@ Polytrope::compute_initial_conditions(double amp, double width) {
   return all_variables;
 }
 
-std::shared_ptr<BoundaryCondition>
-Polytrope::compute_boundary_condition() {
-  auto grid = *choose_grid();
-  enforce_cell_flags(grid);
-
-  auto u0 = *choose_initial_conditions();
-  return std::make_shared<FrozenBC>(grid, u0);
-}
-
 void Polytrope::enforce_cell_flags(Grid &grid) const {
   auto n_cells = grid.n_cells;
 
