@@ -142,8 +142,8 @@ void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
     const auto &Cj = grid.normalized_moments(j);
 
     if (order >= 2) {
-      A(ii_, 0) = x_10;
-      A(ii_, 1) = x_01;
+      A(ii_, eint(idx(1, 0) - 1)) = x_10;
+      A(ii_, eint(idx(0, 1) - 1)) = x_01;
     }
 
     if (order >= 3) {
@@ -268,7 +268,7 @@ void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
     const auto &Cj = grid.normalized_moments(j);
 
     if (order >= 2) {
-      A(ii_, 2) = z;
+      A(ii_, eint(poly_index(0, 0, 1) - 1)) = z;
     }
 
     if (order >= 3) {
