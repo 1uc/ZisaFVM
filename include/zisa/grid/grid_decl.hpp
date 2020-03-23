@@ -46,6 +46,7 @@ struct Grid {
   array<double, 1> volumes;
   array<double, 1> inradii;
   array<double, 1> circum_radii;
+  array<double, 1> characteristic_length;
   array<XYZ, 1> normals;
   array<XYZ, 2> tangentials;
 
@@ -74,7 +75,6 @@ struct Grid {
 
   double inradius(int_t i) const;
   double circum_radius(int_t i) const;
-  double characteristic_length(int_t i) const;
 
   int n_dims() const;
   bool is_triangular() const;

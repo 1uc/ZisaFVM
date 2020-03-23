@@ -314,6 +314,34 @@ array<double, 1> compute_circum_radii(GMSHElementType element_type,
   return circum_radii;
 }
 
+array<double, 1>
+compute_characteristic_lengths(GMSHElementType element_type,
+                               const vertices_t &vertices,
+                               const vertex_indices_t &vertex_indices) {
+  int_t n_cells = vertex_indices.shape(0);
+  auto characteristic_length = array<double, 1>(shape_t<1>(n_cells));
+
+  if (element_type == GMSHElementType::triangle) {
+    zisa::for_each(
+        PlainIndexRange(0, n_cells),
+        [&characteristic_length, &vertices, &vertex_indices](int_t i) {
+          characteristic_length(i)
+              = zisa::characteristic_length(triangle(vertices, vertex_indices, i));
+        });
+  } else if (element_type == GMSHElementType::tetrahedron) {
+    zisa::for_each(
+        PlainIndexRange(0, n_cells),
+        [&characteristic_length, &vertices, &vertex_indices](int_t i) {
+          characteristic_length(i)
+              = zisa::characteristic_length(tetrahedron(vertices, vertex_indices, i));
+        });
+  } else {
+    LOG_ERR("Unknown element_type.");
+  }
+
+  return characteristic_length;
+}
+
 XYZ cell_center(GMSHElementType element_type,
                 const vertices_t &vertices,
                 const vertex_indices_t &vertex_indices,
@@ -625,6 +653,9 @@ Grid::Grid(GMSHElementType element_type,
   circum_radii = compute_circum_radii(
       element_type, this->vertices, this->vertex_indices);
 
+  characteristic_length = compute_characteristic_lengths(
+      element_type, this->vertices, this->vertex_indices);
+
   normals = compute_normals(element_type,
                             this->vertices,
                             this->vertex_indices,
@@ -689,8 +720,6 @@ Edge Grid::edge(int_t e) const {
 
 Edge Grid::edge(int_t i, int_t k) const { return edge(edge_indices(i, k)); }
 Face Grid::face(int_t i, int_t k) const { return faces(edge_indices(i, k)); }
-
-double Grid::characteristic_length(int_t i) const { return circum_radii[i]; }
 
 std::string Grid::str() const {
   double dx_min = smallest_inradius(*this);
