@@ -3,10 +3,10 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/cweno_ao.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 #include <zisa/unit_test/reconstruction/hybrid_weno.hpp>
 
 TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
-
   SECTION("compatibility with std::vector") {
     SECTION("push_back") {
 
@@ -33,8 +33,8 @@ TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
 
 TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
   auto grid_names
-      = std::vector<std::string>{"grids/convergence/unit_square_1.msh",
-                                 "grids/convergence/unit_square_2.msh"};
+      = std::vector<std::string>{zisa::TestGridFactory::unit_square(1),
+                                 zisa::TestGridFactory::unit_square(2)};
 
   using interval_t = std::tuple<double, double>;
   auto cases = std::vector<std::tuple<interval_t, zisa::HybridWENOParams>>{};
@@ -43,8 +43,8 @@ TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
   double s = 4.0;
 
   cases.push_back({{2.8, 3.35},
-                    {{{3, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-                     {100.0, 1.0, 1.0, 1.0},
+                   {{{3, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+                    {100.0, 1.0, 1.0, 1.0},
                     eps,
                     s}});
 
@@ -77,10 +77,10 @@ TEST_CASE("CWENO; reconstruct smooth", "[weno_ao][math]") {
 }
 
 TEST_CASE("CWENO; reconstruct smooth 3D", "[weno_ao][3d][math]") {
-  auto grid_names = std::vector<std::string>{
-      "grids/convergence/unit_cube_0.msh",
-      //      "grids/convergence/unit_cube_1.msh"
-  };
+  auto grid_names
+      = std::vector<std::string>{zisa::TestGridFactory::unit_cube(0),
+                                 zisa::TestGridFactory::unit_cube(1),
+                                 zisa::TestGridFactory::unit_cube(2)};
 
   using interval_t = std::tuple<double, double>;
   auto cases = std::vector<std::tuple<interval_t, zisa::HybridWENOParams>>{};
@@ -88,14 +88,16 @@ TEST_CASE("CWENO; reconstruct smooth 3D", "[weno_ao][3d][math]") {
   double eps = 1e-10;
   double s = 4.0;
 
-  cases.push_back(
-      {{2.8, 3.35},
-       {{{3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {2.5, 2.5, 2.5, 2.5, 2.5}},
-        {100.0, 1.0, 1.0, 1.0, 1.0},
-        eps,
-        s}});
-  cases.push_back({{2.8, 3.35}, {{{3}, {"c"}, {2.5}}, {1.0}, eps, s}});
-  cases.push_back({{1.8, 2.2}, {{{2}, {"c"}, {3.0}}, {1.0}, eps, s}});
+    cases.push_back(
+        {{2.7, 3.1},
+         {{{3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"},
+         {2.5, 2.5, 2.5, 2.5, 2.5}},
+          {100.0, 1.0, 1.0, 1.0, 1.0},
+          eps,
+          s}});
+
+  cases.push_back({{2.8, 3.35}, {{{3}, {"c"}, {2.0}}, {1.0}, eps, s}});
+  cases.push_back({{1.8, 2.2}, {{{2}, {"c"}, {4.0}}, {1.0}, eps, s}});
 
   for (auto &[expected_rate, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::CWENO_AO>(

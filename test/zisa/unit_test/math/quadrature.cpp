@@ -15,16 +15,20 @@ static void check_convergence(const std::vector<std::string> &grid_names,
                               double atol,
                               zisa::int_t deg) {
   auto f = [](const zisa::XYZ &x) {
-    return zisa::sin(0.5 * zisa::pi * x[0]) + zisa::sin(0.5 * zisa::pi * x[1]);
+    // clang-format off
+    return zisa::sin(0.5 * zisa::pi * x[0])
+         + zisa::sin(0.5 * zisa::pi * x[1])
+         + zisa::sin(0.5 * zisa::pi * x[2]);
+    // clang-format on
   };
 
-  auto exact = 4.0 / zisa::pi;
   std::vector<double> error;
   std::vector<double> resolution;
 
   for (auto &&grid_name : grid_names) {
     auto grid = zisa::load_grid(grid_name, deg);
 
+    auto exact = grid->n_dims() * 2.0 / zisa::pi;
     auto approx = zisa::quadrature(f, *grid);
     error.push_back(zisa::abs(approx - exact));
     resolution.push_back(zisa::largest_circum_radius(*grid));
