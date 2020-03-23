@@ -87,6 +87,7 @@ void save(HDF5Writer &writer, const Grid &grid);
 
 double volume(const Grid &grid);
 Triangle triangle(const Grid &grid, int_t i);
+Tetrahedron tetrahedron(const Grid &grid, int_t i);
 
 Triangle triangle(const array<XYZ, 1> &vertices,
                   const array<int_t, 2> &vertex_indices,
