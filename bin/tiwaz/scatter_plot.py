@@ -14,12 +14,14 @@ class ScatterPlot:
 
     def __call__(self, grid, data, color=None, marker="*"):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
+        data = np.ma.masked_where(grid.is_ghost_cell, data)
 
         plt.figure(self.fig.number)
         plt.plot(radii, data, marker, markersize=2, color=color)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
+        data = np.ma.masked_where(grid.is_ghost_cell, data)
 
         plt.figure(self.fig.number)
         plt.plot(radii[::100], data[::100], "k.", markersize=2)

@@ -83,7 +83,7 @@ def grid_name_hdf5(l):
 
 
 radius = 0.5
-mesh_levels = list(range(0, 4))
+mesh_levels = list(range(0, 5))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))
@@ -98,6 +98,7 @@ reference_grid = sc.Grid(grid_name_hdf5(3), 3)
 independent_choices = {
     "euler": [euler],
     "io": [io],
+    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
     "debug": [{"global_indices": False, "stencils": False}],
@@ -117,21 +118,23 @@ dependent_choices_a = {
 dependent_choices_b = {
     "reconstruction": [
         sc.Reconstruction("CWENO-AO", [1]),
-        # sc.Reconstruction(
-        #     "CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
-        # ),
-        # sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
-        # sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
+        sc.Reconstruction(
+            "CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
+        ),
+        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
+        sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
     ],
     "ode": [
         sc.ODE("ForwardEuler"),
-        # sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("Fehlberg")
+        sc.ODE("SSP2"),
+        sc.ODE("SSP3"),
+        sc.ODE("Fehlberg")
     ],
     "quadrature": [
         sc.Quadrature(1),
-        # sc.Quadrature(1),
-        # sc.Quadrature(2),
-        # sc.Quadrature(3),
+        sc.Quadrature(1),
+        sc.Quadrature(2),
+        sc.Quadrature(3),
     ],
 }
 

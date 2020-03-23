@@ -87,6 +87,11 @@ class FluxBC(Subsection):
         super().__init__({"mode": mode})
 
 
+class BoundaryCondition(Subsection):
+    def __init__(self, mode):
+        super().__init__({"mode": mode})
+
+
 class NoGravity(Subsection):
     def __init__(self):
         super().__init__({"mode": "no_gravity"})

@@ -21,7 +21,8 @@ class TriPlot:
 
         assert I.shape[1] == 3, "These can't be triangles."
 
-        masked_data = np.ma.masked_invalid(data)
+        mask = np.logical_or(np.logical_not(np.isreal(data)), grid.is_ghost_cell)
+        masked_data = np.ma.masked_where(mask, data)
 
         ax = plt.gca()
         tripcolor = ax.tripcolor(x, y, I, facecolors=masked_data)

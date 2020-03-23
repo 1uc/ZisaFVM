@@ -39,14 +39,16 @@ def tri_plot(grid, q):
 
 
 def plot_all(grid, data_files, keys):
+    n_dims = 2 if grid.vertex_indices.shape[1] == 3 else 3
+
     for f in data_files:
         u = load(f)
 
         for key in keys:
-            plot = TriPlot()
-
-            plot.color_plot(grid, u[key])
-            plot.save(plot.filename(f, key))
+            if n_dims == 2:
+                plot = TriPlot()
+                plot.color_plot(grid, u[key])
+                plot.save(plot.filename(f, key))
 
             plot = ScatterPlot()
             plot(grid, u[key])

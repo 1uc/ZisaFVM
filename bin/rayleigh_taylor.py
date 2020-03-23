@@ -86,7 +86,7 @@ def make_work_estimate():
     n0 = sc.read_n_cells(grid_name_hdf5(4))
 
     # measured on Euler on L=4 with 96 cores.
-    t0 = 2 * timedelta(seconds=t_end / 1e-1 * 30 * 96)
+    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 120 * 96)
 
     # measured on Euler on L=4 with 2 and 96 cores.
     b0 = 0.0 * 1e9
@@ -95,7 +95,7 @@ def make_work_estimate():
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-coarse_grid_levels = [2, 5]
+coarse_grid_levels = [2]
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -107,6 +107,7 @@ reference_grid = sc.Grid(grid_name_hdf5(2), 2)
 independent_choices = {
     "euler": [euler],
     "flux-bc": [sc.FluxBC("isentropic")],
+    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
     "io": [io],
     "time": [time],

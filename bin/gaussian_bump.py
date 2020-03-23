@@ -106,6 +106,7 @@ independent_choices = {
 
 dependent_choices_a = {
     "flux-bc": [sc.FluxBC("constant"), sc.FluxBC("isentropic")],
+    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
 }
 

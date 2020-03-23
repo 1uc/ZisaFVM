@@ -22,7 +22,8 @@ class ZisaWorkEstimate:
     def cpu_hours(self, launch_params):
         n_dims = self.n_dims
         n_cells = self.n_cells(launch_params)
-        return self.t0 * (n_cells / self.n0) ** ((n_dims + 1) / n_dims)
+        t_cpu = self.t0 * (n_cells / self.n0) ** ((n_dims + 1) / n_dims)
+        return t_cpu
 
     def n_cells(self, launch_params):
         return read_n_cells(launch_params["grid"]["file"])
