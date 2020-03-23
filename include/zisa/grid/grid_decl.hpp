@@ -66,8 +66,13 @@ struct Grid {
   [[nodiscard]] static Grid load(HDF5Reader &reader);
 
   const XYZ &vertex(int_t i, int_t k) const;
+
+  // deprecate in favour of `triangle(grid, i)`.
   Triangle triangle(int_t i) const;
+
+  // deprecate in favour of `edge(grid, e)`
   Edge edge(int_t e) const;
+  // deprecate in favour of `edge(grid, i, k)`
   Edge edge(int_t i, int_t k) const;
 
   Face face(int_t i, int_t k) const;
