@@ -125,9 +125,7 @@ void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
   auto l0 = grid.characteristic_length(i0);
   const auto &C0 = grid.normalized_moments(i0);
 
-  auto eint = [](zisa::int_t i) {
-    return integer_cast<Eigen::Index>(i);
-  };
+  auto eint = [](zisa::int_t i) { return integer_cast<Eigen::Index>(i); };
 
   auto idx = [n_dims](int i, int j) {
     return (n_dims == 2) ? poly_index(i, j) : poly_index(i, j, 0);

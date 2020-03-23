@@ -33,7 +33,8 @@ static void check_convergence(const std::vector<std::string> &grid_names,
   auto rates = convergence_rates(resolution, error);
   for (zisa::int_t i = 0; i < rates.size(); ++i) {
     if (error[i + 1] > atol) {
-      INFO(string_format("[%d] %e (%e), %e\n", i, rates[i], expected, error[i+1]));
+      INFO(string_format(
+          "[%d] %e (%e), %e\n", i, rates[i], expected, error[i + 1]));
       REQUIRE(rates[i] > expected - 0.3);
     }
   }

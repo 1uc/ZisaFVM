@@ -73,7 +73,6 @@ void test_hybrid_weno_convergence(
                                  rates[i],
                                  resolution[i]);
     err_str = indent_block(1, err_str);
-
     INFO(string_format(
         "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
     CHECK(is_inside_interval(rates[i], expected_rate));

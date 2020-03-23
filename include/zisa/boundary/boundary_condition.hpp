@@ -23,5 +23,4 @@ public:
 };
 
 } // namespace zisa
-
 #endif /* end of include guard: BOUNDARY_CONDITION_H_KLH67JU5 */

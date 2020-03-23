@@ -151,8 +151,7 @@ void enforce_standard_vertex_order(GMSHElementType element_type,
 
   if (element_type == GMSHElementType::tetrahedron) {
     zisa::for_each(
-        PlainIndexRange(0, n_cells),
-        [&vertices, &vertex_indices](int_t i) {
+        PlainIndexRange(0, n_cells), [&vertices, &vertex_indices](int_t i) {
           auto v = [&vertices, &vertex_indices, i](int_t k) {
             return vertices[vertex_indices(i, k)];
           };
@@ -177,8 +176,7 @@ void enforce_standard_vertex_order(GMSHElementType element_type,
               break;
             }
           }
-        }
-    );
+        });
   } else if (element_type == GMSHElementType::triangle) {
     zisa::for_each(PlainIndexRange(0, n_cells),
                    [&vertices, &vertex_indices](int_t i) {
@@ -1037,7 +1035,6 @@ normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
     for (int k = 0; k <= d; ++k) {
       for (int l = 0; l <= d - k; ++l) {
         int m = d - k - l;
-
         moments(poly_index(k, l, m)) = avg_moment(cell, k, l, m) / length_d;
       }
     }
