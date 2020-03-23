@@ -10,7 +10,9 @@ data/*
 junk
 lib/*
 grids/*.msh
+grids/*.msh.h5
 grids/**/*.msh
+grids/**/*.msh.h5
 
 # archives
 *.tar
