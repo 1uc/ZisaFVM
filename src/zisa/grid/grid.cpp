@@ -538,10 +538,18 @@ neighbours_t compute_neighbours(GMSHElementType element_type,
 array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid) {
   auto n_cells = grid.n_cells;
   auto normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
-  for (const auto &[i, tri] : triangles(grid)) {
-    normalized_moments(i) = zisa::normalized_moments(tri, 4, 4);
-  }
 
+  for (const auto &i : cell_indices(grid)) {
+    if (grid.is_triangular()) {
+      auto tri = triangle(grid, i);
+      normalized_moments(i) = zisa::normalized_moments(tri, 4, 4);
+    } else if (grid.is_tetrahedral()) {
+      auto tet = tetrahedron(grid, i);
+      normalized_moments(i) = zisa::normalized_moments(tet, 4, 4);
+    } else {
+      LOG_ERR("Implement this first.");
+    }
+  }
   return normalized_moments;
 }
 
@@ -1023,7 +1031,7 @@ normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
   auto length = characteristic_length(tet);
   auto cell = make_cell(tet, quad_deg);
 
-  auto moments = array<double, 1>(shape_t<1>{poly_dof<2>(degree)});
+  auto moments = array<double, 1>(shape_t<1>{poly_dof<3>(degree)});
   double length_d = 1.0;
   for (int d = 0; d <= degree; ++d) {
     for (int k = 0; k <= d; ++k) {
