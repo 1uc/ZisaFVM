@@ -15,3 +15,7 @@ target_sources(domain-decomposition
 target_sources(opengl-demo
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/opengl_demo.cpp
 )
+
+target_sources(hdf5-demo
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_demo.cpp
+)

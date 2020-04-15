@@ -124,6 +124,7 @@ if __name__ == "__main__":
     add_executable(cmake_file, "locate-point", "locate_point.cpp")
     add_executable(cmake_file, "domain-decomposition", "domain_decomposition.cpp")
     add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
+    add_executable(cmake_file, "hdf5-demo", "hdf5_demo.cpp")
 
     recurse("test/", {"generic": "unit_tests"})
     recurse("benchmarks/", {"generic": "micro_benchmarks"})
