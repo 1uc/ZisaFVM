@@ -47,7 +47,7 @@ std::shared_ptr<Grid> NumericalExperiment::compute_full_grid() const {
 
 std::shared_ptr<FileNameGenerator>
 NumericalExperiment::choose_file_name_generator() {
-  if(file_name_generator_ == nullptr) {
+  if (file_name_generator_ == nullptr) {
     file_name_generator_ = compute_file_name_generator();
   }
 
@@ -98,7 +98,7 @@ void NumericalExperiment::print_grid_info() {
 }
 
 std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {
-  if(all_vars_ == nullptr) {
+  if (all_vars_ == nullptr) {
     if (is_restart()) {
       all_vars_ = load_initial_conditions();
     } else {

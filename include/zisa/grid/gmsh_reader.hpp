@@ -11,8 +11,8 @@
 #include <iostream>
 
 #include <zisa/config.hpp>
-#include <zisa/memory/array.hpp>
 #include <zisa/math/cartesian.hpp>
+#include <zisa/memory/array.hpp>
 
 namespace zisa {
 

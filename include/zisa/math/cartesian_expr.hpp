@@ -487,7 +487,6 @@ public:
       : e(static_cast<const E &>(e)) {}
 
   ANY_DEVICE_INLINE bool operator()(int_t i) const { return !e(i); }
-
   ANY_DEVICE_INLINE constexpr static int_t size(void) { return E::size(); }
 
 private:

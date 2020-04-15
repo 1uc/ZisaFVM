@@ -29,6 +29,7 @@ public:
                array<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
     auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
+
     eq.solve(rhoE_self, grid->cells(i_cell));
 
     scale = scaling(rhoE_self);

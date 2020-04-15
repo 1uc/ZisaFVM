@@ -63,7 +63,8 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
 
   auto delta
       = deduce_reference_solution_eq(u_delta, NoEquilibrium{}, UnityScaling{});
-  down_sample_euler_reference(*delta, coarse_grid_paths, grid_factory, "delta.h5");
+  down_sample_euler_reference(
+      *delta, coarse_grid_paths, grid_factory, "delta.h5");
 }
 
 template <class EOS, class Gravity>
@@ -219,8 +220,7 @@ EulerExperiment<EOS, Gravity>::choose_gravity_source_loop(
 
   auto grid = choose_grid();
   return std::make_shared<
-      GravitySourceLoop<Equilibrium, RC, euler_t, scaling_t>>(
-      grid, euler, rc);
+      GravitySourceLoop<Equilibrium, RC, euler_t, scaling_t>>(grid, euler, rc);
 }
 
 template <class EOS, class Gravity>

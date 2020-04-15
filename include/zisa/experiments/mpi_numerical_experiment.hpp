@@ -228,9 +228,9 @@ protected:
     auto max_neighbours = vertex_indices.shape(1);
 
     auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
-                                  std::move(vertices),
-                                  std::move(vertex_indices),
-                                  quad_deg);
+                                       std::move(vertices),
+                                       std::move(vertex_indices),
+                                       quad_deg);
 
     this->enforce_cell_flags(*grid);
     return grid;

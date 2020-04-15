@@ -16,8 +16,7 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       linear_weights(stencils.size()),
       non_linear_weights(stencils.size()),
       epsilon(params.epsilon),
-      exponent(params.exponent)
-{
+      exponent(params.exponent) {
   assert(params.linear_weights.size() == stencils.size());
 
   auto tot = std::accumulate(
@@ -37,8 +36,7 @@ HybridWENO::HybridWENO(const std::shared_ptr<Grid> &grid,
       linear_weights(stencils.size()),
       non_linear_weights(stencils.size()),
       epsilon(params.epsilon),
-      exponent(params.exponent)
-{
+      exponent(params.exponent) {
   assert(params.linear_weights.size() == stencils.size());
 
   auto tot = std::accumulate(
