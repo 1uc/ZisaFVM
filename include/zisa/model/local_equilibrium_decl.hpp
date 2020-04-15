@@ -23,6 +23,8 @@ public:
   RhoE extrapolate(const XYZ &xy) const;
   RhoE extrapolate(const Cell &cell) const;
 
+  std::string str(int verbose = 0) const;
+
 protected:
   EnthalpyEntropy theta = EnthalpyEntropy{};
   XYZ x_ref = XYZ{};
@@ -88,6 +90,10 @@ public:
   template <class... Args>
   RhoE extrapolate(Args &&... /* args */) const {
     return {0.0, 0.0};
+  }
+
+  std::string str(int /* verbose */ = 0) const {
+    return "LocalEquilibrium<NoEquilibrium>";
   }
 };
 

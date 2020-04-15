@@ -67,6 +67,16 @@ public:
     return rc.local2global();
   }
 
+  std::string str(int verbose = 0) const {
+    std::stringstream ss;
+
+    ss << grid->str() << "\n";
+    ss << eq.str(verbose) << "\n";
+    ss << rc.str(verbose) << "\n";
+
+    return ss.str();
+  }
+
 private:
   std::shared_ptr<Grid> grid;
   LocalEquilibrium<Equilibrium> eq;

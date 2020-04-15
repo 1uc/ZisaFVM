@@ -48,6 +48,13 @@ public:
   /// Can be distinguished by calls to the public interface.
   bool operator!=(const HybridWENO &other) const;
 
+  std::string str(int /* verbose */ = 0) const {
+    return string_format("%s, eps = %e, s = %f",
+                         format_as_list(linear_weights).c_str(),
+                         epsilon,
+                         exponent);
+  }
+
 protected:
   void compute_polys(array<double, 2, row_major> &rhs,
                      array<WENOPoly, 1> &polys,

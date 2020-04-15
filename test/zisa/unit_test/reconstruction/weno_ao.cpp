@@ -3,6 +3,7 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/reconstruction/weno_ao.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 #include <zisa/unit_test/reconstruction/hybrid_weno.hpp>
 
 TEST_CASE("WENO_AO API", "[weno_ao][math]") {
@@ -32,9 +33,9 @@ TEST_CASE("WENO_AO API", "[weno_ao][math]") {
 }
 
 TEST_CASE("WENO_AO; reconstruct smooth", "[weno_ao][math]") {
-  auto grid_names
-      = std::vector<std::string>{"grids/convergence/unit_square_1.msh",
-                                 "grids/convergence/unit_square_2.msh"};
+  auto grid_names = std::vector<std::string>{
+      zisa::TestGridFactory::unit_square_with_halo(1),
+      zisa::TestGridFactory::unit_square_with_halo(2)};
 
   double eps = 1e-10;
   double s = 4.0;
@@ -67,7 +68,7 @@ TEST_CASE("WENO_AO; reconstruct smooth", "[weno_ao][math]") {
                     s}});
 
   // Which can be remedied by increasing the central weight.
-  cases.push_back({{3.9, 4.4},
+  cases.push_back({{3.8, 4.4},
                    true,
                    {{{4, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
                     {1000.0, 1.0, 1.0, 1.0},

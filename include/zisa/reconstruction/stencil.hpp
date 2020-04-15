@@ -87,7 +87,7 @@ std::vector<int_t>
 biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points);
 
 std::vector<int_t>
-biased_stencil(const Grid &grid, int_t i, int_t n_points, const Cone &cone);
+biased_stencil(const Grid &grid, int_t i, int_t n_points, const Region &region);
 
 int deduce_max_order(int_t stencil_size, double factor, int n_dims);
 int_t required_stencil_size(int deg, double factor, int n_dims);

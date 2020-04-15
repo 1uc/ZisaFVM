@@ -155,6 +155,29 @@ GMSHElementInfo::relative_vertex_index(GMSHElementType element_type,
 }
 
 GMSHElementInfo::index_t
+GMSHElementInfo::relative_off_vertex_index(GMSHElementType element_type,
+                                           GMSHElementInfo::index_t k) {
+
+  if (element_type == GMSHElementType::triangle) {
+    return (k + 2) % 3;
+  }
+
+  if (element_type == GMSHElementType::tetrahedron) {
+    if (k == 0) {
+      return 2;
+    } else if (k == 1) {
+      return 3;
+    } else if (k == 2) {
+      return 1;
+    } else {
+      return 0;
+    }
+  }
+
+  LOG_ERR("Invalid element_type.");
+}
+
+GMSHElementInfo::index_t
 GMSHElementInfo::relative_vertex_index(GMSHElementType element_type,
                                        std::vector<bool> s) {
 

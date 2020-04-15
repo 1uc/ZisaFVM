@@ -2,6 +2,7 @@
 
 #include <zisa/math/poly2d.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 void check_uniqueness(const zisa::StencilFamily &stencils, zisa::int_t i_cell) {
   const auto &l2g = stencils.local2global();
@@ -83,7 +84,7 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
   }
 }
 
-TEST_CASE("StencilFamily, 3D", "[weno_ao][stencil][3d]") {
+TEST_CASE("StencilFamily, 3D", "[stencil][3d]") {
   auto grid = zisa::load_grid("grids/convergence/unit_cube_1.msh");
   zisa::int_t i_cell = 90;
   auto n_cells = grid->n_cells;
@@ -115,4 +116,18 @@ TEST_CASE("StencilFamily, 3D", "[weno_ao][stencil][3d]") {
       REQUIRE(stencils.order() == 3);
     }
   }
+}
+
+TEST_CASE("StencilFamily; real-world issue", "[2d][stencil]") {
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube_with_halo(1));
+
+  zisa::int_t i = 24;
+
+  auto sf = zisa::StencilFamily(
+      *grid, i, {{3, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}});
+
+  REQUIRE(sf[0].order() == 3);
+  REQUIRE(sf[1].order() == 2);
+  REQUIRE(sf[2].order() == 2);
+  REQUIRE(sf[3].order() == 2);
 }

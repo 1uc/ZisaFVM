@@ -13,6 +13,8 @@ struct NoEquilibrium {
   RhoE extrapolate(const EnthalpyEntropy &, const XYZ &, const XYZ &) const {
     return {0.0, 0.0};
   }
+
+  std::string str(int /* verbose */ = 0) const { return "NoEquilibrium"; }
 };
 
 } // namespace zisa

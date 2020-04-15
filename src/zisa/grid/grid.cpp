@@ -14,6 +14,7 @@
 #include <zisa/grid/neighbour_range.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/io/hdf5_writer.hpp>
+#include <zisa/loops/for_each.hpp>
 #include <zisa/loops/reduction/any.hpp>
 #include <zisa/loops/reduction/max.hpp>
 #include <zisa/loops/reduction/min.hpp>
@@ -323,15 +324,15 @@ compute_characteristic_lengths(GMSHElementType element_type,
     zisa::for_each(
         PlainIndexRange(0, n_cells),
         [&characteristic_length, &vertices, &vertex_indices](int_t i) {
-          characteristic_length(i)
-              = zisa::characteristic_length(triangle(vertices, vertex_indices, i));
+          characteristic_length(i) = zisa::characteristic_length(
+              triangle(vertices, vertex_indices, i));
         });
   } else if (element_type == GMSHElementType::tetrahedron) {
     zisa::for_each(
         PlainIndexRange(0, n_cells),
         [&characteristic_length, &vertices, &vertex_indices](int_t i) {
-          characteristic_length(i)
-              = zisa::characteristic_length(tetrahedron(vertices, vertex_indices, i));
+          characteristic_length(i) = zisa::characteristic_length(
+              tetrahedron(vertices, vertex_indices, i));
         });
   } else {
     LOG_ERR("Unknown element_type.");
@@ -1004,6 +1005,11 @@ size_t Grid::size_in_bytes() const {
          + tangentials.size() * sizeof(tangentials[0]);
 }
 
+GMSHElementType Grid::element_type() const {
+  return is_triangular() ? GMSHElementType::triangle
+                         : GMSHElementType::tetrahedron;
+}
+
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
   auto length = characteristic_length(tri);
@@ -1065,6 +1071,16 @@ int_t distance_to_boundary(const Grid &grid, int_t i, int_t max_distance) {
 
   return zisa::reduce::min(
       serial_policy{}, zisa::neighbour_index_range(grid), distance);
+}
+
+void mask_ghost_cells(Grid &grid,
+                      const std::function<bool(const Grid &, int_t)> &mask) {
+  zisa::for_each(cell_indices(grid), [&grid, &mask](int_t i) {
+    if (mask(grid, i)) {
+      grid.cell_flags[i].interior = false;
+      grid.cell_flags[i].ghost_cell = true;
+    }
+  });
 }
 
 } // namespace zisa

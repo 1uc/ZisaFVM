@@ -13,21 +13,25 @@ namespace zisa {
 
 template <class F, class RC>
 std::tuple<double, double>
-compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
+compute_errors(const Grid &grid, const F &f, const array<RC, 1> &rc) {
   constexpr int_t n_vars = 5;
 
   auto qbar_local = array<euler_var_t, 1>{shape_t<1>{1024ul}};
   auto qbar = array<euler_var_t, 1>(shape_t<1>{grid.n_cells});
   auto polys = array<WENOPoly, 1>(shape_t<1>{16});
-  auto rhs = array<double, 2, row_major>(shape_t<2>{1024ul, WENOPoly::n_vars()});
+  auto rhs
+      = array<double, 2, row_major>(shape_t<2>{1024ul, WENOPoly::n_vars()});
 
   for (const auto &[i, cell] : cells(grid)) {
     qbar(i) = zisa::average(cell.qr, f);
-    CHECK(zisa::isreal(qbar(i)));
+    //    CHECK(zisa::isreal(qbar(i)));
   }
 
   double l1_err = 0.0;
   double linf_err = 0.0;
+
+  double max_err = 0.0;
+  int_t i_max = 0;
 
   for (const auto &[i, cell] : cells(grid)) {
     const auto &l2g = rc[i].local2global();
@@ -46,15 +50,19 @@ compute_errors(const Grid &grid, const F &f, const std::vector<RC> &rc) {
       return Cartesian<n_vars>{zisa::abs(p(x) - f(x))};
     };
 
-    auto err = zisa::norm(quadrature(cell.qr, diff));
+    if (!grid.cell_flags(i).ghost_cell) {
+      auto err = zisa::norm(quadrature(cell.qr, diff));
 
-    PRINT_IF(!zisa::isreal(err), p);
+      INFO(string_format("i = %d, err = %e, x = %s, ghost = %d",
+                         i,
+                         err,
+                         format_as_list(grid.cell_centers[i]).c_str(),
+                         int(grid.cell_flags[i].ghost_cell)));
+      CHECK(zisa::isreal(err));
 
-    INFO(string_format("i = %d, err = %e", i, err));
-    CHECK(zisa::isreal(err));
-
-    l1_err += err;
-    linf_err = zisa::max(linf_err, err);
+      l1_err += err;
+      linf_err = zisa::max(linf_err, err);
+    }
   }
 
   return {l1_err, linf_err};

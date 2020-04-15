@@ -338,6 +338,9 @@ void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
             + lj_3 * Cj(i_111);
         // clang-format on
       }
+      if (order >= 5) {
+        LOG_ERR("Implement first.");
+      }
     }
   }
 }

@@ -22,6 +22,8 @@ auto CWENO_AO::reconstruct(array<double, 2, row_major> &rhs,
     }
   }
 
+  // p_opt = C * p_c + \sum_i c_i p_i
+  // p_c = (p_opt - \sum_i c_i p_i) / C
   polys[k_high] /= linear_weights[k_high];
 
   return hybridize(polys);

@@ -20,5 +20,19 @@ TEST_CASE("Cartesian; structured bindings", "[math]") {
 
   zisa::euler_var_t u{1.0, 2.0, 3.0, 4.0, 5.0};
   auto [rho, mvx, mvy, mvz, E] = u;
+}
 
+TEST_CASE("Cartesian; comparison", "[math]") {
+  zisa::Cartesian<3> x1{1.0, 2.0, 3.0};
+  zisa::Cartesian<3> x2{1.0, 3.0, 3.0};
+
+  REQUIRE(!zisa::all(x1 < x2));
+  REQUIRE(zisa::all(x1 <= x2));
+  REQUIRE(!zisa::all(x1 >= x2));
+  REQUIRE(!zisa::all(x1 > x2));
+
+  REQUIRE(zisa::any(x1 < x2));
+  REQUIRE(!zisa::any(x1 > x2));
+  REQUIRE(zisa::any(x1 >= x2));
+  REQUIRE(zisa::any(x1 <= x2));
 }

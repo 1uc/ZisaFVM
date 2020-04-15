@@ -87,6 +87,26 @@ RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const Cell &cell) const {
   }
 }
 
+template <class Equilibrium>
+std::string LocalEquilibriumBase<Equilibrium>::str(int verbose) const {
+  if (verbose == 0) {
+    if (found_equilibrium) {
+      return "No equilibrium found.";
+    } else {
+      return string_format("theta = %s @ x_ref = %s",
+                           format_as_list(theta).c_str(),
+                           format_as_list(x_ref).c_str());
+    }
+  } else if (verbose >= 1) {
+    return string_format("theta = %s @ x_ref = %s; found_equilibrium = %d",
+                         format_as_list(theta).c_str(),
+                         format_as_list(x_ref).c_str(),
+                         found_equilibrium);
+  }
+
+  return "";
+}
+
 } // namespace zisa
 
 #endif /* end of include guard */

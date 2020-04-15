@@ -155,51 +155,43 @@ int_t required_stencil_size(int deg, double factor, int n_dims) {
 
 std::vector<int_t>
 central_stencil(const Grid &grid, int_t i_center, int_t n_points) {
-  return biased_stencil(
-      grid, i_center, n_points, Cone({0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, -1.1));
-}
-
-static double compute_cos_alpha(const Grid &grid, int_t i, int_t k) {
-  auto max_neighbours = grid.max_neighbours;
-  auto element_type = (max_neighbours == 3 ? GMSHElementType::triangle
-                                           : GMSHElementType::tetrahedron);
-
-  const auto &x_center = grid.cell_centers(i);
-
-  auto range = index_range(GMSHElementInfo::n_vertices_per_face(element_type));
-
-  double r_max = zisa::reduce::max(
-      range, [&grid, &x_center, element_type, i, k](int_t rel) {
-        auto k_rel
-            = GMSHElementInfo::relative_vertex_index(element_type, k, rel);
-        const auto &vi = grid.vertices(grid.vertex_indices(i, k_rel));
-
-        return zisa::norm(x_center - vi);
-      });
-
-  double r = zisa::norm(grid.face_center(i, k) - x_center);
-
-  return r / r_max;
+  return biased_stencil(grid, i_center, n_points, FullSphere());
 }
 
 std::vector<int_t>
 biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points) {
-  const auto &cell_center = grid.cell_centers(i_center);
-  const auto &face_center = grid.face_center(i_center, k);
+  auto element_type = grid.element_type();
 
-  double cos_alpha = compute_cos_alpha(grid, i_center, k);
+  auto rel_vertex = [&grid, &element_type](int_t i, int_t k, int_t rel) {
+    auto kk = GMSHElementInfo::relative_vertex_index(element_type, k, rel);
+    return grid.vertices[grid.vertex_indices(i, kk)];
+  };
 
-  auto v = XYZ(face_center - cell_center);
-  auto v_hat = XYZ(normalize(v));
+  const auto &cone_center = grid.vertices(grid.vertex_indices(
+      i_center, GMSHElementInfo::relative_off_vertex_index(element_type, k)));
 
-  return biased_stencil(
-      grid, i_center, n_points, Cone(cell_center, v_hat, cos_alpha));
+  if (element_type == GMSHElementType::triangle) {
+    return biased_stencil(grid,
+                          i_center,
+                          n_points,
+                          TriangularCone(cone_center,
+                                         rel_vertex(i_center, k, 0),
+                                         rel_vertex(i_center, k, 1)));
+  } else {
+    auto region = TetrahedralCone(cone_center,
+                                  rel_vertex(i_center, k, 0),
+                                  rel_vertex(i_center, k, 1),
+                                  rel_vertex(i_center, k, 2));
+
+    return biased_stencil(grid, i_center, n_points, region);
+  }
 }
 
 std::vector<int_t> biased_stencil(const Grid &grid,
                                   int_t i_center,
                                   int_t n_points,
-                                  const Cone &cone) {
+                                  const Region &region) {
+
   int_t max_points = 5 * n_points;
   int_t max_neighbours = grid.max_neighbours;
 
@@ -212,8 +204,15 @@ std::vector<int_t> biased_stencil(const Grid &grid,
            == candidates.end();
   };
 
-  auto is_inside = [&cone, &grid](int_t cand) {
-    return cone.is_inside(grid.cell_centers(cand));
+  auto is_inside = [&region, &grid](int_t cand) {
+    const auto &cell = grid.cells(cand);
+    for (const auto &x : cell.qr.points) {
+      if (region.is_inside(x)) {
+        return true;
+      }
+    }
+
+    return region.is_inside(grid.cell_centers(cand));
   };
 
   for (int_t p = 0; p < max_points; ++p) {

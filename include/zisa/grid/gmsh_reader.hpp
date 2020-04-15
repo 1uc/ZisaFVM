@@ -33,6 +33,9 @@ public:
 
   static index_t relative_vertex_index(GMSHElementType element_type,
                                        std::vector<bool> s);
+
+  static index_t relative_off_vertex_index(GMSHElementType element_type,
+                                           index_t k);
 };
 
 struct GMSHData {

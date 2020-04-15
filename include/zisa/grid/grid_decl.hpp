@@ -1,12 +1,15 @@
 #ifndef GRID_DECL_H_8IQQ7
 #define GRID_DECL_H_8IQQ7
 
+#include <functional>
 #include <optional>
 #include <string>
 #include <utility>
 
+#include <zisa/grid/cell_flags.hpp>
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/io/hdf5_writer_fwd.hpp>
+#include <zisa/loops/reduction/min.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/cell.hpp>
 #include <zisa/math/denormalized_rule.hpp>
@@ -15,8 +18,6 @@
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
-#include <zisa/loops/reduction/min.hpp>
-#include <zisa/grid/cell_flags.hpp>
 
 namespace zisa {
 
@@ -85,6 +86,8 @@ struct Grid {
   bool is_triangular() const;
   bool is_tetrahedral() const;
 
+  GMSHElementType element_type() const;
+
   std::string str() const;
 };
 
@@ -133,6 +136,9 @@ normalized_moments(const Tetrahedron &tet, int deg, int_t quad_deg);
  *    min(distance(grid, i), max_distance)
  */
 int_t distance_to_boundary(const Grid &grid, int_t i, int_t max_distance);
+
+void mask_ghost_cells(Grid &grid,
+                      const std::function<bool(const Grid &, int_t)> &mask);
 
 } // namespace zisa
 

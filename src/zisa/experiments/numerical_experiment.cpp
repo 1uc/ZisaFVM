@@ -1,13 +1,14 @@
 #include <memory>
 
+#include <zisa/boundary/boundary_condition_factory.hpp>
 #include <zisa/boundary/no_boundary_condition.hpp>
 #include <zisa/experiments/numerical_experiment.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/edge_rule.hpp>
+#include <zisa/memory/array_stencil_family.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_integration_factory.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
-#include <zisa/boundary/boundary_condition_factory.hpp>
 
 namespace zisa {
 
