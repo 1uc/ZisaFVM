@@ -39,10 +39,12 @@ def generate_convergence_geo_files(basename, n_grids):
 
 def generate_unit_square_geo_files():
     generate_convergence_geo_files("unit_square", 5)
+    generate_convergence_geo_files("unit_square_with_halo", 5)
 
 
 def generate_unit_cube_geo_files():
-    generate_convergence_geo_files("unit_cube", 3)
+    generate_convergence_geo_files("unit_cube", 4)
+    generate_convergence_geo_files("unit_cube_with_halo", 4)
 
 
 if __name__ == "__main__":

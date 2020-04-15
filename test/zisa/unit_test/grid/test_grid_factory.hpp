@@ -12,6 +12,10 @@ public:
     return string_format("grids/convergence/unit_square_%d.msh", i);
   }
 
+  static std::string unit_square_with_halo(int i) {
+    return string_format("grids/convergence/unit_square_with_halo_%d.msh", i);
+  }
+
   static std::vector<std::string> unit_square() {
     int n_grids = 4;
     auto pattern = [](int i) { return TestGridFactory::unit_square(i); };
@@ -20,6 +24,10 @@ public:
 
   static std::string unit_cube(int i) {
     return string_format("grids/convergence/unit_cube_%d.msh", i);
+  }
+
+  static std::string unit_cube_with_halo(int i) {
+    return string_format("grids/convergence/unit_cube_with_halo_%d.msh", i);
   }
 
   static std::vector<std::string> unit_cube() {
