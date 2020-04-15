@@ -40,11 +40,7 @@ protected:
   std::shared_ptr<Grid> choose_grid() const;
   virtual std::shared_ptr<Grid> compute_grid() const;
 
-  std::shared_ptr<Grid> choose_full_grid() const;
-  virtual std::shared_ptr<Grid> compute_full_grid() const;
-
   virtual std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const;
-  virtual std::shared_ptr<array<StencilFamily, 1>> choose_full_stencils() const;
 
   virtual std::shared_ptr<array<StencilFamily, 1>>
   compute_stencils(const Grid &grid) const;
@@ -106,7 +102,6 @@ protected:
 
   virtual void write_debug_output();
   virtual void write_stencils();
-  virtual void write_global_indices();
 
 protected:
   InputParameters params;
@@ -114,11 +109,9 @@ protected:
 
 protected:
   mutable std::shared_ptr<Grid> grid_;
-  mutable std::shared_ptr<Grid> full_grid_;
   mutable std::shared_ptr<Visualization> visualization_;
   mutable std::shared_ptr<BoundaryCondition> boundary_condition_;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
-  mutable std::shared_ptr<array<StencilFamily, 1>> full_stencils_ = nullptr;
   mutable std::shared_ptr<AllVariables> all_vars_ = nullptr;
 };
 

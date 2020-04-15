@@ -414,9 +414,9 @@ left_right_t compute_left_right(const edge_indices_t &edge_indices,
   int_t max_neighbours = edge_indices.shape(1);
   int_t n_interior_edges = count_interior_edges(neighbours, is_valid);
   int_t n_exterior_edges = count_exterior_edges(is_valid);
-  int_t n__edges = n_interior_edges + n_exterior_edges;
+  int_t n_edges = n_interior_edges + n_exterior_edges;
 
-  auto left_right = left_right_t(shape_t<1>{n__edges});
+  auto left_right = left_right_t(shape_t<1>{n_edges});
 
   for (int_t i = 0; i < n_cells; ++i) {
     for (int_t k = 0; k < max_neighbours; ++k) {

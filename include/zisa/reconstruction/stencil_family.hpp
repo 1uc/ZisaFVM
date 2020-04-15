@@ -9,7 +9,7 @@ namespace zisa {
 
 class StencilFamily {
 private:
-  array<Stencil, 1> stencils_;
+  array<Stencil, 1> stencils_; // lives up here for some return type magic.
 
 public:
   StencilFamily() = default;
@@ -41,19 +41,19 @@ public:
   auto end() -> decltype(stencils_.end());
   auto end() const -> decltype(stencils_.end());
 
-  template<class F>
+  template <class F>
   void apply_permutation(const F &f) {
-    for(auto &s : (*this)) {
+    for (auto &s : (*this)) {
       s.apply_permutation(f);
     }
-    for(auto &i : l2g) {
+    for (auto &i : l2g) {
       i = f(i);
     }
   }
 
-protected:
-  /// This sets the order of every stencil to 1.
-  void truncate_all_stencils_to_first_order(int_t i_cell);
+  /// Replace the stencil family with one first order stencil.
+  /** With overfitting factor of 1, i.e. just one point. */
+  void truncate_to_first_order(int_t i_cell);
 
 private:
   std::vector<int_t> l2g;
@@ -67,8 +67,7 @@ bool operator==(const StencilFamily &lhs, const StencilFamily &rhs);
 bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs);
 
 array<StencilFamily, 1>
-compute_stencil_families(const Grid &grid,
-                         const StencilFamilyParams &params);
+compute_stencil_families(const Grid &grid, const StencilFamilyParams &params);
 
 } // namespace zisa
 #endif /* end of include guard */

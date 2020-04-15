@@ -1,31 +1,50 @@
 #ifndef ZISA_MPI_HALO_EXCHANGE_HPP_CUUIS
 #define ZISA_MPI_HALO_EXCHANGE_HPP_CUUIS
 
+#include <map>
 #include <zisa/config.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_view.hpp>
 #include <zisa/model/all_variables.hpp>
+#include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/halo_exchange.hpp>
 #include <zisa/parallelization/mpi.hpp>
 
 namespace zisa {
 
+/// This describes what this PE needs from `remote_rank`.
 struct HaloRemoteInfo {
-  array<int_t, 1> cell_indices; ///< index local to the remote.
-  int receiver_rank;
+  int remote_rank;
+  array<int_t, 1> cell_indices; ///< these are global indices.
+
+  HaloRemoteInfo(int remote_rank, array<int_t, 1> cell_indices)
+      : remote_rank(remote_rank), cell_indices(std::move(cell_indices)) {}
 };
 
-struct HaloLocalInfo {
+/// This describes what `receiver_rank` needs from us.
+struct HaloSendInfo {
+  int receiver_rank;
+  array<int_t, 1> cell_indices; ///< index local to this PE.
+
+  HaloSendInfo(int receiver_rank, array<int_t, 1> cell_indices)
+      : receiver_rank(receiver_rank), cell_indices(std::move(cell_indices)) {}
+};
+
+/// This describes the halo for `sender_rank` on the local PE.
+struct HaloReceiveInfo {
   int sender_rank;
 
-  // Locally the halo is store in the index range [i_start, i_end).
+  // Locally the halo is stored in the index range [i_start, i_end).
   int_t i_start;
   int_t i_end;
+
+  HaloReceiveInfo(int sender_rank, int_t i_start, int_t i_end)
+      : sender_rank(sender_rank), i_start(i_start), i_end(i_end) {}
 };
 
 struct Halo {
   std::vector<HaloRemoteInfo> remote_info;
-  std::vector<HaloLocalInfo> local_info;
+  std::vector<HaloReceiveInfo> local_info;
 };
 
 using HaloExchangeRequest = zisa::mpi::Request;
@@ -36,7 +55,7 @@ private:
   static constexpr int n_dims = 2;
 
 public:
-  explicit HaloSendPart(HaloRemoteInfo remote_info);
+  explicit HaloSendPart(HaloSendInfo remote_info);
 
   void send(const array_const_view<T, n_dims, row_major> &out_data, int tag);
 
@@ -46,7 +65,7 @@ protected:
   void pack_buffer(const array_const_view<T, n_dims, row_major> &out_data);
 
 private:
-  HaloRemoteInfo remote_info;
+  HaloSendInfo send_info;
 
   array<T, n_dims, row_major> send_buffer;
   zisa::mpi::Request send_request;
@@ -59,13 +78,13 @@ private:
   static constexpr int n_dims = 2;
 
 public:
-  explicit HaloReceivePart(const HaloLocalInfo &local_info);
+  explicit HaloReceivePart(const HaloReceiveInfo &local_info);
 
   HaloExchangeRequest receive(array_view<T, n_dims, row_major> &in_data,
                               int tag);
 
 private:
-  HaloLocalInfo local_info;
+  HaloReceiveInfo local_info;
   MPI_Comm mpi_comm = MPI_COMM_WORLD;
 };
 
@@ -75,8 +94,8 @@ private:
   static constexpr int n_dims = 2;
 
 public:
-  MPIHaloExchange(std::vector<HaloRemoteInfo> remote_info,
-                  const std::vector<HaloLocalInfo> &local_info);
+  MPIHaloExchange(std::vector<HaloSendInfo> remote_info,
+                  const std::vector<HaloReceiveInfo> &local_info);
 
   MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
                   std::vector<HaloSendPart> send_parts);
@@ -113,11 +132,19 @@ exchange_sizes(const std::vector<std::pair<int, size_t>> &bytes_to_send,
  *  Receive the information which ranks needs what of the data owned by this
  *  rank.
  */
-std::vector<HaloRemoteInfo>
+std::vector<HaloSendInfo>
 exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
+                   const std::map<int_t, int_t> &global2local,
                    const MPI_Comm &mpi_comm);
 
-MPIHaloExchange make_mpi_halo_exchange(const Halo &halo, const MPI_Comm &comm);
+/// Given only the local data, create an `MPIHaloExchange`.
+/** Note that this routine expects `halo.remote_info` to contain the
+ *  global indices that this partition needs from the other partitions. This
+ *  routine therefore internally performs a `exchange_halo_info`.
+ */
+MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
+                                       const Halo &halo,
+                                       const MPI_Comm &comm);
 
 }
 #endif // ZISA_MPI_HALO_EXCHANGE_HPP

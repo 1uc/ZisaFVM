@@ -23,10 +23,10 @@ StencilFamily::StencilFamily(const Grid &grid,
     }
   }
 
-//  auto d = distance_to_boundary(grid, i_cell, /* max_distance = */ 2);
-//  if (d <= 1) {
-//    truncate_all_stencils_to_first_order(i_cell);
-//  }
+  //  auto d = distance_to_boundary(grid, i_cell, /* max_distance = */ 2);
+  //  if (d <= 1) {
+  //    truncate_all_stencils_to_first_order(i_cell);
+  //  }
 
   order_ = 1;
   for (int_t i = 0; i < size(); ++i) {
@@ -36,12 +36,6 @@ StencilFamily::StencilFamily(const Grid &grid,
 
   combined_stencil_size_ = l2g.size();
   k_high_ = highest_order_central_stencil(*this);
-}
-
-void StencilFamily::truncate_all_stencils_to_first_order(int_t i_cell) {
-  for (auto &stencil : stencils_) {
-    stencil = Stencil(i_cell);
-  }
 }
 
 const Stencil &StencilFamily::operator[](int_t k) const {
@@ -76,6 +70,15 @@ auto StencilFamily::end() const -> decltype(stencils_.end()) {
 }
 
 int_t StencilFamily::highest_order_stencil() const { return k_high_; }
+
+void StencilFamily::truncate_to_first_order(int_t i_cell) {
+  stencils_ = array<Stencil, 1>(1);
+  stencils_[0] = Stencil(i_cell);
+  l2g = std::vector<int_t>{i_cell};
+  combined_stencil_size_ = 1;
+  order_ = 1;
+  k_high_ = 0;
+}
 
 bool operator==(const StencilFamily &lhs, const StencilFamily &rhs) {
   if (lhs.combined_stencil_size() != rhs.combined_stencil_size()) {

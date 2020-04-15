@@ -97,7 +97,7 @@ EulerExperiment<EOS, Gravity>::deduce_reference_solution_eq(
     const Equilibrium &eq,
     const Scaling &scaling) const {
 
-  auto grid = choose_full_grid();
+  auto grid = choose_grid();
   return std::make_shared<EulerReferenceSolution<Equilibrium, Scaling>>(
       grid, u1, eq, scaling);
 }

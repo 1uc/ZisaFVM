@@ -34,18 +34,6 @@ std::shared_ptr<Grid> NumericalExperiment::compute_grid() const {
   return grid;
 }
 
-std::shared_ptr<Grid> NumericalExperiment::choose_full_grid() const {
-  if (full_grid_ == nullptr) {
-    full_grid_ = compute_full_grid();
-  }
-
-  return full_grid_;
-}
-
-std::shared_ptr<Grid> NumericalExperiment::compute_full_grid() const {
-  return choose_grid();
-}
-
 std::shared_ptr<FileNameGenerator>
 NumericalExperiment::choose_file_name_generator() {
   if (file_name_generator_ == nullptr) {
@@ -147,15 +135,9 @@ NumericalExperiment::choose_stencils() const {
   if (stencils_ == nullptr) {
     auto grid = choose_grid();
     stencils_ = compute_stencils(*grid);
-    full_stencils_ = stencils_;
   }
 
   return stencils_;
-}
-
-std::shared_ptr<array<StencilFamily, 1>>
-NumericalExperiment::choose_full_stencils() const {
-  return choose_stencils();
 }
 
 std::shared_ptr<array<StencilFamily, 1>>
@@ -279,45 +261,16 @@ std::shared_ptr<Visualization> NumericalExperiment::choose_visualization() {
 
 void NumericalExperiment::write_debug_output() {
   if (has_key(params, "debug")) {
-    if (params["debug"].value("global_indices", false)) {
-      write_global_indices();
-    }
-
     if (params["debug"].value("stencils", false)) {
       write_stencils();
     }
   }
 }
 
-void NumericalExperiment::write_global_indices() {
-
-  const auto &full_grid = choose_full_grid();
-  auto n_cells = full_grid->n_cells;
-
-  array<int_t, 1> global_indices(n_cells);
-
-  for (int_t i = 0; i < n_cells; ++i) {
-    global_indices(i) = i;
-  }
-
-  auto writer = HDF5SerialWriter("global_indices.h5");
-  save(writer, global_indices, "global_indices");
-}
-
 void NumericalExperiment::write_stencils() {
-  const auto &stencils = choose_full_stencils();
-  auto n_cells = (*stencils).shape(0);
-
+  const auto &stencils = choose_stencils();
   auto writer = HDF5SerialWriter("stencils.h5");
-  for (int_t i = 0; i < n_cells; ++i) {
-    writer.open_group(string_format("%d", i));
-
-    const auto &sf = (*stencils)[i];
-    for (int_t k = 0; k < sf.size(); ++k) {
-      save(writer, sf[k].global(), string_format("%d", k));
-    }
-    writer.close_group();
-  }
+  save(writer, *stencils, "stencils");
 }
 
 void NumericalExperiment::enforce_cell_flags(Grid &) const { return; }

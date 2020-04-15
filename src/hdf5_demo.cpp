@@ -29,8 +29,9 @@ void test_parallel_hdf5(const std::string &output_file) {
     tau(i, 2) = 100 * ids[i] + 2;
   }
 
-  auto writer = HDF5UnstructuredWriter(
-      output_file, HDF5UnstructuredFileDimensions{10, ids}, MPI_COMM_WORLD);
+  auto file_dims = make_hdf5_unstructured_file_dimensions(ids, MPI_COMM_WORLD);
+
+  auto writer = HDF5UnstructuredWriter(output_file, file_dims);
   save(writer, upsilon, "upsilon");
   save(writer, tau, "tau");
 }

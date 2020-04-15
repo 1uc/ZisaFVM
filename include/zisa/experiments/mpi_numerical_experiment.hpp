@@ -6,10 +6,12 @@
 #include <zisa/cli/input_parameters.hpp>
 #include <zisa/io/gathered_visualization.hpp>
 #include <zisa/io/mpi_progress_bar.hpp>
+#include <zisa/io/parallel_dump_snapshot.hpp>
 #include <zisa/model/distributed_cfl_condition.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
+#include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
 #include <zisa/parallelization/mpi_all_reduce.hpp>
 #include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
@@ -37,7 +39,11 @@ protected:
 
   std::string parallel_visualization_strategy() const {
     return this->params["io"].value("parallel_strategy",
-                                    std::string("gathered"));
+                                    std::string("unstructured"));
+  }
+
+  bool is_unstructured_visualization() const {
+    return parallel_visualization_strategy() == "unstructured";
   }
 
   bool is_gathered_visualization() const {
@@ -50,10 +56,8 @@ protected:
 
   void write_grid() override {
     if (is_gathered_visualization()) {
-      if (mpi_rank == 0) {
-        auto writer = HDF5SerialWriter("grid.h5");
-        save(writer, *this->full_grid_);
-      }
+      LOG_WARN(
+          "This needs to be reimplmented. In the meantime, simply copy over.");
     } else if (is_split_visualization()) {
       auto dir = string_format("part-%04d/", mpi_rank);
       create_directory(dir);
@@ -70,26 +74,29 @@ protected:
   }
 
   void do_post_run(const std::shared_ptr<AllVariables> &u1) override {
-    // Check to see if it needs gathering.
-    if (u1->dims().n_cells == this->full_grid_->n_cells) {
-      super::do_post_process();
-    } else {
-      const auto &boundaries = partitioned_grid_->boundaries;
-      auto gatherer = make_mpi_all_variables_gatherer(
-          ZISA_MPI_TAG_ALL_VARS_POSTPROCESS, mpi_comm, boundaries);
-
-      auto full_all_vars
-          = std::make_shared<AllVariables>(gatherer->gather(*u1));
-
-      if (mpi_rank == 0) {
-        // Restore original order.
-        const auto &sigma = factor_permutation(partitioned_grid_->permutation);
-        reverse_permutation(array_view(full_all_vars->cvars), sigma);
-        reverse_permutation(array_view(full_all_vars->avars), sigma);
-
-        super::do_post_run(full_all_vars);
-      }
-    }
+    ZISA_UNUSED(u1);
+    //    LOG_ERR("Needs reimplementing.");
+    //    // Check to see if it needs gathering.
+    //    if (u1->dims().n_cells == this->full_grid_->n_cells) {
+    //      super::do_post_process();
+    //    } else {
+    //      const auto &boundaries = partitioned_grid_->boundaries;
+    //      auto gatherer = make_mpi_all_variables_gatherer(
+    //          ZISA_MPI_TAG_ALL_VARS_POSTPROCESS, mpi_comm, boundaries);
+    //
+    //      auto full_all_vars
+    //          = std::make_shared<AllVariables>(gatherer->gather(*u1));
+    //
+    //      if (mpi_rank == 0) {
+    //        // Restore original order.
+    //        const auto &sigma =
+    //        factor_permutation(partitioned_grid_->permutation);
+    //        reverse_permutation(array_view(full_all_vars->cvars), sigma);
+    //        reverse_permutation(array_view(full_all_vars->avars), sigma);
+    //
+    //        super::do_post_run(full_all_vars);
+    //      }
+    //    }
   }
 
   void do_post_process() override {
@@ -98,82 +105,16 @@ protected:
     }
   }
 
-  std::shared_ptr<Grid> compute_full_grid() const override {
-    int_t quad_deg = this->choose_volume_deg();
-
-    if (mpi_rank == 0) {
-      auto vertex_indices_gbl = array<int_t, 2>{};
-      auto vertices_gbl = array<XYZ, 1>{};
-      {
-        auto reader = HDF5SerialReader(this->params["grid"]["file"]);
-        vertex_indices_gbl = array<int_t, 2>::load(reader, "vertex_indices");
-        vertices_gbl = array<XYZ, 1>::load(reader, "vertices");
-      }
-
-      auto n_cells = vertex_indices_gbl.shape(0);
-      auto max_neighbours = vertex_indices_gbl.shape(1);
-      auto n_vertices = vertices_gbl.shape(0);
-
-      auto sizes = shape_t<3>{n_cells, n_vertices, max_neighbours};
-      zisa::mpi::bcast(array_view(sizes.shape(), sizes.raw()), 0, mpi_comm);
-      zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
-      zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
-
-      auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
-                                    std::move(vertices_gbl),
-                                    std::move(vertex_indices_gbl),
-                                    quad_deg);
-      this->enforce_cell_flags(*grid);
-      return grid;
-
-    } else {
-      auto sizes = shape_t<3>{};
-      mpi::bcast(array_view(sizes.shape(), sizes.raw()), 0, mpi_comm);
-      auto n_cells = sizes[0];
-      auto n_vertices = sizes[1];
-      auto max_neighbours = sizes[2];
-
-      auto vertex_indices_gbl = array<int_t, 2>({n_cells, max_neighbours});
-      auto vertices_gbl = array<XYZ, 1>(n_vertices);
-
-      zisa::mpi::bcast(array_view(vertex_indices_gbl), 0, mpi_comm);
-      zisa::mpi::bcast(array_view(vertices_gbl), 0, mpi_comm);
-
-      auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
-                                    std::move(vertices_gbl),
-                                    std::move(vertex_indices_gbl),
-                                    quad_deg);
-      this->enforce_cell_flags(*grid);
-      return grid;
-    }
-  }
-
-  std::shared_ptr<PartitionedGrid>
-  partition_grid(const Grid &full_grid,
-                 const array<StencilFamily, 1> &stencils) const {
-
-    if (mpi_rank == 0) {
-      partitioned_grid_ = std::make_shared<PartitionedGrid>(
-          compute_partitioned_grid(full_grid, stencils, int_t(mpi_comm_size)));
-    } else {
-      auto n_cells = full_grid.n_cells;
-      partitioned_grid_ = std::make_shared<PartitionedGrid>(
-          array<int_t, 1>(n_cells),
-          array<int_t, 1>(mpi_comm_size + 1),
-          array<int_t, 1>(n_cells));
-    }
-
-    zisa::mpi::bcast(array_view(partitioned_grid_->partition), 0, mpi_comm);
-    zisa::mpi::bcast(array_view(partitioned_grid_->boundaries), 0, mpi_comm);
-    zisa::mpi::bcast(array_view(partitioned_grid_->permutation), 0, mpi_comm);
-
-    return partitioned_grid_;
-  }
-
   std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const override {
     LOG_ERR_IF(this->stencils_ == nullptr,
                "Trying to use stencils before they were computed.");
     return this->stencils_;
+  }
+
+  std::shared_ptr<DistributedGrid> choose_distributed_grid() const {
+    LOG_ERR_IF(this->distributed_grid_ == nullptr,
+               "Trying to use stencils before they were computed.");
+    return this->distributed_grid_;
   }
 
   std::shared_ptr<array<StencilFamily, 1>>
@@ -184,45 +125,49 @@ protected:
         compute_stencil_families(grid, stencil_params));
   }
 
-  std::shared_ptr<Grid> compute_full_renumbered_grid(const Grid &grid) const {
-    const auto &vertices = grid.vertices;
-    const auto &vertex_indices = grid.vertex_indices;
-    auto element_type = deduce_element_type(grid.max_neighbours);
-    auto quad_deg = this->choose_volume_deg();
-
-    return std::make_shared<Grid>(
-        element_type,
-        vertices,
-        renumbered_vertex_indices(vertex_indices,
-                                  partitioned_grid_->permutation),
-        quad_deg);
+  std::string subgrid_name() const {
+    std::string dirname = this->params["grid"]["file"];
+    return string_format("%s/subgrid-%04d.msh.h5", dirname.c_str(), mpi_rank);
   }
 
   std::shared_ptr<Grid> compute_grid() const override {
-    auto full_grid = this->choose_full_grid();
-    auto stencils = compute_stencils(*full_grid);
+    // 1. Load in a oversized chunk.
+    // 2. Decide how much we really need based on the stencil.
+    // 3. Generate correctly sized grid.
 
-    auto partitioned_grid = partition_grid(*full_grid, *stencils);
+    // Side effect: store the stencils.
 
-    auto [local_vertex_indices, local_vertices, local_stencils, halo]
-        = extract_subgrid(*full_grid,
-                          *partitioned_grid,
-                          *stencils,
-                          integer_cast<int_t>(mpi_rank));
+    auto super_subgrid = zisa::load_grid(subgrid_name());
+    auto super_sub_dgrid = zisa::load_distributed_grid(subgrid_name());
 
-    halo_exchange_ = std::make_shared<MPIHaloExchange>(
-        make_mpi_halo_exchange(halo, mpi_comm));
+    // FIXME this need to be extracted & stored.
+    auto stencils = compute_stencils(*super_subgrid);
 
-    this->full_stencils_ = stencils;
-    this->stencils_
-        = std::make_shared<array<StencilFamily, 1>>(std::move(local_stencils));
+    auto is_interior = [this, &partition = super_sub_dgrid.partition](int_t i) {
+      return partition[i] == integer_cast<int_t>(mpi_rank);
+    };
 
-    return local_grid(std::move(local_vertex_indices),
-                      std::move(local_vertices));
+    auto is_needed
+        = StencilBasedIndicator(*super_subgrid, *stencils, is_interior);
+
+    auto [local_vertex_indices, local_vertices, super_sub_indices]
+        = extract_subgrid_v2(*super_subgrid, is_needed);
+
+    this->stencils_ = std::make_shared<array<StencilFamily, 1>>(
+        extract_stencils(*stencils,
+                         super_subgrid->neighbours,
+                         is_interior,
+                         super_sub_indices));
+
+    distributed_grid_ = std::make_shared<DistributedGrid>(
+        extract_distributed_subgrid(super_sub_dgrid, super_sub_indices));
+
+    return compute_local_grid(std::move(local_vertex_indices),
+                              std::move(local_vertices));
   }
 
-  std::shared_ptr<Grid> local_grid(array<int_t, 2> vertex_indices,
-                                   array<XYZ, 1> vertices) const {
+  std::shared_ptr<Grid> compute_local_grid(array<int_t, 2> vertex_indices,
+                                           array<XYZ, 1> vertices) const {
 
     auto quad_deg = this->choose_volume_deg();
     auto max_neighbours = vertex_indices.shape(1);
@@ -247,8 +192,8 @@ protected:
   }
 
   std::shared_ptr<Visualization> compute_visualization() override {
-    if (is_gathered_visualization()) {
-      return compute_gathered_visualization();
+    if (is_unstructured_visualization()) {
+      return compute_unstructured_visualization();
     }
 
     if (is_split_visualization()) {
@@ -258,23 +203,34 @@ protected:
     LOG_ERR("Invalid config for visualization.");
   }
 
-  std::shared_ptr<Visualization> compute_gathered_visualization() {
-    auto single_node_vis = super::compute_visualization();
+  std::shared_ptr<HDF5UnstructuredFileDimensions>
+  choose_file_dimensions() const {
+    return compute_file_dimensions();
+  }
 
-    const auto &boundaries = partitioned_grid_->boundaries;
-    auto gatherer = make_mpi_all_variables_gatherer(
-        ZISA_MPI_TAG_ALL_VARS_VISUALIZATION, mpi_comm, boundaries);
+  std::shared_ptr<HDF5UnstructuredFileDimensions>
+  compute_file_dimensions() const {
+    auto dgrid = choose_distributed_grid();
+    auto global_ids = std::vector<hsize_t>();
 
-    auto all_var_dims = this->choose_all_variable_dims();
-    all_var_dims.n_cells = partitioned_grid_->boundaries[mpi_comm_size];
+    for (int_t i = 0; i < dgrid->global_cell_indices.size(); ++i) {
+      if (dgrid->partition[i] == integer_cast<int_t>(mpi_rank)) {
+        global_ids.push_back(dgrid->global_cell_indices[i]);
+      }
+    }
 
-    auto permutation = std::make_shared<Permutation>(
-        factor_permutation(partitioned_grid_->permutation));
+    PRINT(global_ids.size());
 
-    return std::make_shared<GatheredVisualization>(std::move(gatherer),
-                                                   std::move(permutation),
-                                                   single_node_vis,
-                                                   all_var_dims);
+    return make_hdf5_unstructured_file_dimensions(global_ids, mpi_comm);
+  }
+
+  std::shared_ptr<Visualization> compute_unstructured_visualization() {
+    const auto &fng = this->choose_file_name_generator();
+    auto file_dims = choose_file_dimensions();
+
+    // TODO here we just made this only work for Euler.
+    return std::make_shared<ParallelDumpSnapshot<typename super::euler_t>>(
+        this->euler, fng, file_dims);
   }
 
   std::shared_ptr<SimulationClock> choose_simulation_clock() override {
@@ -298,9 +254,57 @@ protected:
     return std::make_shared<DistributedCFLCondition>(cfl, all_reduce);
   }
 
+  std::shared_ptr<HaloExchange> choose_halo_exchange() {
+    if (halo_exchange_ == nullptr) {
+      halo_exchange_ = compute_halo_exchange();
+    }
+
+    return halo_exchange_;
+  }
+
+  std::shared_ptr<HaloExchange> compute_halo_exchange() {
+    auto i_need_this = std::vector<HaloRemoteInfo>();
+    auto local_halo_info = std::vector<HaloReceiveInfo>();
+
+    auto dgrid = choose_distributed_grid();
+    const auto &partition = dgrid->partition;
+    const auto &global_indices = dgrid->global_cell_indices;
+
+    auto n_owned_cells
+        = std::count(partition.begin(), partition.end(), mpi_rank);
+    auto n_cells = partition.shape(0);
+
+    int_t i_start = integer_cast<int_t>(n_owned_cells);
+    while (i_start < n_cells) {
+      auto p = integer_cast<int>(partition(i_start));
+
+      int_t i_end = i_start;
+      while (i_end < n_cells && integer_cast<int>(partition[i_end]) == p) {
+        ++i_end;
+      }
+
+      auto n_patch = i_end - i_start;
+      auto indices = array<int_t, 1>(n_patch);
+      for (int_t i = i_start; i < i_end; ++i) {
+        indices[i - i_start] = global_indices[i];
+      }
+
+      i_need_this.emplace_back(p, indices);
+      local_halo_info.emplace_back(p, i_start, i_end);
+
+      i_start = i_end;
+    }
+
+    return std::make_shared<MPIHaloExchange>(make_mpi_halo_exchange(
+        *dgrid,
+        {std::move(i_need_this), std::move(local_halo_info)},
+        mpi_comm));
+  }
+
   std::shared_ptr<BoundaryCondition> compute_boundary_condition() override {
     auto bc = super::compute_boundary_condition();
-    return std::make_shared<HaloExchangeBC>(bc, halo_exchange_);
+    auto halo_exchange = choose_halo_exchange();
+    return std::make_shared<HaloExchangeBC>(bc, halo_exchange);
   }
 
   std::shared_ptr<ProgressBar> choose_progress_bar() override {
@@ -331,7 +335,7 @@ protected:
   int mpi_rank;
   int mpi_comm_size;
 
-  mutable std::shared_ptr<PartitionedGrid> partitioned_grid_ = nullptr;
+  mutable std::shared_ptr<DistributedGrid> distributed_grid_ = nullptr;
   mutable std::shared_ptr<HaloExchange> halo_exchange_ = nullptr;
 };
 }

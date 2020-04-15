@@ -2,6 +2,7 @@
 
 #include <map>
 #include <metis.h>
+#include <zisa/grid/neighbour_range.hpp>
 
 namespace zisa {
 using metis_idx_t = ::idx_t;
@@ -13,10 +14,10 @@ PartitionedGrid::PartitionedGrid(array<int_t, 1> partition,
       boundaries(std::move(boundaries)),
       permutation(std::move(permutation)) {}
 
-array<int_t, 1>
-compute_partition_full_stencil(const Grid &grid,
-                               const std::vector<std::vector<int_t>> &stencils,
-                               int n_parts) {
+array<int_t, 1> compute_partition_full_stencil(
+    const Grid &grid,
+    const std::vector<std::vector<int_t>> & /*stencils*/,
+    int n_parts) {
 
   auto n_cells = grid.n_cells;
   auto nvtxs = metis_idx_t(n_cells);
@@ -214,7 +215,177 @@ PartitionedGrid compute_partitioned_grid(
       std::move(cell_partition), std::move(boundaries), std::move(sigma)};
 }
 
-std::tuple<array<int_t, 2>, array<XYZ, 1>, array<StencilFamily, 1>, Halo>
+std::tuple<array<int_t, 2>, array<int_t, 1>>
+extract_vertex_indices(const Grid &grid,
+                       const std::function<bool(int_t)> &is_inside) {
+
+  const auto &vertex_indices = grid.vertex_indices;
+
+  int_t n_local_cells = 0;
+  for (int_t i : cell_indices(grid)) {
+    n_local_cells += (is_inside(i) ? 1 : 0);
+  }
+
+  auto local_vertex_indices
+      = array<int_t, 2>(shape_t<2>{n_local_cells, vertex_indices.shape(1)});
+
+  auto global_cell_indices = array<int_t, 1>(n_local_cells);
+
+  int_t i_local = 0;
+  for (int_t i : cell_indices(grid)) {
+    if (is_inside(i)) {
+      for (int_t k : neighbour_index_range(grid)) {
+        local_vertex_indices(i_local, k) = vertex_indices(i, k);
+      }
+      global_cell_indices[i_local] = i;
+
+      ++i_local;
+    }
+  }
+
+  return {std::move(local_vertex_indices), std::move(global_cell_indices)};
+}
+
+StencilBasedIndicator::StencilBasedIndicator(
+    const Grid &grid,
+    const array<StencilFamily, 1> &stencils,
+    const std::function<bool(int_t)> &is_interior) {
+  LOG_ERR_IF(grid.n_cells != stencils.size(), "size mismatch.");
+
+  for (int_t i : cell_indices(grid)) {
+    if (is_interior(i)) {
+      append(stencils[i].local2global());
+
+      for (int_t k : neighbour_index_range(grid)) {
+        if (grid.is_valid(i, k)) {
+          int_t j = grid.neighbours(i, k);
+          append(stencils[j].local2global());
+        }
+      }
+    }
+  }
+
+  std::sort(good_indices.begin(), good_indices.end());
+  auto end = std::unique(good_indices.begin(), good_indices.end());
+  good_indices.resize(integer_cast<int_t>(end - good_indices.begin()));
+}
+
+bool StencilBasedIndicator::operator()(int_t i) const {
+  return std::binary_search(good_indices.begin(), good_indices.end(), i);
+}
+
+void StencilBasedIndicator::append(const std::vector<int_t> &l2g) {
+  good_indices.insert(good_indices.end(), l2g.begin(), l2g.end());
+}
+
+std::tuple<array<int_t, 2>, array<XYZ, 1>>
+extract_vertices(const array<XYZ, 1> &vertices,
+                 array<int_t, 2> local_vertex_indices) {
+
+  std::vector<int_t> vi_local2old(local_vertex_indices.size());
+  std::copy(local_vertex_indices.begin(),
+            local_vertex_indices.end(),
+            vi_local2old.begin());
+
+  std::sort(vi_local2old.begin(), vi_local2old.end());
+
+  auto n_unique = std::unique(vi_local2old.begin(), vi_local2old.end())
+                  - vi_local2old.begin();
+  vi_local2old.resize(integer_cast<size_t>(n_unique));
+
+  std::map<int_t, int_t> vi_old2local;
+  zisa::for_each(index_range(vi_local2old.size()),
+                 [&](int_t i) { vi_old2local[vi_local2old[i]] = i; });
+
+  zisa::for_each(index_range(local_vertex_indices.shape(0)), [&](int_t i) {
+    for (int_t k : index_range(local_vertex_indices.shape(1))) {
+      local_vertex_indices(i, k) = vi_old2local[local_vertex_indices(i, k)];
+    }
+  });
+
+  int_t n_vertices_local = vi_old2local.size();
+  array<XYZ, 1> local_vertices(n_vertices_local);
+
+  zisa::for_each(index_range(local_vertices.shape(0)), [&](int_t i) {
+    local_vertices(i) = vertices(vi_local2old[i]);
+  });
+
+  return {std::move(local_vertex_indices), std::move(local_vertices)};
+}
+
+std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
+extract_subgrid_v2(const Grid &grid,
+                   const std::function<bool(int_t)> &is_inside) {
+
+  auto [lvi, global_cell_indices] = extract_vertex_indices(grid, is_inside);
+
+  auto [local_vertex_indices, local_vertices]
+      = extract_vertices(grid.vertices, std::move(lvi));
+
+  return std::tuple{std::move(local_vertex_indices),
+                    std::move(local_vertices),
+                    std::move(global_cell_indices)};
+}
+DistributedGrid
+extract_distributed_subgrid(const DistributedGrid &dgrid,
+                            const array<int_t, 1> &global_indices) {
+
+  return DistributedGrid{
+      extract_subarray(dgrid.global_cell_indices, global_indices),
+      extract_subarray(dgrid.partition, global_indices)};
+}
+
+std::map<int_t, int_t>
+sparse_inverse_permutation(const array_const_view<int_t, 1> &sigma) {
+  std::map<int_t, int_t> tau;
+  for (int_t i = 0; i < sigma.size(); ++i) {
+    tau[sigma[i]] = i;
+  }
+  tau[int_t(-1)] = int_t(-1);
+
+  return tau;
+}
+
+array<StencilFamily, 1>
+extract_stencils(const array<StencilFamily, 1> &global_stencils,
+                 const array<int_t, 2> &global_neighbours,
+                 const std::function<bool(int_t)> &global_is_inside,
+                 const array<int_t, 1> &global_indices) {
+
+  auto local_stencils = extract_subarray(global_stencils, global_indices);
+  for (int_t i_local = 0; i_local < local_stencils.size(); ++i_local) {
+    int_t i_global = global_indices[i_local];
+
+    bool is_good = false;
+    if (global_is_inside(i_global)) {
+      is_good = true;
+    } else {
+      for (int_t k = 0; k < global_neighbours.shape(1); ++k) {
+        int_t j_global = global_neighbours(i_global, k);
+
+        if (j_global != int_t(-1) && global_is_inside(j_global)) {
+          is_good = true;
+          break;
+        }
+      }
+    }
+
+    if (!is_good) {
+      local_stencils[i_local].truncate_to_first_order(i_global);
+    }
+  }
+
+  auto tau = sparse_inverse_permutation(global_indices);
+  for (int_t i = 0; i < local_stencils.size(); ++i) {
+    local_stencils[i].apply_permutation(
+        [&tau](int_t i_inner) { return tau.at(i_inner); });
+  }
+
+  return local_stencils;
+}
+
+// --- old extract subgrid -----------------------------------------------------
+std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
 extract_subgrid(const Grid &grid,
                 const PartitionedGrid &partitioned_grid,
                 const array<StencilFamily, 1> &stencils,
@@ -270,48 +441,15 @@ extract_subgrid(const Grid &grid,
     n_halo += nbs.size();
   }
 
-  // Convert halo to indices local to the remote.
-  for (auto &[p, nbs] : m) {
-    for (auto &i : nbs) {
-      i = tau(i);
-    }
-    std::sort(nbs.begin(), nbs.end());
-  }
-
-  // Halo (remote)
-  std::vector<HaloRemoteInfo> remote_halos;
-  for (auto &[p, nbs] : m) {
-    array<int_t, 1> remote_indices(nbs.size());
-    for (int_t i = 0; i < remote_indices.shape(0); ++i) {
-      remote_indices(i) = nbs[i] - boundaries[p];
-    }
-    remote_halos.push_back(HaloRemoteInfo{std::move(remote_indices), int(p)});
-  }
-
-  // Halo (local)
-  std::vector<HaloLocalInfo> local_halos;
-  std::vector<int_t> remotes;
-  for (const auto &[p, _] : m) {
-    remotes.push_back(p);
-  }
-
-  int_t i_start = n_cells_part;
-  int_t i_end = int_t(-1);
-  for (auto p : remotes) {
-    i_end = i_start + m[p].size();
-    local_halos.push_back(HaloLocalInfo{int(p), i_start, i_end});
-    i_start = i_end;
-  }
-
   std::map<int_t, int_t> old2local;
   for (int_t i = 0; i < n_cells_part; ++i) {
     old2local[sigma(i + boundaries(k_part))] = i;
   }
 
   int_t i_local = n_cells_part;
-  for (auto p : remotes) {
-    for (int_t i : m[p]) {
-      old2local[sigma(i)] = i_local;
+  for (auto [p, halo] : m) {
+    for (int_t i : halo) {
+      old2local[i] = i_local;
       ++i_local;
     }
   }
@@ -322,38 +460,12 @@ extract_subgrid(const Grid &grid,
     local2old[local] = old;
   }
 
-  int_t n_cells_halo = i_end - n_cells_part;
-
-  array<StencilFamily, 1> local_stencils(
-      shape_t<1>{n_cells_part + n_cells_halo});
-  for (int_t i = n_cells_part; i < n_cells_part + n_cells_halo; ++i) {
-    int_t i_old = local2old[i];
-    local_stencils[i] = StencilFamily(grid, i_old, {{1}, {"c"}, {1.0}});
-  }
-
-  for (int_t i = 0; i < n_cells_part; ++i) {
-    int_t i_old = local2old[i];
-    local_stencils(i) = stencils(i_old);
-
-    // and now the ones just outside.
-    for (int_t k = 0; k < max_neighbours; ++k) {
-      int_t j_old = neighbours(i_old, k);
-      if (j_old < n_cells) {
-        int_t j = old2local[j_old];
-        if (j >= n_cells_part) {
-          local_stencils(j) = stencils(j_old);
-        }
-      }
-    }
-  }
-
-  for (auto &ls : local_stencils) {
-    ls.apply_permutation([&old2local](int_t i) { return old2local[i]; });
-  }
+  int_t n_cells_halo = old2local.size() - 1 - n_cells_part;
+  int_t n_cells_local = n_cells_part + n_cells_halo;
 
   array<int_t, 2> local_vertex_indices(
       {n_cells_part + n_cells_halo, max_neighbours});
-  for (int_t i = 0; i < n_cells_part + n_cells_halo; ++i) {
+  for (int_t i = 0; i < n_cells_local; ++i) {
     for (int_t k = 0; k < max_neighbours; ++k) {
       local_vertex_indices(i, k) = grid.vertex_indices(local2old[i], k);
     }
@@ -370,10 +482,8 @@ extract_subgrid(const Grid &grid,
                   - vi_local2old.begin();
   vi_local2old.resize(integer_cast<size_t>(n_unique));
 
-  std::map<int_t, int_t> vi_old2local;
-  for (int_t i = 0; i < vi_local2old.size(); ++i) {
-    vi_old2local[vi_local2old[i]] = i;
-  }
+  std::map<int_t, int_t> vi_old2local
+      = sparse_inverse_permutation(array_const_view(vi_local2old));
 
   for (auto &i : local_vertex_indices) {
     i = vi_old2local[i];
@@ -385,10 +495,14 @@ extract_subgrid(const Grid &grid,
     local_vertices(i) = grid.vertices(vi_local2old[i]);
   }
 
+  auto global_cell_indices = array<int_t, 1>(n_cells_local);
+  for (int_t i = 0; i < n_cells_local; ++i) {
+    global_cell_indices[i] = local2old[i];
+  }
+
   return std::tuple{std::move(local_vertex_indices),
                     std::move(local_vertices),
-                    std::move(local_stencils),
-                    Halo{std::move(remote_halos), std::move(local_halos)}};
+                    std::move(global_cell_indices)};
 }
 
 }

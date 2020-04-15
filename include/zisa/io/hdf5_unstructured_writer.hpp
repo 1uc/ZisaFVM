@@ -15,13 +15,22 @@ namespace zisa {
 struct HDF5UnstructuredFileDimensions {
   hsize_t n_cells;
   std::vector<hsize_t> ids;
+  MPI_Comm mpi_comm;
+
+  HDF5UnstructuredFileDimensions(hsize_t n_cells,
+                                 std::vector<hsize_t> ids,
+                                 const MPI_Comm &mpi_comm);
 };
+
+std::shared_ptr<HDF5UnstructuredFileDimensions>
+make_hdf5_unstructured_file_dimensions(std::vector<hsize_t> ids,
+                                       const MPI_Comm &mpi_comm);
 
 class HDF5UnstructuredWriter : public HDF5Writer {
 public:
-  HDF5UnstructuredWriter(const std::string &filename,
-                         HDF5UnstructuredFileDimensions file_dims,
-                         const MPI_Comm &mpi_comm);
+  HDF5UnstructuredWriter(
+      const std::string &filename,
+      std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims);
 
 protected:
   void do_write_array(void const *data,
@@ -37,7 +46,6 @@ protected:
     for (size_t r = 1; r < integer_cast<size_t>(rank); ++r) {
       global_dims[r] = dims[r];
     }
-    PRINT(format_as_list(global_dims));
 
     // create filespace
     hid_t h5_filespace
@@ -212,8 +220,10 @@ private:
   }
 
 private:
+  std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims;
+
   hsize_t n_cells;
-  std::vector<hsize_t> ids;
+  const std::vector<hsize_t> &ids;
   MPI_Comm mpi_comm;
 };
 }
