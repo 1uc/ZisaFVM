@@ -27,6 +27,8 @@ class Grid:
             if "dx_max" in h5:
                 self.dx_max = h5["dx_max"][()]
 
+            self.n_cells = self.vertex_indices.shape[0]
+
 
 class Snapshot:
     def __init__(self, data_filename, delta_filename=None, steady_state_filename=None):

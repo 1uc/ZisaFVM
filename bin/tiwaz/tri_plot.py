@@ -21,7 +21,8 @@ class TriPlot:
 
         assert I.shape[1] == 3, "These can't be triangles."
 
-        mask = np.logical_or(np.logical_not(np.isreal(data)), grid.is_ghost_cell)
+        # mask = np.logical_or(np.logical_not(np.isreal(data)), grid.is_ghost_cell)
+        mask = np.logical_not(np.isreal(data))
         masked_data = np.ma.masked_where(mask, data)
 
         ax = plt.gca()

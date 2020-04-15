@@ -27,6 +27,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--components",
+        nargs="+",
+        help="The names of arrays in the data files that should apprear in the XDMF file."
+    )
+
+    parser.add_argument(
         "data_files",
         nargs="+",
         help="Either a list of filenames to visualize or a Zisa output directory.",
@@ -45,7 +51,10 @@ if __name__ == "__main__":
     default_xdmf_file = data_files[0][: -len("_data-????.h5")] + ".xdmf"
     xdmf_file = args.output or default_xdmf_file
 
-    components = ["rho", "E"]
+    if not args.components:
+        components = ["rho", "E"]
+    else:
+        components = args.components
 
     with open(xdmf_file, "w") as f:
         f.write(

@@ -60,7 +60,7 @@ def extract_grid_info(grid_file):
 
 def extract_time(data_file):
     with h5py.File(data_file, "r") as h5:
-        return str(float(h5["time"][()]))
+        return str(float(h5["time"][()] if "time" in h5 else 0.0))
 
 
 def generate_xdmf(grid_file, data_files, components):

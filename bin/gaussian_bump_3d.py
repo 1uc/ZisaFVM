@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+
 import os
 import shutil
 import glob
@@ -106,11 +107,11 @@ independent_choices = {
 
 dependent_choices_a = {
     "flux-bc": [
-        # sc.FluxBC("constant"),
+        sc.FluxBC("constant"),
         sc.FluxBC("isentropic")
     ],
     "well-balancing": [
-        # sc.WellBalancing("constant"),
+        sc.WellBalancing("constant"),
         sc.WellBalancing("isentropic")
     ],
 }
@@ -119,10 +120,14 @@ dependent_choices_b = {
     "reconstruction": [
         sc.Reconstruction("CWENO-AO", [1]),
         sc.Reconstruction(
-            "CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
+            "CWENO-AO", [2, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
         ),
-        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
-        sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
+        sc.Reconstruction(
+            "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
+        ),
+        sc.Reconstruction(
+            "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
+        ),
     ],
     "ode": [
         sc.ODE("ForwardEuler"),

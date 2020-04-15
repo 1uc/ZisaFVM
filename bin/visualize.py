@@ -37,6 +37,13 @@ def tri_plot(grid, q):
     plot.color_plot(grid, q)
     plt.show()
 
+def stencil_indicator(grid, I):
+    data = np.zeros(grid.n_cells)
+    data[I] = 1.0
+    data[I[0]] = 2.0
+
+    return data
+
 
 def plot_all(grid, data_files, keys):
     n_dims = 2 if grid.vertex_indices.shape[1] == 3 else 3
@@ -73,7 +80,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "data_files",
-        nargs="+",
+        nargs="*",
         type=str,
         default=["."],
         help="Either the directory to visualize, or the datafiles.",
