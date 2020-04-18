@@ -352,5 +352,49 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
   }
 }
 
+template <class RC>
+void test_hybrid_weno_matrices(const std::vector<std::string> &grid_names,
+                               const HybridWENOParams &params) {
+  auto quad_deg = 1;
+
+  for (int grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
+    auto [grid, sf]
+        = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
+
+    auto debug_filename = string_format(
+        "__unit_tests-weno_ao-matrices-%d--%d.h5", grid_level, rand());
+    save_grid_with_stencil(debug_filename, *grid, sf);
+
+    for (auto i : cell_indices(*grid)) {
+      for (int_t k = 0; k < sf[i].size(); ++k) {
+        auto A = assemble_weno_ao_matrix(*grid, sf[i][k]);
+        auto ss = std::stringstream();
+        ss << A;
+
+        auto title = string_format("RC = %s", type_name<RC>().c_str());
+        auto desc_params = indent_block(1, zisa::to_string(params));
+        auto info = indent_block(
+            1,
+            string_format("(%d, %d) order = %d, size = %d, x = %s\n A = \n%s",
+                          i,
+                          k,
+                          sf[i][k].order(),
+                          sf[i][k].local().size(),
+                          format_as_list(grid->cell_centers[i]).c_str(),
+                          ss.str().c_str()));
+
+        INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
+                           title.c_str(),
+                           desc_params.c_str(),
+                           info.c_str(),
+                           debug_filename.c_str()));
+
+        Eigen::JacobiSVD svd(A);
+        REQUIRE(svd.rank() == A.cols());
+      }
+    }
+  }
+}
+
 } // namespace zisa
 #endif /* end of include guard */

@@ -153,6 +153,16 @@ auto cweno_3d_grid_names() {
       zisa::TestGridFactory::unit_cube_with_halo(1)};
 }
 
+TEST_CASE("CWENO; reconstruct smooth 3D (matrices)",
+          "[weno_ao][3d][math][matrices]") {
+  auto grid_names = cweno_3d_grid_names();
+  auto cases = cweno_3d_cases();
+
+  for (auto &[_, expected_rate, params] : cases) {
+    zisa::test_hybrid_weno_matrices<zisa::CWENO_AO>(grid_names, params);
+  }
+}
+
 TEST_CASE("CWENO; reconstruct smooth 3D (stencil)",
           "[weno_ao][3d][math][stencil]") {
   auto grid_names = cweno_3d_grid_names();
