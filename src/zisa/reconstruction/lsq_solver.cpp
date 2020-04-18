@@ -1,24 +1,41 @@
 #include <zisa/grid/grid.hpp>
+#include <zisa/memory/array_view.hpp>
 #include <zisa/reconstruction/lsq_solver.hpp>
 
 namespace zisa {
 Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil);
 
+Eigen::MatrixXd
+allocate_weno_ao_matrix(const Grid &grid, int order, int n_points);
+
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil);
+
+Eigen::MatrixXd
+assemble_weno_ao_matrix(const Grid &grid,
+                        const array_const_view<int_t, 1> &stencil,
+                        int order,
+                        int n_points);
 
 void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
                              const Grid &grid,
                              const Stencil &stencil);
 
+void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
+                             const Grid &grid,
+                             const array_const_view<int_t, 1> &stencil,
+                             int order);
+
 void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
                                 const Grid &grid,
-                                const Stencil &stencil);
+                                const array_const_view<int_t, 1> &stencil,
+                                int order);
 
 void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
                                 const Grid &grid,
-                                const Stencil &stencil);
+                                const array_const_view<int_t, 1> &stencil,
+                                int order);
 
 LSQSolver::LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil)
     : grid(grid), i_cell(stencil.global(0)), order(stencil.order()) {
@@ -73,16 +90,35 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   return A;
 }
 
+Eigen::MatrixXd
+assemble_weno_ao_matrix(const Grid &grid,
+                        const array_const_view<int_t, 1> &stencil,
+                        int order,
+                        int n_points) {
+
+  auto A = allocate_weno_ao_matrix(grid, order, n_points);
+  assemble_weno_ao_matrix(A, grid, stencil, order);
+
+  return A;
+}
+
 void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
                              const Grid &grid,
                              const Stencil &stencil) {
+  assemble_weno_ao_matrix(A, grid, stencil.global(), stencil.order());
+}
+
+void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
+                             const Grid &grid,
+                             const array_const_view<int_t, 1> &stencil,
+                             int order) {
   int n_dims = grid.n_dims();
 
   if (n_dims == 2) {
-    assemble_2d_weno_ao_matrix(A, grid, stencil);
+    assemble_2d_weno_ao_matrix(A, grid, stencil, order);
   } else if (n_dims == 3) {
-    assemble_2d_weno_ao_matrix(A, grid, stencil);
-    assemble_3d_weno_ao_matrix(A, grid, stencil);
+    assemble_2d_weno_ao_matrix(A, grid, stencil, order);
+    assemble_3d_weno_ao_matrix(A, grid, stencil, order);
   } else {
     LOG_ERR(string_format("Only works in 2D or 3D. [%d]", n_dims));
   }
@@ -90,9 +126,18 @@ void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
 
 Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil) {
-  int order = stencil.order();
+  auto order = stencil.order();
+  auto n_dims = grid.n_dims();
+  auto factor = stencil.overfit_factor();
+  auto n_points = required_stencil_size(order - 1, factor, n_dims);
+
+  return allocate_weno_ao_matrix(grid, order, integer_cast<int>(n_points));
+}
+
+Eigen::MatrixXd
+allocate_weno_ao_matrix(const Grid &grid, int order, int n_points) {
+
   int n_dims = grid.n_dims();
-  double factor = stencil.overfit_factor();
 
   LOG_ERR_IF(order <= 0,
              string_format("A non-positive convergence order? [%d]", order));
@@ -102,7 +147,7 @@ Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
   }
 
   auto degree = order - 1;
-  auto n_rows = required_stencil_size(degree, factor, n_dims) - 1;
+  auto n_rows = n_points - 1;
   auto n_cols = poly_dof(degree, n_dims) - 1;
 
   return Eigen::MatrixXd(n_rows, n_cols);
@@ -110,9 +155,9 @@ Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
 
 void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
                                 const Grid &grid,
-                                const Stencil &stencil) {
+                                const array_const_view<int_t, 1> &stencil,
+                                int order) {
 
-  int order = stencil.order();
   if (order == 1) {
     return;
   }
@@ -120,7 +165,7 @@ void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
   auto n_dims = grid.n_dims();
   auto n_rows = integer_cast<int_t>(A.rows());
 
-  auto i0 = stencil.global(0);
+  auto i0 = stencil(0);
   auto x0 = grid.cell_centers(i0);
   auto l0 = grid.characteristic_length(i0);
   const auto &C0 = grid.normalized_moments(i0);
@@ -133,7 +178,7 @@ void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
 
   for (int_t ii = 0; ii < n_rows; ++ii) {
     auto ii_ = eint(ii);
-    auto j = stencil.global(ii + 1);
+    auto j = stencil(ii + 1);
     auto [x_10, x_01, _] = XYZ((grid.cell_centers(j) - x0) / l0);
 
     auto lj = grid.characteristic_length(j) / l0;
@@ -236,9 +281,9 @@ void assemble_2d_weno_ao_matrix(Eigen::MatrixXd &A,
 
 void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
                                 const Grid &grid,
-                                const Stencil &stencil) {
+                                const array_const_view<int_t, 1> &stencil,
+                                int order) {
 
-  int order = stencil.order();
   LOG_ERR_IF(order == 0, "Invalid stencil");
   if (order == 1) {
     return;
@@ -246,7 +291,7 @@ void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
 
   auto n_rows = integer_cast<int_t>(A.rows());
 
-  auto i0 = stencil.global(0);
+  auto i0 = stencil(0);
   auto x0 = grid.cell_centers(i0);
   auto l0 = grid.characteristic_length(i0);
   const auto &C0 = grid.normalized_moments(i0);
@@ -255,7 +300,7 @@ void assemble_3d_weno_ao_matrix(Eigen::MatrixXd &A,
 
   for (int_t ii = 0; ii < n_rows; ++ii) {
     auto ii_ = eint(ii);
-    auto j = stencil.global(ii + 1);
+    auto j = stencil(ii + 1);
     auto [x, y, z] = XYZ((grid.cell_centers(j) - x0) / l0);
 
     auto lj = grid.characteristic_length(j) / l0;
