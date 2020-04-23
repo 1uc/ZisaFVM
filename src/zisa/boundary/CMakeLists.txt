@@ -6,4 +6,5 @@ target_sources(zisa_generic_obj
 )
 
 if(ZISA_HAS_MPI)
+
 endif()
