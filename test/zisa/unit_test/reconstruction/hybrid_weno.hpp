@@ -61,31 +61,33 @@ void test_hybrid_weno_valid_stencil(
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
 
-    auto debug_filename = string_format(
-        "__unit_tests-weno_ao-stencil-%d--%d.h5", grid_level, rand());
-    save_grid_with_stencil(debug_filename, *grid, sf);
-
     for (auto i : cell_indices(*grid)) {
       if (!grid->cell_flags[i].ghost_cell) {
         const auto &orders = params.stencil_family_params.orders;
         for (int_t k = 0; k < orders.size(); ++k) {
+          if (sf[i][k].order() != orders[k]) {
 
-          auto title = string_format("RC = %s", type_name<RC>().c_str());
-          auto desc_params = indent_block(1, zisa::to_string(params));
-          auto info = indent_block(
-              1,
-              string_format("(%d, %d) order = %d, size = %d, x = %s",
-                            i,
-                            k,
-                            sf[i][k].order(),
-                            sf[i][k].local().size(),
-                            format_as_list(grid->cell_centers[i]).c_str()));
-          INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
-                             title.c_str(),
-                             desc_params.c_str(),
-                             info.c_str(),
-                             debug_filename.c_str()));
-          REQUIRE(sf[i][k].order() == orders[k]);
+            auto debug_filename
+                = std::string("__unit_tests-weno_ao-stencil.h5");
+            save_grid_with_stencil(debug_filename, *grid, sf);
+
+            auto title = string_format("RC = %s", type_name<RC>().c_str());
+            auto desc_params = indent_block(1, zisa::to_string(params));
+            auto info = indent_block(
+                1,
+                string_format("(%d, %d) order = %d, size = %d, x = %s",
+                              i,
+                              k,
+                              sf[i][k].order(),
+                              sf[i][k].local().size(),
+                              format_as_list(grid->cell_centers[i]).c_str()));
+            INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
+                               title.c_str(),
+                               desc_params.c_str(),
+                               info.c_str(),
+                               debug_filename.c_str()));
+            REQUIRE(false);
+          }
         }
       }
     }
@@ -109,7 +111,6 @@ void test_hybrid_weno_convergence(
   std::vector<double> resolution;
   std::vector<double> l1_errors;
   std::vector<double> linf_errors;
-  std::vector<std::string> debug_filenames;
 
   auto quad_deg = zisa::max(2, max_order(params) - 1);
 
@@ -117,10 +118,6 @@ void test_hybrid_weno_convergence(
 
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
-
-    debug_filenames.push_back(string_format(
-        "__unit_tests-weno_ao-rate-%d--%d.h5", grid_level, rand()));
-    save_grid_with_stencil(debug_filenames.back(), *grid, sf);
 
     auto n_cells = grid->n_cells;
     auto rc = array<RC, 1>(shape_t<1>{n_cells});
@@ -133,35 +130,38 @@ void test_hybrid_weno_convergence(
     resolution.push_back(largest_circum_radius(*grid));
     l1_errors.push_back(l1_err);
     linf_errors.push_back(linf_err);
-  }
 
-  auto rates = convergence_rates(resolution, l1_errors);
+    auto title = string_format("RC = %s", type_name<RC>().c_str());
+    auto desc_params = indent_block(1, zisa::to_string(params));
 
-  auto title = string_format("RC = %s", type_name<RC>().c_str());
-  auto desc_params = indent_block(1, zisa::to_string(params));
-  auto debug_info
-      = "debug_files: \n" + indent_block(1, join(debug_filenames, "\n"));
+    // Check errors.
+    {
+      auto err_str = string_format("err[%d] = %e, res = %e",
+                                   grid_level,
+                                   l1_errors[grid_level],
+                                   resolution[grid_level]);
 
-  for (int_t i = 0; i < l1_errors.size(); ++i) {
-    auto err_str = string_format(
-        "err[%d] = %e, res = %e", i, l1_errors[i], resolution[i]);
+      INFO(string_format("%s\n%s\n%s\n%s",
+                         title.c_str(),
+                         err_str.c_str(),
+                         desc_params.c_str()));
+      REQUIRE(!zisa::isreal(l1_errors[grid_level]));
+    }
 
-    INFO(string_format(
-        "%s\n%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
-    CHECK(zisa::isreal(l1_errors[i]));
-  }
-
-  for (int_t i = 0; i < rates.size(); ++i) {
-    auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e",
-                                 i + 1,
-                                 l1_errors[i + 1],
-                                 i,
-                                 rates[i],
-                                 resolution[i + 1]);
-    err_str = indent_block(1, err_str);
-    INFO(string_format(
-        "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
-    CHECK(is_inside_interval(rates[i], expected_rate));
+    // Check rates.
+    if (grid_level > 0) {
+      auto rates = convergence_rates(resolution, l1_errors);
+      auto err_str = string_format("err[%d] = %e, rate[%d] = %e, res = %e",
+                                   grid_level,
+                                   l1_errors[grid_level],
+                                   grid_level,
+                                   rates.back(),
+                                   resolution[grid_level]);
+      err_str = indent_block(1, err_str);
+      INFO(string_format(
+          "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
+      REQUIRE(is_inside_interval(rates.back(), expected_rate));
+    }
   }
 }
 
@@ -205,8 +205,8 @@ inline std::vector<XYZ> make_stability_points_tetrahedral(const Grid &grid,
   auto volume_rules = std::vector<TetrahedralRule>();
 
   for (int_t deg = 1; deg <= 4; ++deg) {
-    edge_rules.push_back(make_triangular_rule(deg));
-    volume_rules.push_back(make_tetrahedral_rule(deg));
+    edge_rules.push_back(cached_triangular_quadrature_rule(deg));
+    volume_rules.push_back(cached_tetrahedral_rule(deg));
   }
 
   auto points = std::vector<XYZ>();
@@ -273,10 +273,6 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
 
-    auto debug_filename = string_format(
-        "__unit_tests-weno_ao-stability-%d--%d.h5", grid_level, rand());
-    save_grid_with_stencil(debug_filename, *grid, sf);
-
     constexpr int_t n_vars = 5;
 
     auto f = [grid = grid](const XYZ &x) {
@@ -314,7 +310,12 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
         auto approx = weno_poly(x);
         auto exact = Cartesian<n_vars>(u.cvars(i));
 
-        // clang-format off
+        if (!almost_equal(approx, exact, tol)) {
+          auto debug_filename
+              = std::string("__unit_tests-weno_ao-stability.h5");
+          save_grid_with_stencil(debug_filename, *grid, sf);
+
+          // clang-format off
         INFO(string_format("[%d] %s - %s = %s\n%s\n%s\n%s\n%s",
                            i,
                            zisa::to_string(approx).c_str(),
@@ -326,30 +327,14 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
                            type_name<RC>().c_str(),
                            zisa::to_string(params).c_str()
                            ));
-        // clang-format on
+          // clang-format on
 
-        if (!almost_equal(approx, exact, tol)) {
-          for (int_t k = 0; k < n_polys; ++k) {
-            auto approx = polys(k)(x);
-            PRINT(approx);
-
-            const auto &s = stencil_family[k];
-            auto i_local = array<double, 1>(shape_t<1>(s.size()));
-            auto q_local = array<double, 1>(shape_t<1>(s.size()));
-            for (int_t ii = 0; ii < s.size(); ++ii) {
-              auto i = s.global(ii);
-              q_local[ii] = u.cvars(i, 0);
-              i_local[ii] = i;
-            }
-            PRINT(format_as_list(i_local));
-            PRINT(format_as_list(q_local));
-          }
+          FAIL();
         }
-
-        REQUIRE(almost_equal(approx, exact, tol));
       }
     }
   }
+  SUCCEED();
 }
 
 template <class RC>
@@ -361,36 +346,44 @@ void test_hybrid_weno_matrices(const std::vector<std::string> &grid_names,
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
 
-    auto debug_filename = string_format(
-        "__unit_tests-weno_ao-matrices-%d--%d.h5", grid_level, rand());
-    save_grid_with_stencil(debug_filename, *grid, sf);
-
     for (auto i : cell_indices(*grid)) {
+      // w.l.o.g we only consider stencils that will actually be used.
+      if (grid->cell_flags[i].ghost_cell
+          && !grid->cell_flags[i].ghost_cell_l1) {
+        continue;
+      }
+
       for (int_t k = 0; k < sf[i].size(); ++k) {
         auto A = assemble_weno_ao_matrix(*grid, sf[i][k]);
-        auto ss = std::stringstream();
-        ss << A;
-
-        auto title = string_format("RC = %s", type_name<RC>().c_str());
-        auto desc_params = indent_block(1, zisa::to_string(params));
-        auto info = indent_block(
-            1,
-            string_format("(%d, %d) order = %d, size = %d, x = %s\n A = \n%s",
-                          i,
-                          k,
-                          sf[i][k].order(),
-                          sf[i][k].local().size(),
-                          format_as_list(grid->cell_centers[i]).c_str(),
-                          ss.str().c_str()));
-
-        INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
-                           title.c_str(),
-                           desc_params.c_str(),
-                           info.c_str(),
-                           debug_filename.c_str()));
-
         Eigen::JacobiSVD svd(A);
-        REQUIRE(svd.rank() == A.cols());
+
+        if (svd.rank() != A.cols()) {
+          auto ss = std::stringstream();
+          ss << A;
+
+          auto debug_filename = std::string("__unit_tests-weno_ao-matrices.h5");
+          save_grid_with_stencil(debug_filename, *grid, sf);
+
+          auto title = string_format("RC = %s", type_name<RC>().c_str());
+          auto desc_params = indent_block(1, zisa::to_string(params));
+          auto info = indent_block(
+              1,
+              string_format("(%d, %d) order = %d, size = %d, x = %s\n A = \n%s",
+                            i,
+                            k,
+                            sf[i][k].order(),
+                            sf[i][k].local().size(),
+                            format_as_list(grid->cell_centers[i]).c_str(),
+                            ss.str().c_str()));
+
+          INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
+                             title.c_str(),
+                             desc_params.c_str(),
+                             info.c_str(),
+                             debug_filename.c_str()));
+
+          REQUIRE(false);
+        }
       }
     }
   }

@@ -45,7 +45,13 @@ void check_biased_stencil(const zisa::Grid &grid) {
   for (zisa::int_t k = 0; k < max_neighbours; ++k) {
     SECTION(string_format("biased_stencil; k = %d", k)) {
       zisa::int_t k = 0;
-      auto stencil = zisa::biased_stencil(grid, i_cell, k, n_points);
+      auto stencil = zisa::conservative_stencil(grid, i_cell, k, n_points);
+      REQUIRE(stencil.size() == n_points);
+    }
+
+    SECTION(string_format("biased_stencil; k = %d", k)) {
+      zisa::int_t k = 0;
+      auto stencil = zisa::less_conservative_stencil(grid, i_cell, k, n_points);
       REQUIRE(stencil.size() == n_points);
     }
   }

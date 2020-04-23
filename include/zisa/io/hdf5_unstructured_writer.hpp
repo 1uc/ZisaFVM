@@ -1,12 +1,10 @@
 #ifndef ZISA_HDF5_UNSTRUCTURED_WRITER_HPP
 #define ZISA_HDF5_UNSTRUCTURED_WRITER_HPP
 
-#include <numeric>
 #include <zisa/config.hpp>
-#include <zisa/io/hdf5_writer.hpp>
 
-// FIXME remove this include.
-#include <zisa/io/format_as_list.hpp>
+#include <numeric>
+#include <zisa/io/hdf5_writer.hpp>
 #include <zisa/parallelization/mpi.hpp>
 #include <zisa/utils/integer_cast.hpp>
 

@@ -19,6 +19,8 @@ public:
   /// Simplified constructor for one point stencils.
   explicit Stencil(int_t i_cell);
 
+  Stencil(std::vector<int_t> &global_indices, const StencilParams &params);
+
   Stencil(std::vector<int_t> &l2g,
           const Grid &grid,
           int_t i_cell,
@@ -83,11 +85,25 @@ bool operator!=(const Stencil &a, const Stencil &b);
 
 std::vector<int_t> central_stencil(const Grid &grid, int_t i, int_t n_points);
 
-std::vector<int_t>
-biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points);
+/// A biased stencil which will result in a valid LSQ matrix.
+std::vector<int_t> biased_stencil(
+    const Grid &grid, int_t i_center, int_t k, int_t n_points, int order);
 
+/// Biased stencil using condidates in a wider cone.
+std::vector<int_t> less_conservative_stencil(const Grid &grid,
+                                             int_t i_center,
+                                             int_t k,
+                                             int_t n_points);
+
+/// Biased stencil using only candidates form the ideal cone.
 std::vector<int_t>
-biased_stencil(const Grid &grid, int_t i, int_t n_points, const Region &region);
+conservative_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points);
+
+/// A stencil consisting of points intersecting the `region`.
+std::vector<int_t> region_based_stencil(const Grid &grid,
+                                        int_t i,
+                                        int_t n_points,
+                                        const Region &region);
 
 int deduce_max_order(int_t stencil_size, double factor, int n_dims);
 int_t required_stencil_size(int deg, double factor, int n_dims);

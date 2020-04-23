@@ -12,11 +12,8 @@ allocate_weno_ao_matrix(const Grid &grid, int order, int n_points);
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil);
 
-Eigen::MatrixXd
-assemble_weno_ao_matrix(const Grid &grid,
-                        const array_const_view<int_t, 1> &stencil,
-                        int order,
-                        int n_points);
+Eigen::MatrixXd assemble_weno_ao_matrix(
+    const Grid &grid, const array_const_view<int_t, 1> &stencil, int order);
 
 void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
                              const Grid &grid,
@@ -90,12 +87,10 @@ Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
   return A;
 }
 
-Eigen::MatrixXd
-assemble_weno_ao_matrix(const Grid &grid,
-                        const array_const_view<int_t, 1> &stencil,
-                        int order,
-                        int n_points) {
+Eigen::MatrixXd assemble_weno_ao_matrix(
+    const Grid &grid, const array_const_view<int_t, 1> &stencil, int order) {
 
+  auto n_points = integer_cast<int>(stencil.size());
   auto A = allocate_weno_ao_matrix(grid, order, n_points);
   assemble_weno_ao_matrix(A, grid, stencil, order);
 

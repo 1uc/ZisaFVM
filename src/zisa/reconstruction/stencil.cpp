@@ -1,8 +1,13 @@
 #include <algorithm>
 
+#include <random>
 #include <zisa/grid/gmsh_reader.hpp>
 #include <zisa/loops/reduction/max.hpp>
 #include <zisa/math/poly2d.hpp>
+#include <zisa/math/tetrahedral_rule.hpp>
+#include <zisa/math/triangular_rule.hpp>
+#include <zisa/memory/array_view.hpp>
+#include <zisa/reconstruction/lsq_solver.hpp>
 #include <zisa/reconstruction/stencil.hpp>
 
 namespace zisa {
@@ -18,6 +23,17 @@ Stencil::Stencil(int_t i_cell)
       global_(1) {
   local_[0] = 0;
   global_[0] = i_cell;
+}
+
+Stencil::Stencil(std::vector<int_t> &global_indices,
+                 const StencilParams &params)
+    : max_order_(params.order),
+      bias_(deduce_bias(params.bias)),
+      overfit_factor_(params.overfit_factor),
+      local_(0),
+      global_(global_indices.size()) {
+
+  global_ = array_const_view(global_indices);
 }
 
 Stencil::Stencil(std::vector<int_t> &l2g,
@@ -51,7 +67,8 @@ Stencil::Stencil(std::vector<int_t> &l2g,
   max_size_ = required_stencil_size(max_order() - 1, overfit_factor(), n_dims);
 
   assert(bias() == StencilBias::one_sided);
-  assign_local_indices(biased_stencil(grid, i_cell, k, max_size()), l2g);
+  assign_local_indices(biased_stencil(grid, i_cell, k, max_size(), max_order_),
+                       l2g);
 
   assert(local_.size() == global_.size());
   order_ = deduce_max_order(local_.size(), overfit_factor(), n_dims);
@@ -153,44 +170,25 @@ int_t required_stencil_size(int deg, double factor, int n_dims) {
   return int_t(double(poly_dof(deg, n_dims) - 1) * factor);
 }
 
-std::vector<int_t>
-central_stencil(const Grid &grid, int_t i_center, int_t n_points) {
-  return biased_stencil(grid, i_center, n_points, FullSphere());
-}
+// --- Code for generating stencils. -------------------------------------------
+DenormalizedRule make_stencil_selection_query_points(const Grid &grid,
+                                                     int_t i) {
 
-std::vector<int_t>
-biased_stencil(const Grid &grid, int_t i_center, int_t k, int_t n_points) {
-  auto element_type = grid.element_type();
-
-  auto rel_vertex = [&grid, &element_type](int_t i, int_t k, int_t rel) {
-    auto kk = GMSHElementInfo::relative_vertex_index(element_type, k, rel);
-    return grid.vertices[grid.vertex_indices(i, kk)];
-  };
-
-  const auto &cone_center = grid.vertices(grid.vertex_indices(
-      i_center, GMSHElementInfo::relative_off_vertex_index(element_type, k)));
-
-  if (element_type == GMSHElementType::triangle) {
-    return biased_stencil(grid,
-                          i_center,
-                          n_points,
-                          TriangularCone(cone_center,
-                                         rel_vertex(i_center, k, 0),
-                                         rel_vertex(i_center, k, 1)));
-  } else {
-    auto region = TetrahedralCone(cone_center,
-                                  rel_vertex(i_center, k, 0),
-                                  rel_vertex(i_center, k, 1),
-                                  rel_vertex(i_center, k, 2));
-
-    return biased_stencil(grid, i_center, n_points, region);
+  if (grid.is_triangular()) {
+    auto qr_hat = cached_triangular_quadrature_rule(5);
+    return denormalize(qr_hat, triangle(grid, i));
+  } else if (grid.is_tetrahedral()) {
+    auto qr_hat = cached_tetrahedral_rule(5);
+    return denormalize(qr_hat, tetrahedron(grid, i));
   }
+
+  LOG_ERR("Implement the missing case.");
 }
 
-std::vector<int_t> biased_stencil(const Grid &grid,
-                                  int_t i_center,
-                                  int_t n_points,
-                                  const Region &region) {
+std::vector<int_t> region_based_candidates(const Grid &grid,
+                                           int_t i_center,
+                                           int_t n_points,
+                                           const Region &region) {
 
   int_t max_points = 5 * n_points;
   int_t max_neighbours = grid.max_neighbours;
@@ -205,8 +203,8 @@ std::vector<int_t> biased_stencil(const Grid &grid,
   };
 
   auto is_inside = [&region, &grid](int_t cand) {
-    const auto &cell = grid.cells(cand);
-    for (const auto &x : cell.qr.points) {
+    auto qr = make_stencil_selection_query_points(grid, cand);
+    for (const auto &x : qr.points) {
       if (region.is_inside(x)) {
         return true;
       }
@@ -234,6 +232,16 @@ std::vector<int_t> biased_stencil(const Grid &grid,
     }
   }
 
+  return candidates;
+}
+
+std::vector<int_t> region_based_stencil(const Grid &grid,
+                                        int_t i_center,
+                                        int_t n_points,
+                                        const Region &region) {
+
+  auto candidates = region_based_candidates(grid, i_center, n_points, region);
+
   auto closer = [&grid, i_center](int_t i1, int_t i2) {
     const auto &x_center = grid.cell_centers(i_center);
     return zisa::norm(grid.cell_centers(i1) - x_center)
@@ -243,6 +251,112 @@ std::vector<int_t> biased_stencil(const Grid &grid,
   std::sort(candidates.begin(), candidates.end(), closer);
   candidates.resize(zisa::min(n_points, candidates.size()));
   return candidates;
+}
+
+std::shared_ptr<Region>
+make_cone(const Grid &grid, int_t i_center, const XYZ &cone_center, int_t k) {
+
+  auto element_type = grid.element_type();
+
+  auto rel_vertex = [&grid, &element_type](int_t i, int_t k, int_t rel) {
+    auto kk = GMSHElementInfo::relative_vertex_index(element_type, k, rel);
+    return grid.vertices[grid.vertex_indices(i, kk)];
+  };
+
+  if (element_type == GMSHElementType::triangle) {
+    return std::make_shared<TriangularCone>(
+        cone_center, rel_vertex(i_center, k, 0), rel_vertex(i_center, k, 1));
+  } else {
+    return std::make_shared<TetrahedralCone>(cone_center,
+                                             rel_vertex(i_center, k, 0),
+                                             rel_vertex(i_center, k, 1),
+                                             rel_vertex(i_center, k, 2));
+  }
+}
+
+std::vector<int_t> conservative_stencil(const Grid &grid,
+                                        int_t i_center,
+                                        int_t k,
+                                        int_t n_points) {
+
+  auto element_type = grid.element_type();
+  const auto &off_vertex = grid.vertices(grid.vertex_indices(
+      i_center, GMSHElementInfo::relative_off_vertex_index(element_type, k)));
+
+  auto region = make_cone(grid, i_center, off_vertex, k);
+  return region_based_stencil(grid, i_center, n_points, *region);
+}
+
+std::vector<int_t> less_conservative_stencil(const Grid &grid,
+                                             int_t i_center,
+                                             int_t k,
+                                             int_t n_points) {
+
+  const auto &cell_center = grid.cell_centers(i_center);
+  auto region = make_cone(grid, i_center, cell_center, k);
+  return region_based_stencil(grid, i_center, n_points, *region);
+}
+
+std::vector<int_t> tryhard_stencil(
+    const Grid &grid,
+    const std::function<bool(const array_const_view<int_t, 1> &)> &is_good,
+    int_t i_center,
+    int_t k,
+    int_t n_points) {
+
+  // Idea:
+  // Everything right of face k is a candidate, keep picking
+  // random stencils until something works.
+
+  auto cone_center = grid.face_center(i_center, k);
+  auto region = make_cone(grid, i_center, cone_center, k);
+
+  auto candidates = region_based_candidates(grid, i_center, n_points, *region);
+  if (candidates.size() < n_points) {
+    return std::vector<int_t>{i_center};
+  }
+  LOG_ERR_IF(!is_good(candidates), "This wont work.");
+
+  std::random_device rd;
+  for (int iter = 0; iter < 100; ++iter) {
+    std::shuffle(candidates.begin() + 1, candidates.end(), std::mt19937(rd()));
+
+    if (is_good(array_const_view(shape_t<1>(n_points), candidates.data()))) {
+      candidates.resize(n_points);
+      LOG_WARN_IF(
+          iter >= 1,
+          string_format("It took %d iterations to find a stencil.", iter + 1));
+      return candidates;
+    }
+  }
+  LOG_ERR("Did not find a suitable stencil given the candidates.");
+}
+
+std::vector<int_t> biased_stencil(
+    const Grid &grid, int_t i_center, int_t k, int_t n_points, int order) {
+
+  auto is_good = [&](const array_const_view<int_t, 1> &s) {
+    auto A = assemble_weno_ao_matrix(grid, s, order);
+    auto svd = Eigen::JacobiSVD(A);
+    return svd.rank() == A.cols();
+  };
+
+  auto s = conservative_stencil(grid, i_center, k, n_points);
+  if (s.size() == n_points && is_good(s)) {
+    return s;
+  }
+
+  s = less_conservative_stencil(grid, i_center, k, n_points);
+  if (s.size() == n_points && is_good(s)) {
+    return s;
+  }
+
+  return tryhard_stencil(grid, is_good, i_center, k, n_points);
+}
+
+std::vector<int_t>
+central_stencil(const Grid &grid, int_t i_center, int_t n_points) {
+  return region_based_stencil(grid, i_center, n_points, FullSphere());
 }
 
 } // namespace zisa

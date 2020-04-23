@@ -69,7 +69,7 @@ void HybridWENO::compute_polys(array<double, 2, row_major> &rhs,
     polys[k] = lsq_solvers[k].solve(rhs);
 
     for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
-      polys[k].a(0 + k_var) = qbar_cell[k_var];
+      polys[k].a(k_var) = qbar_cell[k_var];
     }
   }
 }
