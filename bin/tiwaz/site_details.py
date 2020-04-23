@@ -56,8 +56,9 @@ def get_host():
 
 
 class MPIHeuristics:
-    def __init__(self):
-        host = get_host()
+    def __init__(self, host=None):
+        if host is None:
+            host = get_host()
 
         if host == "euler":
             self.cores_per_node = 12

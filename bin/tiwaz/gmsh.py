@@ -2,8 +2,11 @@ import subprocess
 import multiprocessing
 import meshio
 import h5py
+import os
 
 from .utils import read_txt, write_txt
+from .site_details import zisa_home_directory
+from .launch_params import build_target
 
 
 def generate_grids_from_template(template_name, filename, substitutions, levels):
@@ -54,6 +57,26 @@ def convert_msh_to_hdf5(msh):
         else:
             h5["n_dims"] = 2
             h5["vertex_indices"] = cells["triangle"]
+
+
+def decompose_grids(grid_name_generator, mesh_levels, parts):
+    zisa_home = zisa_home_directory()
+    build_target("domain-decomposition")
+
+    dd_binary = zisa_home + "/build-release/domain-decomposition"
+    for l in mesh_levels:
+        grid_name = grid_name_generator(l)
+        if grid_name.endswith(".msh.h5"):
+            outdir = grid_name[:-7]
+        elif grid_name.endswith(".h5"):
+            outdir = grid_name[:-3]
+        else:
+            raise Exception(f"Implement the missing logic. [{grid_name}]")
+
+        for n in parts[l]:
+            output = outdir + f"/{n}"
+            os.makedirs(output, exist_ok=True)
+            subprocess.run([dd_binary, "-n", str(n), "--grid", grid_name, "-o", output])
 
 
 def run_gmesh(geo):

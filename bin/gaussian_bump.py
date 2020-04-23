@@ -21,6 +21,8 @@ from tiwaz.latex_tables import write_convergence_table
 from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_circular_grids
+from tiwaz.gmsh import decompose_grids
+from tiwaz.site_details import MPIHeuristics
 from tiwaz.work_estimate import ZisaWorkEstimate
 from tiwaz.queue_args import MPIQueueArgs
 from tiwaz.launch_params import folder_name
@@ -101,12 +103,12 @@ independent_choices = {
     "io": [io],
     "time": [time],
     "parallelization": [{"mode": "mpi"}],
+    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "debug": [{"global_indices": False, "stencils": True}],
 }
 
 dependent_choices_a = {
     "flux-bc": [sc.FluxBC("constant"), sc.FluxBC("isentropic")],
-    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
 }
 
@@ -212,8 +214,24 @@ class TableLabels:
         return " ".join(str(v) for v in col.values())
 
 
+def compute_parts(mesh_levels, host):
+    work_estimate = make_work_estimate()
+
+    heuristics = MPIHeuristics(host=host)
+    queue_args = MPIQueueArgs(
+        work_estimate, t_min=None, t_max=None, heuristics=heuristics
+    )
+
+    parts_ = dict()
+    for l in mesh_levels:
+        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})]
+
+    return parts_
+
+
 def generate_grids():
     generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+    decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, "euler"))
 
 
 def main():

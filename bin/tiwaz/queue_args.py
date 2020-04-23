@@ -9,14 +9,19 @@ class QueueArgs:
 
 class MPIQueueArgs(QueueArgs):
     def __init__(
-        self, work_estimate, t_min=timedelta(minutes=1), t_max=timedelta(days=1)
+        self,
+        work_estimate,
+        t_min=timedelta(minutes=1),
+        t_max=timedelta(days=1),
+        heuristics=None,
     ):
         super().__init__()
 
         self.t_min, self.t_max = t_min, t_max
 
         self.work_estimate = work_estimate
-        self.heuristics = MPIHeuristics()
+        self.heuristics = MPIHeuristics() if heuristics is None else heuristics
+
         self.use_mpi = True
 
     def n_mpi_tasks(self, launch_param):
