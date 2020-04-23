@@ -55,7 +55,7 @@ void save_partitioned_grid(const std::string &dirname,
 
     int_t n_cells_local = local_vertex_indices.shape(0);
 
-    auto local_partition = array<int_t, 1>({n_cells_local});
+    auto local_partition = array<int_t, 1>(n_cells_local);
     for (int_t i = 0; i < n_cells_local; ++i) {
       local_partition[i] = partition[global_cell_indices[i]];
     }
