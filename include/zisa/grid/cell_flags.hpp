@@ -4,10 +4,11 @@
 namespace zisa {
 
 struct CellFlags {
-  bool interior : 1;
-  bool ghost_cell : 1;
+  bool interior : 1;      ///< Cell which are 'owned'/'updated' by this grid.
+  bool ghost_cell : 1;    ///< Any cell in the halo.
+  bool ghost_cell_l1 : 1; ///< Has a neighbour which is an interior cell.
 
-  CellFlags() : interior(true), ghost_cell(false) {}
+  CellFlags() : interior(true), ghost_cell(false), ghost_cell_l1(false) {}
 };
 
 }
