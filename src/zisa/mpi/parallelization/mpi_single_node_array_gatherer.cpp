@@ -1,4 +1,4 @@
-#include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
+#include <zisa/mpi/parallelization/mpi_single_node_array_gatherer.hpp>
 
 namespace zisa {
 

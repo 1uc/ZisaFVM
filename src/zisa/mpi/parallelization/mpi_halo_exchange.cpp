@@ -1,4 +1,4 @@
-#include <zisa/parallelization/mpi_halo_exchange.hpp>
+#include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
 
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>

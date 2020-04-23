@@ -2,7 +2,7 @@
 #include "zisa/testing/testing_framework.hpp"
 
 #if ZISA_HAS_MPI == 1
-#include <zisa/parallelization/mpi.hpp>
+#include <zisa/mpi/mpi.hpp>
 #endif
 
 int main( int argc, char* argv[] ) {

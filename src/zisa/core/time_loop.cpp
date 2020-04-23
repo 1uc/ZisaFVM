@@ -13,7 +13,7 @@
 #include <zisa/model/sanity_check.hpp>
 
 #if ZISA_HAS_MPI == 1
-#include <zisa/parallelization/mpi.hpp>
+#include <zisa/mpi/mpi.hpp>
 #endif
 
 namespace zisa {

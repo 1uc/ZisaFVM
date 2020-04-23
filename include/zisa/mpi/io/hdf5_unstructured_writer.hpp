@@ -5,7 +5,7 @@
 
 #include <numeric>
 #include <zisa/io/hdf5_writer.hpp>
-#include <zisa/parallelization/mpi.hpp>
+#include <zisa/mpi/mpi.hpp>
 #include <zisa/utils/integer_cast.hpp>
 
 namespace zisa {

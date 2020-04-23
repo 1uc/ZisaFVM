@@ -5,16 +5,15 @@ import os
 import errno
 import os.path
 
-SUFFIXES = [".c", ".C", ".cpp", ".c++"]
 
-
-def find_files(folder):
-    files = sum((glob.glob("{}*{}".format(folder, s)) for s in SUFFIXES), [])
-    return [os.path.basename(f) for f in sorted(files)]
+def find_files(folder, suffixes):
+    files = sum((glob.glob("{}*{}".format(folder, s)) for s in suffixes), [])
+    return list(sorted(files))
 
 
 def find_source_files(folder):
-    return find_files(folder)
+    suffixes = [".c", ".C", ".cpp", ".c++"]
+    return find_files(folder, suffixes)
 
 
 def find_subdirectories(folder):
@@ -31,7 +30,7 @@ def format_sources(target, sources):
         ret += "".join(
             [
                 "target_sources(" + target + "\n",
-                "".join(line_pattern.format(s) for s in sources),
+                "".join(line_pattern.format(os.path.basename(s)) for s in sources),
                 ")\n\n",
             ]
         )
@@ -67,7 +66,7 @@ def recurse(base_directory, targets):
         filtered_sources = list(filter(select_for(dependency), source_files))
 
         if dependency == "mpi":
-            append_to_file(cmake_file, "if(ZISA_HAS_MPI)\n")
+            append_to_file(cmake_file, "if(ZISA_HAS_MPI)\n\n")
 
         append_to_file(cmake_file, format_sources(target, filtered_sources))
 
@@ -80,8 +79,7 @@ def recurse(base_directory, targets):
 
 
 def is_mpi_file(path):
-    filename = os.path.basename(path)
-    return filename.startswith("mpi_") or filename == "mpi.cpp"
+    return "zisa/mpi/" in path
 
 
 def is_generic_file(path):

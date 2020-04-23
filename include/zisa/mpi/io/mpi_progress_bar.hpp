@@ -3,7 +3,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/io/progress_bar.hpp>
-#include <zisa/parallelization/mpi.hpp>
+#include <zisa/mpi/mpi.hpp>
 
 namespace zisa {
 

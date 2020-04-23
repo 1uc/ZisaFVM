@@ -4,8 +4,8 @@
 #include <zisa/config.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
-#include <zisa/parallelization/mpi_halo_exchange.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
 
 namespace zisa {

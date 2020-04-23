@@ -5,18 +5,18 @@
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/cli/input_parameters.hpp>
 #include <zisa/io/gathered_visualization.hpp>
-#include <zisa/io/mpi_progress_bar.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
 #include <zisa/model/distributed_cfl_condition.hpp>
+#include <zisa/mpi/io/mpi_progress_bar.hpp>
+#include <zisa/mpi/parallelization/mpi_all_reduce.hpp>
+#include <zisa/mpi/parallelization/mpi_all_variables_gatherer.hpp>
+#include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
+#include <zisa/mpi/parallelization/mpi_single_node_array_gatherer.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
-#include <zisa/parallelization/mpi_all_reduce.hpp>
-#include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
-#include <zisa/parallelization/mpi_halo_exchange.hpp>
-#include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
 
 namespace zisa {
 

@@ -1,7 +1,7 @@
 #ifndef ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_IMPL_HPP
 #define ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_IMPL_HPP
 
-#include "mpi_single_node_array_gatherer_decl.hpp"
+#include "zisa/mpi/parallelization/mpi_single_node_array_gatherer_decl.hpp"
 
 #include <zisa/utils/integer_cast.hpp>
 

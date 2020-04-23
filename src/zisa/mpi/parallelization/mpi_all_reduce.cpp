@@ -1,4 +1,4 @@
-#include <zisa/parallelization/mpi_all_reduce.hpp>
+#include <zisa/mpi/parallelization/mpi_all_reduce.hpp>
 
 namespace zisa {
 

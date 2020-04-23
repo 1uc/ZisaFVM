@@ -1,4 +1,4 @@
-#include <zisa/io/mpi_progress_bar.hpp>
+#include <zisa/mpi/io/mpi_progress_bar.hpp>
 
 namespace zisa {
 

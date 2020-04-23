@@ -1,4 +1,4 @@
-#include <zisa/parallelization/mpi_all_variables_gatherer.hpp>
+#include <zisa/mpi/parallelization/mpi_all_variables_gatherer.hpp>
 
 namespace zisa {
 

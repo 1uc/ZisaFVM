@@ -1,9 +1,9 @@
 #ifndef ZISA_MPI_ALL_VARIABLES_GATHERER_HPP
 #define ZISA_MPI_ALL_VARIABLES_GATHERER_HPP
 
+#include <zisa/mpi/mpi.hpp>
+#include <zisa/mpi/parallelization/mpi_single_node_array_gatherer.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
-#include <zisa/parallelization/mpi_single_node_array_gatherer.hpp>
-#include <zisa/parallelization/mpi.hpp>
 
 namespace zisa {
 

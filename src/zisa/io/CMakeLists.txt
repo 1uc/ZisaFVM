@@ -7,7 +7,6 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/gathered_visualization.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_file.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_serial_writer.cpp
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_unstructured_writer.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_writer.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/no_visualization.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/progress_bar.cpp
@@ -17,8 +16,4 @@ target_sources(zisa_generic_obj
 )
 
 if(ZISA_HAS_MPI)
-target_sources(zisa_mpi_obj
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/mpi_progress_bar.cpp
-)
-
 endif()

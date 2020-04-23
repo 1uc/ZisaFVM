@@ -2,8 +2,8 @@
 #define ZISA_MPI_ALL_REDUCE_HPP_CYNQP
 
 #include <zisa/config.hpp>
+#include <zisa/mpi/mpi.hpp>
 #include <zisa/parallelization/all_reduce.hpp>
-#include <zisa/parallelization/mpi.hpp>
 
 namespace zisa {
 class MPIAllReduce : public AllReduce {

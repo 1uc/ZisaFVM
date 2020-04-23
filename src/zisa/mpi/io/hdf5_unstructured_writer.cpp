@@ -1,4 +1,4 @@
-#include <zisa/io/hdf5_unstructured_writer.hpp>
+#include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 
 namespace zisa {
 

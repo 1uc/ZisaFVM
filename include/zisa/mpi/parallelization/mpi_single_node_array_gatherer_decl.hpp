@@ -1,8 +1,8 @@
 #ifndef ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_DECL_HPP_KDWXN
 #define ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_DECL_HPP_KDWXN
 
+#include <zisa/mpi/mpi.hpp>
 #include <zisa/parallelization/array_gatherer.hpp>
-#include <zisa/parallelization/mpi.hpp>
 
 namespace zisa {
 
@@ -43,7 +43,6 @@ private:
   int gather_rank = 0;
   MPI_Comm comm = MPI_COMM_WORLD;
 };
-
 
 }
 

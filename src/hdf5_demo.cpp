@@ -1,9 +1,10 @@
+#if ZISA_HAS_MPI == 1
 #include <iostream>
 #include <string>
 #include <tuple>
 
-#include <zisa/io/hdf5_unstructured_writer.hpp>
-#include <zisa/parallelization/mpi.hpp>
+#include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
+#include <zisa/mpi/mpi.hpp>
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
@@ -72,3 +73,8 @@ int main(int argc, char *argv[]) {
   MPI_Finalize();
   return EXIT_SUCCESS;
 }
+
+#else
+#include <zisa/config.hpp>
+int main(int argc, char *argv[]) { LOG_ERR("Needs to be compiles with MPI"); }
+#endif

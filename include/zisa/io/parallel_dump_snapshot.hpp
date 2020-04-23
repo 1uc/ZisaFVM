@@ -2,7 +2,7 @@
 #define ZISA_PARALLEL_DUMP_SNAPSHOT_HPP_UUYBW
 
 #include <zisa/io/dump_snapshot.hpp>
-#include <zisa/io/hdf5_unstructured_writer.hpp>
+#include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 
 namespace zisa {
 
