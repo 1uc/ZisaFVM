@@ -1,3 +1,4 @@
+#include <map>
 #include <zisa/math/tetrahedral_rule.hpp>
 
 namespace zisa {
@@ -109,6 +110,16 @@ TetrahedralRule make_tetrahedral_rule(int_t deg) {
   }
 
   LOG_ERR("Quadrature rules of order 7 and higher have not been implemented.")
+}
+
+const TetrahedralRule &cached_tetrahedral_rule(int_t deg) {
+  static auto rules_ = std::map<int_t, TetrahedralRule>();
+
+  if (auto it = rules_.find(deg); it == rules_.end()) {
+    return rules_[deg] = make_tetrahedral_rule(deg);
+  } else {
+    return it->second;
+  }
 }
 
 }
