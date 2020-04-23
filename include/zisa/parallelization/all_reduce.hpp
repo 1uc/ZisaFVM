@@ -2,7 +2,6 @@
 #define ZISA_ALL_REDUCE_HPP_CYQKU
 
 #include <zisa/config.hpp>
-#include <zisa/mpi/mpi.hpp>
 
 namespace zisa {
 

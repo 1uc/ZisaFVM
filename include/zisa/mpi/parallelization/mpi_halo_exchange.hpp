@@ -9,43 +9,9 @@
 #include <zisa/mpi/mpi.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/halo_exchange.hpp>
+#include <zisa/parallelization/halo_info.hpp>
 
 namespace zisa {
-
-/// This describes what this PE needs from `remote_rank`.
-struct HaloRemoteInfo {
-  int remote_rank;
-  array<int_t, 1> cell_indices; ///< these are global indices.
-
-  HaloRemoteInfo(int remote_rank, array<int_t, 1> cell_indices)
-      : remote_rank(remote_rank), cell_indices(std::move(cell_indices)) {}
-};
-
-/// This describes what `receiver_rank` needs from us.
-struct HaloSendInfo {
-  int receiver_rank;
-  array<int_t, 1> cell_indices; ///< index local to this PE.
-
-  HaloSendInfo(int receiver_rank, array<int_t, 1> cell_indices)
-      : receiver_rank(receiver_rank), cell_indices(std::move(cell_indices)) {}
-};
-
-/// This describes the halo for `sender_rank` on the local PE.
-struct HaloReceiveInfo {
-  int sender_rank;
-
-  // Locally the halo is stored in the index range [i_start, i_end).
-  int_t i_start;
-  int_t i_end;
-
-  HaloReceiveInfo(int sender_rank, int_t i_start, int_t i_end)
-      : sender_rank(sender_rank), i_start(i_start), i_end(i_end) {}
-};
-
-struct Halo {
-  std::vector<HaloRemoteInfo> remote_info;
-  std::vector<HaloReceiveInfo> local_info;
-};
 
 using HaloExchangeRequest = zisa::mpi::Request;
 

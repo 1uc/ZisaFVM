@@ -1,7 +1,6 @@
 #include <zisa/io/gathered_visualization.hpp>
 
 #include <zisa/math/permutation.hpp>
-#include <zisa/mpi/mpi.hpp>
 
 namespace zisa {
 
