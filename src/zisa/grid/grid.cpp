@@ -1101,11 +1101,11 @@ void mask_ghost_cells(Grid &grid,
     if (mask(grid, i)) {
       grid.cell_flags[i].interior = false;
       grid.cell_flags[i].ghost_cell = true;
-    }
 
-    for (auto k : neighbour_index_range(grid)) {
-      if (grid.is_valid(i, k) && !mask(grid, grid.neighbours(i, k))) {
-        grid.cell_flags[i].ghost_cell_l1 = true;
+      for (auto k : neighbour_index_range(grid)) {
+        if (grid.is_valid(i, k) && !mask(grid, grid.neighbours(i, k))) {
+          grid.cell_flags[i].ghost_cell_l1 = true;
+        }
       }
     }
   });
