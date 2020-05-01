@@ -28,6 +28,7 @@
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangular_rule.hpp>
 #include <zisa/memory/array_cell_flags.hpp>
+#include <zisa/utils/human_readable_size.hpp>
 #include <zisa/utils/logging.hpp>
 
 namespace zisa {
@@ -737,13 +738,13 @@ std::string Grid::str() const {
                        "n_edges : %d\n"
                        "dx_min : %e\n"
                        "dx_max : %e\n"
-                       "memory : %.2e GB\n",
+                       "memory : %s\n",
                        n_cells,
                        n_vertices,
                        n_edges,
                        dx_min,
                        dx_max,
-                       double(size_in_bytes()) * 1e-9);
+                       human_readable_size(size_in_bytes()).c_str());
 }
 
 template <class Predicate, class Ranking>
@@ -998,7 +999,14 @@ bool Grid::is_triangular() const { return n_dims() == 2; }
 bool Grid::is_tetrahedral() const { return n_dims() == 3; }
 
 size_t Grid::size_in_bytes() const {
-  return vertex_indices.size() * sizeof(vertex_indices[0])
+  size_t normalized_moments_size = 0;
+  for (const auto &m : normalized_moments) {
+    normalized_moments_size += sizeof(m) + m.size() * sizeof(m[0]);
+  }
+
+  // clang-format off
+  return sizeof(Grid)
+         + vertex_indices.size() * sizeof(vertex_indices[0])
          + edge_indices.size() * sizeof(edge_indices[0])
          + left_right.size() * sizeof(left_right[0])
          + neighbours.size() * sizeof(neighbours[0])
@@ -1006,12 +1014,17 @@ size_t Grid::size_in_bytes() const {
          + vertices.size() * sizeof(vertices[0])
          + cell_centers.size() * sizeof(cell_centers[0])
          + face_centers.size() * sizeof(face_centers[0])
-         + cells.size() * sizeof(cells[0]) + faces.size() * sizeof(faces[0])
+         + cells.size() * sizeof(cells[0])
+         + faces.size() * sizeof(faces[0])
          + volumes.size() * sizeof(volumes[0])
          + inradii.size() * sizeof(inradii[0])
          + circum_radii.size() * sizeof(circum_radii[0])
+         + characteristic_length.size() * sizeof(characteristic_length[0])
          + normals.size() * sizeof(normals[0])
-         + tangentials.size() * sizeof(tangentials[0]);
+         + tangentials.size() * sizeof(tangentials[0])
+         + cell_flags.size() * sizeof(cell_flags[0])
+         + normalized_moments_size;
+  // clang-format on
 }
 
 GMSHElementType Grid::element_type() const {
