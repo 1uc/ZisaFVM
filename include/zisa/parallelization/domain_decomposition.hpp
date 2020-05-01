@@ -38,6 +38,11 @@ std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
 extract_subgrid_v2(const Grid &grid,
                    const std::function<bool(int_t)> &is_inside);
 
+std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
+extract_subgrid_v2(const array<int_t, 2> &vertex_indices,
+                   const array<XYZ, 1> &vertices,
+                   const std::function<bool(int_t)> &is_inside);
+
 template <class T>
 array<T, 1> extract_subarray(const array<T, 1> &global_array,
                              const array<int_t, 1> &global_indices) {

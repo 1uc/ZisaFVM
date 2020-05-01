@@ -72,7 +72,7 @@ class MPIHeuristics:
 
         elif host == "rogui":
             self.cores_per_node = 1
-            self.max_nodes = 6
+            self.max_nodes = 16
             self.work_per_core = 1.0
 
         elif host == "liara":
@@ -92,7 +92,7 @@ class MPIHeuristics:
             self.work_per_core = 1.0
 
         else:
-            raise Exception("Unknown host [{:s}]".format(get_host()))
+            raise Exception("Unknown host [{:s}]".format(host))
 
         self.max_cores = self.max_nodes * self.cores_per_node
 

@@ -19,7 +19,7 @@ def generate_grids_from_template(template_name, filename, substitutions, levels)
 
         write_txt(filename(l), geo)
 
-    generate_grids(([filename(l) for l in levels]))
+    generate_grids([filename(l) for l in levels])
 
 
 def generate_spherical_grids(filename, radius, lc_rel, levels):

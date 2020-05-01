@@ -52,4 +52,8 @@ def default_cli_parser(parser_help):
         help="Generate the GMSH .geo / .msh files required.",
     )
 
+    parser.add_argument(
+        "--cluster", type=str, help="Partition the grids for CLUSTER.",
+    )
+
     return parser

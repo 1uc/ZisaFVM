@@ -99,6 +99,7 @@ protected:
   virtual std::shared_ptr<ProgressBar> choose_progress_bar();
 
   virtual void enforce_cell_flags(Grid &grid) const;
+  virtual std::function<bool(const Grid &, int_t)> boundary_mask() const;
 
   virtual void write_debug_output();
   virtual void write_stencils();

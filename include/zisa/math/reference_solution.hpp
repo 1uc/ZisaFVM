@@ -15,6 +15,8 @@ public:
 
   virtual std::shared_ptr<AllVariables>
   average(const zisa::Grid &coarse_grid) const = 0;
+
+  virtual double q_ref(const XYZ &x, int_t k, int_t &i_guess) const = 0;
 };
 
 template <class Equilibrium, class Scaling>
@@ -64,6 +66,16 @@ public:
     }
 
     return ref;
+  }
+
+  double q_ref(const XYZ &x, int_t k, int_t &i_guess) const override {
+    auto i_cell = locate(*fine_grid, x, i_guess);
+    LOG_ERR_IF(!i_cell,
+               string_format("Failed to locate the cell. x = %s",
+                             format_as_list(x).c_str()));
+
+    i_guess = *i_cell;
+    return (*grc)(*i_cell)(x)[k];
   }
 
 protected:

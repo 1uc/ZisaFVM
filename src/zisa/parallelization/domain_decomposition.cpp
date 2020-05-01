@@ -216,13 +216,13 @@ PartitionedGrid compute_partitioned_grid(
 }
 
 std::tuple<array<int_t, 2>, array<int_t, 1>>
-extract_vertex_indices(const Grid &grid,
+extract_vertex_indices(const array<int_t, 2> &vertex_indices,
                        const std::function<bool(int_t)> &is_inside) {
-
-  const auto &vertex_indices = grid.vertex_indices;
+  auto n_cells = vertex_indices.shape(0);
+  auto max_vertices = vertex_indices.shape(1);
 
   int_t n_local_cells = 0;
-  for (int_t i : cell_indices(grid)) {
+  for (int_t i : index_range(n_cells)) {
     n_local_cells += (is_inside(i) ? 1 : 0);
   }
 
@@ -232,9 +232,9 @@ extract_vertex_indices(const Grid &grid,
   auto global_cell_indices = array<int_t, 1>(n_local_cells);
 
   int_t i_local = 0;
-  for (int_t i : cell_indices(grid)) {
+  for (int_t i : index_range(n_cells)) {
     if (is_inside(i)) {
-      for (int_t k : neighbour_index_range(grid)) {
+      for (int_t k : index_range(max_vertices)) {
         local_vertex_indices(i_local, k) = vertex_indices(i, k);
       }
       global_cell_indices[i_local] = i;
@@ -316,11 +316,19 @@ extract_vertices(const array<XYZ, 1> &vertices,
 std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
 extract_subgrid_v2(const Grid &grid,
                    const std::function<bool(int_t)> &is_inside) {
+  return extract_subgrid_v2(grid.vertex_indices, grid.vertices, is_inside);
+}
 
-  auto [lvi, global_cell_indices] = extract_vertex_indices(grid, is_inside);
+std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
+extract_subgrid_v2(const array<int_t, 2> &global_vertex_indices,
+                   const array<XYZ, 1> &global_vertices,
+                   const std::function<bool(int_t)> &is_inside) {
+
+  auto [lvi, global_cell_indices]
+      = extract_vertex_indices(global_vertex_indices, is_inside);
 
   auto [local_vertex_indices, local_vertices]
-      = extract_vertices(grid.vertices, std::move(lvi));
+      = extract_vertices(global_vertices, std::move(lvi));
 
   return std::tuple{std::move(local_vertex_indices),
                     std::move(local_vertices),

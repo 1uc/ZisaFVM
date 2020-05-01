@@ -42,4 +42,4 @@ class MPIQueueArgs(QueueArgs):
         n_tasks = self.n_mpi_tasks(launch_param)
 
         sharp_requirement = self.heuristics.memory_per_core(*memory_usage, n_tasks)
-        return 1.5 * sharp_requirement
+        return sharp_requirement

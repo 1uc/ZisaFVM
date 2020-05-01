@@ -273,6 +273,13 @@ void NumericalExperiment::write_stencils() {
   save(writer, *stencils, "stencils");
 }
 
-void NumericalExperiment::enforce_cell_flags(Grid &) const { return; }
+void NumericalExperiment::enforce_cell_flags(Grid &grid) const {
+  mask_ghost_cells(grid, boundary_mask());
+}
+
+std::function<bool(const Grid &, int_t)>
+NumericalExperiment::boundary_mask() const {
+  return [](const Grid &, int_t) { return false; };
+}
 
 } // namespace zisa

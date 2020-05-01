@@ -16,6 +16,6 @@ target_sources(opengl-demo
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/opengl_demo.cpp
 )
 
-target_sources(hdf5-demo
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/hdf5_demo.cpp
+target_sources(something-demo
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/something_demo.cpp
 )

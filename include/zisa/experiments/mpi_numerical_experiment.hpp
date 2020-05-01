@@ -7,7 +7,9 @@
 #include <zisa/io/gathered_visualization.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
 #include <zisa/model/distributed_cfl_condition.hpp>
+#include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/io/mpi_progress_bar.hpp>
+#include <zisa/mpi/math/distributed_reference_solution.hpp>
 #include <zisa/mpi/parallelization/mpi_all_reduce.hpp>
 #include <zisa/mpi/parallelization/mpi_all_variables_gatherer.hpp>
 #include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
@@ -74,36 +76,79 @@ protected:
   }
 
   void do_post_run(const std::shared_ptr<AllVariables> &u1) override {
-    ZISA_UNUSED(u1);
-    //    LOG_ERR("Needs reimplementing.");
-    //    // Check to see if it needs gathering.
-    //    if (u1->dims().n_cells == this->full_grid_->n_cells) {
-    //      super::do_post_process();
-    //    } else {
-    //      const auto &boundaries = partitioned_grid_->boundaries;
-    //      auto gatherer = make_mpi_all_variables_gatherer(
-    //          ZISA_MPI_TAG_ALL_VARS_POSTPROCESS, mpi_comm, boundaries);
-    //
-    //      auto full_all_vars
-    //          = std::make_shared<AllVariables>(gatherer->gather(*u1));
-    //
-    //      if (mpi_rank == 0) {
-    //        // Restore original order.
-    //        const auto &sigma =
-    //        factor_permutation(partitioned_grid_->permutation);
-    //        reverse_permutation(array_view(full_all_vars->cvars), sigma);
-    //        reverse_permutation(array_view(full_all_vars->avars), sigma);
-    //
-    //        super::do_post_run(full_all_vars);
-    //      }
-    //    }
+    if (!has_key(this->params, "reference")) {
+      // Post processing the reference solution is not requested.
+      return;
+    }
+
+    auto u1_ref = this->deduce_reference_solution(u1);
+    down_sample(u1_ref, "reference.h5");
+
+    auto fng = this->choose_file_name_generator();
+    auto file_dims = choose_file_dimensions();
+    auto steady_state_filename = fng->steady_state_filename;
+    auto reader = HDF5UnstructuredReader(steady_state_filename, file_dims);
+    auto u_delta = std::make_shared<AllVariables>(
+        AllVariables::load(reader, all_labels<euler_var_t>()));
+
+    for (int_t i = 0; i < u_delta->size(); ++i) {
+      (*u_delta)[i] = (*u1)[i] - (*u_delta)[i];
+    }
+
+    auto u_delta_ref = this->deduce_reference_solution_eq(
+        u_delta, NoEquilibrium{}, UnityScaling{});
+    down_sample(u_delta_ref, "delta.h5");
   }
 
-  void do_post_process() override {
-    if (mpi_rank == 0) {
-      super::do_post_process();
+  void down_sample(const std::shared_ptr<ReferenceSolution> &ref_soln,
+                   const std::string &filename) {
+
+    std::vector<std::string> coarse_grid_paths
+        = this->params["reference"]["coarse_grids"];
+
+    auto serialize = [this](HDF5Writer &writer, const AllVariables &all_vars) {
+      double t_end = 0.0;
+      int_t n_steps = 0;
+      save_full_state(writer, *this->euler, all_vars, t_end, n_steps);
+    };
+
+    auto fine_grid = this->choose_grid();
+    auto mask = this->boundary_mask();
+
+    auto interpolation = [&ref_soln](int_t i, const XYZ &x, int_t k) {
+      return ref_soln->q_ref(x, k, i);
+    };
+
+    auto dref = DistributedReferenceSolution(
+        serialize, fine_grid, interpolation, euler_var_t::size());
+
+    for (const auto &coarse_grid_folder : coarse_grid_paths) {
+      dref.compute_and_save(filename,
+                            coarse_grid_folder,
+                            small_comm_size(coarse_grid_folder),
+                            mask);
     }
   }
+
+  int small_comm_size(const std::string &coarse_folder) {
+    auto sizes = std::vector<int>();
+    for (auto &p : std::filesystem::directory_iterator(coarse_folder)) {
+      if (p.is_directory()) {
+        auto b = p.path().filename().string();
+        auto s = stoi(b);
+        if (string_format("%d", s) == b) {
+          if (s <= mpi_comm_size) {
+            sizes.push_back(s);
+          }
+        }
+      }
+    }
+
+    LOG_ERR_IF(sizes.empty(), "Failed to deduce any valid `small_comm_size`.");
+    return *std::max_element(sizes.begin(), sizes.end());
+  }
+
+  void do_post_process() override {}
 
   std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const override {
     LOG_ERR_IF(this->stencils_ == nullptr,
@@ -127,7 +172,8 @@ protected:
 
   std::string subgrid_name() const {
     std::string dirname = this->params["grid"]["file"];
-    return string_format("%s/subgrid-%04d.msh.h5", dirname.c_str(), mpi_rank);
+    return string_format(
+        "%s/%d/subgrid-%04d.msh.h5", dirname.c_str(), mpi_comm_size, mpi_rank);
   }
 
   std::shared_ptr<Grid> compute_grid() const override {
@@ -181,6 +227,16 @@ protected:
     return grid;
   }
 
+  std::function<bool(const Grid &, int_t i)> boundary_mask() const override {
+    auto physical_mask = super::boundary_mask();
+    auto dgrid = choose_distributed_grid();
+    return [physical_mask, dgrid, mpi_rank = this->mpi_rank](const Grid &grid,
+                                                             int_t i) {
+      return dgrid->partition[i] != integer_cast<int_t>(mpi_rank)
+             || physical_mask(grid, i);
+    };
+  }
+
   std::shared_ptr<AllVariables> load_initial_conditions() override {
     LOG_ERR("Implement first.");
   }
@@ -219,9 +275,8 @@ protected:
       }
     }
 
-    PRINT(global_ids.size());
-
-    return make_hdf5_unstructured_file_dimensions(dgrid->partition.shape(0), global_ids, mpi_comm);
+    return make_hdf5_unstructured_file_dimensions(
+        dgrid->partition.shape(0), global_ids, mpi_comm);
   }
 
   std::shared_ptr<Visualization> compute_unstructured_visualization() {

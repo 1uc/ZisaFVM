@@ -1,7 +1,7 @@
+#include <zisa/boundary/frozen_boundary_condition.hpp>
 #include <zisa/experiments/ic/polytrope_ic.hpp>
 #include <zisa/experiments/polytrope.hpp>
 #include <zisa/parallelization/omp.h>
-#include <zisa/boundary/frozen_boundary_condition.hpp>
 
 namespace zisa {
 
@@ -41,26 +41,21 @@ Polytrope::compute_initial_conditions(double amp, double width) {
   };
 
   auto &u0 = all_variables->cvars;
-  zisa::for_each(cells(*grid),
-                 [&u0, &ic](int_t i, const Cell &cell) {
-                   u0(i) = average(cell, ic);
-                 });
+  zisa::for_each(cells(*grid), [&u0, &ic](int_t i, const Cell &cell) {
+    u0(i) = average(cell, ic);
+  });
 
   return all_variables;
 }
 
-void Polytrope::enforce_cell_flags(Grid &grid) const {
-  auto n_cells = grid.n_cells;
+std::function<bool(const Grid &grid, int_t i)>
+Polytrope::boundary_mask() const {
 
-  // FIXME hard-coded value.
-  double r_crit = 0.5;
-
-  for(int_t i = 0; i < n_cells; ++i) {
-    if(zisa::norm(grid.cell_centers(i)) > r_crit) {
-      grid.cell_flags(i).interior = false;
-      grid.cell_flags(i).ghost_cell = true;
-    }
-  }
+  return [](const Grid &grid, int_t i) {
+    // FIXME hard-coded value.
+    double r_crit = 0.5;
+    return zisa::norm(grid.cell_centers[i]) > r_crit;
+  };
 }
 
 std::function<std::shared_ptr<Grid>(const std::string &, int_t)>

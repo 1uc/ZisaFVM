@@ -1,3 +1,4 @@
+import os
 import json
 import h5py
 
@@ -246,5 +247,8 @@ class Reference(Subsection):
 
 
 def read_n_cells(filename):
+    if os.path.isdir(filename):
+        filename = filename + ".msh.h5"
+
     with h5py.File(filename, "r") as h5:
         return h5["vertex_indices"].shape[0]

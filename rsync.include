@@ -7,3 +7,10 @@
 bin/*.sh
 bin/*.py
 bin/tiwaz
+
+grids/*.geo
+grids/*.tmpl
+grids/*.macro
+grids/**/*.geo
+grids/**/*.tmpl
+grids/**/*.macro

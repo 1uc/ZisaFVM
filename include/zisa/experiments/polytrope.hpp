@@ -30,7 +30,7 @@ protected:
   std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
   choose_grid_factory() override;
 
-  void enforce_cell_flags(Grid &grid) const override;
+  std::function<bool(const Grid &grid, int_t i)> boundary_mask() const override;
 };
 
 class JankaBump : public EulerExperiment<IdealGasEOS, PolytropeGravityRadial> {

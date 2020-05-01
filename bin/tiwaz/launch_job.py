@@ -100,9 +100,16 @@ class LaunchNewJob(LaunchJob):
 
     def copy(self, src, dest, files):
         for f in files:
-            filename = os.path.join(dest, f)
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            shutil.copy(os.path.join(src, f), filename)
+            src_ = os.path.join(src, f)
+            dest_ = os.path.join(dest, f)
+
+            if os.path.isdir(src_):
+                shutil.copytree(src_, dest_)
+
+            else:
+                filename = os.path.join(dest, f)
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+                shutil.copy(os.path.join(src, f), filename)
 
 
 class RestartJob(LaunchJob):

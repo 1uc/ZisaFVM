@@ -62,7 +62,7 @@ class ZisaWorkEstimate:
         """
         n_cells = self.n_cells(launch_param)
 
-        overhead_per_process = n_cells / self.n0 * self.o0
+        overhead_per_process = self.o0
         total_memory = n_cells / self.n0 * self.b0
 
         return overhead_per_process, total_memory

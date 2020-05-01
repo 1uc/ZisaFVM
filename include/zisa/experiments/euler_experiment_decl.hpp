@@ -48,7 +48,7 @@ protected:
   virtual std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
   choose_grid_factory();
 
-private:
+protected:
   template <class Equilibrium, class RC>
   std::shared_ptr<RateOfChange> choose_physical_rate_of_change();
 
