@@ -18,8 +18,6 @@ bool all(omp_policy, const Range &range, const Predicate &predicate) {
 
 #pragma omp parallel for reduction(&& : is_good)
   for (auto i = i0; i < i_end; ++i) {
-    is_good = is_good && predicate(i, range.item(i));
-
     if constexpr (range_traits<Range>::has_item) {
       is_good = is_good && predicate(i, range.item(i));
     } else {
