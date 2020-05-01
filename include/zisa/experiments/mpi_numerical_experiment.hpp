@@ -221,7 +221,7 @@ protected:
 
     PRINT(global_ids.size());
 
-    return make_hdf5_unstructured_file_dimensions(global_ids, mpi_comm);
+    return make_hdf5_unstructured_file_dimensions(dgrid->partition.shape(0), global_ids, mpi_comm);
   }
 
   std::shared_ptr<Visualization> compute_unstructured_visualization() {
