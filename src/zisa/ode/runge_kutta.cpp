@@ -251,7 +251,7 @@ Fehlberg::Fehlberg(const std::shared_ptr<RateOfChange> &rate_of_change,
 }
 
 std::string Fehlberg::str() const {
-  return assemble_description("Fehlberg RK method, sixth order part.");
+  return assemble_description("Fehlberg RK method, fifth order part.");
 }
 
 } // namespace zisa
