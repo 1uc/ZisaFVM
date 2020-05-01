@@ -841,6 +841,15 @@ bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x) {
     return is_inside(Barycentric3D(tet, x));
   }
 }
+std::optional<int_t> locate_brute_force(const Grid &grid, const XYZ &x) {
+  for (int_t i : cell_indices(grid)) {
+    if (is_inside_cell(grid, i, x)) {
+      return std::optional(i);
+    }
+  }
+
+  return std::nullopt;
+}
 
 std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess) {
   auto predicate = [&grid, &x](int_t i) { return is_inside_cell(grid, i, x); };

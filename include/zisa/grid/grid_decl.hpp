@@ -108,6 +108,7 @@ Tetrahedron tetrahedron(const array<XYZ, 1> &vertices,
 bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x);
 bool is_boundary_cell(const Grid &grid, int_t i);
 
+std::optional<int_t> locate_brute_force(const Grid &grid, const XYZ &x);
 std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess = 0);
 
 double largest_circum_radius(const Grid &grid);
