@@ -1,4 +1,5 @@
 target_sources(zisa_generic_obj
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/human_readable_size.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/indent_block.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/join.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/logging.cpp
