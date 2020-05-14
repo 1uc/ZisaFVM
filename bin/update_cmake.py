@@ -123,6 +123,9 @@ if __name__ == "__main__":
     add_executable(cmake_file, "domain-decomposition", "domain_decomposition.cpp")
     add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
     add_executable(cmake_file, "something-demo", "something_demo.cpp")
+    add_executable(
+        cmake_file, "space-filling-curve-demo", "space_filling_curve_demo.cpp"
+    )
 
     recurse("test/", {"generic": "unit_tests"})
     recurse("benchmarks/", {"generic": "micro_benchmarks"})

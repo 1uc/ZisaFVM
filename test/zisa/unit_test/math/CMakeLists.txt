@@ -13,6 +13,7 @@ target_sources(unit_tests
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/quadrature.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/quasi_newton.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/reference_solution.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/space_filling_curve.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/subnormal.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/symmetric_coices.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/tetrahedral_rule.cpp

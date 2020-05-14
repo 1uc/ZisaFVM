@@ -16,6 +16,7 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/permutation.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/poly2d.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/reference_solution.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/space_filling_curve.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/tetrahedral_rule.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/tetrahedron.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/triangle.cpp
