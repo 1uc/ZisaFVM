@@ -6,16 +6,18 @@ import h5py
 
 from .launch_params import folder_name
 from .xdmf import generate_xdmf, xml_to_string
+from .io import read_json
 
 
 class Grid:
     def __init__(self, grid_name):
+        print(grid_name)
         with h5py.File(grid_name, "r") as h5:
             self.vertex_indices = np.array(h5["vertex_indices"])
             self.vertices = np.array(h5["vertices"])
 
             if "cell_flags/ghost_cell" in h5:
-                self.is_ghost_cell = np.array(h5["cell_flags/ghost_cell"], dtype=bool)
+                self.is_ghost_cell = np.array(h5["cell_flags/ghost_cell"]).astype(bool)
 
             if "cell_centers" in h5:
                 self.cell_centers = np.array(h5["cell_centers"])
@@ -100,7 +102,23 @@ def load_data(data_name, steady_state_filename=None):
 
 
 def find_grid(directory):
-    return os.path.join(directory, "grid.h5")
+    f = os.path.join(directory, "grid.h5")
+    if os.path.isfile(f):
+        return f
+
+    c = os.path.join(directory, "config.json")
+    if os.path.isfile(c):
+        config = read_json(c)
+        g = os.path.join(directory, config["grid"]["file"])
+
+        if os.path.isfile(g):
+            return g
+
+        g = next(iter(glob.glob(os.path.join(g, "*/grid.h5"))))
+        if os.path.isfile(g):
+            return g
+
+    raise Exception("Failed to find the grid.")
 
 
 def find_data_files(directory):

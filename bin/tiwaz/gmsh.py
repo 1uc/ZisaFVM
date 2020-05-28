@@ -59,6 +59,18 @@ def convert_msh_to_hdf5(msh):
             h5["vertex_indices"] = cells["triangle"]
 
 
+def renumber_grids(grid_name_generator, mesh_levels):
+    zisa_home = zisa_home_directory()
+    build_target("renumber-grid")
+
+    binary = zisa_home + "/build-release/renumber-grid"
+    for l in mesh_levels:
+        grid_name = grid_name_generator(l)
+        assert grid_name.endswith(".msh.h5")
+
+        subprocess.run([binary, "--grid", grid_name])
+
+
 def decompose_grids(grid_name_generator, mesh_levels, parts):
     zisa_home = zisa_home_directory()
     build_target("domain-decomposition")

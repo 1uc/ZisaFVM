@@ -2,6 +2,7 @@ import socket
 import datetime
 import os
 import re
+import subprocess
 
 hosts_with_slurm = ["daint"]
 hosts_with_lsf = ["euler"]
@@ -97,7 +98,7 @@ class MPIHeuristics:
         self.max_cores = self.max_nodes * self.cores_per_node
 
     def n_tasks(self, work):
-        n_proc = int(work / self.work_per_core ** 2)
+        n_proc = int(work / self.work_per_core)
 
         # Always ask for an entire node.
         cpn = self.cores_per_node

@@ -22,6 +22,7 @@ from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_circular_grids
 from tiwaz.gmsh import decompose_grids
+from tiwaz.gmsh import renumber_grids
 from tiwaz.site_details import MPIHeuristics
 from tiwaz.work_estimate import ZisaWorkEstimate
 from tiwaz.queue_args import MPIQueueArgs
@@ -57,15 +58,16 @@ euler = sc.Euler(eos, gravity)
 
 t_end = 0.09
 time = sc.Time(t_end=t_end)
-io = sc.IO("hdf5", "gaussian_bump", n_snapshots=1)
+io = sc.IO(
+    "hdf5", "gaussian_bump", n_snapshots=1, parallel_strategy="gathered", n_writers=4
+)
 # io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
 
 
 def make_work_estimate():
     n0 = sc.read_n_cells(grid_name_hdf5(4))
 
-    # measured on Euler on L=4 with 96 cores.
-    t0 = 2 * timedelta(seconds=t_end / 1e-1 * 30 * 96)
+    t0 = 2 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
     b0 = 0.0
     o0 = 1.0 * 1e9
 
@@ -94,10 +96,10 @@ def grid_config_string(l):
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-mesh_levels = list(range(0, 4))
+mesh_levels = list(range(0, 5))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
-coarse_grid_levels = list(range(0, 2))
+coarse_grid_levels = list(range(0, 3))
 
 coarse_grid_choices = {
     "grid": [sc.Grid(grid_config_string(l), l) for l in coarse_grid_levels]
@@ -145,7 +147,7 @@ reference_choices = {
     "io": [io],
     "reconstruction": [sc.Reconstruction("CWENO-AO", [4, 2, 2, 2])],
     "ode": [sc.ODE("Fehlberg")],
-    "quadrature": [sc.Quadrature(4)],
+    "quadrature": [sc.Quadrature(3)],
     "grid": [reference_grid],
     "reference": [
         sc.Reference("isentropic", [grid_name_stem(l) for l in coarse_grid_levels])
@@ -240,6 +242,7 @@ def compute_parts(mesh_levels, host):
 
 def generate_grids(cluster):
     generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+    renumber_grids(grid_name_hdf5, mesh_levels)
     decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
 
 
@@ -253,7 +256,7 @@ def main():
     if args.run:
         build_zisa()
 
-        t_min = timedelta(minutes=10)
+        t_min = timedelta(minutes=30)
         t_max = timedelta(hours=4)
         work_estimate = make_work_estimate()
 

@@ -211,6 +211,7 @@ class IO(Subsection):
 
         if "parallel_strategy" in kwargs:
             self["parallel_strategy"] = kwargs["parallel_strategy"]
+            self["n_writers"] = kwargs["n_writers"]
 
         if mode == "opengl":
             self.activate_opengl()

@@ -68,7 +68,7 @@ def plot_visual_convergence(data, solvers, labels, filename):
             plot.finalize(label)
             plot.save(filename + "_" + label.replace(" ", "_") + "_" + var + ".png")
 
-        for var in ["rho", "E"]:
+        for var in ["rho", "E", "drho", "dE"]:
             fig = plt.figure()
 
             for d, c in zip(sdata, colors):

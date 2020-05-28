@@ -22,6 +22,8 @@ from tiwaz.latex_tables import write_convergence_table
 from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_spherical_grids
+from tiwaz.gmsh import decompose_grids
+from tiwaz.site_details import MPIHeuristics
 from tiwaz.work_estimate import ZisaWorkEstimate
 from tiwaz.queue_args import MPIQueueArgs
 from tiwaz.launch_params import folder_name
@@ -65,7 +67,7 @@ def make_work_estimate():
 
     t0 = 2 * timedelta(seconds=t_end / 0.09 * 90 * 24)
 
-    b0 = 0.5 * 1e9
+    b0 = 0.0 * 1e9
     o0 = 1.0 * 1e9
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, n_dims=3)
@@ -83,37 +85,39 @@ def grid_name_hdf5(l):
     return grid_name_stem(l) + ".msh.h5"
 
 
+def grid_config_string(l):
+    if parallelization["mode"] == "mpi":
+        return grid_name_stem(l)
+
+    return grid_name_hdf5(l)
+
+
+parallelization = {"mode": "mpi"}
+
 radius = 0.5
 mesh_levels = list(range(0, 5))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))
-coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
-    "grid": [sc.Grid(grid_name_hdf5(l), l) for l in coarse_grid_levels]
+    "grid": [sc.Grid(grid_config_string(l), l) for l in coarse_grid_levels]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_name_hdf5(3), 3)
+reference_grid = sc.Grid(grid_config_string(3), 3)
 
 independent_choices = {
     "euler": [euler],
     "io": [io],
-    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "time": [time],
-    "parallelization": [{"mode": "mpi"}],
+    "parallelization": [parallelization],
+    "boundary-condition": [sc.BoundaryCondition("frozen")],
     "debug": [{"global_indices": False, "stencils": False}],
 }
 
 dependent_choices_a = {
-    "flux-bc": [
-        sc.FluxBC("constant"),
-        sc.FluxBC("isentropic")
-    ],
-    "well-balancing": [
-        sc.WellBalancing("constant"),
-        sc.WellBalancing("isentropic")
-    ],
+    "flux-bc": [sc.FluxBC("constant"), sc.FluxBC("isentropic")],
+    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
 }
 
 dependent_choices_b = {
@@ -129,12 +133,7 @@ dependent_choices_b = {
             "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
         ),
     ],
-    "ode": [
-        sc.ODE("ForwardEuler"),
-        sc.ODE("SSP2"),
-        sc.ODE("SSP3"),
-        sc.ODE("Fehlberg")
-    ],
+    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("Fehlberg")],
     "quadrature": [
         sc.Quadrature(1),
         sc.Quadrature(1),
@@ -149,11 +148,17 @@ reference_choices = {
     "well-balancing": [sc.WellBalancing("isentropic")],
     "time": [time],
     "io": [io],
-    "reconstruction": [sc.Reconstruction("CWENO-AO", [4, 2, 2, 2])],
+    "reconstruction": [
+        sc.Reconstruction(
+            "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
+        )
+    ],
     "ode": [sc.ODE("Fehlberg")],
     "quadrature": [sc.Quadrature(4)],
     "grid": [reference_grid],
-    "reference": [sc.Reference("isentropic", coarse_grid_names)],
+    "reference": [
+        sc.Reference("isentropic", [grid_name_stem(l) for l in coarse_grid_levels])
+    ],
     "parallelization": [{"mode": "mpi"}],
     "debug": [{"global_indices": False, "stencils": False}],
 }
@@ -220,8 +225,25 @@ class TableLabels:
         return " ".join(str(v) for v in col.values())
 
 
-def generate_grids():
-    generate_spherical_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+def compute_parts(mesh_levels, host):
+    work_estimate = make_work_estimate()
+
+    heuristics = MPIHeuristics(host=host)
+    queue_args = MPIQueueArgs(
+        work_estimate, t_min=None, t_max=None, heuristics=heuristics
+    )
+
+    parts_ = dict()
+    for l in mesh_levels:
+        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})]
+
+    return parts_
+
+
+def generate_grids(cluster):
+    # generate_spherical_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+    renumber_grids(grid_name_hdf5, mesh_levels)
+    decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
 
 
 def main():
@@ -229,12 +251,12 @@ def main():
     args = parser.parse_args()
 
     if args.generate_grids:
-        generate_grids()
+        generate_grids(args.cluster)
 
     if args.run:
         build_zisa()
 
-        t_min = timedelta(minutes=10)
+        t_min = timedelta(minutes=30)
         t_max = timedelta(hours=4)
         work_estimate = make_work_estimate()
 
