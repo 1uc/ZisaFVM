@@ -20,6 +20,10 @@ target_sources(something-demo
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/something_demo.cpp
 )
 
+target_sources(renumber-grid
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/renumber_grid.cpp
+)
+
 target_sources(space-filling-curve-demo
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/space_filling_curve_demo.cpp
 )
