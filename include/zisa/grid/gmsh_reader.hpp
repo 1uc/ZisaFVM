@@ -38,23 +38,5 @@ public:
                                            index_t k);
 };
 
-struct GMSHData {
-private:
-  using index_t = std::size_t;
-
-public:
-  array<XYZ, 1> vertices;
-  array<int_t, 2> vertex_indices;
-  GMSHElementType element_type;
-
-public:
-  GMSHData(const std::string &filename);
-  GMSHData(array<XYZ, 1> vertices,
-           array<int_t, 2> vertex_indices,
-           GMSHElementType element_type);
-};
-
-std::ostream &operator<<(std::ostream &os, const GMSHData &gmsh_data);
-
 } // namespace zisa
 #endif /* end of include guard */
