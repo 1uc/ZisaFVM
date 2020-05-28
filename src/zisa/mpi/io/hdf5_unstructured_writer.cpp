@@ -28,9 +28,9 @@ HDF5UnstructuredWriter::HDF5UnstructuredWriter(
   file.push(h5_file);
 }
 
-void HDF5UnstructuredWriter::do_write_scalar(const void *addr,
-                                             const HDF5DataType &data_type,
-                                             const std::string &tag) const {
+void HDF5ParallelWriter::do_write_scalar(const void *addr,
+                                         const HDF5DataType &data_type,
+                                         const std::string &tag) const {
   // create a scalar data space.
   hid_t dataspace = zisa::H5S::create(H5S_SCALAR);
 
@@ -44,7 +44,7 @@ void HDF5UnstructuredWriter::do_write_scalar(const void *addr,
                                     H5P_DEFAULT,
                                     H5P_DEFAULT);
 
-  if (zisa::mpi::rank(file_dims->mpi_comm) == 0) {
+  if (is_serial_writer()) {
     // we want only one process to write, hence we need `independent` mode.
     hid_t h5_properties = zisa::H5P::create(H5P_DATASET_XFER);
     H5Pset_dxpl_mpio(h5_properties, H5FD_MPIO_INDEPENDENT);
@@ -59,12 +59,10 @@ void HDF5UnstructuredWriter::do_write_scalar(const void *addr,
   // close
   zisa::H5D::close(dataset);
   zisa::H5S::close(dataspace);
-
-  MPI_Barrier(file_dims->mpi_comm);
 }
 
-void HDF5UnstructuredWriter::do_write_string(const std::string &data,
-                                             const std::string &tag) const {
+void HDF5ParallelWriter::do_write_string(const std::string &data,
+                                         const std::string &tag) const {
   // strings can be stored as 1d-arrays of characters.
   // don't forget the null-character at the end of 'data.c_str()'.
   hsize_t dims[1] = {data.size() + 1};
@@ -83,7 +81,7 @@ void HDF5UnstructuredWriter::do_write_string(const std::string &data,
                                     H5P_DEFAULT,
                                     H5P_DEFAULT);
 
-  if (zisa::mpi::rank(file_dims->mpi_comm) == 0) {
+  if (is_serial_writer()) {
     // we want only one process to write, hence we need `independent` mode.
     hid_t h5_properties = zisa::H5P::create(H5P_DATASET_XFER);
     zisa::H5P::set_dxpl_mpio(h5_properties, H5FD_MPIO_INDEPENDENT);
@@ -169,6 +167,10 @@ void HDF5UnstructuredWriter::do_write_array(const void *data,
   zisa::H5S::close(h5_memspace);
   zisa::H5P::close(h5_plist);
   zisa::H5D::close(h5_dataset);
+}
+
+bool HDF5UnstructuredWriter::is_serial_writer() const {
+  return zisa::mpi::rank(file_dims->mpi_comm) == 0;
 }
 
 std::vector<hsize_t>

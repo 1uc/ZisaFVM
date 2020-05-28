@@ -28,7 +28,22 @@ make_hdf5_unstructured_file_dimensions(int_t n_cells,
                                        std::vector<hsize_t> ids,
                                        const MPI_Comm &mpi_comm);
 
-class HDF5UnstructuredWriter : public HDF5Writer {
+enum class HDF5Access { overwrite, modify };
+
+class HDF5ParallelWriter : public HDF5Writer {
+public:
+protected:
+  void do_write_scalar(void const *addr,
+                       const HDF5DataType &data_type,
+                       const std::string &tag) const override;
+
+  void do_write_string(const std::string &data,
+                       const std::string &tag) const override;
+
+  virtual bool is_serial_writer() const = 0;
+};
+
+class HDF5UnstructuredWriter : public HDF5ParallelWriter {
 public:
   HDF5UnstructuredWriter(
       const std::string &filename,
@@ -41,12 +56,7 @@ protected:
                       int rank,
                       hsize_t const *dims) const override;
 
-  void do_write_scalar(void const *addr,
-                       const HDF5DataType &data_type,
-                       const std::string &tag) const override;
-
-  void do_write_string(const std::string &data,
-                       const std::string &tag) const override;
+  bool is_serial_writer() const override;
 
 private:
   std::vector<hsize_t> local_count(int rank_, hsize_t const *dims) const;
