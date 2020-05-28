@@ -40,6 +40,34 @@ private:
   MPI_Comm comm = MPI_COMM_WORLD;
 };
 
+class MPISingleNodeArrayGathererFactory {
+public:
+  MPISingleNodeArrayGathererFactory(
+      std::shared_ptr<DistributedArrayInfo> array_info,
+      MPI_Comm comm,
+      int mpi_base_tag)
+      : array_info(std::move(array_info)),
+        comm(comm),
+        current_mpi_tag(mpi_base_tag) {}
+
+  template <class T, int n_dims>
+  MPISingleNodeArrayGatherer<T, n_dims> create_object() {
+    return MPISingleNodeArrayGatherer<T, n_dims>(
+        array_info, comm, current_mpi_tag++);
+  }
+
+  template <class T, int n_dims>
+  std::unique_ptr<MPISingleNodeArrayGatherer<T, n_dims>> create_pointer() {
+    return std::make_unique<MPISingleNodeArrayGatherer<T, n_dims>>(
+        array_info, comm, current_mpi_tag++);
+  }
+
+private:
+  std::shared_ptr<DistributedArrayInfo> array_info;
+  MPI_Comm comm;
+  int current_mpi_tag;
+};
+
 }
 
 #endif // ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_DECL_HPP
