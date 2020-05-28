@@ -14,17 +14,16 @@ GatheredVisualization::GatheredVisualization(
       visualization(std::move(visualization)) {
 
   LOG_ERR_IF(this->gatherer == nullptr, "Received a `nullptr`.");
-  LOG_ERR_IF(this->permutation == nullptr, "Received a `nullptr`.");
-  LOG_ERR_IF(this->visualization == nullptr, "Received a `nullptr`.");
 
-  buffer = AllVariables(all_var_dims);
-}
+  if (this->gatherer->is_this_rank_gathering()) {
+    LOG_ERR_IF(this->permutation == nullptr, "Received a `nullptr`.");
+    LOG_ERR_IF(this->visualization == nullptr, "Received a `nullptr`.");
 
-GatheredVisualization::~GatheredVisualization() {
-  if (job != nullptr && job->joinable()) {
-    job->join();
+    buffer = AllVariables(all_var_dims);
   }
 }
+
+GatheredVisualization::~GatheredVisualization() { wait(); }
 
 template <class Vis>
 void GatheredVisualization::gather_and_visualize(
@@ -42,8 +41,8 @@ void GatheredVisualization::gather_and_visualize(
     job = std::make_unique<std::thread>([this, vis]() {
       gatherer->receive(buffer);
 
-      reverse_permutation(array_view(buffer.cvars), *permutation);
-      reverse_permutation(array_view(buffer.avars), *permutation);
+      apply_permutation(array_view(buffer.cvars), *permutation);
+      apply_permutation(array_view(buffer.avars), *permutation);
 
       vis(buffer);
     });
@@ -72,6 +71,12 @@ void GatheredVisualization::do_steady_state(const AllVariables &all_variables) {
   };
 
   gather_and_visualize(all_variables, vis);
+}
+
+void GatheredVisualization::wait() {
+  if (job != nullptr && job->joinable()) {
+    job->join();
+  }
 }
 
 }

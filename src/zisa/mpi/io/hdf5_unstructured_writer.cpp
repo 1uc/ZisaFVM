@@ -14,17 +14,25 @@ HDF5UnstructuredFileDimensions::HDF5UnstructuredFileDimensions(
 
 HDF5UnstructuredWriter::HDF5UnstructuredWriter(
     const std::string &filename,
-    std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims_)
+    std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims_,
+    const HDF5Access &access)
     : file_dims(std::move(file_dims_)) {
   auto lock = std::lock_guard(hdf5_mutex);
 
   auto h5_plist = zisa::H5P::create(H5P_FILE_ACCESS);
   zisa::H5P::set_fapl_mpio(h5_plist, file_dims->mpi_comm, MPI_INFO_NULL);
 
-  hid_t h5_file = zisa::H5F::create(
-      filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, h5_plist);
-  zisa::H5P::close(h5_plist);
+  hid_t h5_file = [&]() {
+    if (access == HDF5Access::overwrite) {
+      return zisa::H5F::create(
+          filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, h5_plist);
+    } else if (access == HDF5Access::modify) {
+      return zisa::H5F::open(filename.c_str(), H5F_ACC_RDWR, h5_plist);
+    }
+    LOG_ERR("Missing case.");
+  }();
 
+  zisa::H5P::close(h5_plist);
   file.push(h5_file);
 }
 
@@ -156,7 +164,7 @@ void HDF5UnstructuredWriter::do_write_array(const void *data,
 
   // property list for collective MPI write
   h5_plist = zisa::H5P::create(H5P_DATASET_XFER);
-  zisa::H5P::set_dxpl_mpio(h5_plist, H5FD_MPIO_COLLECTIVE);
+  zisa::H5P::set_dxpl_mpio(h5_plist, H5FD_MPIO_INDEPENDENT);
 
   // write slab to file
   zisa::H5D::write(

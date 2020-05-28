@@ -7,7 +7,6 @@
 
 #include <zisa/config.hpp>
 
-#include <zisa/io/hdf5_writer.hpp>
 #include <zisa/math/cartesian_expr.hpp>
 #include <zisa/math/isreal.hpp>
 #include <zisa/memory/array_traits.hpp>

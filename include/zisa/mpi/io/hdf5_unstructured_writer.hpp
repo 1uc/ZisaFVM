@@ -47,7 +47,8 @@ class HDF5UnstructuredWriter : public HDF5ParallelWriter {
 public:
   HDF5UnstructuredWriter(
       const std::string &filename,
-      std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims);
+      std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims,
+      const HDF5Access &access = HDF5Access::overwrite);
 
 protected:
   void do_write_array(void const *data,

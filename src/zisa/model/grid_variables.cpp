@@ -30,7 +30,6 @@ GridVariables GridVariables::load(HDF5Reader &reader,
 
   for (int_t k = 0; k < labels.size(); ++k) {
     auto component = array<double, 1>::load(reader, labels[k]);
-
     LOG_ERR_IF(component.shape(0) != n_cells, "Reloading non-uniform arrays.");
 
     for (int_t i = 0; i < component.shape(0); ++i) {

@@ -62,7 +62,7 @@ std::string str(const DistributedReferenceSolution::OrgMessage &msg) {
 }
 
 DistributedReferenceSolution::DistributedReferenceSolution(
-    std::function<void(HDF5Writer &, const AllVariables &)> serialize,
+    serialize_t serialize,
     std::shared_ptr<Grid> large_grid,
     std::function<double(int_t, const XYZ &, int_t)> interpolation,
     int_t n_vars)
@@ -74,16 +74,17 @@ DistributedReferenceSolution::DistributedReferenceSolution(
 void DistributedReferenceSolution::compute_and_save(
     const std::string &output_name,
     const std::string &small_grid_folder,
-    int small_comm_size,
+    int new_small_comm_size,
     const std::function<bool(const Grid &, int_t)> &boundary_mask) {
 
   this->clear();
 
-  std::vector<Sphere> bounding_spheres(comm_size);
-  bounding_spheres[mpi_rank] = bounding_sphere(*large_grid);
+  std::vector<Sphere> bounding_spheres(integer_cast<size_t>(comm_size));
+  bounding_spheres[integer_cast<size_t>(mpi_rank)]
+      = bounding_sphere(*large_grid);
   zisa::mpi::allgather(array_view(bounding_spheres), comm);
 
-  set_small_comm(small_comm_size);
+  set_small_comm(new_small_comm_size);
   if (mpi_rank < small_comm_size) {
     auto small_grid_name = string_format("%s/%d/subgrid-%04d.msh.h5",
                                          small_grid_folder.c_str(),
@@ -104,7 +105,7 @@ void DistributedReferenceSolution::compute_and_save(
         for (int_t k : index_range(n_qp)) {
           const auto &x = cell.qr.points[k];
           for (int p = 0; p < comm_size; ++p) {
-            if (bounding_spheres[p].is_inside(x)) {
+            if (bounding_spheres[size_t(p)].is_inside(x)) {
               ids[p].push_back({i, k});
               coords[p].push_back(x);
             }
@@ -163,14 +164,13 @@ void DistributedReferenceSolution::compute_and_save(
     std::string filename = string_format(
         "down_sampled/%s/%s", stem.c_str(), output_name.c_str());
 
-    auto writer = HDF5UnstructuredWriter(filename, small_hdf5_file_dims);
-    serialize(writer, all_vars);
+    serialize(filename, small_comm, *small_dgrid, all_vars);
   }
 }
 
-void DistributedReferenceSolution::set_small_comm(int small_comm_size) {
-  MPI_Comm_split(comm, mpi_rank < small_comm_size, mpi_rank, &small_comm);
-  this->small_comm_size = small_comm_size;
+void DistributedReferenceSolution::set_small_comm(int new_small_comm_size) {
+  MPI_Comm_split(comm, mpi_rank < new_small_comm_size, mpi_rank, &small_comm);
+  this->small_comm_size = new_small_comm_size;
 }
 
 void DistributedReferenceSolution::load_subgrid(
@@ -193,15 +193,8 @@ void DistributedReferenceSolution::load_subgrid(
 
   mask_ghost_cells(*small_grid, mask);
 
-  auto small_dgrid = extract_distributed_subgrid(dgrid, global_indices);
-
-  auto ids = std::vector<hsize_t>(small_dgrid.global_cell_indices.size());
-  for (int_t i = 0; i < ids.size(); ++i) {
-    ids[i] = integer_cast<hsize_t>(small_dgrid.global_cell_indices[i]);
-  }
-
-  small_hdf5_file_dims = make_hdf5_unstructured_file_dimensions(
-      small_grid->n_cells, ids, small_comm);
+  small_dgrid = std::make_shared<DistributedGrid>(
+      extract_distributed_subgrid(dgrid, global_indices));
 }
 
 double DistributedReferenceSolution::interpolate_reference_solution(

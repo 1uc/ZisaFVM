@@ -22,6 +22,7 @@ template <class T, int n_dims>
 void MPISingleNodeArrayGatherer<T, n_dims>::send(
     const MPISingleNodeArrayGatherer::const_view_t &const_view) const {
   assert(rank != gather_rank);
+
   zisa::mpi::send(const_view, gather_rank, tag, comm);
 }
 

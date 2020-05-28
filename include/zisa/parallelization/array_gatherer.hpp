@@ -28,7 +28,7 @@ public:
   virtual void copy_local_patch(const view_t &global,
                                 const const_view_t &local) const = 0;
 
-  /// Is (part of) the data gather on this rank.
+  /// Is (part of) the data gathered on this rank?
   virtual bool is_this_rank_gathering() const = 0;
 };
 

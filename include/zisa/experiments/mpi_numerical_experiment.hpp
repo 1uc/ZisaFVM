@@ -4,8 +4,11 @@
 #if ZISA_HAS_MPI == 1
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/cli/input_parameters.hpp>
+#include <zisa/io/backtrace.hpp>
+#include <zisa/io/gathered_vis_info.hpp>
 #include <zisa/io/gathered_visualization.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
+#include <zisa/memory/array_cell_flags.hpp>
 #include <zisa/model/distributed_cfl_condition.hpp>
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/io/mpi_progress_bar.hpp>
@@ -14,9 +17,11 @@
 #include <zisa/mpi/parallelization/mpi_all_variables_gatherer.hpp>
 #include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
 #include <zisa/mpi/parallelization/mpi_single_node_array_gatherer.hpp>
+#include <zisa/mpi/parallelization/mpi_single_node_array_scatterer.hpp>
 #include <zisa/ode/simulation_clock.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
 #include <zisa/parallelization/all_variables_gatherer.hpp>
+#include <zisa/parallelization/all_variables_scatterer.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
 
@@ -40,8 +45,7 @@ protected:
   }
 
   std::string parallel_visualization_strategy() const {
-    return this->params["io"].value("parallel_strategy",
-                                    std::string("unstructured"));
+    return this->params["io"].value("parallel_strategy", std::string("split"));
   }
 
   bool is_unstructured_visualization() const {
@@ -57,15 +61,66 @@ protected:
   }
 
   void write_grid() override {
+    auto grid = this->choose_grid();
+
     if (is_gathered_visualization()) {
-      LOG_WARN(
-          "This needs to be reimplmented. In the meantime, simply copy over.");
+      auto vis_info = choose_gathered_vis_info();
+      auto gatherer_factory = choose_gatherer_factory();
+      auto gatherer = gatherer_factory->template create_object<CellFlags, 1>();
+
+      if (vis_info->h5_comm != MPI_COMM_NULL) {
+
+        auto cell_flags = array<CellFlags, 1>(vis_info->n_vis_cells());
+        gatherer.copy_local_patch(
+            array_view(cell_flags),
+            const_slice(array_const_view(grid->cell_flags),
+                        0,
+                        vis_info->n_local_cells));
+
+        gatherer.receive(array_view(cell_flags));
+        apply_permutation(array_view(cell_flags), *vis_info->permutation);
+
+        std::string dirname = this->params["grid"]["file"];
+        auto grid_name
+            = string_format("%s/%d/grid.h5", dirname.c_str(), mpi_comm_size);
+
+        auto file_dims = choose_gathered_file_info();
+        auto writer
+            = HDF5UnstructuredWriter(grid_name, file_dims, HDF5Access::modify);
+
+        writer.open_group("cell_flags");
+        writer.unlink("ghost_cell");
+        writer.close_group();
+
+        save(writer, cell_flags, "cell_flags");
+      } else {
+        gatherer.send(const_slice(
+            array_const_view(grid->cell_flags), 0, vis_info->n_local_cells));
+      }
+
     } else if (is_split_visualization()) {
       auto dir = string_format("part-%04d/", mpi_rank);
       create_directory(dir);
 
       auto writer = HDF5SerialWriter(dir + "grid.h5");
-      save(writer, *this->grid_);
+      save(writer, *grid);
+
+    } else if (is_unstructured_visualization()) {
+      std::string dirname = this->params["grid"]["file"];
+      auto grid_name
+          = string_format("%s/%d/grid.h5", dirname.c_str(), mpi_comm_size);
+
+      auto file_dims = choose_file_dimensions();
+      auto writer
+          = HDF5UnstructuredWriter(grid_name, file_dims, HDF5Access::modify);
+
+      writer.open_group("cell_flags");
+      writer.unlink("ghost_cell");
+      writer.close_group();
+      save(writer, grid->cell_flags, "cell_flags");
+
+    } else {
+      LOG_ERR("Broken logic.");
     }
   }
 
@@ -85,11 +140,11 @@ protected:
     down_sample(u1_ref, "reference.h5");
 
     auto fng = this->choose_file_name_generator();
-    auto file_dims = choose_file_dimensions();
     auto steady_state_filename = fng->steady_state_filename;
-    auto reader = HDF5UnstructuredReader(steady_state_filename, file_dims);
-    auto u_delta = std::make_shared<AllVariables>(
-        AllVariables::load(reader, all_labels<euler_var_t>()));
+    auto u_delta = load_all_vars(steady_state_filename);
+
+    auto halo_exchange = choose_halo_exchange();
+    (*halo_exchange)(*u_delta);
 
     for (int_t i = 0; i < u_delta->size(); ++i) {
       (*u_delta)[i] = (*u1)[i] - (*u_delta)[i];
@@ -97,7 +152,63 @@ protected:
 
     auto u_delta_ref = this->deduce_reference_solution_eq(
         u_delta, NoEquilibrium{}, UnityScaling{});
+
     down_sample(u_delta_ref, "delta.h5");
+  }
+
+  std::shared_ptr<AllVariables> load_all_vars(const std::string &filename) {
+    if (is_gathered_visualization()) {
+      auto grid = this->choose_grid();
+      auto vis_info = choose_gathered_vis_info();
+      auto scatter_tag = ZISA_MPI_TAG_LOAD_ALL_VARS;
+      if (vis_info->h5_comm != MPI_COMM_NULL) {
+        auto file_dims = choose_gathered_file_info();
+        auto reader = HDF5UnstructuredReader(filename, file_dims);
+
+        auto all_vars_patch
+            = AllVariables::load(reader, all_labels<euler_var_t>());
+
+        reverse_permutation(array_view(all_vars_patch.cvars),
+                            *vis_info->permutation);
+
+        auto darray_info
+            = make_distributed_array_info(vis_info->vis_boundaries);
+
+        auto cvars_scatterer
+            = std::make_unique<MPISingleNodeArrayScatterer<double, 2>>(
+                darray_info, vis_info->vis_comm, scatter_tag);
+
+        auto scatterer = AllVariablesScatterer(std::move(cvars_scatterer),
+                                               nullptr,
+                                               vis_info->n_local_cells,
+                                               grid->n_cells);
+
+        return std::make_shared<AllVariables>(
+            scatterer.scatter(all_vars_patch));
+
+      } else {
+        auto cvars_scatterer
+            = std::make_unique<MPISingleNodeArrayScatterer<double, 2>>(
+                nullptr, vis_info->vis_comm, scatter_tag);
+
+        auto scatterer = AllVariablesScatterer(std::move(cvars_scatterer),
+                                               nullptr,
+                                               vis_info->n_local_cells,
+                                               grid->n_cells);
+
+        return std::make_shared<AllVariables>(scatterer.scatter(5, 0));
+      }
+    }
+
+    if (is_unstructured_visualization()) {
+      auto file_dims = choose_file_dimensions();
+      auto reader = HDF5UnstructuredReader(filename, file_dims);
+
+      return std::make_shared<AllVariables>(
+          AllVariables::load(reader, all_labels<euler_var_t>()));
+    }
+
+    LOG_ERR("Implement missing case.");
   }
 
   void down_sample(const std::shared_ptr<ReferenceSolution> &ref_soln,
@@ -106,10 +217,34 @@ protected:
     std::vector<std::string> coarse_grid_paths
         = this->params["reference"]["coarse_grids"];
 
-    auto serialize = [this](HDF5Writer &writer, const AllVariables &all_vars) {
-      double t_end = 0.0;
-      int_t n_steps = 0;
-      save_full_state(writer, *this->euler, all_vars, t_end, n_steps);
+    auto serialize = [this](const std::string &filename,
+                            MPI_Comm small_comm,
+                            const DistributedGrid &small_dgrid,
+                            const AllVariables &all_vars) {
+      auto vis_info = this->compute_gathered_vis_info(small_comm, small_dgrid);
+      auto gatherer_factory = this->compute_gatherer_factory(*vis_info);
+
+      auto cvars_gatherer
+          = gatherer_factory->template create_pointer<double, 2>();
+
+      auto n_local_cells = vis_info->n_local_cells;
+      auto n_vis_cells = vis_info->n_vis_cells();
+      auto all_var_gatherer = AllVariablesGatherer(
+          std::move(cvars_gatherer), nullptr, n_local_cells, n_vis_cells);
+
+      auto gathered_all_vars = all_var_gatherer.gather(all_vars);
+
+      if (vis_info->h5_comm != MPI_COMM_NULL) {
+        auto array_info = compute_gathered_file_info(*vis_info);
+        auto writer = HDF5UnstructuredWriter(filename, array_info);
+
+        double t_end = 0.0;
+        int_t n_steps = 0;
+
+        apply_permutation(array_view(gathered_all_vars.cvars),
+                          *vis_info->permutation);
+        save_state(writer, *this->euler, gathered_all_vars, t_end, n_steps);
+      }
     };
 
     auto fine_grid = this->choose_grid();
@@ -186,7 +321,6 @@ protected:
     auto super_subgrid = zisa::load_grid(subgrid_name());
     auto super_sub_dgrid = zisa::load_distributed_grid(subgrid_name());
 
-    // FIXME this need to be extracted & stored.
     auto stencils = compute_stencils(*super_subgrid);
 
     auto is_interior = [this, &partition = super_sub_dgrid.partition](int_t i) {
@@ -248,6 +382,10 @@ protected:
   }
 
   std::shared_ptr<Visualization> compute_visualization() override {
+    if (is_gathered_visualization()) {
+      return compute_gathered_visualization();
+    }
+
     if (is_unstructured_visualization()) {
       return compute_unstructured_visualization();
     }
@@ -286,6 +424,215 @@ protected:
     // TODO here we just made this only work for Euler.
     return std::make_shared<ParallelDumpSnapshot<typename super::euler_t>>(
         this->euler, fng, file_dims);
+  }
+
+  std::shared_ptr<GatheredVisInfo> choose_gathered_vis_info() {
+    if (gathered_vis_info_ == nullptr) {
+      gathered_vis_info_ = compute_gathered_vis_info();
+    }
+
+    return gathered_vis_info_;
+  }
+
+  std::shared_ptr<GatheredVisInfo> compute_gathered_vis_info() {
+    auto dgrid = choose_distributed_grid();
+    return compute_gathered_vis_info(mpi_comm, *dgrid);
+  }
+
+  std::shared_ptr<GatheredVisInfo>
+  compute_gathered_vis_info(MPI_Comm world_comm, const DistributedGrid &dgrid) {
+    auto world_rank = mpi_rank;
+    auto world_size = mpi_comm_size;
+
+    auto n_local_cells = int_t(std::count(
+        dgrid.partition.begin(), dgrid.partition.end(), int_t(world_rank)));
+
+    auto n_vis_pes
+        = zisa::min(int(this->params["io"]["n_writers"]), world_size);
+    auto pes_per_block = (world_size + n_vis_pes - 1) / n_vis_pes;
+    auto vis_id = world_rank / pes_per_block;
+
+    auto vis_comm = zisa::mpi::comm_split(world_comm, vis_id, world_rank);
+    auto vis_size = zisa::mpi::size(vis_comm);
+    auto vis_rank = zisa::mpi::rank(vis_comm);
+    auto vis_tag = ZISA_MPI_TAG_GATHERED_VIS;
+
+    auto h5_comm = zisa::mpi::comm_split(
+        world_comm, vis_rank == 0 ? 0 : MPI_UNDEFINED, world_rank);
+
+    {
+      std::string name = "VisComm-";
+      name += std::to_string(vis_id);
+      MPI_Comm_set_name(vis_comm, name.c_str());
+    }
+
+    if (h5_comm != MPI_COMM_NULL) {
+      auto vis_cells_per_pe = array<int_t, 1>(shape_t<1>{vis_size});
+      vis_cells_per_pe[0] = n_local_cells;
+      zisa::mpi::gather(array_view(vis_cells_per_pe), 0, vis_comm);
+      auto n_vis_cells = std::reduce(vis_cells_per_pe.begin(),
+                                     vis_cells_per_pe.end(),
+                                     int_t(0),
+                                     [](int_t i, int_t j) { return i + j; });
+
+      auto gids = array<int_t, 1>(shape_t<1>{n_vis_cells});
+      auto vis_boundaries = array<int_t, 1>(shape_t<1>{vis_size + 1});
+      vis_boundaries[0] = 0;
+      for (int i = 0; i < vis_size; ++i) {
+        vis_boundaries[i + 1] = vis_boundaries[i] + vis_cells_per_pe[i];
+      }
+
+      for (int_t i = 0; i < n_local_cells; ++i) {
+        gids[i] = dgrid.global_cell_indices[i];
+      }
+
+      for (int p = 1; p < vis_size; ++p) {
+        auto i0 = vis_boundaries[p];
+        auto i1 = vis_boundaries[p + 1];
+        zisa::mpi::recv(slice(array_view(gids), i0, i1), p, vis_tag, vis_comm);
+      }
+
+      auto sigma_array = array<int_t, 1>(gids.shape());
+      for (int_t i = 0; i < gids.shape(0); ++i) {
+        sigma_array[i] = i;
+      }
+      std::sort(sigma_array.begin(),
+                sigma_array.end(),
+                [&gids](size_t i, size_t j) { return gids[i] < gids[j]; });
+
+      auto sigma = std::make_shared<Permutation>(
+          factor_permutation(array_const_view(sigma_array)));
+      apply_permutation(array_view(gids), *sigma);
+
+      return std::make_shared<GatheredVisInfo>(
+          GatheredVisInfo{std::move(vis_boundaries),
+                          std::move(gids),
+                          sigma,
+                          n_local_cells,
+                          vis_comm,
+                          h5_comm});
+
+    } else {
+      zisa::mpi::gather(array_view(shape_t<1>{1}, &n_local_cells), 0, vis_comm);
+      zisa::mpi::send(const_slice(array_const_view(dgrid.global_cell_indices),
+                                  0,
+                                  n_local_cells),
+                      0,
+                      vis_tag,
+                      vis_comm);
+
+      return std::make_shared<GatheredVisInfo>(
+          GatheredVisInfo{array<int_t, 1>(),
+                          array<int_t, 1>(),
+                          nullptr,
+                          n_local_cells,
+                          vis_comm,
+                          h5_comm});
+    }
+  }
+
+  std::shared_ptr<HDF5UnstructuredFileDimensions> choose_gathered_file_info() {
+    if (gathered_file_info_ == nullptr) {
+      gathered_file_info_ = compute_gathered_file_info();
+    }
+
+    return gathered_file_info_;
+  }
+
+  std::shared_ptr<HDF5UnstructuredFileDimensions> compute_gathered_file_info() {
+    auto vis_info = choose_gathered_vis_info();
+    return compute_gathered_file_info(*vis_info);
+  }
+
+  std::shared_ptr<HDF5UnstructuredFileDimensions>
+  compute_gathered_file_info(const GatheredVisInfo &vis_info) {
+
+    if (vis_info.h5_comm != MPI_COMM_NULL) {
+      const auto &gids = vis_info.vis_file_ids;
+      std::vector<hsize_t> hids(gids.size());
+      for (int_t i = 0; i < hids.size(); ++i) {
+        hids[i] = integer_cast<hsize_t>(gids[i]);
+      }
+
+      return make_hdf5_unstructured_file_dimensions(
+          vis_info.n_vis_cells(), hids, vis_info.h5_comm);
+    } else {
+      return nullptr;
+    }
+  }
+
+  std::shared_ptr<MPISingleNodeArrayGathererFactory> choose_gatherer_factory() {
+    if (gatherer_factory_ == nullptr) {
+      gatherer_factory_ = compute_gatherer_factory();
+    }
+    return gatherer_factory_;
+  }
+
+  std::shared_ptr<MPISingleNodeArrayGathererFactory>
+  compute_gatherer_factory() {
+    auto vis_info = choose_gathered_vis_info();
+    return compute_gatherer_factory(*vis_info);
+  }
+
+  std::shared_ptr<MPISingleNodeArrayGathererFactory>
+  compute_gatherer_factory(const GatheredVisInfo &vis_info) {
+    auto vis_comm = vis_info.vis_comm;
+    auto vis_tag = ZISA_MPI_TAG_GATHERED_VIS;
+
+    auto h5_comm = vis_info.h5_comm;
+
+    if (h5_comm != MPI_COMM_NULL) {
+      auto darray_info = make_distributed_array_info(vis_info.vis_boundaries);
+      return std::make_shared<MPISingleNodeArrayGathererFactory>(
+          darray_info, vis_comm, vis_tag + 1);
+    } else {
+      return std::make_shared<MPISingleNodeArrayGathererFactory>(
+          nullptr, vis_comm, vis_tag + 1);
+    }
+  }
+
+  std::shared_ptr<Visualization> compute_gathered_visualization() {
+    auto vis_info = choose_gathered_vis_info();
+    auto n_local_cells = vis_info->n_local_cells;
+    auto n_vis_cells = vis_info->n_vis_cells();
+    auto h5_comm = vis_info->h5_comm;
+
+    auto gatherer_factory = choose_gatherer_factory();
+
+    auto cvars_gatherer
+        = gatherer_factory->template create_pointer<double, 2>();
+
+    auto avars_gatherer
+        = gatherer_factory->template create_pointer<double, 2>();
+    auto all_var_gatherer
+        = std::make_unique<AllVariablesGatherer>(std::move(cvars_gatherer),
+                                                 std::move(avars_gatherer),
+                                                 n_local_cells,
+                                                 n_vis_cells);
+
+    if (h5_comm != MPI_COMM_NULL) {
+      auto fng = this->choose_file_name_generator();
+
+      auto file_dims = choose_gathered_file_info();
+      auto dump_snapshot
+          = std::make_shared<ParallelDumpSnapshot<typename super::euler_t>>(
+              this->euler, fng, file_dims);
+
+      auto all_var_dims = AllVariablesDimensions{n_vis_cells, 5, 0};
+
+      return std::make_shared<GatheredVisualization>(
+          std::move(all_var_gatherer),
+          vis_info->permutation,
+          dump_snapshot,
+          all_var_dims);
+
+    } else {
+      return std::make_shared<GatheredVisualization>(
+          std::move(all_var_gatherer),
+          nullptr,
+          nullptr,
+          AllVariablesDimensions{0, 0, 0});
+    }
   }
 
   std::shared_ptr<SimulationClock> choose_simulation_clock() override {
@@ -392,6 +739,11 @@ protected:
 
   mutable std::shared_ptr<DistributedGrid> distributed_grid_ = nullptr;
   mutable std::shared_ptr<HaloExchange> halo_exchange_ = nullptr;
+  mutable std::shared_ptr<GatheredVisInfo> gathered_vis_info_ = nullptr;
+  mutable std::shared_ptr<HDF5UnstructuredFileDimensions> gathered_file_info_
+      = nullptr;
+  mutable std::shared_ptr<MPISingleNodeArrayGathererFactory> gatherer_factory_
+      = nullptr;
 };
 }
 #else

@@ -58,7 +58,7 @@ AllVariablesGatherer::subview(const array_const_view<double, 2> &view) const {
   return {shape, view.raw()};
 }
 
-AllVariables AllVariablesGatherer::gather(AllVariables &all_vars_part) {
+AllVariables AllVariablesGatherer::gather(const AllVariables &all_vars_part) {
 
   if (is_this_rank_gathering()) {
     auto dims = all_vars_part.dims();

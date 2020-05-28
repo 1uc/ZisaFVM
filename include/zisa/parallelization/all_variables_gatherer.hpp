@@ -2,6 +2,7 @@
 #define ZISA_ALL_VARIABLES_GATHERER_HPP_IXKWO
 
 #include <zisa/config.hpp>
+
 #include <zisa/model/all_variables.hpp>
 #include <zisa/parallelization/array_gatherer.hpp>
 
@@ -20,7 +21,7 @@ public:
 
   void receive(AllVariables &all_variables);
 
-  AllVariables gather(AllVariables &all_vars_part);
+  AllVariables gather(const AllVariables &all_vars_part);
 
   bool is_this_rank_gathering() const;
 

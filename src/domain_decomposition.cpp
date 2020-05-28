@@ -30,9 +30,6 @@ void save_partitioned_grid(const std::string &dirname,
   auto partitioned_grid = compute_partitioned_grid(grid, stencils, n_parts);
   const auto &permutation = partitioned_grid.permutation;
 
-  auto vertex_indices
-      = renumbered_vertex_indices(grid.vertex_indices, permutation);
-
   const auto &partition = partitioned_grid.partition;
   const auto &boundaries = partitioned_grid.boundaries;
 

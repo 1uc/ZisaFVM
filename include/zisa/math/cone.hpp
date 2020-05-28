@@ -1,6 +1,9 @@
 #ifndef CONE_H_CKYAW
 #define CONE_H_CKYAW
 
+#include <zisa/config.hpp>
+
+#include <vector>
 #include <zisa/math/cartesian.hpp>
 
 namespace zisa {

@@ -9,6 +9,7 @@
 #include <zisa/model/all_variables.hpp>
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/mpi.hpp>
+#include <zisa/parallelization/distributed_grid.hpp>
 
 namespace zisa {
 
@@ -25,9 +26,13 @@ public:
     OrgMessage(const OrgMessageType &msg, int size) : type(msg), size(size) {}
   };
 
+private:
+  using serialize_t = std::function<void(
+      std::string, MPI_Comm, const DistributedGrid &, const AllVariables)>;
+
 public:
   DistributedReferenceSolution(
-      std::function<void(HDF5Writer &, const AllVariables &)> serialize,
+      serialize_t serialize,
       std::shared_ptr<Grid> large_grid,
       std::function<double(int_t, const XYZ &, int_t)> interpolation,
       int_t n_vars);
@@ -60,7 +65,7 @@ protected:
   std::pair<OrgMessage, int> receive_org_message();
 
 private:
-  std::function<void(HDF5Writer &, const AllVariables &)> serialize;
+  serialize_t serialize;
   std::shared_ptr<Grid> large_grid;
   std::function<double(int_t, const XYZ &, int_t)> interpolation;
   int_t n_vars;
@@ -86,7 +91,7 @@ private:
   std::unordered_map<int, std::vector<XYZ>> coords;
 
   std::shared_ptr<Grid> small_grid;
-  std::shared_ptr<HDF5UnstructuredFileDimensions> small_hdf5_file_dims;
+  std::shared_ptr<DistributedGrid> small_dgrid;
 
   array<double, 3> data;
   array<bool, 2> completed_cells;

@@ -22,6 +22,9 @@ struct PartitionedGrid {
 std::map<int_t, int_t>
 sparse_inverse_permutation(const array_const_view<int_t, 1> &sigma);
 
+PartitionedGrid compute_partitioned_grid_by_sfc(const Grid &grid,
+                                                int_t n_parts);
+
 PartitionedGrid compute_partitioned_grid(
     const Grid &grid, const array<StencilFamily, 1> &stencils, int_t n_parts);
 
