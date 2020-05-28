@@ -1,5 +1,6 @@
 #include <zisa/mpi/parallelization/mpi_all_variables_gatherer.hpp>
 
+#include <zisa/mpi/parallelization/distributed_array_info.hpp>
 namespace zisa {
 
 std::unique_ptr<AllVariablesGatherer> make_mpi_all_variables_gatherer(

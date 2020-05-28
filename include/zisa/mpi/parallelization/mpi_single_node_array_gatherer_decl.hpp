@@ -1,17 +1,13 @@
 #ifndef ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_DECL_HPP_KDWXN
 #define ZISA_MPI_SINGLE_NODE_ARRAY_GATHERER_DECL_HPP_KDWXN
 
+#include <zisa/config.hpp>
+
 #include <zisa/mpi/mpi.hpp>
+#include <zisa/mpi/parallelization/distributed_array_info.hpp>
 #include <zisa/parallelization/array_gatherer.hpp>
 
 namespace zisa {
-
-struct DistributedArrayInfo {
-  explicit DistributedArrayInfo(array<int_t, 1> partition);
-
-  // Rank `p` has all data with indices [partition[p], partition[p+1]).
-  array<int_t, 1> partition;
-};
 
 template <class T, int n_dims>
 class MPISingleNodeArrayGatherer : public ArrayGatherer<T, n_dims> {
