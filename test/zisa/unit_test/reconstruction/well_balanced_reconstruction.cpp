@@ -8,11 +8,12 @@
 #include <zisa/model/isentropic_equilibrium.hpp>
 #include <zisa/reconstruction/cweno_ao.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
   auto quad_deg = zisa::int_t(2);
-  auto grid = zisa::load_grid("grids/unit_tests/polytrope.msh", quad_deg);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::polytrope(), quad_deg);
   auto n_cells = grid->n_cells;
   auto n_cvars = zisa::int_t(5);
   auto n_avars = zisa::int_t(0);

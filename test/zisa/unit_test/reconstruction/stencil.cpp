@@ -2,6 +2,7 @@
 #include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/reconstruction/stencil.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 void check_central_stencil(const zisa::Grid &grid) {
   zisa::int_t i_cell = 42;
@@ -58,21 +59,21 @@ void check_biased_stencil(const zisa::Grid &grid) {
 }
 
 TEST_CASE("select stencil", "[stencil][weno_ao]") {
-  auto grid = zisa::load_grid("grids/convergence/unit_square_2.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_square(2));
 
   check_central_stencil(*grid);
   check_biased_stencil(*grid);
 }
 
 TEST_CASE("select stencil, 3D", "[stencil][weno_ao][3d]") {
-  auto grid = zisa::load_grid("grids/convergence/unit_cube_1.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(1));
 
   check_central_stencil(*grid);
   check_biased_stencil(*grid);
 }
 
 TEST_CASE("Stencil API", "[stencil]") {
-  auto grid = zisa::load_grid("grids/dbg.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::dbg());
 
   zisa::int_t i_cell = 6;
 
@@ -94,7 +95,7 @@ TEST_CASE("Stencil API", "[stencil]") {
   }
 
   SECTION("compatibility with std::vector") {
-    auto grid = zisa::load_grid("grids/dbg.msh");
+    auto grid = zisa::load_grid(zisa::TestGridFactory::dbg());
     zisa::int_t i_cell = 6;
     zisa::int_t n_stencils = 3;
 

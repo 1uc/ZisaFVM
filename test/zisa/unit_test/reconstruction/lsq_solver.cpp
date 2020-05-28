@@ -3,6 +3,7 @@
 #include <zisa/reconstruction/lsq_solver_family.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 namespace zisa {
 Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
@@ -17,7 +18,7 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
   auto params = zisa::StencilFamilyParams(
       {3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5, 1.5});
 
-  auto grid = zisa::load_grid("grids/convergence/unit_cube_1.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(1));
 
   auto n_cells = grid->n_cells;
   for (zisa::int_t i_cell = 0; i_cell < n_cells; ++i_cell) {

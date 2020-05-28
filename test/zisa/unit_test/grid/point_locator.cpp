@@ -1,13 +1,13 @@
 #include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/grid/point_locator.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 TEST_CASE("PointLocator; basic API", "[grid][point_locator]") {
   auto grid_names = std::vector<std::string>{};
 
   for (int i = 0; i < 4; ++i) {
-    grid_names.push_back(
-        string_format("grids/convergence/unit_square_%d.msh", i));
+    grid_names.push_back(zisa::TestGridFactory::unit_square(i));
   }
 
   for (const auto &grid_name : grid_names) {

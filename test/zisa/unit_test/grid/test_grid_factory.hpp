@@ -8,12 +8,20 @@ namespace zisa {
 
 class TestGridFactory {
 public:
+  static std::string dbg() { return "grids/dbg.msh.h5"; }
+  static std::string small() { return "grids/small.msh.h5"; }
+  static std::string polytrope() { return "grids/unit_tests/polytrope.msh.h5"; }
+  static std::string janka_polytrope() {
+    return "grids/unit_tests/janka_polytrope.msh.h5";
+  }
+
   static std::string unit_square(int i) {
-    return string_format("grids/convergence/unit_square_%d.msh", i);
+    return string_format("grids/convergence/unit_square_%d.msh.h5", i);
   }
 
   static std::string unit_square_with_halo(int i) {
-    return string_format("grids/convergence/unit_square_with_halo_%d.msh", i);
+    return string_format("grids/convergence/unit_square_with_halo_%d.msh.h5",
+                         i);
   }
 
   static std::vector<std::string> unit_square() {
@@ -23,11 +31,11 @@ public:
   }
 
   static std::string unit_cube(int i) {
-    return string_format("grids/convergence/unit_cube_%d.msh", i);
+    return string_format("grids/convergence/unit_cube_%d.msh.h5", i);
   }
 
   static std::string unit_cube_with_halo(int i) {
-    return string_format("grids/convergence/unit_cube_with_halo_%d.msh", i);
+    return string_format("grids/convergence/unit_cube_with_halo_%d.msh.h5", i);
   }
 
   static std::vector<std::string> unit_cube() {

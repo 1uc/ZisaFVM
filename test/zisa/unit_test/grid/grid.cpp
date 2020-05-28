@@ -12,6 +12,7 @@
 #include <zisa/math/cell_factory.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 #include <zisa/utils/to_string.hpp>
 
 TEST_CASE("Grid; two_triangles", "[grid]") {
@@ -104,7 +105,7 @@ TEST_CASE("Grid; two_triangles", "[grid]") {
 }
 
 TEST_CASE("Grid; sizes", "[grid]") {
-  auto grid = zisa::load_grid("grids/dbg.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::dbg());
 
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t n_vertices = grid->n_vertices;
@@ -144,7 +145,7 @@ TEST_CASE("Grid; sizes", "[grid]") {
 
 TEST_CASE("Grid; moments", "[grid]") {
   zisa::int_t quad_deg = 3;
-  auto grid = zisa::load_grid("grids/dbg.msh", quad_deg);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::dbg(), quad_deg);
 
   auto check_moment = [](const zisa::Cell &cell, int k, int l, double exact) {
     auto m = zisa::avg_moment(cell, k, l);
@@ -224,12 +225,12 @@ static void check_volume(const std::string &gridname) {
 }
 
 TEST_CASE("Grid; volume", "[grid]") {
-  SECTION("square") { check_volume("grids/convergence/unit_square_0.msh"); }
-  SECTION("cube") { check_volume("grids/convergence/unit_cube_0.msh"); }
+  SECTION("square") { check_volume(zisa::TestGridFactory::unit_square(0)); }
+  SECTION("cube") { check_volume(zisa::TestGridFactory::unit_cube(0)); }
 }
 
 TEST_CASE("Grid; iterators", "[grid]") {
-  auto grid = zisa::load_grid("grids/convergence/unit_square_1.msh", 1);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_square(1), 1);
 
   SECTION("interior_edges") {
     zisa::int_t count = 0;
@@ -251,7 +252,7 @@ TEST_CASE("Grid; iterators", "[grid]") {
 }
 
 TEST_CASE("Grid; incidence", "[grid]") {
-  auto grid = zisa::load_grid("grids/convergence/unit_square_1.msh", 1);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_square(1), 1);
   zisa::int_t n_cells = grid->n_cells;
   zisa::int_t max_neighbours = grid->max_neighbours;
 
@@ -288,7 +289,7 @@ TEST_CASE("Grid; incidence", "[grid]") {
 }
 
 TEST_CASE("Grid; serialize", "[grid]") {
-  auto grid = zisa::load_grid("grids/small.msh", 1);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::small(), 1);
   auto filename = std::string("__unit_tests--grid_to_hdf5.h5");
 
   auto writer = zisa::HDF5SerialWriter(filename);
@@ -297,7 +298,7 @@ TEST_CASE("Grid; serialize", "[grid]") {
 
 TEST_CASE("Grid; locate", "[grid][locate]") {
   auto grid_names
-      = std::vector<std::string>{"grids/convergence/unit_square_1.msh"};
+      = std::vector<std::string>{zisa::TestGridFactory::unit_square(0)};
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -330,7 +331,7 @@ TEST_CASE("Grid; locate", "[grid][locate]") {
 
 TEST_CASE("Grid; fail to locate", "[grid][locate]") {
   auto grid_names
-      = std::vector<std::string>{"grids/convergence/unit_square_1.msh"};
+      = std::vector<std::string>{zisa::TestGridFactory::unit_square(1)};
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -352,7 +353,7 @@ TEST_CASE("Grid; fail to locate", "[grid][locate]") {
 
 TEST_CASE("Grid; tets", "[grid]") {
   auto grid_names = std::vector<std::string>{
-      "grids/convergence/unit_cube_1.msh", "grids/convergence/unit_cube_2.msh"};
+      zisa::TestGridFactory::unit_cube(1), zisa::TestGridFactory::unit_cube(2)};
 
   for (const auto &grid_name : grid_names) {
     auto grid = zisa::load_grid(grid_name);

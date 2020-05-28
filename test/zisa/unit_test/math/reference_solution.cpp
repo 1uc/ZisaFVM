@@ -4,6 +4,7 @@
 #include <zisa/model/euler.hpp>
 #include <zisa/model/euler_factory.hpp>
 #include <zisa/model/isentropic_equilibrium.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 namespace zisa {
 template <class euler_t>
@@ -41,10 +42,10 @@ std::shared_ptr<AllVariables> initial_conditions(const Grid &grid,
 }
 
 TEST_CASE("ReferenceSolution; basic API", "[math]") {
-  auto fine_grid = zisa::load_grid("grids/convergence/unit_square_3.msh", 4);
+  auto fine_grid = zisa::load_grid(zisa::TestGridFactory::unit_square(3), 4);
   auto coarse_gridnames
-      = std::vector<std::string>{"grids/convergence/unit_square_0.msh",
-                                 "grids/convergence/unit_square_1.msh"};
+      = std::vector<std::string>{zisa::TestGridFactory::unit_square(0),
+                                 zisa::TestGridFactory::unit_square(1)};
 
   auto euler = zisa::make_default_euler();
   auto all_vars_ref = initial_conditions(*fine_grid, euler);

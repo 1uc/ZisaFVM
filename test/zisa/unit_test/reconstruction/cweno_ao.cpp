@@ -10,7 +10,7 @@ TEST_CASE("CWENO_AO API", "[weno_ao][math]") {
   SECTION("compatibility with std::vector") {
     SECTION("push_back") {
 
-      auto grid = zisa::load_grid("grids/small.msh", 1);
+      auto grid = zisa::load_grid(zisa::TestGridFactory::small(), 1);
       auto params
           = zisa::HybridWENOParams({{{1}, {"c"}, {2.0}}, {1.0}, 1e-6, 4});
 

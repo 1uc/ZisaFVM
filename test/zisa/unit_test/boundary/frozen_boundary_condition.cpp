@@ -1,9 +1,10 @@
 #include <zisa/testing/testing_framework.hpp>
 
 #include <zisa/boundary/frozen_boundary_condition.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 TEST_CASE("FrozenBC; example", "[bc]") {
-  auto grid_ = zisa::load_grid("grids/convergence/unit_square_0.msh");
+  auto grid_ = zisa::load_grid(zisa::TestGridFactory::unit_square(0));
   auto &grid = *grid_;
 
   auto n_cells = grid.n_cells;

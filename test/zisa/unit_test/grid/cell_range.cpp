@@ -1,9 +1,10 @@
 #include <zisa/grid/cell_range.hpp>
 
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 TEST_CASE("CellRange; API", "[ranges][runme]") {
-  auto grid = zisa::load_grid("grids/convergence/unit_square_0.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_square(0));
 
   for (auto [i, cell] : zisa::cells(*grid)) {
     REQUIRE(grid->cells(i) == cell);

@@ -1,9 +1,10 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/memory/tree.hpp>
 #include <zisa/testing/testing_framework.hpp>
+#include <zisa/unit_test/grid/test_grid_factory.hpp>
 
 TEST_CASE("Tree; basic API", "[.][memory][tree]") {
-  auto grid = zisa::load_grid("grids/small.msh");
+  auto grid = zisa::load_grid(zisa::TestGridFactory::small());
 
   auto tree = zisa::Tree<int, 4>{};
   auto f = [&grid](zisa::int_t i, zisa::int_t j) {
