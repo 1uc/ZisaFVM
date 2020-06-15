@@ -12,10 +12,19 @@ private:
 public:
   using super::super;
 
-  auto reconstruct(array<double, 2, row_major> &rhs,
-                   array<WENOPoly, 1> &polys,
-                   const array<cvars_t, 1> &qbar) const
-      -> decltype(hybridize(polys));
+  WENOPoly reconstruct(const array_view<double, 2, row_major> &rhs,
+                       const array_view<WENOPoly, 1> &polys,
+                       const array_const_view<cvars_t, 1> &qbar) const;
+
+  ScalarPoly reconstruct(const array_view<double, 2, row_major> &rhs,
+                         const array_view<ScalarPoly, 1> &polys,
+                         const array_const_view<double, 1> &qbar) const;
+
+private:
+  template <class Poly>
+  Poly reconstruct_impl(const array_view<double, 2, row_major> &rhs,
+                        const array_view<Poly, 1> &polys,
+                        const array_const_view<double, 2> &qbar) const;
 };
 
 } // namespace zisa

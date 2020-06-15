@@ -52,6 +52,10 @@ private:
                       const AllVariables &current_state,
                       int_t i);
 
+  void set_tracer_local(array<double, 2, column_major> &tracer_local,
+                        const AllVariables &current_state,
+                        int_t i);
+
 private:
   HybridWENOParams params;
   int_t max_stencil_size;
@@ -59,6 +63,8 @@ private:
 
   array<lrc_t, 1> rc;
   std::shared_ptr<block_allocator<array<cvars_t, 1>>> qbar_allocator;
+  std::shared_ptr<block_allocator<array<double, 2, column_major>>>
+      tracer_allocator;
   std::shared_ptr<block_allocator<array<WENOPoly, 1>>> polys_allocator;
   std::shared_ptr<block_allocator<array<double, 2, row_major>>> rhs_allocator;
 };

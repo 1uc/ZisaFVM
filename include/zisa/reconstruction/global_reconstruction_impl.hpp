@@ -103,6 +103,8 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
 #endif
   {
     auto qbar_local = qbar_allocator->allocate(shape_t<1>{max_stencil_size});
+    auto tracer_local = tracer_allocator->allocate(
+        shape_t<2>{max_stencil_size, current_state.avars.shape(1)});
     auto polys = polys_allocator->allocate(shape_t<1>{n_polys});
     auto rhs = rhs_allocator->allocate(
         shape_t<2>{max_stencil_size, WENOPoly::n_vars()});
@@ -113,6 +115,11 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
     for (int_t i = 0; i < n_cells; ++i) {
       set_qbar_local(*qbar_local, current_state, i);
       rc[i].compute(*rhs, *polys, *qbar_local);
+
+      auto tracer_polys = array_view<ScalarPoly, 1>(
+          shape_t<1>(polys->shape(0)), (ScalarPoly *)(polys->raw()));
+      set_tracer_local(*tracer_local, current_state, i);
+      rc[i].compute_tracer(*rhs, tracer_polys, *tracer_local);
     }
   }
 }
@@ -125,6 +132,23 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::set_qbar_local(
 
   for (int_t ii = 0; ii < l2g.size(); ++ii) {
     qbar_local(ii) = cvars(l2g[ii]);
+  }
+}
+
+template <class Equilibrium, class RC, class Scaling>
+void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::set_tracer_local(
+    array<double, 2, column_major> &tracer_local,
+    const AllVariables &current_state,
+    int_t i) {
+
+  const auto &l2g = rc[i].local2global();
+  const auto &avars = current_state.avars;
+
+  auto n_vars = avars.shape(1);
+  for (int_t ii = 0; ii < l2g.size(); ++ii) {
+    for (int_t k_vars = 0; k_vars < n_vars; ++k_vars) {
+      tracer_local(ii, k_vars) = avars(l2g[ii], k_vars);
+    }
   }
 }
 

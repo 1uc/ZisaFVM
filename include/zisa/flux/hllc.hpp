@@ -109,6 +109,11 @@ public:
   }
 };
 
+struct hllc_memory_t {
+  double cK;
+  bool is_s_star_ge_zero;
+};
+
 /// HLLC numerical flux with Einfeldt-Batten wavespeeds.
 /** Reference: Batten, Wavespeed Estimates for the HLLC Riemann Solver, 1997
  */
@@ -118,6 +123,8 @@ private:
 public:
   using cvars_t = typename Model::cvars_t;
   using model_t = Model;
+  using memory_t = hllc_memory_t;
+  using speeds_t = std::tuple<double, double, double>;
 
 public:
   /// Compute the numerical flux.
@@ -128,18 +135,18 @@ public:
    *  @param uR
    *    conserved variables 'outside' of the cell, w.r.t. the normal.
    */
-  ANY_DEVICE_INLINE static euler_var_t
+  ANY_DEVICE_INLINE static std::tuple<euler_var_t, speeds_t>
   flux(const model_t &euler, const cvars_t &uL, const cvars_t &uR) {
 
-    auto xvarL = euler.eos.xvars(uL);
-    auto xvarR = euler.eos.xvars(uR);
+    const auto xvarL = euler.eos.xvars(uL);
+    const auto xvarR = euler.eos.xvars(uR);
 
-    auto [sL, s_star, sR]
+    const auto [sL, s_star, sR]
         = hllc_speeds<model_t>::speeds(euler, uL, xvarL, uR, xvarR);
 
     // HLLC flux
     const cvars_t &uK = (0.0 <= s_star ? uL : uR);
-    double pK = (0.0 <= s_star ? xvarL.p : xvarR.p);
+    const double pK = (0.0 <= s_star ? xvarL.p : xvarR.p);
     auto nf = euler.flux(uK, pK);
 
     if (sL < 0.0 && 0.0 <= sR) {
@@ -157,7 +164,28 @@ public:
                 - uK(4));
     }
 
-    return nf;
+    return {nf, std::tuple(sL, s_star, sR)};
+  }
+
+  ANY_DEVICE_INLINE static double tracer_flux(const cvars_t &uL,
+                                              const cvars_t &uR,
+                                              double mqL,
+                                              double mqR,
+                                              const speeds_t &speeds) {
+
+    const auto [sL, s_star, sR] = speeds;
+    double mqK = (0.0 <= s_star ? mqL : mqR);
+    double vK = (0.0 <= s_star ? uL(1) / uL(0) : uR(1) / uR(0));
+    double fK = mqK * vK;
+
+    if (sL < 0.0 && 0.0 < sR) {
+      double sK = (0.0 <= s_star ? sL : sR);
+      double cK = (sK - vK) / (sK - s_star);
+
+      return fK + sK * (cK * mqK - mqK);
+    }
+
+    return fK;
   }
 
   /// Self-documenting string.

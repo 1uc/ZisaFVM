@@ -17,7 +17,7 @@ TEST_CASE("HLLC; consistency") {
   auto u = zisa::euler_var_t{1.0, -0.2, 0.3, 0.8, 12.0};
   auto p = eos.pressure(u);
 
-  auto nf = zisa::HLLCBatten<euler_t>::flux(euler, u, u);
+  auto [nf, _] = zisa::HLLCBatten<euler_t>::flux(euler, u, u);
   auto pf = euler.flux(u, p);
 
   REQUIRE(zisa::almost_equal(nf, pf, 1e-12));

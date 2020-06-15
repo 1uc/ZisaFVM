@@ -46,4 +46,3 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
     }
   }
 }
-

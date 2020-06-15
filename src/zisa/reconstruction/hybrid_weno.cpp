@@ -4,6 +4,7 @@
 #include <zisa/grid/grid.hpp>
 #include <zisa/math/basic_functions.hpp>
 #include <zisa/math/comparison.hpp>
+#include <zisa/memory/array_view.hpp>
 #include <zisa/reconstruction/hybrid_weno.hpp>
 
 namespace zisa {
@@ -51,34 +52,59 @@ int_t HybridWENO::combined_stencil_size() const {
   return stencils.combined_stencil_size();
 }
 
-void HybridWENO::compute_polys(array<double, 2, row_major> &rhs,
-                               array<WENOPoly, 1> &polys,
-                               const array<cvars_t, 1> &qbar) const {
+void HybridWENO::compute_polys(const array_view<double, 2, row_major> &rhs,
+                               const array_view<WENOPoly, 1> &polys,
+                               const array_const_view<double, 2> &qbar) const {
+  return compute_polys_impl<WENOPoly>(rhs, polys, qbar);
+}
 
-  const auto &qbar_cell = qbar(int_t(0));
+void HybridWENO::compute_polys(const array_view<double, 2, row_major> &rhs,
+                               const array_view<ScalarPoly, 1> &polys,
+                               const array_const_view<double, 2> &qbar) const {
+
+  return compute_polys_impl<ScalarPoly>(rhs, polys, qbar);
+}
+
+template <class Poly>
+void HybridWENO::compute_polys_impl(
+    const array_view<double, 2, row_major> &rhs,
+    const array_view<Poly, 1> &polys,
+    const array_const_view<double, 2> &qbar) const {
 
   for (int_t k = 0; k < stencils.size(); ++k) {
     for (int_t ig = 0; ig < stencils[k].size() - 1; ++ig) {
       int_t il = stencils[k].local(ig + 1);
 
-      for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
-        rhs(ig, k_var) = qbar(il)[k_var] - qbar_cell[k_var];
+      for (int_t k_var = 0; k_var < Poly::n_vars(); ++k_var) {
+        rhs(ig, k_var) = qbar(il, k_var) - qbar(0, k_var);
       }
     }
 
-    polys[k] = lsq_solvers[k].solve(rhs);
+    polys[k] = lsq_solvers[k].solve<Poly>(rhs);
 
-    for (int_t k_var = 0; k_var < WENOPoly::n_vars(); ++k_var) {
-      polys[k].a(k_var) = qbar_cell[k_var];
+    for (int_t k_var = 0; k_var < Poly::n_vars(); ++k_var) {
+      polys[k].a(k_var) = qbar(0, k_var);
     }
   }
 }
 
-WENOPoly HybridWENO::hybridize(array<WENOPoly, 1> &polys) const {
-  return eno_hybridize(polys);
+WENOPoly
+HybridWENO::hybridize(const array_const_view<WENOPoly, 1> &polys) const {
+  return hybridize_impl<WENOPoly>(polys);
 }
 
-WENOPoly HybridWENO::eno_hybridize(array<WENOPoly, 1> &polys) const {
+ScalarPoly
+HybridWENO::hybridize(const array_const_view<ScalarPoly, 1> &polys) const {
+  return hybridize_impl<ScalarPoly>(polys);
+}
+
+template <class Poly>
+Poly HybridWENO::hybridize_impl(const array_const_view<Poly, 1> &polys) const {
+  return eno_hybridize<Poly>(polys);
+}
+
+template <class Poly>
+Poly HybridWENO::eno_hybridize(const array_const_view<Poly, 1> &polys) const {
   double al_tot = 0.0;
   for (int_t k = 0; k < stencils.size(); ++k) {
     auto IS = zisa::maximum(smoothness_indicator(polys[k]));
@@ -90,7 +116,7 @@ WENOPoly HybridWENO::eno_hybridize(array<WENOPoly, 1> &polys) const {
   }
 
   int n_dims = 2;
-  auto p = WENOPoly(0, {0.0}, XYZ::zeros(), 1.0, n_dims);
+  auto p = Poly(0, {0.0}, XYZ::zeros(), 1.0, n_dims);
   for (int_t k = 0; k < stencils.size(); ++k) {
     p += (non_linear_weights[k] / al_tot) * polys[k];
   }
@@ -98,7 +124,8 @@ WENOPoly HybridWENO::eno_hybridize(array<WENOPoly, 1> &polys) const {
   return p;
 }
 
-WENOPoly HybridWENO::tau_hybridize(array<WENOPoly, 1> &) const {
+template <class Poly>
+Poly HybridWENO::tau_hybridize(array<Poly, 1> &) const {
   LOG_ERR("Not implemented.");
   // auto k_high = stencils.highest_order_stencil();
 

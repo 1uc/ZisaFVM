@@ -8,13 +8,28 @@
 
 namespace zisa {
 
-auto WENO_AO::reconstruct(array<double, 2, row_major> &rhs,
-                          array<WENOPoly, 1> &polys,
-                          const array<cvars_t, 1> &qbar) const
-    -> decltype(hybridize(polys)) {
+WENOPoly WENO_AO::reconstruct(const array_view<double, 2, row_major> &rhs,
+                              const array_view<WENOPoly, 1> &polys,
+                              const array_const_view<cvars_t, 1> &qbar) const {
 
-  compute_polys(rhs, polys, qbar);
-  return hybridize(polys);
+  auto shape = shape_t<2>(qbar.shape(0), cvars_t::size());
+  auto ptr = (double *)(qbar.raw());
+  auto view = array_const_view<double, 2>(shape, ptr);
+
+  compute_polys(rhs, polys, view);
+  return hybridize(array_const_view(polys));
+}
+
+ScalarPoly WENO_AO::reconstruct(const array_view<double, 2, row_major> &rhs,
+                                const array_view<ScalarPoly, 1> &polys,
+                                const array_const_view<double, 1> &qbar) const {
+
+  auto shape = shape_t<2>(qbar.shape(0), 1);
+  auto ptr = (double *)(qbar.raw());
+  auto view = array_const_view<double, 2>(shape, ptr);
+
+  compute_polys(rhs, polys, view);
+  return hybridize(array_const_view(polys));
 }
 
 } // namespace zisa

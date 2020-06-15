@@ -7,6 +7,7 @@
 #include <zisa/config.hpp>
 
 #include <zisa/math/poly2d.hpp>
+#include <zisa/memory/array_view.hpp>
 #include <zisa/model/euler_variables.hpp>
 #include <zisa/reconstruction/hybrid_weno_params.hpp>
 #include <zisa/reconstruction/lsq_solver_family.hpp>
@@ -56,12 +57,31 @@ public:
   }
 
 protected:
-  void compute_polys(array<double, 2, row_major> &rhs,
-                     array<WENOPoly, 1> &polys,
-                     const array<cvars_t, 1> &qbar) const;
-  WENOPoly hybridize(array<WENOPoly, 1> &polys) const;
-  WENOPoly eno_hybridize(array<WENOPoly, 1> &polys) const;
-  WENOPoly tau_hybridize(array<WENOPoly, 1> &polys) const;
+  WENOPoly hybridize(const array_const_view<WENOPoly, 1> &polys) const;
+  ScalarPoly hybridize(const array_const_view<ScalarPoly, 1> &polys) const;
+
+  void compute_polys(const array_view<double, 2, row_major> &rhs,
+                     const array_view<WENOPoly, 1> &polys,
+                     const array_const_view<double, 2> &qbar) const;
+
+  void compute_polys(const array_view<double, 2, row_major> &rhs,
+                     const array_view<ScalarPoly, 1> &polys,
+                     const array_const_view<double, 2> &qbar) const;
+
+private:
+  template <class Poly>
+  Poly hybridize_impl(const array_const_view<Poly, 1> &polys) const;
+
+  template <class Poly>
+  void compute_polys_impl(const array_view<double, 2, row_major> &rhs,
+                          const array_view<Poly, 1> &polys,
+                          const array_const_view<double, 2> &qbar) const;
+
+  template <class Poly>
+  Poly eno_hybridize(const array_const_view<Poly, 1> &polys) const;
+
+  template <class Poly>
+  Poly tau_hybridize(array<Poly, 1> &polys) const;
 };
 
 } // namespace zisa

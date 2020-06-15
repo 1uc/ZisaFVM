@@ -7,6 +7,7 @@
 
 namespace zisa {
 using WENOPoly = PolyND</* max_coeffs = */ 35, /* vars = */ 5>;
+using ScalarPoly = PolyND</* max_coeffs = */ 35, /* vars = */ 1>;
 }
 
 #endif

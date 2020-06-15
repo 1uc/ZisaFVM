@@ -46,7 +46,9 @@ LSQSolver::LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil)
 
 int LSQSolver::n_dims() const { return grid->n_dims(); }
 
-WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
+template <class Poly>
+Poly LSQSolver::solve_impl(
+    const array_const_view<double, 2, row_major> &rhs) const {
 
   const auto &x_center = grid->cell_centers(i_cell);
   double length = grid->characteristic_length(i_cell);
@@ -54,14 +56,15 @@ WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
   int n_dims = grid->n_dims();
 
   if (order == 1) {
-    return WENOPoly(0, {0.0}, x_center, length, n_dims);
+    return Poly(0, {0.0}, x_center, length, n_dims);
   }
 
   assert(rhs.size() > 0);
+  assert(rhs.shape(1) == Poly::n_vars());
 
   const auto &moments = grid->normalized_moments(i_cell);
-  WENOPoly poly(order - 1, moments, x_center, length, n_dims);
-  constexpr int_t n_vars = WENOPoly::n_vars();
+  Poly poly(order - 1, moments, x_center, length, n_dims);
+  constexpr int_t n_vars = Poly::n_vars();
 
   using RowMajorMatrix
       = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
@@ -77,6 +80,17 @@ WENOPoly LSQSolver::solve(const array<double, 2, row_major> &rhs) const {
 
   return poly;
 }
+
+template <class Poly>
+Poly LSQSolver::solve(const array_const_view<double, 2, row_major> &rhs) const {
+  return solve_impl<Poly>(rhs);
+}
+
+template WENOPoly LSQSolver::solve<WENOPoly>(
+    const array_const_view<double, 2, row_major> &rhs) const;
+
+template ScalarPoly LSQSolver::solve<ScalarPoly>(
+    const array_const_view<double, 2, row_major> &rhs) const;
 
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
                                         const Stencil &stencil) {
