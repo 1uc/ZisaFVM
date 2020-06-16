@@ -18,14 +18,14 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
     const Scaling &scaling)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
-      qbar_allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)),
+      qbar_allocator(std::make_shared<block_allocator<array<cvars_t, 1>>>(128)),
       tracer_allocator(
           std::make_shared<block_allocator<array<double, 2, column_major>>>(
               128)),
       polys_allocator(
-          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128)),
+          std::make_shared<block_allocator<array<WENOPoly, 1>>>(128)),
       rhs_allocator(
-          std::make_unique<block_allocator<array<double, 2, row_major>>>(128)) {
+          std::make_shared<block_allocator<array<double, 2, row_major>>>(128)) {
 
   n_polys = params.linear_weights.size();
   max_stencil_size = 0;
@@ -48,14 +48,14 @@ EulerGlobalReconstruction<Equilibrium, RC, Scaling>::EulerGlobalReconstruction(
     const Scaling &scaling)
     : params(params),
       rc(shape_t<1>{grid->n_cells}),
-      qbar_allocator(std::make_unique<block_allocator<array<cvars_t, 1>>>(128)),
+      qbar_allocator(std::make_shared<block_allocator<array<cvars_t, 1>>>(128)),
       tracer_allocator(
           std::make_shared<block_allocator<array<double, 2, column_major>>>(
               128)),
       polys_allocator(
-          std::make_unique<block_allocator<array<WENOPoly, 1>>>(128)),
+          std::make_shared<block_allocator<array<WENOPoly, 1>>>(128)),
       rhs_allocator(
-          std::make_unique<block_allocator<array<double, 2, row_major>>>(128)) {
+          std::make_shared<block_allocator<array<double, 2, row_major>>>(128)) {
 
   n_polys = params.linear_weights.size();
   max_stencil_size = 0;
