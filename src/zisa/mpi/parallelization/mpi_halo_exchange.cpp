@@ -163,11 +163,11 @@ MPIHaloExchange::MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
       send_parts(std::move(send_parts)) {}
 
 void MPIHaloExchange::operator()(AllVariables &all_vars) {
-  LOG_ERR_IF(
-      all_vars.avars.shape(1) != 0,
-      "Halo exchange of advected variables need to be implemented first.");
-
   exchange(all_vars.cvars, cvars_tag);
+
+  if (all_vars.avars.shape(1) != 0) {
+    exchange(all_vars.avars, avars_tag);
+  }
 }
 
 void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {

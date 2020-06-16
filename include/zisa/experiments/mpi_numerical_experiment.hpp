@@ -178,8 +178,12 @@ protected:
             = std::make_unique<MPISingleNodeArrayScatterer<double, 2>>(
                 darray_info, vis_info->vis_comm, scatter_tag);
 
+        auto avars_scatterer
+            = std::make_unique<MPISingleNodeArrayScatterer<double, 2>>(
+                darray_info, vis_info->vis_comm, scatter_tag + 1);
+
         auto scatterer = AllVariablesScatterer(std::move(cvars_scatterer),
-                                               nullptr,
+                                               std::move(avars_scatterer),
                                                vis_info->n_local_cells,
                                                grid->n_cells);
 
@@ -191,8 +195,12 @@ protected:
             = std::make_unique<MPISingleNodeArrayScatterer<double, 2>>(
                 nullptr, vis_info->vis_comm, scatter_tag);
 
+        auto avars_scatterer
+            = std::make_unique<MPISingleNodeArrayScatterer<double, 2>>(
+                nullptr, vis_info->vis_comm, scatter_tag + 1);
+
         auto scatterer = AllVariablesScatterer(std::move(cvars_scatterer),
-                                               nullptr,
+                                               std::move(avars_scatterer),
                                                vis_info->n_local_cells,
                                                grid->n_cells);
 
@@ -618,7 +626,8 @@ protected:
           = std::make_shared<ParallelDumpSnapshot<typename super::euler_t>>(
               this->euler, fng, file_dims);
 
-      auto all_var_dims = AllVariablesDimensions{n_vis_cells, 5, 0};
+      auto all_var_dims = this->choose_all_variable_dims();
+      all_var_dims.n_cells = n_vis_cells;
 
       return std::make_shared<GatheredVisualization>(
           std::move(all_var_gatherer),

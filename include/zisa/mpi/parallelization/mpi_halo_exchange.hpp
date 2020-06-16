@@ -75,6 +75,7 @@ private:
   std::vector<HaloSendPart> send_parts;
 
   int cvars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_CVARS;
+  int avars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_AVARS;
 };
 
 /// Prepare for data exchange.

@@ -81,6 +81,7 @@ protected:
 
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() = 0;
   virtual AllVariablesDimensions choose_all_variable_dims() = 0;
+  virtual int_t choose_n_avars();
   virtual std::shared_ptr<RateOfChange> choose_flux_bc() = 0;
 
   virtual EdgeRule choose_edge_rule();

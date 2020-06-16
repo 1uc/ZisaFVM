@@ -160,7 +160,7 @@ template <class EOS, class Gravity>
 AllVariablesDimensions
 EulerExperiment<EOS, Gravity>::choose_all_variable_dims() {
   auto grid = choose_grid();
-  return {grid->n_cells, euler_t::cvars_t::size(), int_t(0)};
+  return {grid->n_cells, euler_t::cvars_t::size(), choose_n_avars()};
 }
 
 template <class EOS, class Gravity>

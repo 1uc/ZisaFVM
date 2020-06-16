@@ -28,8 +28,6 @@ GatheredVisualization::~GatheredVisualization() { wait(); }
 template <class Vis>
 void GatheredVisualization::gather_and_visualize(
     const AllVariables &all_variables, const Vis &vis) {
-  LOG_ERR_IF(all_variables.avars.shape(1) != 0,
-             "Implement advected variables first.");
 
   if (gatherer->is_this_rank_gathering()) {
     if (job != nullptr) {
@@ -54,9 +52,6 @@ void GatheredVisualization::gather_and_visualize(
 void GatheredVisualization::do_visualization(
     const AllVariables &all_variables,
     const SimulationClock &simulation_clock) {
-
-  LOG_ERR_IF(all_variables.avars.shape(1) != 0,
-             "Implement advected variables first.");
 
   auto vis = [this, &simulation_clock](const AllVariables &full_vars) {
     (*visualization)(full_vars, simulation_clock);

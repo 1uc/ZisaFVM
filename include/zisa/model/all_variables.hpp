@@ -56,6 +56,9 @@ void save(HDF5Writer &writer,
           const AllVariables &all_variables,
           const std::vector<std::string> &labels);
 
+std::vector<std::string> numbered_labels(const std::string &pattern,
+                                         int_t n_labels);
+
 } // namespace zisa
 
 #endif /* end of include guard: ALL_VARIABLES_H_NO06DDKF */

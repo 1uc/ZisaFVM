@@ -78,11 +78,13 @@ public:
         outer_equilibrium(eq_t(euler), theta_outer, x_ref) {}
 
   RhoP operator()(const XYZ &x) const {
-    const auto &equilibrium
-        = (zisa::norm(x) < zisa::norm(x_ref) ? inner_equilibrium
-                                             : outer_equilibrium);
-    RhoE rhoE = equilibrium.extrapolate(x);
+    const auto &eq = (is_inner(x) ? inner_equilibrium : outer_equilibrium);
+    RhoE rhoE = eq.extrapolate(x);
     return euler->eos.rhoP(rhoE);
+  }
+
+  bool is_inner(const XYZ &x) const {
+    return zisa::norm(x) < zisa::norm(x_ref);
   }
 
 private:

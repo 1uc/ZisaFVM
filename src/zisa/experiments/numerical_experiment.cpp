@@ -282,4 +282,6 @@ NumericalExperiment::boundary_mask() const {
   return [](const Grid &, int_t) { return false; };
 }
 
+int_t NumericalExperiment::choose_n_avars() { return 0; }
+
 } // namespace zisa

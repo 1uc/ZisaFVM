@@ -57,11 +57,16 @@ public:
       scalar_polys = array<ScalarPoly, 1>(n_vars);
     }
 
+    auto rhs_view = [&]() {
+      auto shape = shape_t<2>{rhs.shape(0), 1};
+      return array_view<double, 2, row_major>(shape, rhs.raw());
+    }();
+
     for (int_t k_var = 0; k_var < n_vars; ++k_var) {
       auto q_component = array_const_view<double, 1>(
           shape_t<1>(q_local.shape(0)),
           q_local.raw() + k_var * q_local.shape(0));
-      scalar_polys[k_var] = rc.reconstruct(rhs, polys, q_component);
+      scalar_polys[k_var] = rc.reconstruct(rhs_view, polys, q_component);
     }
   }
 

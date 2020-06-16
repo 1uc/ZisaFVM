@@ -19,6 +19,8 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
   return all_variables;
 }
 
+int_t RayleighTaylor::choose_n_avars() { return 1; }
+
 std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
     double amp, double width, int n_bumps) {
 
@@ -64,30 +66,37 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
     return euler_var_t{rho, rho * vx, rho * vy, 0.0, E};
   };
 
+  auto tracer_ic = [&ic_, &ic](const auto &x) {
+    return ic(x)[0] * (ic_.is_inner(x) ? 1.0 : 10.0);
+  };
+
   auto qr = choose_volume_rule();
   auto &u0 = all_variables->cvars;
+  auto &q0 = all_variables->avars;
 
-  zisa::for_each(serial_policy{},  triangles(*grid),
-                 [&u0, &ic, &qr](int_t i, const Triangle &tri) {
-                   u0(i) = average(qr, ic, tri);
-                 });
+  zisa::for_each(
+      serial_policy{},
+      triangles(*grid),
+      [&q0, &u0, &ic, &tracer_ic, &qr](int_t i, const Triangle &tri) {
+        u0(i) = average(qr, ic, tri);
+        q0(i, 0) = average(qr, tracer_ic, tri);
+      });
 
   return all_variables;
 }
 
-
 void RayleighTaylor::enforce_cell_flags(Grid &grid) const {
-    auto n_cells = grid.n_cells;
+  auto n_cells = grid.n_cells;
 
-    // FIXME hard-coded value.
-    double r_crit = 0.6;
+  // FIXME hard-coded value.
+  double r_crit = 0.6;
 
-    for(int_t i = 0; i < n_cells; ++i) {
-        if(zisa::norm(grid.cell_centers(i)) > r_crit) {
-            grid.cell_flags(i).interior = false;
-            grid.cell_flags(i).ghost_cell = true;
-        }
+  for (int_t i = 0; i < n_cells; ++i) {
+    if (zisa::norm(grid.cell_centers(i)) > r_crit) {
+      grid.cell_flags(i).interior = false;
+      grid.cell_flags(i).ghost_cell = true;
     }
+  }
 }
 
 }

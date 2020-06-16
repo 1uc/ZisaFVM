@@ -63,8 +63,8 @@ AllVariablesDimensions AllVariables::dims() const {
   return dims;
 }
 
-static std::vector<std::string> numbered_labels(const std::string &pattern,
-                                                int_t n_labels) {
+std::vector<std::string> numbered_labels(const std::string &pattern,
+                                         int_t n_labels) {
   std::vector<std::string> labels;
   for (int_t i = 0; i < n_labels; ++i) {
     labels.push_back(string_format(pattern.c_str(), i));

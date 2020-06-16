@@ -24,6 +24,8 @@ protected:
   std::shared_ptr<AllVariables>
   compute_initial_conditions(double amp, double width, int n_bumps);
 
+  int_t choose_n_avars() override;
+
   void enforce_cell_flags(Grid &grid) const override;
 };
 
