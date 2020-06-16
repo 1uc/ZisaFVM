@@ -22,7 +22,8 @@ protected:
 
 private:
   array<int_t, 1> indices;
-  array<double, 2> values;
+  array<double, 2> cvars;
+  array<double, 2> avars;
 };
 }
 
