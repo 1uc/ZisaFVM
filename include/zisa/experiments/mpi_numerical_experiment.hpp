@@ -478,10 +478,8 @@ protected:
       auto vis_cells_per_pe = array<int_t, 1>(shape_t<1>{vis_size});
       vis_cells_per_pe[0] = n_local_cells;
       zisa::mpi::gather(array_view(vis_cells_per_pe), 0, vis_comm);
-      auto n_vis_cells = std::reduce(vis_cells_per_pe.begin(),
-                                     vis_cells_per_pe.end(),
-                                     int_t(0),
-                                     [](int_t i, int_t j) { return i + j; });
+      auto n_vis_cells = std::accumulate(
+          vis_cells_per_pe.begin(), vis_cells_per_pe.end(), int_t(0));
 
       auto gids = array<int_t, 1>(shape_t<1>{n_vis_cells});
       auto vis_boundaries = array<int_t, 1>(shape_t<1>{vis_size + 1});
