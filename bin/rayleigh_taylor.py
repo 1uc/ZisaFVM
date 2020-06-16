@@ -26,6 +26,9 @@ from tiwaz.post_process import find_steady_state_file
 from tiwaz.tri_plot import tri_plot
 from tiwaz.scatter_plot import scatter_plot
 from tiwaz.gmsh import generate_circular_grids
+from tiwaz.gmsh import decompose_grids
+from tiwaz.gmsh import renumber_grids
+from tiwaz.site_details import MPIHeuristics
 from tiwaz.queue_args import MPIQueueArgs
 
 from tiwaz.work_estimate import ZisaWorkEstimate
@@ -38,7 +41,7 @@ class RayleighTaylorExperiment(sc.Subsection):
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
                     "drho": 0.01,
-                    "amplitude": 1e-4,
+                    "amplitude": 1e-1,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -56,11 +59,21 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
-t_end = 10.0
+t_end = 1.0
 time = sc.Time(t_end=t_end)
-io = sc.IO("hdf5", "rayleigh_taylor", n_snapshots=20, parallel_strategy="gathered")
+# io = sc.IO(
+#     "hdf5", "rayleigh_taylor", n_snapshots=20, parallel_strategy="gathered", n_writers=4
+# )
+io = sc.IO(
+    "hdf5",
+    "rayleigh_taylor",
+    n_snapshots=20,
+    parallel_strategy="gathered",
+    n_writers=4,
+)
 # io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
+parallelization = {"mode": "mpi"}
 radius = 0.6
 mesh_levels = list(range(1, 6))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
@@ -78,8 +91,17 @@ def grid_name_hdf5(l):
     return grid_name_stem(l) + ".msh.h5"
 
 
-def generate_grids():
-    generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+def grid_config_string(l):
+    if parallelization["mode"] == "mpi":
+        return grid_name_stem(l)
+
+    return grid_name_hdf5(l)
+
+
+def generate_grids(cluster):
+    # generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels, with_halo=False)
+    renumber_grids(grid_name_hdf5, mesh_levels)
+    decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
 
 
 def make_work_estimate():
@@ -95,23 +117,23 @@ def make_work_estimate():
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-coarse_grid_levels = [2]
+coarse_grid_levels = [1]
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
-    "grid": [sc.Grid(grid_name_hdf5(l), l) for l in coarse_grid_levels]
+    "grid": [sc.Grid(grid_config_string(l), l) for l in coarse_grid_levels]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_name_hdf5(2), 2)
+reference_grid = sc.Grid(grid_config_string(2), 2)
 
 independent_choices = {
     "euler": [euler],
     "flux-bc": [sc.FluxBC("isentropic")],
     "boundary-condition": [sc.BoundaryCondition("frozen")],
-    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
+    "well-balancing": [sc.WellBalancing("constant")],
     "io": [io],
     "time": [time],
-    "parallelization": [{"mode": "mpi"}],
+    "parallelization": [parallelization],
     "debug": [{"global_indices": False, "stencils": True}],
 }
 
@@ -169,7 +191,7 @@ reference_choices = {
     "quadrature": [sc.Quadrature(4)],
     "grid": [reference_grid],
     "reference": [sc.Reference("isentropic", coarse_grid_names)],
-    "parallelization": [{"mode": "mpi"}],
+    "parallelization": [parallelization],
 }
 
 base_choices = all_combinations(independent_choices)
@@ -225,12 +247,29 @@ class TableLabels:
         return " ".join(str(v) for v in col.values())
 
 
+def compute_parts(mesh_levels, host):
+    work_estimate = make_work_estimate()
+
+    heuristics = MPIHeuristics(host=host)
+    queue_args = MPIQueueArgs(
+        work_estimate, t_min=None, t_max=None, heuristics=heuristics
+    )
+
+    parts_ = dict()
+    for l in mesh_levels:
+        parts_[l] = [2] + [
+            queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})
+        ]
+
+    return parts_
+
+
 def main():
     parser = default_cli_parser("'rayleigh_taylor' numerical experiment.")
     args = parser.parse_args()
 
     if args.generate_grids:
-        generate_grids()
+        generate_grids(args.cluster)
 
     if args.run:
         build_zisa()

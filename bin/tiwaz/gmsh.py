@@ -29,8 +29,8 @@ def generate_spherical_grids(filename, radius, lc_rel, levels):
     generate_grids_from_template(template_name, filename, substitutions, levels)
 
 
-def generate_circular_grids(filename, radius, lc_rel, levels):
-    template_name = "grids/circle.tmpl"
+def generate_circular_grids(filename, radius, lc_rel, levels, with_halo):
+    template_name = "grids/circle_with_halo.tmpl" if with_halo else "grids/circle.tmpl"
     substitutions = [{"RADIUS": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
 
     generate_grids_from_template(template_name, filename, substitutions, levels)
