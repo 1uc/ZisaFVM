@@ -51,7 +51,7 @@ public:
 #pragma omp for ZISA_OMP_FOR_SCHEDULE_DEFAULT
 #endif
       for (int_t e = 0; e < n_interior_edges; ++e) {
-        auto face = grid->faces(e);
+        const auto &face = grid->faces(e);
 
         int_t iL, iR;
         std::tie(iL, iR) = grid->left_right(e);

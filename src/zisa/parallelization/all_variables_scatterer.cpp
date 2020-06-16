@@ -31,7 +31,6 @@ void AllVariablesScatterer::send(const AllVariables &all_variables) {
 }
 
 void AllVariablesScatterer::receive(AllVariables &all_variables) {
-  PRINT(all_variables.cvars.shape());
   cvars_scatterer->receive(subview(all_variables.cvars));
 
   if (all_variables.avars.shape(1) != 0) {
