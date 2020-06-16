@@ -103,7 +103,9 @@ void renumber_grid(const std::string &grid_file) {
 }
 
 int main(int argc, char *argv[]) {
+#if ZISA_HAS_MPI
   MPI_Init(&argc, &argv);
+#endif
 
   po::variables_map options;
 
@@ -134,5 +136,7 @@ int main(int argc, char *argv[]) {
 
   zisa::renumber_grid(grid_file);
 
+#if ZISA_HAS_MPI
   MPI_Finalize();
+#endif
 }
