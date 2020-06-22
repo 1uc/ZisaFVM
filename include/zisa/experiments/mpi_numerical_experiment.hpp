@@ -235,6 +235,8 @@ protected:
       auto cvars_gatherer
           = gatherer_factory->template create_pointer<double, 2>();
 
+      // FIXME missing adv variables.
+
       auto n_local_cells = vis_info->n_local_cells;
       auto n_vis_cells = vis_info->n_vis_cells();
       auto all_var_gatherer = AllVariablesGatherer(

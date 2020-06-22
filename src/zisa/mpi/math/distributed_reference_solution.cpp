@@ -97,6 +97,7 @@ void DistributedReferenceSolution::compute_and_save(
     auto n_qp = small_grid->cells[0].qr.points.size();
 
     data = array<double, 3>(shape_t<3>{n_cells, n_vars, n_qp});
+
     completed_cells = array<bool, 2>(shape_t<2>{n_cells, n_qp});
     zisa::fill(completed_cells, false);
 
@@ -238,15 +239,15 @@ DistributedReferenceSolution::receive_org_message() {
 
 void DistributedReferenceSolution::process_xfer_request(
     const DistributedReferenceSolution::OrgMessage &msg, int dst) {
-  auto coords = zisa::array<XYZ, 1>(msg.size);
-  zisa::mpi::recv(array_view(coords), dst, xfer_tag_coords, comm);
+  auto coordinates = zisa::array<XYZ, 1>(msg.size);
+  zisa::mpi::recv(array_view(coordinates), dst, xfer_tag_coords, comm);
 
   auto indices = zisa::array<int_t, 1>(msg.size);
   auto values = zisa::array<double, 2>(shape_t<2>{msg.size, n_vars});
 
   int_t count = 0;
   for (int_t k : index_range(values.shape(0))) {
-    const XYZ &x = coords[k];
+    const XYZ &x = coordinates[k];
     auto o = locate(*large_grid, x);
     if (o == std::nullopt) {
       continue;
