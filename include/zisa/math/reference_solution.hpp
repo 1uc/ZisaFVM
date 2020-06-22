@@ -96,11 +96,24 @@ protected:
   }
 
   HybridWENOParams weno_params() {
-    return HybridWENOParams{
-        {{5, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
-        {100.0, 1.0, 1.0, 1.0},
-        1e-10,
-        4.0};
+    if (fine_grid->n_dims() == 2) {
+      return HybridWENOParams{
+          {{5, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+          {100.0, 1.0, 1.0, 1.0},
+          1e-10,
+          4.0};
+    }
+
+    if (fine_grid->n_dims() == 3) {
+      return HybridWENOParams{{{4, 2, 2, 2, 2},
+                               {"c", "b", "b", "b", "b"},
+                               {3.0, 2.0, 2.0, 2.0, 2.0}},
+                              {100.0, 1.0, 1.0, 1.0, 1.0},
+                              1e-10,
+                              4.0};
+    }
+
+    LOG_ERR("Implement first.");
   }
 
 private:
