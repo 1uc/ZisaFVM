@@ -13,7 +13,6 @@
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/memory/array_view.hpp>
-#include <zisa/model/euler.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
 
@@ -24,10 +23,10 @@ using metis_idx_t = ::idx_t;
 
 void save_partitioned_grid(const std::string &dirname,
                            const Grid &grid,
-                           const array<StencilFamily, 1> &stencils,
+                           const StencilParams &stencil_params,
                            int n_parts) {
 
-  auto partitioned_grid = compute_partitioned_grid(grid, stencils, n_parts);
+  auto partitioned_grid = compute_partitioned_grid(grid, n_parts);
   const auto &permutation = partitioned_grid.permutation;
 
   const auto &partition = partitioned_grid.partition;
@@ -35,7 +34,7 @@ void save_partitioned_grid(const std::string &dirname,
 
   for (int p = 0; p < n_parts; ++p) {
     auto [local_vertex_indices, local_vertices, global_cell_indices]
-        = extract_subgrid(grid, partitioned_grid, stencils, p);
+        = extract_subgrid(grid, partitioned_grid, stencil_params, p);
 
     int_t n_cells_local = local_vertex_indices.shape(0);
 
@@ -109,16 +108,14 @@ int main(int argc, char *argv[]) {
 
   auto stencil_params = [&grid]() {
     if (grid->n_dims() == 2) {
-      return zisa::StencilFamilyParams({5}, {"c"}, {8.0});
+      return zisa::StencilParams(5, "c", 8.0);
     } else if (grid->n_dims() == 3) {
-      return zisa::StencilFamilyParams({4}, {"c"}, {8.0});
+      return zisa::StencilParams(4, "c", 8.0);
     }
     LOG_ERR("Broken logic.");
   }();
 
-  auto stencils = zisa::compute_stencil_families(*grid, stencil_params);
-
-  zisa::save_partitioned_grid(part_file, *grid, stencils, n_parts);
+  zisa::save_partitioned_grid(part_file, *grid, stencil_params, n_parts);
 
 #if ZISA_HAS_MPI == 1
   MPI_Finalize();

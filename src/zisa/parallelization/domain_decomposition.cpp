@@ -79,7 +79,7 @@ array<int_t, 1> compute_partition_full_stencil(
   return partition;
 }
 
-array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
+array<int_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
   auto n_cells = grid.n_cells;
   auto n_vertices = grid.n_vertices;
   auto max_neighbours = grid.max_neighbours;
@@ -114,7 +114,11 @@ array<metis_idx_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
                      npart.raw());
   // clang-format on
 
-  return epart;
+  array<int_t, 1> partition(n_cells);
+  for_each(flat_range(partition),
+           [&partition, &epart](int_t i) { partition[i] = int_t(epart[i]); });
+
+  return partition;
 }
 
 array<int_t, 1>
@@ -125,21 +129,12 @@ compute_cell_permutation(const Grid &grid,
 
   auto n_cells = grid.n_cells;
 
-  int n_mini_patches = zisa::max(2, int(n_cells) / 512);
-  auto cell_mini_partitions = compute_partitions_mesh(grid, n_mini_patches);
-
   array<int_t, 1> sigma(n_cells);
   for_each(flat_range(sigma), [&sigma](int_t i) { sigma[i] = i; });
 
-  std::sort(sigma.begin(),
-            sigma.end(),
-            [&cell_partition, &cell_mini_partitions](int_t i, int_t j) {
-              if (cell_partition[i] == cell_partition[j]) {
-                return cell_mini_partitions[i] < cell_mini_partitions[j];
-              } else {
-                return cell_partition[i] < cell_partition[j];
-              }
-            });
+  std::sort(sigma.begin(), sigma.end(), [&cell_partition](int_t i, int_t j) {
+    return cell_partition[i] < cell_partition[j];
+  });
 
   return sigma;
 }
@@ -197,14 +192,10 @@ compute_effective_stencils(const array<StencilFamily, 1> &stencils) {
   return effective_stencils;
 }
 
-PartitionedGrid compute_partitioned_grid(
-    const Grid &grid, const array<StencilFamily, 1> &stencils, int_t n_parts) {
-
-  std::vector<std::vector<int_t>> effective_stencils
-      = compute_effective_stencils(stencils);
+PartitionedGrid compute_partitioned_grid(const Grid &grid, int_t n_parts) {
 
   auto cell_partition = compute_partition_full_stencil(
-      grid, effective_stencils, integer_cast<int>(n_parts));
+      grid, std::vector<std::vector<int_t>>{}, integer_cast<int>(n_parts));
 
   auto sigma = compute_cell_permutation(grid, cell_partition);
 
@@ -396,7 +387,7 @@ extract_stencils(const array<StencilFamily, 1> &global_stencils,
 std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
 extract_subgrid(const Grid &grid,
                 const PartitionedGrid &partitioned_grid,
-                const array<StencilFamily, 1> &stencils,
+                const StencilParams &stencil_params,
                 int_t k_part) {
 
   const auto &neighbours = grid.neighbours;
@@ -410,10 +401,17 @@ extract_subgrid(const Grid &grid,
   auto n_cells_part = boundaries[k_part + 1] - boundaries[k_part];
 
   std::map<int_t, std::vector<int_t>> m;
+  std::map<int_t, std::vector<int_t>> stencils;
 
   // Add the stencils of the interior.
   for (int_t i = 0; i < n_cells_part; ++i) {
-    const auto &l2g = stencils[sigma(boundaries[k_part] + i)].local2global();
+    auto ig = sigma(boundaries[k_part] + i);
+    if (stencils.count(ig) == 0) {
+      auto n_points = required_stencil_size(
+          stencil_params.order, stencil_params.overfit_factor, grid.n_dims());
+      stencils[ig] = central_stencil(grid, ig, n_points);
+    }
+    const auto &l2g = stencils[ig];
 
     for (auto j : l2g) {
       auto p = partition(j);
@@ -430,7 +428,7 @@ extract_subgrid(const Grid &grid,
     for (int_t k = 0; k < max_neighbours; ++k) {
       int_t j = neighbours(sigma(boundaries[k_part] + i), k);
       if (j < n_cells) {
-        const auto &l2g = stencils[j].local2global();
+        const auto &l2g = stencils[j];
         for (auto jj : l2g) {
           int_t p = partition(jj);
           if (p != k_part) {

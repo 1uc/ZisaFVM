@@ -25,8 +25,7 @@ sparse_inverse_permutation(const array_const_view<int_t, 1> &sigma);
 PartitionedGrid compute_partitioned_grid_by_sfc(const Grid &grid,
                                                 int_t n_parts);
 
-PartitionedGrid compute_partitioned_grid(
-    const Grid &grid, const array<StencilFamily, 1> &stencils, int_t n_parts);
+PartitionedGrid compute_partitioned_grid(const Grid &grid, int_t n_parts);
 
 array<int_t, 2> renumbered_vertex_indices(const array<int_t, 2> &vertex_indices,
                                           const array<int_t, 1> &permutation);
@@ -34,7 +33,7 @@ array<int_t, 2> renumbered_vertex_indices(const array<int_t, 2> &vertex_indices,
 std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
 extract_subgrid(const Grid &grid,
                 const PartitionedGrid &partitioned_grid,
-                const array<StencilFamily, 1> &stencils,
+                const StencilParams &stencil_params,
                 int_t k_part);
 
 std::tuple<array<int_t, 2>, array<XYZ, 1>, array<int_t, 1>>
