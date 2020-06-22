@@ -25,13 +25,13 @@ public:
 
   ~GatheredVisualization() override;
 
-  void wait();
-
 protected:
   void do_visualization(const AllVariables &all_variables,
                         const SimulationClock &simulation_clock) override;
 
   void do_steady_state(const AllVariables &all_variables) override;
+
+  void do_wait() override;
 
 private:
   template <class Vis>

@@ -22,12 +22,17 @@ public:
   /// Visualize the steady-state.
   void steady_state(const AllVariables &all_variables);
 
+  /// Wait until the visualization has completed.
+  void wait();
+
 protected:
   virtual void do_visualization(const AllVariables &all_variables,
                                 const SimulationClock &simulation_clock)
       = 0;
 
   virtual void do_steady_state(const AllVariables &);
+
+  virtual void do_wait();
 };
 
 } // namespace zisa

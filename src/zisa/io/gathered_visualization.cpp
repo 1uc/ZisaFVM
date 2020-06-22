@@ -23,7 +23,9 @@ GatheredVisualization::GatheredVisualization(
   }
 }
 
-GatheredVisualization::~GatheredVisualization() { wait(); }
+GatheredVisualization::~GatheredVisualization() {
+  GatheredVisualization::do_wait();
+}
 
 template <class Vis>
 void GatheredVisualization::gather_and_visualize(
@@ -68,7 +70,7 @@ void GatheredVisualization::do_steady_state(const AllVariables &all_variables) {
   gather_and_visualize(all_variables, vis);
 }
 
-void GatheredVisualization::wait() {
+void GatheredVisualization::do_wait() {
   if (job != nullptr && job->joinable()) {
     job->join();
   }
