@@ -40,8 +40,8 @@ class RayleighTaylorExperiment(sc.Subsection):
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "drho": 0.01,
-                    "amplitude": 1e-1,
+                    "drho": 0.001,
+                    "amplitude": 1e-5,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -59,7 +59,7 @@ eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
 euler = sc.Euler(eos, gravity)
 
-t_end = 1.0
+t_end = 100.0
 time = sc.Time(t_end=t_end)
 # io = sc.IO(
 #     "hdf5", "rayleigh_taylor", n_snapshots=20, parallel_strategy="gathered", n_writers=4
@@ -67,7 +67,7 @@ time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5",
     "rayleigh_taylor",
-    n_snapshots=20,
+    n_snapshots=100,
     parallel_strategy="gathered",
     n_writers=4,
 )
@@ -75,7 +75,8 @@ io = sc.IO(
 
 parallelization = {"mode": "mpi"}
 radius = 0.6
-mesh_levels = list(range(1, 6))
+# mesh_levels = list(range(1, 8))
+mesh_levels = [4]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 
@@ -99,7 +100,7 @@ def grid_config_string(l):
 
 
 def generate_grids(cluster):
-    # generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels, with_halo=False)
+    generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels, with_halo=False)
     renumber_grids(grid_name_hdf5, mesh_levels)
     decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
 
@@ -107,17 +108,19 @@ def generate_grids(cluster):
 def make_work_estimate():
     n0 = sc.read_n_cells(grid_name_hdf5(4))
 
-    # measured on Euler on L=4 with 96 cores.
-    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 120 * 96)
+    # 'measured' on Euler on L=4 with 96 cores.
+    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
 
     # measured on Euler on L=4 with 2 and 96 cores.
-    b0 = 0.0 * 1e9
-    o0 = 1e9
+    b0 = 0.0
+
+    MB = 1e6
+    o0 = 100 * MB
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-coarse_grid_levels = [1]
+coarse_grid_levels = [4]
 coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -130,11 +133,11 @@ independent_choices = {
     "euler": [euler],
     "flux-bc": [sc.FluxBC("isentropic")],
     "boundary-condition": [sc.BoundaryCondition("frozen")],
-    "well-balancing": [sc.WellBalancing("constant")],
+    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
     "io": [io],
     "time": [time],
     "parallelization": [parallelization],
-    "debug": [{"global_indices": False, "stencils": True}],
+    "debug": [{"global_indices": False, "stencils": False}],
 }
 
 dependent_choices = {
@@ -147,8 +150,8 @@ dependent_choices = {
     ],
     "ode": [
         # sc.ODE("ForwardEuler"),
-        # sc.ODE("SSP3")
-        sc.ODE("SSP3", cfl_number=0.4)
+        sc.ODE("SSP3"),
+        # sc.ODE("SSP3", cfl_number=0.4)
     ],
     "quadrature": [
         # sc.Quadrature(1),
@@ -257,9 +260,10 @@ def compute_parts(mesh_levels, host):
 
     parts_ = dict()
     for l in mesh_levels:
-        parts_[l] = [2] + [
-            queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})
-        ]
+        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})]
+
+        if l <= 5:
+            parts_[l].append(2)
 
     return parts_
 
@@ -275,7 +279,7 @@ def main():
         build_zisa()
 
         t_min = timedelta(minutes=10)
-        t_max = timedelta(hours=12)
+        t_max = timedelta(hours=24)
         work_estimate = make_work_estimate()
 
         queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)

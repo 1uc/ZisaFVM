@@ -69,7 +69,7 @@ def make_work_estimate():
 
     t0 = 2 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
     b0 = 0.0
-    o0 = 1.0 * 1e9
+    o0 = 100 * 1e6
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
@@ -96,16 +96,16 @@ def grid_config_string(l):
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-mesh_levels = list(range(0, 5))
+mesh_levels = list(range(0, 6)) + [7]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
-coarse_grid_levels = list(range(0, 3))
+coarse_grid_levels = list(range(0, 6))
 
 coarse_grid_choices = {
     "grid": [sc.Grid(grid_config_string(l), l) for l in coarse_grid_levels]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_config_string(3), 3)
+reference_grid = sc.Grid(grid_config_string(7), 7)
 
 independent_choices = {
     "euler": [euler],
@@ -129,13 +129,21 @@ dependent_choices_b = {
         ),
         sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
         sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
+        sc.Reconstruction("CWENO-AO", [5, 2, 2, 2]),
     ],
-    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("Fehlberg")],
+    "ode": [
+        sc.ODE("ForwardEuler"),
+        sc.ODE("SSP2"),
+        sc.ODE("SSP3"),
+        sc.ODE("RK4"),
+        sc.ODE("Fehlberg"),
+    ],
     "quadrature": [
         sc.Quadrature(1),
         sc.Quadrature(1),
         sc.Quadrature(2),
         sc.Quadrature(3),
+        sc.Quadrature(4),
     ],
 }
 
@@ -241,7 +249,7 @@ def compute_parts(mesh_levels, host):
 
 
 def generate_grids(cluster):
-    generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+    generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels, with_halo=True)
     renumber_grids(grid_name_hdf5, mesh_levels)
     decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
 

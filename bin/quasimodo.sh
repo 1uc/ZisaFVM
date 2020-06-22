@@ -90,7 +90,7 @@ esac
 ## Actual copying up and down
 case $mode in
   push)
-    rsync -ur --delete $DRY_RUN \
+    rsync -urv --delete $DRY_RUN \
           --include-from rsync.include --exclude-from rsync.exclude \
           $(realpath $PWD) $dest
     ;;

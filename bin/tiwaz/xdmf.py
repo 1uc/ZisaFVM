@@ -44,9 +44,9 @@ def component(parrent, n_cells, key, body):
 
 def extract_grid_info(grid_file):
     with h5py.File(grid_file, "r") as h5_grid:
-        n_cells = str(int(h5_grid["n_cells"][()]))
-        n_vertices = str(int(h5_grid["n_vertices"][()]))
-        max_neighbours = str(int(h5_grid["max_neighbours"][()]))
+        n_cells = str(int(h5_grid["vertex_indices"].shape[0]))
+        n_vertices = str(int(h5_grid["vertices"].shape[0]))
+        max_neighbours = str(int(h5_grid["vertex_indices"].shape[1]))
 
     if max_neighbours == "4":
         element = "Tetrahedron"

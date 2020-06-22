@@ -10,7 +10,7 @@ data/*
 junk
 lib/*
 
-grids/*
+grids
 
 # archives
 *.tar

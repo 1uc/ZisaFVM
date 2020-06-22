@@ -23,6 +23,7 @@ from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_spherical_grids
 from tiwaz.gmsh import decompose_grids
+from tiwaz.gmsh import renumber_grids
 from tiwaz.site_details import MPIHeuristics
 from tiwaz.work_estimate import ZisaWorkEstimate
 from tiwaz.queue_args import MPIQueueArgs
@@ -56,9 +57,11 @@ gravity = sc.PolytropeGravity()
 # gravity = sc.ConstantGravity(g=1.0)
 euler = sc.Euler(eos, gravity)
 
-t_end = 0.09
+t_end = 0.0001
 time = sc.Time(t_end=t_end)
-io = sc.IO("hdf5", "gaussian_bump", n_snapshots=1)
+io = sc.IO(
+    "hdf5", "gaussian_bump", n_snapshots=1, parallel_strategy="gathered", n_writers=8
+)
 # io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
 
 
@@ -68,7 +71,7 @@ def make_work_estimate():
     t0 = 2 * timedelta(seconds=t_end / 0.09 * 90 * 24)
 
     b0 = 0.0 * 1e9
-    o0 = 1.0 * 1e9
+    o0 = 100 * 1e6
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, n_dims=3)
 
@@ -95,7 +98,7 @@ def grid_config_string(l):
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-mesh_levels = list(range(0, 5))
+mesh_levels = list(range(0, 3)) + [3]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))
@@ -120,6 +123,7 @@ dependent_choices_a = {
     "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
 }
 
+# fmt: off
 dependent_choices_b = {
     "reconstruction": [
         sc.Reconstruction("CWENO-AO", [1]),
@@ -133,7 +137,12 @@ dependent_choices_b = {
             "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
         ),
     ],
-    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP2"), sc.ODE("SSP3"), sc.ODE("Fehlberg")],
+    "ode": [
+        sc.ODE("ForwardEuler"),
+        sc.ODE("SSP2"),
+        sc.ODE("SSP3"),
+        sc.ODE("RK4")
+    ],
     "quadrature": [
         sc.Quadrature(1),
         sc.Quadrature(1),
@@ -141,6 +150,7 @@ dependent_choices_b = {
         sc.Quadrature(3),
     ],
 }
+# fmt: on
 
 reference_choices = {
     "euler": [euler],
@@ -191,33 +201,33 @@ all_runs = [make_runs(amp) for amp in amplitudes]
 
 
 def post_process(coarse_runs, reference_run):
-    # results, columns = load_results(coarse_runs, reference_run)
-    # labels = TableLabels()
+    results, columns = load_results(coarse_runs, reference_run)
+    labels = TableLabels()
 
-    # filename = coarse_runs[0]["experiment"].short_id()
+    filename = coarse_runs[0]["experiment"].short_id()
     # write_convergence_table(results, columns, labels, filename)
-    # write_convergence_plots(results, columns, labels, filename)
-    # plot_visual_convergence(results, columns, labels, filename)
+    write_convergence_plots(results, columns, labels, filename)
+    plot_visual_convergence(results, columns, labels, filename)
 
-    for coarse_run in coarse_runs:
-        coarse_dir = folder_name(coarse_run)
-        coarse_grid = load_grid(coarse_dir)
-        data_files = find_data_files(coarse_dir)
+    # for coarse_run in coarse_runs:
+    #     coarse_dir = folder_name(coarse_run)
+    #     coarse_grid = load_grid(coarse_dir)
+    #     data_files = find_data_files(coarse_dir)
 
-        key = "rho"
-        for l, data_file in enumerate(data_files):
-            u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+    #     key = "rho"
+    #     for l, data_file in enumerate(data_files):
+    #         u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
 
-            q = u_coarse.cvars[key]
-            dq = u_coarse.dvars[key]
+    #         q = u_coarse.cvars[key]
+    #         dq = u_coarse.dvars[key]
 
-            scatter = ScatterPlot()
-            scatter(coarse_grid, q)
-            scatter.save(f"{coarse_dir}/scatter_{key}_{l:04d}.png")
+    #         scatter = ScatterPlot()
+    #         scatter(coarse_grid, q)
+    #         scatter.save(f"{coarse_dir}/scatter_{key}_{l:04d}.png")
 
-            scatter = ScatterPlot()
-            scatter(coarse_grid, dq)
-            scatter.save(f"{coarse_dir}/triplot_d{key}_{l:04d}.png")
+    #         scatter = ScatterPlot()
+    #         scatter(coarse_grid, dq)
+    #         scatter.save(f"{coarse_dir}/triplot_d{key}_{l:04d}.png")
 
 
 class TableLabels:
@@ -229,19 +239,20 @@ def compute_parts(mesh_levels, host):
     work_estimate = make_work_estimate()
 
     heuristics = MPIHeuristics(host=host)
-    queue_args = MPIQueueArgs(
-        work_estimate, t_min=None, t_max=None, heuristics=heuristics
-    )
+    queue_args = MPIQueueArgs(work_estimate, heuristics=heuristics)
 
     parts_ = dict()
     for l in mesh_levels:
         parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})]
 
+        if l <= 5:
+            parts_[l].append(2)
+
     return parts_
 
 
 def generate_grids(cluster):
-    # generate_spherical_grids(grid_name_geo, radius, lc_rel, mesh_levels)
+    generate_spherical_grids(grid_name_geo, radius, lc_rel, mesh_levels)
     renumber_grids(grid_name_hdf5, mesh_levels)
     decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
 
