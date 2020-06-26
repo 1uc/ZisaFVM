@@ -2,6 +2,7 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/barycentric.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/basic_functions.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/bounding_box.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/cartesian.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/cell.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/cell_factory.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/cone.cpp

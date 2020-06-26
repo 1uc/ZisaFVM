@@ -242,6 +242,12 @@ bool isreal(const CartesianExpr<E, double> &e_) {
   return true;
 }
 
+/// Compute A^{-1} * x, with A = (a|b|c).
+Cartesian<3> solve(const Cartesian<3> &a,
+                   const Cartesian<3> &b,
+                   const Cartesian<3> &c,
+                   const Cartesian<3> &x);
+
 template <class E>
 Cartesian<E::size()> normalize(const CartesianExpr<E, double> &x) {
   return Cartesian<E::size()>(x / norm(x));

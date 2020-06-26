@@ -12,9 +12,9 @@ Barycentric2D::Barycentric2D(const Triangle &tri, const XYZ &x) {
 
   double inv = 1.0 / (BA[0] * CA[1] - CA[0] * BA[1]);
 
-  lambda[0] = (xA[0] * CA[1] - CA[0] * xA[1]) * inv;
-  lambda[1] = (BA[0] * xA[1] - xA[0] * BA[1]) * inv;
-  lambda[2] = 1.0 - lambda[0] - lambda[1];
+  lambda[1] = (xA[0] * CA[1] - CA[0] * xA[1]) * inv;
+  lambda[2] = (BA[0] * xA[1] - xA[0] * BA[1]) * inv;
+  lambda[0] = 1.0 - lambda[1] - lambda[2];
 }
 
 XYZ coord(const Triangle &tri, const Barycentric2D &lambda) {
@@ -39,17 +39,16 @@ Barycentric3D::Barycentric3D(double lambda1,
 Barycentric3D::Barycentric3D(const Tetrahedron &tet, const XYZ &x) {
   const auto &[v0, v1, v2, v3] = tet.points;
 
-  auto dx = XYZ(x - v0);
-  auto dv1 = XYZ(v1 - v0);
-  auto dv2 = XYZ(v2 - v0);
-  auto dv3 = XYZ(v3 - v0);
+  auto dx = XYZ(x - v3);
+  auto dv0 = XYZ(v0 - v3);
+  auto dv1 = XYZ(v1 - v3);
+  auto dv2 = XYZ(v2 - v3);
 
-  auto idet = 1.0 / zisa::det(dv1, dv2, dv3);
-
-  lambda[0] = idet * zisa::dot(dx, dv1);
-  lambda[1] = idet * zisa::dot(dx, dv2);
-  lambda[2] = idet * zisa::dot(dx, dv3);
-  lambda[3] = 1.0 - (lambda[0] - lambda[1] - lambda[2]);
+  auto [l0, l1, l2] = solve(dv0, dv1, dv2, dx);
+  lambda[0] = l0;
+  lambda[1] = l1;
+  lambda[2] = l2;
+  lambda[3] = 1.0 - (l0 + l1 + l2);
 }
 
 XYZ coord(const Tetrahedron &tet, const Barycentric3D &lambda) {
@@ -58,7 +57,8 @@ XYZ coord(const Tetrahedron &tet, const Barycentric3D &lambda) {
 }
 
 bool is_inside(const Barycentric3D &lambda) {
-  return lambda[0] >= 0.0 && lambda[1] >= 0.0 && lambda[2] >= 0.0;
+  return lambda[0] >= 0.0 && lambda[1] >= 0.0 && lambda[2] >= 0.0
+         && lambda[3] >= 0.0;
 }
 
 std::ostream &operator<<(std::ostream &os, const Barycentric3D &bc) {
