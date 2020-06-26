@@ -43,7 +43,7 @@ void FrozenBC::apply(AllVariables &u, double) {
     }
 
     if (n_avars > 0) {
-      for (int_t k = 0; k < n_cvars; ++k) {
+      for (int_t k = 0; k < n_avars; ++k) {
         u.avars(i, k) = avars(ii, k);
       }
     }
