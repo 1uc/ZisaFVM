@@ -830,17 +830,15 @@ Tetrahedron tetrahedron(const Grid &grid, int_t i) {
 }
 
 bool is_inside_cell(const Grid &grid, int_t i, const XYZ &x) {
-  GMSHElementType element_type
-      = (grid.max_neighbours == 3 ? GMSHElementType::triangle
-                                  : GMSHElementType::tetrahedron);
-
-  if (element_type == GMSHElementType::triangle) {
+  if (grid.is_triangular()) {
     auto tri = triangle(grid, i);
     return is_inside(Barycentric2D(tri, x));
-  } else {
+  } else if (grid.is_tetrahedral()) {
     auto tet = tetrahedron(grid, i);
     return is_inside(Barycentric3D(tet, x));
   }
+
+  LOG_ERR("Missing case.");
 }
 std::optional<int_t> locate_brute_force(const Grid &grid, const XYZ &x) {
   for (int_t i : cell_indices(grid)) {
