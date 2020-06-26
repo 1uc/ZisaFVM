@@ -82,7 +82,7 @@ protected:
 
         std::string dirname = this->params["grid"]["file"];
         auto grid_name
-            = string_format("%s/%d/grid.h5", dirname.c_str(), mpi_comm_size);
+            = string_format("%s/grid.h5", dirname.c_str(), mpi_comm_size);
 
         auto file_dims = choose_gathered_file_info();
         auto writer
