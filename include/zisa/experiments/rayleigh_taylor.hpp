@@ -26,7 +26,7 @@ protected:
 
   int_t choose_n_avars() override;
 
-  void enforce_cell_flags(Grid &grid) const override;
+  std::function<bool(const Grid &grid, int_t i)> boundary_mask() const override;
 };
 
 }
