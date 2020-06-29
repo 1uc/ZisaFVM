@@ -53,6 +53,12 @@ def default_cli_parser(parser_help):
     )
 
     parser.add_argument(
+        "--decompose-grids",
+        action="store_true",
+        help="Partition the grids into subgrids suitable for domain decomposition.",
+    )
+
+    parser.add_argument(
         "--cluster", type=str, help="Partition the grids for CLUSTER.",
     )
 

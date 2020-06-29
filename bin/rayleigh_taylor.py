@@ -28,6 +28,7 @@ from tiwaz.scatter_plot import scatter_plot
 from tiwaz.gmsh import generate_circular_grids
 from tiwaz.gmsh import decompose_grids
 from tiwaz.gmsh import renumber_grids
+from tiwaz.gmsh import GridNamingScheme
 from tiwaz.site_details import MPIHeuristics
 from tiwaz.queue_args import MPIQueueArgs
 
@@ -40,7 +41,7 @@ class RayleighTaylorExperiment(sc.Subsection):
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "drho": 0.001,
+                    "drho": 1e-4,
                     "amplitude": 1e-5,
                     "width": 0.1,
                     "n_bumps": 6,
@@ -78,56 +79,20 @@ radius = 0.6
 # mesh_levels = list(range(1, 8))
 mesh_levels = [4]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
-
-
-def grid_name_stem(l):
-    return "grids/rayleigh_taylor-{}".format(l)
-
-
-def grid_name_geo(l):
-    return grid_name_stem(l) + ".geo"
-
-
-def grid_name_hdf5(l):
-    return grid_name_stem(l) + ".msh.h5"
-
-
-def grid_config_string(l):
-    if parallelization["mode"] == "mpi":
-        return grid_name_stem(l)
-
-    return grid_name_hdf5(l)
-
-
-def generate_grids(cluster):
-    generate_circular_grids(grid_name_geo, radius, lc_rel, mesh_levels, with_halo=False)
-    renumber_grids(grid_name_hdf5, mesh_levels)
-    decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
-
-
-def make_work_estimate():
-    n0 = sc.read_n_cells(grid_name_hdf5(4))
-
-    # 'measured' on Euler on L=4 with 96 cores.
-    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
-
-    # measured on Euler on L=4 with 2 and 96 cores.
-    b0 = 0.0
-
-    MB = 1e6
-    o0 = 100 * MB
-
-    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
-
+grid_name = GridNamingScheme("rayleigh_taylor_with_halo")
 
 coarse_grid_levels = [4]
-coarse_grid_names = [grid_name_hdf5(level) for level in coarse_grid_levels]
+coarse_grid_names = [grid_name.msh_h5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
-    "grid": [sc.Grid(grid_config_string(l), l) for l in coarse_grid_levels]
+    "grid": [
+        sc.Grid(grid_name.config_string(l, parallelization), l)
+        for l in coarse_grid_levels
+    ]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_config_string(2), 2)
+reference_grid = sc.Grid(grid_name.config_string(2, parallelization), 2)
+
 
 independent_choices = {
     "euler": [euler],
@@ -260,7 +225,7 @@ def compute_parts(mesh_levels, host):
 
     parts_ = dict()
     for l in mesh_levels:
-        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})]
+        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})]
 
         if l <= 5:
             parts_[l].append(2)
@@ -268,12 +233,41 @@ def compute_parts(mesh_levels, host):
     return parts_
 
 
+def generate_grids(cluster, must_generate, must_decompose):
+    geo_name = lambda l: grid_name.geo(l)
+    msh_h5_name = lambda l: grid_name.msh_h5(l)
+
+    if must_generate:
+        for l in mesh_levels:
+            shutil.rmtree(grid_name.dir(l), ignore_errors=True)
+
+        generate_circular_grids(geo_name, radius, lc_rel, mesh_levels, with_halo=True)
+        renumber_grids(msh_h5_name, mesh_levels)
+
+    if must_decompose:
+        decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
+
+
+def make_work_estimate():
+    n0 = sc.read_n_cells(grid_name.msh_h5(4))
+
+    # 'measured' on Euler on L=4 with 96 cores.
+    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
+
+    # measured on Euler on L=4 with 2 and 96 cores.
+    b0 = 0.0
+
+    MB = 1e6
+    o0 = 100 * MB
+
+    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
+
+
 def main():
     parser = default_cli_parser("'rayleigh_taylor' numerical experiment.")
     args = parser.parse_args()
 
-    if args.generate_grids:
-        generate_grids(args.cluster)
+    generate_grids(args.cluster, args.generate_grids, args.decompose_grids)
 
     if args.run:
         build_zisa()

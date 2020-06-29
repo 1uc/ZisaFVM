@@ -11,7 +11,7 @@ import tiwaz.gmsh as gmsh
 def minimal_geo_files():
     path = "grids"
     return [path + "/dbg.geo", path + "/small.geo"] + [
-        path + f"/convergence/unit_square_{d}.geo" for d in range(4)
+        path + f"/convergence/unit_square_{d}/grid.geo" for d in range(4)
     ]
 
 
@@ -34,7 +34,7 @@ def generate_convergence_geo_files(basename, n_grids):
 
     for k in range(n_grids):
         geo = template.replace("LC", str(0.1 * 2 ** (-k)))
-        tiwaz.utils.write_txt(f"grids/convergence/{basename}_{k}.geo", geo)
+        tiwaz.utils.write_txt(f"grids/convergence/{basename}_{k}/grid.geo", geo)
 
 
 def generate_unit_square_geo_files():

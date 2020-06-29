@@ -1,3 +1,6 @@
+import os
+
+
 def merge_dict(d1, d2):
     """Merge two dictionaries, i.e. {**d1, **d2} in Python 3.5 onwards."""
     d12 = d1.copy()
@@ -40,5 +43,11 @@ def read_txt(filename):
 
 
 def write_txt(filename, string):
+
+    dirname = os.path.dirname(filename)
+    if dirname:
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
     with open(filename, "w") as f:
         f.write(string)

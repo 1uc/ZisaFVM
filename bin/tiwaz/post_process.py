@@ -135,7 +135,7 @@ def find_grid(directory):
         if os.path.isfile(g):
             return g
 
-        g = next(iter(glob.glob(os.path.join(g, "*/grid.h5"))))
+        g = next(iter(glob.glob(os.path.join(g, "grid.h5"))))
         if os.path.isfile(g):
             return g
 

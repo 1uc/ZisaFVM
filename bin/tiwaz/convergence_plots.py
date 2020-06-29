@@ -151,7 +151,7 @@ class SplitConvergencePlot:
             l.set_transform(l.get_transform() + rtick_offset)
 
     def ytick_values_rate(self):
-        return [1, 2, 3, 4]
+        return [1, 2, 3, 4, 5]
 
     def ylim(self):
         self.ylim_error()

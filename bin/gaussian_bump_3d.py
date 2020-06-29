@@ -24,6 +24,7 @@ from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_spherical_grids
 from tiwaz.gmsh import decompose_grids
 from tiwaz.gmsh import renumber_grids
+from tiwaz.gmsh import GridNamingScheme
 from tiwaz.site_details import MPIHeuristics
 from tiwaz.work_estimate import ZisaWorkEstimate
 from tiwaz.queue_args import MPIQueueArgs
@@ -57,7 +58,7 @@ gravity = sc.PolytropeGravity()
 # gravity = sc.ConstantGravity(g=1.0)
 euler = sc.Euler(eos, gravity)
 
-t_end = 0.0001
+t_end = 0.09
 time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5", "gaussian_bump", n_snapshots=1, parallel_strategy="gathered", n_writers=8
@@ -66,7 +67,7 @@ io = sc.IO(
 
 
 def make_work_estimate():
-    n0 = sc.read_n_cells(grid_name_hdf5(1))
+    n0 = sc.read_n_cells(grid_name.msh_h5(1))
 
     t0 = 2 * timedelta(seconds=t_end / 0.09 * 90 * 24)
 
@@ -76,38 +77,24 @@ def make_work_estimate():
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, n_dims=3)
 
 
-def grid_name_stem(l):
-    return "grids/gaussian_bump_3d-{}".format(l)
-
-
-def grid_name_geo(l):
-    return grid_name_stem(l) + ".geo"
-
-
-def grid_name_hdf5(l):
-    return grid_name_stem(l) + ".msh.h5"
-
-
-def grid_config_string(l):
-    if parallelization["mode"] == "mpi":
-        return grid_name_stem(l)
-
-    return grid_name_hdf5(l)
-
-
+grid_name = GridNamingScheme("gaussian_bump_3d")
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-mesh_levels = list(range(0, 3)) + [3]
+# mesh_levels = list(range(0, 3)) + [3]
+mesh_levels = [0]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))
 
 coarse_grid_choices = {
-    "grid": [sc.Grid(grid_config_string(l), l) for l in coarse_grid_levels]
+    "grid": [
+        sc.Grid(grid_name.config_string(l, parallelization), l)
+        for l in coarse_grid_levels
+    ]
 }
 coarse_grids = all_combinations(coarse_grid_choices)
-reference_grid = sc.Grid(grid_config_string(3), 3)
+reference_grid = sc.Grid(grid_name.config_string(3, parallelization), 3)
 
 independent_choices = {
     "euler": [euler],
@@ -130,8 +117,11 @@ dependent_choices_b = {
         sc.Reconstruction(
             "CWENO-AO", [2, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
         ),
+        # sc.Reconstruction(
+        #     "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
+        # ),
         sc.Reconstruction(
-            "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
+            "CWENO-AO", [3, 3, 3, 3, 3], overfit_factors=[4.0, 2.5, 2.5, 2.5, 2.5]
         ),
         sc.Reconstruction(
             "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
@@ -167,7 +157,7 @@ reference_choices = {
     "quadrature": [sc.Quadrature(4)],
     "grid": [reference_grid],
     "reference": [
-        sc.Reference("isentropic", [grid_name_stem(l) for l in coarse_grid_levels])
+        sc.Reference("isentropic", [grid_name.stem(l) for l in coarse_grid_levels])
     ],
     "parallelization": [{"mode": "mpi"}],
     "debug": [{"global_indices": False, "stencils": False}],
@@ -236,33 +226,42 @@ class TableLabels:
 
 
 def compute_parts(mesh_levels, host):
-    work_estimate = make_work_estimate()
+    return {0: [2]}
+    # work_estimate = make_work_estimate()
 
-    heuristics = MPIHeuristics(host=host)
-    queue_args = MPIQueueArgs(work_estimate, heuristics=heuristics)
+    # heuristics = MPIHeuristics(host=host)
+    # queue_args = MPIQueueArgs(work_estimate, heuristics=heuristics)
 
-    parts_ = dict()
-    for l in mesh_levels:
-        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name_hdf5(l)}})]
+    # parts_ = dict()
+    # for l in mesh_levels:
+    #     parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})]
 
-        if l <= 5:
-            parts_[l].append(2)
+    #     if l <= 5:
+    #         parts_[l].append(2)
 
-    return parts_
+    # return parts_
 
 
-def generate_grids(cluster):
-    generate_spherical_grids(grid_name_geo, radius, lc_rel, mesh_levels)
-    renumber_grids(grid_name_hdf5, mesh_levels)
-    decompose_grids(grid_name_hdf5, mesh_levels, compute_parts(mesh_levels, cluster))
+def generate_grids(cluster, must_generate, must_decompose):
+    geo_name = lambda l: grid_name.geo(l)
+    msh_h5_name = lambda l: grid_name.msh_h5(l)
+
+    if must_generate:
+        for l in mesh_levels:
+            shutil.rmtree(grid_name.dir(l), ignore_errors=True)
+
+        generate_spherical_grids(geo_name, radius, lc_rel, mesh_levels, with_halo=True)
+        renumber_grids(msh_h5_name, mesh_levels)
+
+    if must_decompose:
+        decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
 
 
 def main():
     parser = default_cli_parser("'gaussian_bump' numerical experiment.")
     args = parser.parse_args()
 
-    if args.generate_grids:
-        generate_grids(args.cluster)
+    generate_grids(args.cluster, args.generate_grids, args.decompose_grids)
 
     if args.run:
         build_zisa()

@@ -9,6 +9,29 @@ from .site_details import zisa_home_directory
 from .launch_params import build_target
 
 
+class GridNamingScheme:
+    def __init__(self, basename):
+        self.basename = basename
+
+    def dir(self, l):
+        return f"grids/{self.basename}-{l}"
+
+    def stem(self, l):
+        return f"{self.dir(l)}/grid"
+
+    def geo(self, l):
+        return self.stem(l) + ".geo"
+
+    def msh_h5(self, l):
+        return self.stem(l) + ".msh.h5"
+
+    def config_string(self, l, parallelization):
+        if parallelization["mode"] == "mpi":
+            return self.dir(l)
+
+        return self.dir(l)
+
+
 def generate_grids_from_template(template_name, filename, substitutions, levels):
     template = read_txt(template_name)
 
@@ -17,14 +40,42 @@ def generate_grids_from_template(template_name, filename, substitutions, levels)
         for key, value in s.items():
             geo = geo.replace(key, value)
 
+        print(filename(l))
         write_txt(filename(l), geo)
 
     generate_grids([filename(l) for l in levels])
 
 
-def generate_spherical_grids(filename, radius, lc_rel, levels):
-    template_name = "grids/sphere.tmpl"
-    substitutions = [{"RADIUS": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
+def generate_spherical_shell_grids(filename, radii, lc_rel, levels, with_halo):
+    template_name = "grids/spherical_shell" + (
+        "_with_halo.tmpl" if with_halo else ".tmpl"
+    )
+
+    with open("grids/sphere.macro", "r") as f:
+        sphere_macro = f.read()
+
+    substitutions = [
+        {
+            "INNER_RADIUS": str(radii[0]),
+            "OUTER_RADIUS": str(radii[1]),
+            "LC_REL": str(lc_rel[l]),
+            "SPHERE_MACRO": sphere_macro,
+        }
+        for l in levels
+    ]
+
+    generate_grids_from_template(template_name, filename, substitutions, levels)
+
+
+def generate_spherical_grids(filename, radius, lc_rel, levels, with_halo):
+    template_name = "grids/sphere_with_halo.tmpl" if with_halo else "grids/sphere.tmpl"
+    with open("grids/sphere.macro", "r") as f:
+        sphere_macro = f.read()
+
+    substitutions = [
+        {"RADIUS": str(radius), "LC_REL": str(lc_rel[l]), "SPHERE_MACRO": sphere_macro}
+        for l in levels
+    ]
 
     generate_grids_from_template(template_name, filename, substitutions, levels)
 
@@ -63,6 +114,8 @@ def renumber_grids(grid_name_generator, mesh_levels):
     zisa_home = zisa_home_directory()
     build_target("renumber-grid")
 
+    print(mesh_levels)
+
     binary = zisa_home + "/build-release/renumber-grid"
     for l in mesh_levels:
         grid_name = grid_name_generator(l)
@@ -78,12 +131,7 @@ def decompose_grids(grid_name_generator, mesh_levels, parts):
     dd_binary = zisa_home + "/build-release/domain-decomposition"
     for l in mesh_levels:
         grid_name = grid_name_generator(l)
-        if grid_name.endswith(".msh.h5"):
-            outdir = grid_name[:-7]
-        elif grid_name.endswith(".h5"):
-            outdir = grid_name[:-3]
-        else:
-            raise Exception(f"Implement the missing logic. [{grid_name}]")
+        outdir = os.path.dirname(grid_name) + "/partitioned"
 
         for n in parts[l]:
             output = outdir + f"/{n}"

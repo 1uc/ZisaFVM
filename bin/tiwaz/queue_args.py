@@ -43,3 +43,20 @@ class MPIQueueArgs(QueueArgs):
 
         sharp_requirement = self.heuristics.memory_per_core(*memory_usage, n_tasks)
         return sharp_requirement
+
+
+class FixedMPIQueueArgs(QueueArgs):
+    def __init__(self, mem_per_core, wall_clock):
+        self._mem_per_core = mem_per_core
+        self._wall_clock = wall_clock
+
+        self.use_mpi = True
+
+    def n_mpi_tasks(self, launch_params):
+        return launch_params["experiment"]["n_proc"]
+
+    def wall_clock(self, launch_params):
+        return self._wall_clock
+
+    def memory_per_core(self, launch_params):
+        return self._mem_per_core
