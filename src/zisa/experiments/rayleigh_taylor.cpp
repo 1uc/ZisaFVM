@@ -11,8 +11,8 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
   int n_bumps = params["experiment"]["initial_conditions"]["n_bumps"];
 
   auto all_variables = compute_initial_conditions(amp, width, n_bumps);
-
   auto steady_state = compute_initial_conditions(0.0, width, n_bumps);
+
   auto vis = choose_visualization();
   vis->steady_state(*steady_state);
 

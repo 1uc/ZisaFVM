@@ -14,6 +14,7 @@ namespace po = boost::program_options;
 
 namespace zisa {
 void renumber_grid(const std::string &grid_file) {
+
   auto [vertices, vertex_indices, n_dims] = [&grid_file]() {
     auto reader = HDF5SerialReader(grid_file);
 

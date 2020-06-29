@@ -126,6 +126,7 @@ void DistributedReferenceSolution::compute_and_save(
       const auto &coord = coords[p];
       send_org_message(
           OrgMessageType::XFER, integer_cast<int>(coord.size()), p);
+
       send_xfer_request(coord, p);
     }
   }
@@ -149,7 +150,8 @@ void DistributedReferenceSolution::compute_and_save(
       process_xfer_response(msg, src);
 
       if (is_done()) {
-        send_org_message(OrgMessageType::PE_IS_DONE, -mpi_rank, 0);
+        send_org_message(
+            OrgMessageType::PE_IS_DONE, /* msg_size */ 0, /* dst */ 0);
       }
     }
   }

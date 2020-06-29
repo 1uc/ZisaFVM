@@ -78,6 +78,7 @@ static NumericalExperimentFactory make_factory() {
   NumericalExperimentFactory factory;
 
   factory.register_simple<SmoothBubble>("smooth_bubble");
+  factory.register_simple<Polytrope>("scaling_experiment");
   factory.register_simple<Polytrope>("gaussian_bump");
   factory.register_simple<Polytrope>("gaussian_bump_3d");
   factory.register_simple<JankaBump>("janka_bump");
