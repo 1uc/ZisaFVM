@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (options.count("grid") == 0) {
-    std::cout << "Missing argument `--grid GRID`.\n";
+    std::cout << "Missing argument `--gmsh GMSH`.\n";
     std::exit(EXIT_FAILURE);
   }
 
