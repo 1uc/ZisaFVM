@@ -126,11 +126,15 @@ void TimeLoop::print_goodbye_message() const {
   ss << "-------------------------- \n";
   ss << "     Date: " << date << "\n";
   ss << " Duration: " << duration << "\n";
+  ss << "  Elapsed: " << elapsed << " s\n";
   if (simulation_clock->is_interrupted()) {
     ss << "-------- to be continued --------- \n";
   } else {
     ss << "-------- End of run --------- \n";
   }
+
+  auto of = std::ofstream("run_time.txt");
+  of << elapsed << "\n";
 
   print(ss.str());
 }
