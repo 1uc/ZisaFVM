@@ -145,7 +145,7 @@ void test_hybrid_weno_convergence(
                          title.c_str(),
                          err_str.c_str(),
                          desc_params.c_str()));
-      REQUIRE(!zisa::isreal(l1_errors[grid_level]));
+      REQUIRE(zisa::isreal(l1_errors[grid_level]));
     }
 
     // Check rates.
