@@ -11,6 +11,8 @@ junk
 lib/*
 
 grids
+runjobs.sh
+timeit.sh
 
 # archives
 *.tar
