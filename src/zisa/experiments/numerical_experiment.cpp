@@ -12,13 +12,14 @@
 
 namespace zisa {
 
-NumericalExperiment::NumericalExperiment(const InputParameters &params)
-    : params(params) {}
-
 void NumericalExperiment::run() { do_run(); }
 void NumericalExperiment::post_process() { do_post_process(); }
 
-std::shared_ptr<Grid> NumericalExperiment::choose_grid() const {
+TypicalNumericalExperiment::TypicalNumericalExperiment(
+    const InputParameters &params)
+    : params(params) {}
+
+std::shared_ptr<Grid> TypicalNumericalExperiment::choose_grid() const {
   if (grid_ == nullptr) {
     grid_ = compute_grid();
   }
@@ -26,7 +27,7 @@ std::shared_ptr<Grid> NumericalExperiment::choose_grid() const {
   return grid_;
 }
 
-std::shared_ptr<Grid> NumericalExperiment::compute_grid() const {
+std::shared_ptr<Grid> TypicalNumericalExperiment::compute_grid() const {
   int_t quad_deg = params["quadrature"]["volume"];
   auto grid = load_grid(params["grid"]["file"], quad_deg);
   enforce_cell_flags(*grid);
@@ -35,7 +36,7 @@ std::shared_ptr<Grid> NumericalExperiment::compute_grid() const {
 }
 
 std::shared_ptr<FileNameGenerator>
-NumericalExperiment::choose_file_name_generator() {
+TypicalNumericalExperiment::choose_file_name_generator() {
   if (file_name_generator_ == nullptr) {
     file_name_generator_ = compute_file_name_generator();
   }
@@ -44,7 +45,7 @@ NumericalExperiment::choose_file_name_generator() {
 }
 
 std::shared_ptr<FileNameGenerator>
-NumericalExperiment::compute_file_name_generator() {
+TypicalNumericalExperiment::compute_file_name_generator() {
   // needs to be implemented.
   assert(!is_restart());
 
@@ -55,12 +56,12 @@ NumericalExperiment::compute_file_name_generator() {
   return fng;
 }
 
-void NumericalExperiment::write_grid() {
+void TypicalNumericalExperiment::write_grid() {
   auto writer = HDF5SerialWriter("grid.h5");
   save(writer, *choose_grid());
 }
 
-void NumericalExperiment::do_run() {
+void TypicalNumericalExperiment::do_run() {
   auto grid = choose_grid();
 
   if (!is_restart()) {
@@ -81,12 +82,13 @@ void NumericalExperiment::do_run() {
   do_post_run(u1);
 }
 
-void NumericalExperiment::print_grid_info() {
+void TypicalNumericalExperiment::print_grid_info() {
   std::cout << " --- Grid ---------- \n";
   std::cout << choose_grid()->str() << "\n";
 }
 
-std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {
+std::shared_ptr<AllVariables>
+TypicalNumericalExperiment::choose_initial_conditions() {
   if (all_vars_ == nullptr) {
     if (is_restart()) {
       all_vars_ = load_initial_conditions();
@@ -99,7 +101,7 @@ std::shared_ptr<AllVariables> NumericalExperiment::choose_initial_conditions() {
 }
 
 std::shared_ptr<SimulationClock>
-NumericalExperiment::choose_simulation_clock() {
+TypicalNumericalExperiment::choose_simulation_clock() {
 
   auto time_keeper_params = TimeKeeperParameters(params);
   auto plotting_params = PlottingStepsParameters(params);
@@ -124,14 +126,14 @@ NumericalExperiment::choose_simulation_clock() {
   return simulation_clock;
 }
 
-StencilFamilyParams NumericalExperiment::choose_stencil_params() const {
+StencilFamilyParams TypicalNumericalExperiment::choose_stencil_params() const {
   const auto &rc_params = params["reconstruction"];
   return StencilFamilyParams(
       rc_params["orders"], rc_params["biases"], rc_params["overfit_factors"]);
 }
 
 std::shared_ptr<array<StencilFamily, 1>>
-NumericalExperiment::choose_stencils() const {
+TypicalNumericalExperiment::choose_stencils() const {
   if (stencils_ == nullptr) {
     auto grid = choose_grid();
     stencils_ = compute_stencils(*grid);
@@ -141,7 +143,7 @@ NumericalExperiment::choose_stencils() const {
 }
 
 std::shared_ptr<array<StencilFamily, 1>>
-NumericalExperiment::compute_stencils(const Grid &grid) const {
+TypicalNumericalExperiment::compute_stencils(const Grid &grid) const {
   assert(grid_ != nullptr);
 
   auto stencil_params = choose_stencil_params();
@@ -150,7 +152,7 @@ NumericalExperiment::compute_stencils(const Grid &grid) const {
       compute_stencil_families(grid, stencil_params));
 }
 
-std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
+std::shared_ptr<TimeLoop> TypicalNumericalExperiment::choose_time_loop() {
   auto simulation_clock = choose_simulation_clock();
   auto time_integration = choose_time_integration();
   auto instantaneous_physics = choose_instantaneous_physics();
@@ -171,7 +173,7 @@ std::shared_ptr<TimeLoop> NumericalExperiment::choose_time_loop() {
 }
 
 std::shared_ptr<BoundaryCondition>
-NumericalExperiment::choose_boundary_condition() {
+TypicalNumericalExperiment::choose_boundary_condition() {
   if (boundary_condition_ == nullptr) {
     boundary_condition_ = compute_boundary_condition();
   }
@@ -179,31 +181,31 @@ NumericalExperiment::choose_boundary_condition() {
 }
 
 std::shared_ptr<BoundaryCondition>
-NumericalExperiment::compute_boundary_condition() {
+TypicalNumericalExperiment::compute_boundary_condition() {
   auto grid = choose_grid();
   auto u0 = choose_initial_conditions();
 
   return make_boundary_condition(params, grid, u0);
 }
 
-int_t NumericalExperiment::choose_volume_deg() const {
+int_t TypicalNumericalExperiment::choose_volume_deg() const {
   return params["quadrature"]["volume"];
 }
 
-EdgeRule NumericalExperiment::choose_edge_rule() {
+EdgeRule TypicalNumericalExperiment::choose_edge_rule() {
   return cached_edge_quadrature_rule(choose_edge_deg());
 }
 
-int_t NumericalExperiment::choose_edge_deg() const {
+int_t TypicalNumericalExperiment::choose_edge_deg() const {
   return params["quadrature"]["edge"];
 }
 
-TriangularRule NumericalExperiment::choose_volume_rule() {
+TriangularRule TypicalNumericalExperiment::choose_volume_rule() {
   return cached_triangular_quadrature_rule(choose_volume_deg());
 }
 
 std::shared_ptr<TimeIntegration>
-NumericalExperiment::choose_time_integration() {
+TypicalNumericalExperiment::choose_time_integration() {
   LOG_ERR_IF(!has_key(params, "ode"),
              "Missing section 'ode' in the config file.");
 
@@ -219,7 +221,8 @@ NumericalExperiment::choose_time_integration() {
   return make_time_integration(desc, rate_of_change, bc, dims);
 }
 
-std::shared_ptr<RateOfChange> NumericalExperiment::aggregate_rates_of_change(
+std::shared_ptr<RateOfChange>
+TypicalNumericalExperiment::aggregate_rates_of_change(
     const std::vector<std::shared_ptr<RateOfChange>>
         &physical_rates_of_change) {
 
@@ -239,19 +242,21 @@ std::shared_ptr<RateOfChange> NumericalExperiment::aggregate_rates_of_change(
 }
 
 std::shared_ptr<InstantaneousPhysics>
-NumericalExperiment::choose_instantaneous_physics() {
+TypicalNumericalExperiment::choose_instantaneous_physics() {
   return std::make_shared<NoInstantaneousPhysics>();
 }
 
-std::shared_ptr<StepRejection> NumericalExperiment::choose_step_rejection() {
+std::shared_ptr<StepRejection>
+TypicalNumericalExperiment::choose_step_rejection() {
   return std::make_shared<RejectNothing>();
 }
 
-std::shared_ptr<ProgressBar> NumericalExperiment::choose_progress_bar() {
+std::shared_ptr<ProgressBar> TypicalNumericalExperiment::choose_progress_bar() {
   return std::make_shared<SerialProgressBar>(1);
 }
 
-std::shared_ptr<Visualization> NumericalExperiment::choose_visualization() {
+std::shared_ptr<Visualization>
+TypicalNumericalExperiment::choose_visualization() {
   if (visualization_ == nullptr) {
     visualization_ = compute_visualization();
   }
@@ -259,7 +264,7 @@ std::shared_ptr<Visualization> NumericalExperiment::choose_visualization() {
   return visualization_;
 }
 
-void NumericalExperiment::write_debug_output() {
+void TypicalNumericalExperiment::write_debug_output() {
   if (has_key(params, "debug")) {
     if (params["debug"].value("stencils", false)) {
       write_stencils();
@@ -267,21 +272,21 @@ void NumericalExperiment::write_debug_output() {
   }
 }
 
-void NumericalExperiment::write_stencils() {
+void TypicalNumericalExperiment::write_stencils() {
   const auto &stencils = choose_stencils();
   auto writer = HDF5SerialWriter("stencils.h5");
   save(writer, *stencils, "stencils");
 }
 
-void NumericalExperiment::enforce_cell_flags(Grid &grid) const {
+void TypicalNumericalExperiment::enforce_cell_flags(Grid &grid) const {
   mask_ghost_cells(grid, boundary_mask());
 }
 
 std::function<bool(const Grid &, int_t)>
-NumericalExperiment::boundary_mask() const {
+TypicalNumericalExperiment::boundary_mask() const {
   return [](const Grid &, int_t) { return false; };
 }
 
-int_t NumericalExperiment::choose_n_avars() { return 0; }
+int_t TypicalNumericalExperiment::choose_n_avars() { return 0; }
 
 } // namespace zisa

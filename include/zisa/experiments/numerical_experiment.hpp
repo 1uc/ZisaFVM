@@ -23,17 +23,37 @@ namespace zisa {
 
 class NumericalExperiment {
 public:
-  explicit NumericalExperiment(const InputParameters &params);
   virtual ~NumericalExperiment() = default;
 
   void run();
   void post_process();
 
 protected:
-  virtual void write_grid();
-  virtual void do_run();
-  virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) = 0;
+  virtual void do_run() = 0;
   virtual void do_post_process() = 0;
+};
+
+class InvalidNumericalExperiment : public NumericalExperiment {
+public:
+  InvalidNumericalExperiment(std::string error_message)
+      : error_message(std::move(error_message)) {}
+
+protected:
+  virtual void do_run() override { LOG_ERR(error_message); }
+  virtual void do_post_process() override { LOG_ERR(error_message); }
+
+private:
+  std::string error_message;
+};
+
+class TypicalNumericalExperiment : public NumericalExperiment {
+public:
+  explicit TypicalNumericalExperiment(const InputParameters &params);
+
+protected:
+  virtual void write_grid();
+  virtual void do_run() override;
+  virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) = 0;
 
   bool is_restart() const { return has_key(params, "restart"); }
 

@@ -12,9 +12,9 @@
 namespace zisa {
 
 template <class EOS, class Gravity>
-class EulerExperiment : public NumericalExperiment {
+class EulerExperiment : public TypicalNumericalExperiment {
 private:
-  using super = NumericalExperiment;
+  using super = TypicalNumericalExperiment;
 
 protected:
   using eos_t = EOS;
