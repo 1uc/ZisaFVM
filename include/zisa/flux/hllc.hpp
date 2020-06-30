@@ -86,7 +86,6 @@ private:
 public:
   using cvars_t = typename Model::cvars_t;
   using model_t = Model;
-  using memory_t = hllc_memory_t;
   using speeds_t = std::tuple<double, double, double>;
 
 public:
