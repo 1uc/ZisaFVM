@@ -77,43 +77,6 @@ public:
   }
 };
 
-template <class Gravity>
-class hllc_speeds<Euler<JankaEOS, Gravity>> {
-private:
-  using euler_t = Euler<JankaEOS, Gravity>;
-  using cvars_t = euler_var_t;
-  using xvars_t = euler_var_t::xvars_t;
-
-public:
-  static std::tuple<double, double, double> speeds(const euler_t & /* euler */,
-                                                   const cvars_t &uL,
-                                                   const xvars_t &xvarL,
-                                                   const cvars_t &uR,
-                                                   const xvars_t &xvarR) {
-
-    auto pL = xvarL.p;
-    auto aL = xvarL.a;
-
-    auto pR = xvarR.p;
-    auto aR = xvarR.a;
-
-    double vL = uL(1) / uL(0);
-    double vR = uR(1) / uR(0);
-
-    double sL = zisa::min(vL - aL, vR - aR);
-    double sR = zisa::max(vL + aL, vR + aR);
-    double s_star = (uR(1) * (sR - vR) - uL(1) * (sL - vL) + pL - pR)
-                    / (uR(0) * (sR - vR) - uL(0) * (sL - vL));
-
-    return {sL, s_star, sR};
-  }
-};
-
-struct hllc_memory_t {
-  double cK;
-  bool is_s_star_ge_zero;
-};
-
 /// HLLC numerical flux with Einfeldt-Batten wavespeeds.
 /** Reference: Batten, Wavespeed Estimates for the HLLC Riemann Solver, 1997
  */

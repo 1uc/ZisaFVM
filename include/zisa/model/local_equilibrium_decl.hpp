@@ -49,32 +49,6 @@ public:
 };
 
 template <>
-class LocalEquilibrium<IsentropicEquilibrium<JankaEOS, RadialGravity>>
-    : public LocalEquilibriumBase<
-          IsentropicEquilibrium<JankaEOS, RadialGravity>> {
-private:
-  using eq_t = IsentropicEquilibrium<JankaEOS, RadialGravity>;
-  using super = LocalEquilibriumBase<eq_t>;
-
-public:
-  LocalEquilibrium() = default;
-  explicit LocalEquilibrium(const eq_t &equilibrium) : super(equilibrium) {}
-  LocalEquilibrium(const eq_t &equilibrium,
-                   const EnthalpyEntropy &theta_ref,
-                   const XYZ &x)
-      : super(equilibrium, theta_ref, x) {}
-
-  void solve(const RhoE &rhoE_bar, const Cell &cell_ref) {
-    const auto &eos = this->equilibrium.euler->eos;
-    auto [rho, E] = rhoE_bar;
-
-    E = zisa::max(eos.polytropic_energy(rho), E);
-
-    super::solve(RhoE{rho, E}, cell_ref);
-  }
-};
-
-template <>
 class LocalEquilibrium<NoEquilibrium> {
 public:
   LocalEquilibrium() = default;
