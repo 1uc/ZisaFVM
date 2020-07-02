@@ -18,6 +18,8 @@ public:
   IdealGasEOS(double gamma, double specific_gas_constant)
       : gamma_(gamma), specific_gas_constant_(specific_gas_constant) {}
 
+  xvars_t xvars(const RhoE &rhoE) const { return xvars(cvars(rhoE)); }
+
   xvars_t xvars(const cvars_t &u) const {
     xvars_t xvars;
 
@@ -108,6 +110,13 @@ public:
   ANY_DEVICE_INLINE RhoT rhoT(RhoE rhoE) const {
     auto rho = rhoE.rho();
     auto T = this->temperature(rhoE);
+
+    return RhoT{rho, T};
+  }
+
+  ANY_DEVICE_INLINE RhoT rhoT(RhoEntropy rhoK) const {
+    auto rho = rhoK.rho();
+    auto T = this->temperature(rhoP(rhoK));
 
     return RhoT{rho, T};
   }
@@ -241,6 +250,27 @@ public:
 
   ANY_DEVICE_INLINE double temperature(RhoE rhoE) const {
     return temperature(RhoP{rhoE.rho(), pressure(rhoE)});
+  }
+
+  euler_full_xvars_t full_extra_variables(const RhoE &rhoE) const {
+    euler_full_xvars_t ret;
+
+    auto [rho, E] = rhoE;
+    auto p = pressure(rhoE);
+    auto a = sound_speed(RhoP{rho, p});
+    auto h = enthalpy(RhoP{rho, p});
+    auto s = entropy(RhoP{rho, p});
+    auto T = temperature(RhoP{rho, p});
+
+    ret.rho = rho;
+    ret.E = E;
+    ret.a = a;
+    ret.h = h;
+    ret.s = s;
+    ret.p = p;
+    ret.T = T;
+
+    return ret;
   }
 
   std::string str() const {

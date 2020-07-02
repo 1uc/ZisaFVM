@@ -16,7 +16,7 @@ LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
 template <class Equilibrium>
 LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
     const Equilibrium &equilibrium,
-    const EnthalpyEntropy &theta_ref,
+    const equilibrium_values_t &theta_ref,
     const XYZ &x_ref)
     : theta(theta_ref),
       x_ref(x_ref),
@@ -29,9 +29,19 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
 
   x_ref = cell_ref.qr.points[0];
 
-  auto f = [this, &cell_ref, &rhoE_bar](const EnthalpyEntropy &theta_star) {
-    auto rhoE_eq = [this, &theta_star](const XYZ &xy) {
-      return equilibrium.extrapolate(theta_star, x_ref, xy);
+  const auto &eos = equilibrium.euler->eos;
+
+  auto full_guess = eos.full_extra_variables(rhoE_bar);
+  auto enthalpy_entropy_guess = EnthalpyEntropy{full_guess.h, full_guess.s};
+  auto rhoT_guess = RhoT{full_guess.rho, full_guess.T};
+
+  auto f = [this, &eos, &cell_ref, &rhoE_bar, &rhoT_guess](
+               const EnthalpyEntropy &theta_star) {
+    auto rhoE_eq = [this, &eos, &theta_star, &rhoT_guess](const XYZ &xy) {
+      return equilibrium.extrapolate(
+          isentropic_equilibrium_values(eos, theta_star, rhoT_guess),
+          x_ref,
+          xy);
     };
 
     return RhoE(rhoE_bar - average(cell_ref, rhoE_eq));
@@ -61,12 +71,13 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
     };
   };
 
-  const auto &eos = equilibrium.euler->eos;
-  auto guess = eos.enthalpy_entropy(rhoE_bar);
+  auto atol = EnthalpyEntropy(1e-10 * enthalpy_entropy_guess);
 
-  auto atol = EnthalpyEntropy(1e-10 * guess);
+  auto [hS, has_eq] = quasi_newton(f, inv_df, enthalpy_entropy_guess, atol);
 
-  std::tie(theta, found_equilibrium) = quasi_newton(f, inv_df, guess, atol);
+  found_equilibrium = has_eq;
+  theta.h() = hS.h();
+  theta.s() = hS.s();
 }
 
 template <class Equilibrium>

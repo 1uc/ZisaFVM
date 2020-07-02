@@ -19,9 +19,10 @@ public:
 
   cvars_t operator()(const RhoE &rhoE) const {
     auto [rho, E] = rhoE;
-    double cs = euler->eos.sound_speed(rhoE);
+    auto xvars = euler->eos.xvars(rhoE);
+    double cs = xvars.a;
 
-    LOG_ERR_IF(rho <= 0.0, "Invalid denisty.");
+    LOG_ERR_IF(rho <= 0.0, "Invalid density.");
     LOG_ERR_IF(E <= 0.0, "Invalid energy.");
 
     return {rho, cs, cs, cs, E};
@@ -35,10 +36,7 @@ class UnityScaling {
   using cvars_t = euler_var_t;
 
 public:
-  template <class X>
-  cvars_t operator()(const X &) const {
-    return {1.0, 1.0, 1.0, 1.0, 1.0};
-  }
+  cvars_t operator()(const RhoE &) const { return {1.0, 1.0, 1.0, 1.0, 1.0}; }
 };
 }
 

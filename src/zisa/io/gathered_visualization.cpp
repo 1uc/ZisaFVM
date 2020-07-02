@@ -32,9 +32,7 @@ void GatheredVisualization::gather_and_visualize(
     const AllVariables &all_variables, const Vis &vis) {
 
   if (gatherer->is_this_rank_gathering()) {
-    if (job != nullptr) {
-      job->join();
-    }
+    wait();
 
     gatherer->copy_local_patch(buffer, all_variables);
 

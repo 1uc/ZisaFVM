@@ -5,6 +5,10 @@
 #include <zisa/experiments/rayleigh_taylor.hpp>
 #include <zisa/experiments/smooth_bubble.hpp>
 
+#if ZISA_HAS_HELMHOLTZ_EOS == 1
+#include <zisa/experiments/stellar_convection.hpp>
+#endif
+
 #ifdef ZISA_HAS_MPI
 #include <zisa/experiments/mpi_numerical_experiment.hpp>
 #endif
@@ -81,6 +85,10 @@ static NumericalExperimentFactory make_factory() {
   factory.register_simple<Polytrope>("gaussian_bump");
   factory.register_simple<Polytrope>("gaussian_bump_3d");
   factory.register_simple<RayleighTaylor>("rayleigh_taylor");
+
+#if ZISA_HAS_HELMHOLTZ_EOS == 1
+  factory.register_simple<StellarConvection>("stellar_convection");
+#endif
 
   return factory;
 }

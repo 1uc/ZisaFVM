@@ -95,8 +95,9 @@ SphericalGravity::SphericalGravity(array<double, 1> radii, array<double, 1> phi)
     : interpolate(std::move(radii), std::move(phi)) {}
 
 void save(HDF5Writer &writer, const SphericalGravity &gravity) {
-  save(writer, gravity.interpolate.points, "radii");
-  save(writer, gravity.interpolate.values, "phi");
+  LOG_WARN("Not saving the gravitational potential.");
+  //  save(writer, gravity.interpolate.points, "radii");
+  //  save(writer, gravity.interpolate.values, "phi");
 }
 
 SphericalGravity SphericalGravity::load(HDF5Reader &reader) {
@@ -107,6 +108,5 @@ SphericalGravity SphericalGravity::load(HDF5Reader &reader) {
 }
 
 void save(HDF5Writer &, const NoGravity &) { return; }
-
 
 } // zisa

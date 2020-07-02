@@ -1,6 +1,7 @@
 #ifndef EULER_FACTORY_H_BDRPI
 #define EULER_FACTORY_H_BDRPI
 
+#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/model/euler_factory.hpp>
 
 namespace zisa {
@@ -34,6 +35,20 @@ JankaEOS make_eos<JankaEOS>(const InputParameters &params) {
   auto janka_params = make_janka_eos_params(params);
   return make_janka_eos(janka_params);
 }
+
+#if ZISA_HAS_HELMHOLTZ_EOS == 1
+template <>
+HelmholtzEOS make_eos<HelmholtzEOS>(const InputParameters &params) {
+  const auto &eos_params = params["euler"]["eos"];
+  auto table_path = std::string(eos_params["data"]);
+  auto mass_mixing_ratio = std::vector<double>(eos_params["mass_mixing_ratio"]);
+  auto mass_number = std::vector<double>(eos_params["mass_number"]);
+  auto charge_number = std::vector<double>(eos_params["charge_number"]);
+
+  return HelmholtzEOS(
+      table_path, mass_mixing_ratio, mass_number, charge_number);
+}
+#endif
 
 template <>
 NoGravity make_gravity<NoGravity>(const InputParameters &params) {
@@ -76,6 +91,22 @@ PolytropeGravityWithJumpRadial make_gravity<PolytropeGravityWithJumpRadial>(
                                         params["K_inner"],
                                         params["K_outer"],
                                         params["G"]);
+}
+
+template <>
+RadialGravity make_gravity<RadialGravity>(const InputParameters &input_params) {
+  LOG_ERR_IF(input_params["euler"]["gravity"]["mode"] != "radial_interpolation",
+             "Incompatible gravity.");
+
+  const auto &params = input_params["euler"]["gravity"];
+  auto filename = params["profile"];
+
+  auto reader = HDF5SerialReader(filename);
+  auto points = array<double, 1>::load(reader, "x1");
+  reader.open_group("auxiliary");
+  auto grav_potential = array<double, 1>::load(reader, "grav._potential");
+
+  return RadialGravity(std::move(points), std::move(grav_potential));
 }
 
 Euler<IdealGasEOS, ConstantGravityRadial> make_default_euler() {

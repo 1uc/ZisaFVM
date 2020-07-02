@@ -33,13 +33,13 @@ public:
   Euler(const EOS &eos, const Gravity &gravity);
 
   /// Largest eigenvalue of the derivative of the flux.
-  ANY_DEVICE_INLINE double max_eigen_value(const euler_var_t &u) const;
+  ANY_DEVICE_INLINE double max_eigen_value(const euler_var_t &u,
+                                           const euler_xvar_t &xvar) const;
 
   /// Physical flux normal to the surface.
   /** The convention is that the first component is normal to the surface
    *  through which the flux is computed.
    */
-  ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u) const;
   ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u, double p) const;
 
   /// Total energy.

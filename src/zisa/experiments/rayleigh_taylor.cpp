@@ -1,7 +1,5 @@
 #include <zisa/experiments/ic/polytrope_ic.hpp>
-#include <zisa/experiments/numerical_experiment_factory.hpp>
 #include <zisa/experiments/rayleigh_taylor.hpp>
-#include <zisa/parallelization/omp.h>
 
 namespace zisa {
 

@@ -2,6 +2,7 @@
 #define ISENTROPIC_EQUILIBRIUM_H_5173V
 
 #include <zisa/math/triangle.hpp>
+#include <zisa/model/equilibrium_values.hpp>
 #include <zisa/model/euler.hpp>
 #include <zisa/model/euler_variables.hpp>
 
@@ -13,11 +14,14 @@ private:
   using euler_t = Euler<EOS, Gravity>;
 
 public:
+  using equilibrium_values_t = isentropic_equilibrium_values_t<EOS>;
+
+public:
   IsentropicEquilibrium() = default;
   explicit IsentropicEquilibrium(std::shared_ptr<euler_t> euler)
       : euler(std::move(euler)) {}
 
-  RhoE extrapolate(const EnthalpyEntropy &theta,
+  RhoE extrapolate(equilibrium_values_t theta_ref,
                    const XYZ &x_ref,
                    const XYZ &x) const {
 
@@ -27,10 +31,16 @@ public:
     double phi_ref = gravity.phi(x_ref);
     double phi = gravity.phi(x);
 
-    double h = theta.h() + phi_ref - phi;
-    double K = theta.s();
+    auto h_ref = theta_ref.h();
+    auto s_ref = theta_ref.s();
 
-    return eos.rhoE(EnthalpyEntropy{h, K});
+    double h = h_ref + phi_ref - phi;
+    double s = s_ref;
+
+    theta_ref.h() = h;
+    theta_ref.s() = s;
+
+    return conserved_variables(eos, theta_ref);
   }
 
   std::shared_ptr<Euler<EOS, Gravity>> euler;

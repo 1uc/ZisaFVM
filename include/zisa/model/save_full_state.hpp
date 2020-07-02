@@ -15,7 +15,7 @@ void save_full_state(HDF5Writer &writer,
                      int_t n_steps) {
 
   save_state(writer, euler, all_variables, t, n_steps);
-  save_extended_state(writer, euler, all_variables);
+  //  save_extended_state(writer, euler, all_variables);
 }
 
 template <class EOS, class Gravity>
@@ -36,17 +36,15 @@ void save_extended_state(HDF5Writer &writer,
 
   for (int_t i = 0; i < n_cells; ++i) {
     auto u = euler_var_t(cvars(i));
-    auto rhoP = eos.rhoP(u);
-    auto cs = eos.sound_speed(rhoP);
-    auto theta = eos.enthalpy_entropy(rhoP);
+    auto full_xvars = eos.full_extra_variables(eos.rhoE(u));
 
     tmp_array(i, 0) = u(1) / u(0);
     tmp_array(i, 1) = u(2) / u(0);
     tmp_array(i, 2) = u(3) / u(0);
-    tmp_array(i, 3) = rhoP.p();
-    tmp_array(i, 4) = cs;
-    tmp_array(i, 5) = theta.h();
-    tmp_array(i, 6) = theta.s();
+    tmp_array(i, 3) = full_xvars.p;
+    tmp_array(i, 4) = full_xvars.a;
+    tmp_array(i, 5) = full_xvars.h;
+    tmp_array(i, 6) = full_xvars.s;
   }
 
   auto labels = std::vector<std::string>{"v1", "v2", "v3", "p", "cs", "h", "s"};

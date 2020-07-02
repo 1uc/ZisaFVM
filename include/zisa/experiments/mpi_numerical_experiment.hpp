@@ -108,7 +108,7 @@ protected:
     } else if (is_unstructured_visualization()) {
       std::string dirname = this->params["grid"]["file"];
       auto grid_name
-          = string_format("%s/%d/grid.h5", dirname.c_str(), mpi_comm_size);
+          = string_format("%s/grid.h5", dirname.c_str(), mpi_comm_size);
 
       auto file_dims = choose_file_dimensions();
       auto writer
@@ -317,8 +317,10 @@ protected:
 
   std::string subgrid_name() const {
     std::string dirname = this->params["grid"]["file"];
-    return string_format(
-        "%s/%d/subgrid-%04d.msh.h5", dirname.c_str(), mpi_comm_size, mpi_rank);
+    return string_format("%s/partitioned/%d/subgrid-%04d.msh.h5",
+                         dirname.c_str(),
+                         mpi_comm_size,
+                         mpi_rank);
   }
 
   std::shared_ptr<Grid> compute_grid() const override {

@@ -25,7 +25,8 @@ public:
       auto u = cvars_t(current_state.cvars(i));
       coord_transform(u, face);
 
-      auto f = model->flux(u);
+      auto xvars = model->eos.xvars(u);
+      auto f = model->flux(u, xvars.p);
       inv_coord_transform(f, face);
 
       tendency.cvars(i) -= volume(face) / grid->volumes(i) * f;

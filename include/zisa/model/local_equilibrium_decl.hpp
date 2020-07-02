@@ -13,10 +13,13 @@ namespace zisa {
 template <class Equilibrium>
 class LocalEquilibriumBase {
 public:
+  using equilibrium_values_t = typename Equilibrium::equilibrium_values_t;
+
+public:
   LocalEquilibriumBase() = default;
   explicit LocalEquilibriumBase(const Equilibrium &equilibrium);
   LocalEquilibriumBase(const Equilibrium &equilibrium,
-                       const EnthalpyEntropy &theta_ref,
+                       const equilibrium_values_t &theta_ref,
                        const XYZ &x);
 
   void solve(const RhoE &rhoE_bar, const Cell &cell_ref);
@@ -26,7 +29,7 @@ public:
   std::string str(int verbose = 0) const;
 
 protected:
-  EnthalpyEntropy theta = EnthalpyEntropy{};
+  equilibrium_values_t theta = equilibrium_values_t{};
   XYZ x_ref = XYZ{};
   bool found_equilibrium = false;
 
@@ -39,11 +42,14 @@ private:
   using super = LocalEquilibriumBase<Equilibrium>;
 
 public:
+  using equilibrium_values_t = typename super::equilibrium_values_t;
+
+public:
   LocalEquilibrium() = default;
   explicit LocalEquilibrium(const Equilibrium &equilibrium)
       : super(equilibrium) {}
   LocalEquilibrium(const Equilibrium &equilibrium,
-                   const EnthalpyEntropy &theta_ref,
+                   const equilibrium_values_t &theta_ref,
                    const XYZ &x)
       : super(equilibrium, theta_ref, x) {}
 };

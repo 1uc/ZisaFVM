@@ -4,4 +4,8 @@
 #include "ideal_gas_eos.hpp"
 #include "janka_eos.hpp"
 
+#if ZISA_HAS_HELMHOLTZ_EOS == 1
+#include "helmholtz_eos.hpp"
+#endif
+
 #endif /* end of include guard */

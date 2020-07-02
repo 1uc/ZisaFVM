@@ -21,17 +21,13 @@ Euler<EOS, Gravity>::Euler(const EOS &eos, const Gravity &gravity)
 
 template <class EOS, class Gravity>
 ANY_DEVICE_INLINE double
-Euler<EOS, Gravity>::max_eigen_value(const euler_var_t &u) const {
-  double p = eos.pressure(u);
-  return zisa::sqrt((u(1) * u(1) + u(2) * u(2)) / (u(0) * u(0)))
-         + eos.sound_speed(RhoP{u[0], p});
-}
+Euler<EOS, Gravity>::max_eigen_value(const euler_var_t &u,
+                                     const euler_xvar_t &xvar) const {
 
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE euler_var_t
-Euler<EOS, Gravity>::flux(const euler_var_t &u) const {
-  double p = eos.pressure(u);
-  return flux(u, p);
+  auto cs = xvar.a;
+  double v2 = (u(1) * u(1) + u(2) * u(2) + u(3) * u(3)) / (u(0) * u(0));
+
+  return std::sqrt(v2) + cs;
 }
 
 template <class EOS, class Gravity>

@@ -29,10 +29,12 @@ public:
     auto first_past = std::find_if(
         points.begin(), points.end(), [r](double rr) { return rr > r; });
 
-    auto i = int_t(first_past - points.begin()) - 1;
+    auto i = int_t(first_past - points.begin());
+    if (i == 0) {
+      return i;
+    }
     assert(i < values.size() - 1);
-
-    return i;
+    return i - 1;
   }
 
 public:

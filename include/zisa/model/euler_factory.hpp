@@ -23,12 +23,16 @@ IdealGasEOS make_eos<IdealGasEOS>(const InputParameters &params);
 template <>
 JankaEOS make_eos<JankaEOS>(const InputParameters &params);
 
+#if ZISA_HAS_HELMHOLTZ_EOS == 1
+template <>
+HelmholtzEOS make_eos<HelmholtzEOS>(const InputParameters &params);
+#endif
+
 template <class Gravity>
 Gravity make_gravity(const InputParameters &);
 
 template <>
-NoGravity
-make_gravity<NoGravity>(const InputParameters &input_params);
+NoGravity make_gravity<NoGravity>(const InputParameters &input_params);
 
 template <>
 ConstantGravityRadial
@@ -41,6 +45,9 @@ make_gravity<PolytropeGravityRadial>(const InputParameters &input_params);
 template <>
 PolytropeGravityWithJumpRadial make_gravity<PolytropeGravityWithJumpRadial>(
     const InputParameters &input_params);
+
+template <>
+RadialGravity make_gravity<RadialGravity>(const InputParameters &input_params);
 
 template <class Model>
 std::shared_ptr<Model> make_euler(const InputParameters &params) {

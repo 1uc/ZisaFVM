@@ -5,6 +5,7 @@
 namespace po = boost::program_options;
 
 #include <filesystem>
+#include <zisa/grid/grid.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/permutation.hpp>
@@ -101,6 +102,15 @@ void renumber_grid(const std::string &grid_file) {
   }
   std::filesystem::rename(grid_file + "_", grid_file);
 }
+
+void generate_full_grid(const std::string &msh_h5_file) {
+  auto grid = zisa::load_grid(msh_h5_file);
+
+  auto filename = msh_h5_file.substr(0, msh_h5_file.size() - 7) + ".h5";
+  auto hdf5_writer = HDF5SerialWriter(filename);
+  save(hdf5_writer, *grid);
+}
+
 }
 
 int main(int argc, char *argv[]) {
@@ -116,7 +126,7 @@ int main(int argc, char *argv[]) {
   // clang-format off
   generic.add_options()
       ("help,h", "produce this message")
-      ("grid", po::value<std::string>(), "Name of the grid file, will be overwritten.")
+      ("grid", po::value<std::string>(), "Name of the .msh.h5 grid file, will be overwritten.")
       ;
   // clang-format on
 
@@ -136,6 +146,7 @@ int main(int argc, char *argv[]) {
   auto grid_file = options["grid"].as<std::string>();
 
   zisa::renumber_grid(grid_file);
+  zisa::generate_full_grid(grid_file);
 
 #if ZISA_HAS_MPI
   MPI_Finalize();

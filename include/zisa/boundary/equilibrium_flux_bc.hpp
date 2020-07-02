@@ -46,9 +46,9 @@ public:
       eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), cell);
 
       auto flux = [&euler, &eq, &face = face](XYZ x) {
-        auto rhoE = eq.extrapolate(x);
-
-        auto f = euler.flux(euler.eos.cvars(rhoE));
+        auto u = euler.eos.cvars(eq.extrapolate(x));
+        auto xvars = euler.eos.xvars(u);
+        auto f = euler.flux(u, xvars.p);
         inv_coord_transform(f, face);
 
         return f;

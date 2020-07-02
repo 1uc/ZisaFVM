@@ -16,10 +16,12 @@ LocalCFL<Model>::LocalCFL(std::shared_ptr<Grid> grid,
 
 template <class Model>
 double LocalCFL<Model>::operator()(const AllVariables &all_variables) {
-  const auto &u = all_variables.cvars;
+  const auto &cvars = all_variables.cvars;
 
-  auto f = [this, &u](int_t i) {
-    double ev_max = model->max_eigen_value(cvars_t(u(i)));
+  auto f = [this, &cvars](int_t i) {
+    auto u = cvars_t(cvars(i));
+    auto xvars = model->eos.xvars(u);
+    double ev_max = model->max_eigen_value(u, xvars);
     double dx = grid->inradius(i);
 
     return dx / ev_max;

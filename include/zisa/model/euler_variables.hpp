@@ -20,6 +20,16 @@ struct euler_xvar_t {
   double a; ///< speed of sound
 };
 
+struct euler_full_xvars_t {
+  double rho; ///< density
+  double E;   ///< internal energy
+  double p;   ///< pressure
+  double a;   ///< speed of sound
+  double s;   ///< entropy
+  double h;   ///< enthalpy
+  double T;   ///< temperature
+};
+
 /// Conserved variables in euler eq.
 /** The conserved variables are (in this order):
  *    - density
@@ -28,6 +38,7 @@ struct euler_xvar_t {
  */
 struct euler_var_t : public Cartesian<5> {
   using xvars_t = euler_xvar_t;
+  using full_xvars_t = euler_full_xvars_t;
 
   using Cartesian<5>::Cartesian;
   using Cartesian<5>::operator=;

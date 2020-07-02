@@ -167,7 +167,7 @@ int_t required_stencil_size(int deg, double factor, int n_dims) {
   }
 
   // The polynomials being fitted all have zero mean.
-  return int_t(double(poly_dof(deg, n_dims) - 1) * factor);
+  return int_t(double(poly_dof(deg, n_dims) - 1) * factor + 1);
 }
 
 // --- Code for generating stencils. -------------------------------------------
@@ -315,7 +315,13 @@ std::vector<int_t> tryhard_stencil(
   if (candidates.size() < n_points) {
     return std::vector<int_t>{i_center};
   }
-  LOG_ERR_IF(!is_good(candidates), "This wont work.");
+  if (!is_good(candidates)) {
+    PRINT(format_as_list(candidates));
+    PRINT(i_center);
+    PRINT(k);
+    PRINT(n_points);
+    LOG_ERR("This wont work.");
+  }
 
   std::random_device rd;
   for (int iter = 0; iter < 100; ++iter) {
