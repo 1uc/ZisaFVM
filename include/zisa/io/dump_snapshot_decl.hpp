@@ -11,10 +11,10 @@
 namespace zisa {
 
 /// Write the prognostic and diagnostic variables to the hard-disk.
-template <class Model>
+template <class EOS>
 class DumpSnapshot : public Visualization {
 public:
-  DumpSnapshot(std::shared_ptr<Model> model,
+  DumpSnapshot(std::shared_ptr<LocalEOSState<EOS>> eos,
                std::shared_ptr<FileNameGenerator> file_name_generator);
 
 protected:
@@ -29,14 +29,14 @@ protected:
       = 0;
 
 private:
-  std::shared_ptr<Model> model;
+  std::shared_ptr<LocalEOSState<EOS>> local_eos;
   std::shared_ptr<FileNameGenerator> file_name_generator;
 };
 
-template <class Model>
-class SerialDumpSnapshot : public DumpSnapshot<Model> {
+template <class EOS>
+class SerialDumpSnapshot : public DumpSnapshot<EOS> {
 private:
-  using super = DumpSnapshot<Model>;
+  using super = DumpSnapshot<EOS>;
 
 public:
   using super::super;

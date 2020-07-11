@@ -16,7 +16,7 @@ namespace zisa {
 
 class RadialPoissonSolver : public PoissonSolver {
 private:
-  using euler_t = Euler<JankaEOS, RadialGravity>;
+  using euler_t = Euler;
 
 public:
   /// Construct a gravity and poisson solver for it.

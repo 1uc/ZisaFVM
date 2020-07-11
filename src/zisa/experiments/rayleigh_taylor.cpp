@@ -24,26 +24,27 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
 
   auto dims = choose_all_variable_dims();
   auto all_variables = std::make_shared<AllVariables>(dims);
-  const auto &eos = euler->eos;
   auto grid = choose_grid();
+  const auto &local_eos = choose_local_eos();
+  const auto &eos = (*local_eos)(0);
 
   const auto &gravity_params = params["euler"]["gravity"];
   auto rhoK = RhoEntropy{gravity_params["rhoC"], gravity_params["K_inner"]};
-  auto thetaC = eos.enthalpy_entropy(rhoK);
-  auto inner_equilibrium
-      = LocalEquilibrium(IsentropicEquilibrium(euler), thetaC, XYZ::zeros());
+  auto thetaC = eos->enthalpy_entropy(rhoK);
+  auto inner_equilibrium = LocalEquilibrium(
+      IsentropicEquilibrium(eos, gravity), thetaC, XYZ::zeros());
 
   double drho = params["experiment"]["initial_conditions"]["drho"];
   double r_crit = gravity_params["r_crit"];
   auto x_ref = XYZ(r_crit * XYZ::unit_vector(0));
   auto rhoE_eq = inner_equilibrium.extrapolate(x_ref);
-  auto rhoP = eos.rhoP(rhoE_eq);
+  auto rhoP = eos->rhoP(rhoE_eq);
 
-  auto theta_inner = eos.enthalpy_entropy(rhoP);
-  auto theta_outer = eos.enthalpy_entropy(RhoP{rhoP.rho() + drho, rhoP.p()});
+  auto theta_inner = eos->enthalpy_entropy(rhoP);
+  auto theta_outer = eos->enthalpy_entropy(RhoP{rhoP.rho() + drho, rhoP.p()});
 
-  auto ic_ = PolytropeWithJumpIC(euler, theta_inner, theta_outer, x_ref);
-  auto ic = [this, &ic_, amp, width, n_bumps, r_crit](const auto &x) {
+  auto ic_ = PolytropeWithJumpIC(eos, gravity, theta_inner, theta_outer, x_ref);
+  auto ic = [this, &eos, &ic_, amp, width, n_bumps, r_crit](const auto &x) {
     // Avoid any silent conversion when the return type changes.
     RhoP rhoP = ic_(x);
 
@@ -59,7 +60,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions(
     double vx = v * zisa::cos(alpha);
     double vy = v * zisa::sin(alpha);
     double p = p_eq;
-    double E = euler->energy(rho, vx, vy, p);
+    double E = total_energy(*eos, rho, vx, vy, p);
 
     return euler_var_t{rho, rho * vx, rho * vy, 0.0, E};
   };

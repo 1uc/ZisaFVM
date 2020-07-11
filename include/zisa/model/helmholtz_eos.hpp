@@ -12,10 +12,13 @@
 #endif
 
 #include "helmholtzeos_module_c.h"
+#include <zisa/memory/array_view.hpp>
 #include <zisa/model/equation_of_state.hpp>
 #include <zisa/model/euler_variables.hpp>
 
 namespace zisa {
+
+void initialize_helmholtz_eos(std::string &eos_table);
 
 class HelmholtzEOS : public EquationOfState {
 private:
@@ -26,33 +29,33 @@ public:
   using xvars_t = super::xvars_t;
 
 public:
-  HelmholtzEOS() {}
+  HelmholtzEOS() : a_bar(-1.0), z_bar(-1.0) {}
 
-  HelmholtzEOS(const std::string &) { LOG_ERR("Switch to other constructor."); }
+  HelmholtzEOS(double a_bar, double z_bar) : a_bar(a_bar), z_bar(z_bar) {}
 
-  HelmholtzEOS(const std::string &eos_table,
-               const std::vector<double> &mass_mixing_ratio,
-               const std::vector<double> &mass_number,
-               const std::vector<double> &charge_number) {
-    int n_chars = int(eos_table.length());
+  HelmholtzEOS(const array_const_view<double, 1> &mass_mixing_ratio,
+               const array_const_view<double, 1> &mass_number,
+               const array_const_view<double, 1> &charge_number) {
 
     int status = -1;
-    helmholtz_eos_readtable_c(eos_table.c_str(), &n_chars, &status);
-    LOG_ERR_IF(
-        status != 0,
-        string_format("Reading EOS table failed. [%s]", eos_table.c_str()));
-
     int n_species = integer_cast<int>(charge_number.size());
-    composition_bar_c(mass_mixing_ratio.data(),
-                      mass_number.data(),
-                      charge_number.data(),
+    composition_bar_c(raw_ptr(mass_mixing_ratio),
+                      raw_ptr(mass_number),
+                      raw_ptr(charge_number),
                       &n_species,
                       &a_bar,
                       &z_bar,
                       &status);
-    LOG_ERR_IF(status != 0,
-               string_format("EOS failed to compute mean composition. [%s]",
-                             eos_table.c_str()));
+
+    LOG_ERR_IF(status != 0 || !ispositive(a_bar) || !ispositive(z_bar),
+               string_format("EOS failed: status = %d, a_bar = %e, z_bar = %e, "
+                             "X = %s, A = %s, Z = %s",
+                             status,
+                             a_bar,
+                             z_bar,
+                             format_as_list(mass_mixing_ratio).c_str(),
+                             format_as_list(mass_number).c_str(),
+                             format_as_list(charge_number).c_str()));
   }
 
   RhoE rhoE(const euler_var_t &u) const { return {u[0], internal_energy(u)}; }
@@ -110,7 +113,13 @@ public:
     helmholtz_eos_bar_c(&id, &tv1, &tv2, &a_bar, &z_bar, &eos_ret, &status);
     LOG_ERR_IF(
         status != 0,
-        string_format("EOS failed. %d [%d, %e, %e]", status, id, tv1, tv2));
+        string_format("EOS failed. %d [%d, %e, %e] a_bar = %e, z_bar = %e",
+                      status,
+                      id,
+                      tv1,
+                      tv2,
+                      a_bar,
+                      z_bar));
 
     return full_extra_variables(eos_ret);
   }
@@ -128,15 +137,18 @@ public:
     double T_guess = rhoT_guess.T();
 
     helmholtz_eos_wguess_bar_c(
-        &TD_HS, &h, &s, &a_bar, &z_bar, &ret, &status, &rho_guess, &T_guess);
+        &TD_HS, &h, &s, &a_bar, &z_bar, &ret, &status, &T_guess, &rho_guess);
 
     LOG_ERR_IF(status != 0,
-               string_format("EOS TD_HS failed. %d, [%.3e, %.3e; (%.3e, %.3e)]",
+               string_format("EOS TD_HS failed. %d, [%.3e, %.3e; (%.3e, %.3e)] "
+                             "a_bar = %e, z_bar = %e",
                              status,
                              h,
                              s,
                              rho_guess,
-                             T_guess));
+                             T_guess,
+                             a_bar,
+                             z_bar));
 
     return full_extra_variables(ret);
   }

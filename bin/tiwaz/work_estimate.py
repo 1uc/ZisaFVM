@@ -5,7 +5,7 @@ from tiwaz.scheme import read_n_cells
 class ZisaWorkEstimate:
     """Estimates the parallelizable work and time required by one CPU. """
 
-    def __init__(self, n0, t0, b0, o0, n_dims=2):
+    def __init__(self, n0, t0, b0, o0, n_dims=2, unit_work=1024):
         """Estimates work and resources by scaling values from level L.
 
         Arguments:
@@ -18,6 +18,7 @@ class ZisaWorkEstimate:
         self.n0, self.t0 = n0, t0
         self.b0, self.o0 = b0, o0
         self.n_dims = n_dims
+        self.unit_work = unit_work
 
     def cpu_hours(self, launch_params):
         n_dims = self.n_dims
@@ -85,7 +86,7 @@ class ZisaFixedMemoryWorkEstimate:
 
     def work(self, launch_param):
         n_cells = self.n_cells(launch_param)
-        return n_cells / 1024
+        return n_cells / self.unit_work
 
     def memory_usage(self, launch_param):
         overhead_per_process = self.o0

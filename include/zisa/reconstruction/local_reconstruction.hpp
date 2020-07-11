@@ -18,7 +18,7 @@ private:
 
 public:
   LocalReconstruction() = default;
-  LocalReconstruction(std::shared_ptr<Grid> &grid,
+  LocalReconstruction(std::shared_ptr<Grid> grid,
                       const LocalEquilibrium<Equilibrium> &eq,
                       const RC &rc,
                       int_t i_cell,

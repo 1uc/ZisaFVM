@@ -27,15 +27,15 @@ protected:
 
 public:
   EulerReferenceSolution(std::shared_ptr<Grid> fine_grid,
-                         const std::shared_ptr<AllVariables> &fine_vars,
-                         const eq_t &eq,
-                         const Scaling &scaling)
-      : fine_grid(std::move(fine_grid)), n_cvars(fine_vars->cvars.shape(1)) {
+                         const AllVariables &fine_vars,
+                         std::shared_ptr<grc_t> grc)
+      : fine_grid(std::move(fine_grid)),
+        grc(std::move(grc)),
+        n_cvars(fine_vars.cvars.shape(1)) {
 
-    LOG_ERR_IF(fine_vars->dims().n_avars != n_avars, "Dimension mismatch.");
-
-    grc = std::make_shared<grc_t>(this->fine_grid, weno_params(), eq, scaling);
-    grc->compute(*fine_vars);
+    // FIXME we now have tracers.
+    LOG_ERR_IF(fine_vars.dims().n_avars != n_avars, "Dimension mismatch.");
+    grc->compute(fine_vars);
   }
 
   virtual std::shared_ptr<AllVariables>

@@ -8,18 +8,19 @@
 
 namespace zisa {
 
-template <class EULER>
+template <class EOS, class Gravity>
 class PolytropeIC {
 private:
-  using euler_t = EULER;
+  using eos_t = EOS;
+  using gravity_t = Gravity;
 
 public:
-  PolytropeIC(std::shared_ptr<euler_t> euler) : euler(std::move(euler)) {}
+  PolytropeIC(std::shared_ptr<eos_t> eos, std::shared_ptr<gravity_t> gravity)
+      : eos(std::move(eos)), gravity(std::move(gravity)) {}
 
   RhoP operator()(const XYZ &x) const {
 
-    const auto &gravity = this->euler->gravity;
-    double alpha = gravity.alpha(zisa::norm(x));
+    double alpha = gravity->alpha(zisa::norm(x));
     double eps = std::numeric_limits<double>::min();
     double r_eff = alpha * (zisa::norm(x) + eps);
 
@@ -30,57 +31,58 @@ public:
   }
 
 private:
-  std::shared_ptr<euler_t> euler;
+  std::shared_ptr<eos_t> eos;
+  std::shared_ptr<gravity_t> gravity;
 };
 
-template <class EULER>
+template <class EOS, class Gravity>
 class GeneralPolytropeIC {
 private:
-  using euler_t = EULER;
-  using eos_t = typename euler_t::eos_t;
-  using gravity_t = typename euler_t::gravity_t;
+  using eos_t = EOS;
+  using gravity_t = Gravity;
 
 public:
-  GeneralPolytropeIC(std::shared_ptr<euler_t> euler_,
+  GeneralPolytropeIC(const std::shared_ptr<EOS> &eos,
+                     const std::shared_ptr<Gravity> &gravity,
                      const RhoEntropy &rhoK_center)
-      : eq(std::move(euler_)), x_ref(XYZ::zeros()) {
+      : eos(eos), eq(eos, gravity), x_ref(XYZ::zeros()) {
 
-    theta_ref = eq.euler->eos.enthalpy_entropy(rhoK_center);
+    theta_ref = eos->enthalpy_entropy(rhoK_center);
   }
 
   RhoP operator()(const XYZ &x) const {
-    const auto &eos = eq.euler->eos;
-    return eos.rhoP(eq.extrapolate(theta_ref, x_ref, x));
+    return eos->rhoP(eq.extrapolate(theta_ref, x_ref, x));
   }
 
 private:
+  std::shared_ptr<eos_t> eos;
   IsentropicEquilibrium<eos_t, gravity_t> eq;
   EnthalpyEntropy theta_ref;
   XYZ x_ref;
 };
 
-template <class EULER>
+template <class EOS, class Gravity>
 class PolytropeWithJumpIC {
 private:
-  using euler_t = EULER;
-  using eos_t = typename euler_t::eos_t;
-  using gravity_t = typename euler_t::gravity_t;
+  using eos_t = EOS;
+  using gravity_t = Gravity;
   using eq_t = IsentropicEquilibrium<eos_t, gravity_t>;
 
 public:
-  PolytropeWithJumpIC(const std::shared_ptr<euler_t> &euler,
+  PolytropeWithJumpIC(const std::shared_ptr<eos_t> &eos,
+                      const std::shared_ptr<gravity_t> &gravity,
                       const EnthalpyEntropy &theta_inner,
                       const EnthalpyEntropy &theta_outer,
                       const XYZ &x_ref)
-      : euler(euler),
+      : eos(eos),
         x_ref(x_ref),
-        inner_equilibrium(eq_t(euler), theta_inner, x_ref),
-        outer_equilibrium(eq_t(euler), theta_outer, x_ref) {}
+        inner_equilibrium(eq_t(eos, gravity), theta_inner, x_ref),
+        outer_equilibrium(eq_t(eos, gravity), theta_outer, x_ref) {}
 
   RhoP operator()(const XYZ &x) const {
     const auto &eq = (is_inner(x) ? inner_equilibrium : outer_equilibrium);
     RhoE rhoE = eq.extrapolate(x);
-    return euler->eos.rhoP(rhoE);
+    return eos->rhoP(rhoE);
   }
 
   bool is_inner(const XYZ &x) const {
@@ -88,7 +90,7 @@ public:
   }
 
 private:
-  std::shared_ptr<euler_t> euler;
+  std::shared_ptr<eos_t> eos;
   XYZ x_ref;
   LocalEquilibrium<eq_t> inner_equilibrium;
   LocalEquilibrium<eq_t> outer_equilibrium;

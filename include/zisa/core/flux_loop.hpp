@@ -6,25 +6,29 @@
 #include <zisa/math/quadrature.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/model/all_variables.hpp>
+#include <zisa/model/local_eos_state.hpp>
 #include <zisa/ode/rate_of_change.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 #include <zisa/utils/indent_block.hpp>
 
 namespace zisa {
 
-template <class Model, class Flux, class GRC>
+template <class Model, class Flux, class LEOS, class GRC>
 class FluxLoop : public RateOfChange {
 protected:
   using cvars_t = typename Model::cvars_t;
+  using eos_t = typename LEOS::eos_t;
   using grc_t = GRC;
 
 public:
   FluxLoop(std::shared_ptr<Grid> grid,
            std::shared_ptr<Model> model,
+           std::shared_ptr<LEOS> local_eos,
            std::shared_ptr<grc_t> global_reconstruction,
            EdgeRule edge_rule)
       : grid(std::move(grid)),
         model(std::move(model)),
+        local_eos(std::move(local_eos)),
         global_reconstruction(std::move(global_reconstruction)),
         edge_rule(std::move(edge_rule)) {
 
@@ -36,6 +40,7 @@ public:
                        const AllVariables &current_state,
                        double /* t */) const override {
 
+    (*local_eos).compute(current_state);
     (*global_reconstruction).compute(current_state);
 
     const auto n_avars = tendency.avars.shape(1);
@@ -55,6 +60,8 @@ public:
 
         int_t iL, iR;
         std::tie(iL, iR) = grid->left_right(e);
+        const auto &eosL = *(*local_eos)(iL);
+        const auto &eosR = *(*local_eos)(iR);
 
         auto rc = [this, &face = face](int_t i, const XYZ &x) {
           auto u = cvars_t((*global_reconstruction)(i)(x));
@@ -74,7 +81,7 @@ public:
           const auto uL = rc(iL, x);
           const auto uR = rc(iR, x);
 
-          const auto [f, speeds] = numerical_flux(uL, uR);
+          const auto [f, speeds] = numerical_flux(eosL, uL, eosR, uR);
           nf += w * f;
 
           for (int_t a = 0; a < n_avars; ++a) {
@@ -129,8 +136,11 @@ public:
   }
 
 private:
-  auto numerical_flux(const cvars_t &uL, const cvars_t &uR) const {
-    return Flux::flux(*model, uL, uR);
+  auto numerical_flux(const eos_t &eosL,
+                      const cvars_t &uL,
+                      const eos_t &eosR,
+                      const cvars_t &uR) const {
+    return Flux::flux(*model, eosL, uL, eosR, uR);
   }
 
   auto tracer_flux(const cvars_t &uL,
@@ -145,6 +155,7 @@ private:
   std::shared_ptr<Grid> grid;
   std::shared_ptr<Model> model;
 
+  std::shared_ptr<LEOS> local_eos;
   std::shared_ptr<grc_t> global_reconstruction;
   mutable std::shared_ptr<block_allocator<array<double, 1>>>
       avar_flux_allocator;

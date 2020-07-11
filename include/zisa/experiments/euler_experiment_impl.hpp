@@ -29,7 +29,7 @@ EulerExperiment<EOS, Gravity>::EulerExperiment(
 
   if (is_restart()) {
     auto reader = HDF5SerialReader(params["restart"]["file"]);
-    euler = std::make_shared<euler_t>(euler_t::load(reader));
+    LOG_ERR("load EOS & Gravity.");
   }
 }
 
@@ -42,7 +42,7 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
     return;
   }
 
-  auto reference_solution = deduce_reference_solution(u1);
+  auto reference_solution = deduce_reference_solution(*u1);
 
   std::vector<std::string> coarse_grid_paths
       = params["reference"]["coarse_grids"];
@@ -61,8 +61,20 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
     (*u_delta)[i] = (*u1)[i] - (*u_delta)[i];
   }
 
-  auto delta
-      = deduce_reference_solution_eq(u_delta, NoEquilibrium{}, UnityScaling{});
+  auto grid = choose_grid();
+  auto local_eos = choose_local_eos();
+  auto weno_params = choose_weno_reference_params();
+  auto rc = make_reconstruction_array<NoEquilibrium,
+                                      CWENO_AO,
+                                      UnityScaling,
+                                      EOS,
+                                      Gravity>(
+      grid, weno_params, *local_eos, gravity);
+  auto grc = std::make_shared<
+      EulerGlobalReconstruction<NoEquilibrium, CWENO_AO, UnityScaling>>(
+      weno_params, std::move(rc));
+
+  auto delta = deduce_reference_solution_eq(*u_delta, grc);
   down_sample_euler_reference(
       *delta, coarse_grid_paths, grid_factory, "delta.h5");
 }
@@ -93,28 +105,79 @@ template <class EOS, class Gravity>
 template <class Equilibrium, class Scaling>
 std::shared_ptr<ReferenceSolution>
 EulerExperiment<EOS, Gravity>::deduce_reference_solution_eq(
-    const std::shared_ptr<AllVariables> &u1,
-    const Equilibrium &eq,
-    const Scaling &scaling) const {
+    const AllVariables &u1,
+    const std::shared_ptr<
+        EulerGlobalReconstruction<Equilibrium, CWENO_AO, Scaling>> &grc) {
 
   auto grid = choose_grid();
   return std::make_shared<EulerReferenceSolution<Equilibrium, Scaling>>(
-      grid, u1, eq, scaling);
+      grid, u1, grc);
+}
+
+template <class EOS, class Gravity>
+HybridWENOParams
+EulerExperiment<EOS, Gravity>::choose_weno_reference_params() const {
+
+  auto grid = choose_grid();
+  auto n_dims = grid->n_dims();
+
+  if (n_dims == 2) {
+    return HybridWENOParams{
+        {{5, 2, 2, 2}, {"c", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5}},
+        {100.0, 1.0, 1.0, 1.0},
+        1e-10,
+        4.0};
+  }
+
+  if (n_dims == 3) {
+    return HybridWENOParams{
+        {{4, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {3.0, 2.0, 2.0, 2.0, 2.0}},
+        {100.0, 1.0, 1.0, 1.0, 1.0},
+        1e-10,
+        4.0};
+  }
+
+  LOG_ERR("Implement first.");
 }
 
 template <class EOS, class Gravity>
 std::shared_ptr<ReferenceSolution>
 EulerExperiment<EOS, Gravity>::deduce_reference_solution(
-    const std::shared_ptr<AllVariables> &u1) const {
+    const AllVariables &u1) {
+  auto local_eos = choose_local_eos();
+  auto grid = choose_grid();
+  auto weno_params = choose_weno_reference_params();
+
   if (params["reference"]["equilibrium"] == "constant") {
-    return deduce_reference_solution_eq(
-        u1, NoEquilibrium{}, EulerScaling(euler));
+    LOG_WARN("No, this needs to be local");
+    auto rc = make_reconstruction_array<NoEquilibrium,
+                                        CWENO_AO,
+                                        EulerScaling<eos_t>,
+                                        eos_t,
+                                        gravity_t>(
+        grid, weno_params, *local_eos, gravity);
+
+    auto grc = std::make_shared<EulerGlobalReconstruction<NoEquilibrium,
+                                                          CWENO_AO,
+                                                          EulerScaling<eos_t>>>(
+        weno_params, std::move(rc));
+    return deduce_reference_solution_eq(u1, std::move(grc));
   }
 
   if (params["reference"]["equilibrium"] == "isentropic") {
-    //    int_t quad_deg = params["quadrature"]["volume"];
-    auto eq = IsentropicEquilibrium(euler);
-    return deduce_reference_solution_eq(u1, eq, EulerScaling(euler));
+    auto rc = make_reconstruction_array<IsentropicEquilibrium<eos_t, gravity_t>,
+                                        CWENO_AO,
+                                        EulerScaling<eos_t>,
+                                        eos_t,
+                                        gravity_t>(
+        grid, weno_params, *local_eos, gravity);
+    auto grc = std::make_shared<
+        EulerGlobalReconstruction<IsentropicEquilibrium<eos_t, gravity_t>,
+                                  CWENO_AO,
+                                  EulerScaling<eos_t>>>(weno_params,
+                                                        std::move(rc));
+
+    return deduce_reference_solution_eq(u1, grc);
   }
 
   LOG_ERR("Failed to deduce reference solutions.");
@@ -129,7 +192,8 @@ EulerExperiment<EOS, Gravity>::choose_cfl_condition() {
 
   double cfl_number = params["ode"]["cfl_number"];
   auto grid = choose_grid();
-  return std::make_shared<LocalCFL<euler_t>>(grid, euler, cfl_number);
+  auto local_eos = choose_local_eos();
+  return std::make_shared<LocalCFL<eos_t>>(grid, euler, local_eos, cfl_number);
 }
 
 template <class EOS, class Gravity>
@@ -144,7 +208,8 @@ EulerExperiment<EOS, Gravity>::compute_visualization() {
     return std::make_shared<EulerPlots>(*grid, delay);
   } else if (params["io"]["mode"] == "hdf5") {
     const auto &fng = choose_file_name_generator();
-    return std::make_shared<SerialDumpSnapshot<euler_t>>(euler, fng);
+    auto local_eos = compute_local_eos();
+    return std::make_shared<SerialDumpSnapshot<eos_t>>(local_eos, fng);
   }
 
   LOG_ERR("Implement missing case.");
@@ -165,21 +230,20 @@ EulerExperiment<EOS, Gravity>::choose_all_variable_dims() {
 
 template <class EOS, class Gravity>
 std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_bc() {
-
   std::string flux_bc = params["flux-bc"]["mode"];
   auto grid = choose_grid();
+  auto local_eos = choose_local_eos();
 
   if (flux_bc == "constant") {
-    return std::make_shared<FluxBC<euler_t>>(euler, grid);
+    return std::make_shared<FluxBC<eos_t>>(euler, local_eos, grid);
   }
 
   if (flux_bc == "isentropic") {
     auto qr = choose_edge_rule();
     using eq_t = IsentropicEquilibrium<eos_t, gravity_t>;
-    auto eq = eq_t(euler);
 
-    return std::make_shared<EquilibriumFluxBC<eq_t, euler_t>>(
-        euler, eq, grid, qr);
+    return std::make_shared<EquilibriumFluxBC<eq_t, EOS, Gravity>>(
+        euler, local_eos, gravity, grid, qr);
   }
 
   LOG_ERR(
@@ -202,13 +266,14 @@ template <class Equilibrium, class RC>
 std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_loop(
     const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
         &rc) {
-
   using grc_t = EulerGlobalReconstruction<Equilibrium, RC, scaling_t>;
   auto grid = choose_grid();
+  auto local_eos = choose_local_eos();
 
   auto edge_rule = choose_edge_rule();
-  return std::make_shared<FluxLoop<euler_t, flux_t, grc_t>>(
-      grid, euler, rc, edge_rule);
+  return std::make_shared<
+      FluxLoop<euler_t, flux_t, LocalEOSState<eos_t>, grc_t>>(
+      grid, euler, local_eos, rc, edge_rule);
 }
 
 template <class EOS, class Gravity>
@@ -217,10 +282,14 @@ std::shared_ptr<RateOfChange>
 EulerExperiment<EOS, Gravity>::choose_gravity_source_loop(
     const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
         &rc) {
-
   auto grid = choose_grid();
-  return std::make_shared<
-      GravitySourceLoop<Equilibrium, RC, euler_t, scaling_t>>(grid, euler, rc);
+  auto local_eos = choose_local_eos();
+  return std::make_shared<GravitySourceLoop<Equilibrium,
+                                            RC,
+                                            LocalEOSState<eos_t>,
+                                            gravity_t,
+                                            scaling_t>>(
+      grid, local_eos, gravity, rc);
 }
 
 template <class EOS, class Gravity>
@@ -273,7 +342,6 @@ template <class EOS, class Gravity>
 template <class Equilibrium, class RC, class RCParams>
 auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
     const RCParams &rc_params) -> decltype(auto) {
-
   auto hybrid_weno_params
       = HybridWENOParams(StencilFamilyParams(rc_params["orders"],
                                              rc_params["biases"],
@@ -284,11 +352,18 @@ auto EulerExperiment<EOS, Gravity>::choose_reconstruction(
 
   auto grid = choose_grid();
   auto stencils = choose_stencils();
-  auto eq = Equilibrium(euler);
-  auto scaling = EulerScaling(euler);
+  auto local_eos = choose_local_eos();
+
+  auto rc = make_reconstruction_array<Equilibrium,
+                                      RC,
+                                      EulerScaling<EOS>,
+                                      EOS,
+                                      Gravity>(
+      grid, *stencils, hybrid_weno_params, *local_eos, gravity);
+
   return std::make_shared<
-      EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>(
-      grid, *stencils, hybrid_weno_params, eq, scaling);
+      EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>(hybrid_weno_params,
+                                                             rc);
 }
 
 template <class EOS, class Gravity>

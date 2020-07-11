@@ -25,6 +25,8 @@ public:
 protected:
   virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
 
+  virtual AllVariablesDimensions choose_all_variable_dims() override;
+
   virtual std::function<bool(const Grid &grid, int_t i)>
   boundary_mask() const override;
 };

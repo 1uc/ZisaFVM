@@ -15,24 +15,16 @@
 #include <zisa/utils/indent_block.hpp>
 
 namespace zisa {
-template <class EOS, class Gravity>
-Euler<EOS, Gravity>::Euler(const EOS &eos, const Gravity &gravity)
-    : eos(eos), gravity(gravity) {}
+ANY_DEVICE_INLINE double Euler::max_eigen_value(const euler_var_t &u,
+                                                double cs) const {
 
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE double
-Euler<EOS, Gravity>::max_eigen_value(const euler_var_t &u,
-                                     const euler_xvar_t &xvar) const {
-
-  auto cs = xvar.a;
   double v2 = (u(1) * u(1) + u(2) * u(2) + u(3) * u(3)) / (u(0) * u(0));
 
   return std::sqrt(v2) + cs;
 }
 
-template <class EOS, class Gravity>
-ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::flux(const euler_var_t &u,
-                                                        double p) const {
+ANY_DEVICE_INLINE euler_var_t Euler::flux(const euler_var_t &u,
+                                          double p) const {
   euler_var_t pf;
 
   double v = u(1) / u(0);
@@ -46,39 +38,10 @@ ANY_DEVICE_INLINE euler_var_t Euler<EOS, Gravity>::flux(const euler_var_t &u,
   return pf;
 }
 
-template <class EOS, class Gravity>
+template <class EOS>
 ANY_DEVICE_INLINE double
-Euler<EOS, Gravity>::energy(double rho, double v1, double v2, double p) const {
+total_energy(const EOS &eos, double rho, double v1, double v2, double p) {
   return eos.internal_energy(RhoP{rho, p}) + 0.5 * rho * (v1 * v1 + v2 * v2);
-}
-
-template <class EOS, class Gravity>
-void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler) {
-  writer.open_group("model");
-  writer.write_string("Euler", "name");
-  save(writer, euler.eos);
-  save(writer, euler.gravity);
-  writer.close_group();
-}
-
-template <class EOS, class Gravity>
-Euler<EOS, Gravity> Euler<EOS, Gravity>::load(HDF5Reader &reader) {
-  reader.open_group("model");
-  auto euler = Euler<EOS, Gravity>{EOS::load(reader), Gravity::load(reader)};
-  reader.close_group();
-
-  return euler;
-}
-
-template <class EOS, class Gravity>
-std::string Euler<EOS, Gravity>::str() const {
-  std::stringstream ss;
-
-  ss << "Euler equations:\n"
-     << indent_block(1, eos.str()) << "\n"
-     << indent_block(1, gravity.str());
-
-  return ss.str();
 }
 
 ANY_DEVICE_INLINE bool notplausible(const euler_var_t &u) {

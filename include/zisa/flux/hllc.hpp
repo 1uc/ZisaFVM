@@ -31,20 +31,21 @@ private:
   double roe_ratio;
 };
 
-template <class Model>
+template <class EOS>
 class hllc_speeds;
 
-template <class Gravity>
-class hllc_speeds<Euler<IdealGasEOS, Gravity>> {
+template <>
+class hllc_speeds<IdealGasEOS> {
 private:
-  using euler_t = Euler<IdealGasEOS, Gravity>;
+  using eos_t = IdealGasEOS;
   using cvars_t = euler_var_t;
   using xvars_t = euler_var_t::xvars_t;
 
 public:
-  static std::tuple<double, double, double> speeds(const euler_t &euler,
+  static std::tuple<double, double, double> speeds(const eos_t &eos,
                                                    const cvars_t &uL,
                                                    const xvars_t &xvarL,
+                                                   const eos_t &,
                                                    const cvars_t &uR,
                                                    const xvars_t &xvarR) {
 
@@ -70,7 +71,7 @@ public:
           + zisa::pow<2>(roe_average(uL(3) / uL(0), uR(3) / uR(0)));
 
     double a_tilda
-        = zisa::sqrt((euler.eos.gamma() - 1.0) * (H_tilda - 0.5 * vroe_square));
+        = zisa::sqrt((eos.gamma() - 1.0) * (H_tilda - 0.5 * vroe_square));
 
     double sL = zisa::min(vL - aL, v_tilda - a_tilda);
     double sR = zisa::max(vR + aR, v_tilda + a_tilda);
@@ -83,17 +84,18 @@ public:
 
 #if ZISA_HAS_HELMHOLTZ_EOS == 1
 
-template <class Gravity>
-class hllc_speeds<Euler<HelmholtzEOS, Gravity>> {
+template <>
+class hllc_speeds<HelmholtzEOS> {
 private:
-  using euler_t = Euler<HelmholtzEOS, Gravity>;
+  using eos_t = HelmholtzEOS;
   using cvars_t = euler_var_t;
   using xvars_t = euler_var_t::xvars_t;
 
 public:
-  static std::tuple<double, double, double> speeds(const euler_t &,
+  static std::tuple<double, double, double> speeds(const eos_t &,
                                                    const cvars_t &uL,
                                                    const xvars_t &xvarL,
+                                                   const eos_t &,
                                                    const cvars_t &uR,
                                                    const xvars_t &xvarR) {
 
@@ -120,31 +122,37 @@ public:
 /// HLLC numerical flux with Einfeldt-Batten wavespeeds.
 /** Reference: Batten, Wavespeed Estimates for the HLLC Riemann Solver, 1997
  */
-template <class Model>
+template <class EOS>
 class HLLCBatten {
 private:
 public:
-  using cvars_t = typename Model::cvars_t;
-  using model_t = Model;
+  using cvars_t = euler_var_t;
+  using euler_t = Euler;
+  using eos_t = EOS;
   using speeds_t = std::tuple<double, double, double>;
 
 public:
   /// Compute the numerical flux.
   /*
    *  @param euler
+   *  @param eos
    *  @param uL
    *    conserved variables 'inside' of the cell, w.r.t the normal
    *  @param uR
    *    conserved variables 'outside' of the cell, w.r.t. the normal.
    */
   ANY_DEVICE_INLINE static std::tuple<euler_var_t, speeds_t>
-  flux(const model_t &euler, const cvars_t &uL, const cvars_t &uR) {
+  flux(const euler_t &euler,
+       const eos_t &eosL,
+       const cvars_t &uL,
+       const eos_t &eosR,
+       const cvars_t &uR) {
 
-    const auto xvarL = euler.eos.xvars(uL);
-    const auto xvarR = euler.eos.xvars(uR);
+    const auto xvarL = eosL.xvars(uL);
+    const auto xvarR = eosR.xvars(uR);
 
     const auto [sL, s_star, sR]
-        = hllc_speeds<model_t>::speeds(euler, uL, xvarL, uR, xvarR);
+        = hllc_speeds<eos_t>::speeds(eosL, uL, xvarL, eosR, uR, xvarR);
 
     // HLLC flux
     const cvars_t &uK = (0.0 <= s_star ? uL : uR);

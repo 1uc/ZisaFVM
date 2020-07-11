@@ -8,20 +8,26 @@
 
 namespace zisa {
 
-template <class Model>
-LocalCFL<Model>::LocalCFL(std::shared_ptr<Grid> grid,
-                          std::shared_ptr<Model> model,
-                          double cfl_number)
-    : grid(std::move(grid)), model(std::move(model)), cfl_number(cfl_number) {}
+template <class EOS>
+LocalCFL<EOS>::LocalCFL(std::shared_ptr<Grid> grid,
+                        std::shared_ptr<Euler> euler,
+                        std::shared_ptr<LocalEOSState<EOS>> local_eos,
+                        double cfl_number)
+    : grid(std::move(grid)),
+      euler(std::move(euler)),
+      local_eos(std::move(local_eos)),
+      cfl_number(cfl_number) {}
 
-template <class Model>
-double LocalCFL<Model>::operator()(const AllVariables &all_variables) {
+template <class EOS>
+double LocalCFL<EOS>::operator()(const AllVariables &all_variables) {
   const auto &cvars = all_variables.cvars;
 
   auto f = [this, &cvars](int_t i) {
+    const auto &eos = (*local_eos)(i);
+
     auto u = cvars_t(cvars(i));
-    auto xvars = model->eos.xvars(u);
-    double ev_max = model->max_eigen_value(u, xvars);
+    auto xvars = eos->xvars(u);
+    double ev_max = euler->max_eigen_value(u, xvars.a);
     double dx = grid->inradius(i);
 
     return dx / ev_max;

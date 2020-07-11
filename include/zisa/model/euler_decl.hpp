@@ -17,24 +17,16 @@
 
 namespace zisa {
 /// Implements a `Model` for the Euler equations.
-template <class EOS, class Gravity>
 class Euler {
 public:
-  using eos_t = EOS;
-  using gravity_t = Gravity;
   using cvars_t = euler_var_t;
 
 public:
-  eos_t eos;
-  gravity_t gravity;
-
-public:
   Euler() = default;
-  Euler(const EOS &eos, const Gravity &gravity);
 
   /// Largest eigenvalue of the derivative of the flux.
   ANY_DEVICE_INLINE double max_eigen_value(const euler_var_t &u,
-                                           const euler_xvar_t &xvar) const;
+                                           double cs) const;
 
   /// Physical flux normal to the surface.
   /** The convention is that the first component is normal to the surface
@@ -42,19 +34,13 @@ public:
    */
   ANY_DEVICE_INLINE euler_var_t flux(const euler_var_t &u, double p) const;
 
-  /// Total energy.
-  ANY_DEVICE_INLINE double
-  energy(double rho, double v1, double v2, double p) const;
-
   /// Self-documenting string.
   std::string str() const;
-
-  [[nodiscard]] static Euler<EOS, Gravity> load(HDF5Reader &reader);
 };
 
-/// Write the parameters of this model to disk.
-template <class EOS, class Gravity>
-void save(HDF5Writer &writer, const Euler<EOS, Gravity> &euler);
+template <class EOS>
+ANY_DEVICE_INLINE double
+total_energy(const EOS &eos, double rho, double v1, double v2, double p);
 
 /// Are the values obviously unphysical?
 /** The variable `u` is considered implausible if any component is not even
@@ -80,8 +66,8 @@ public:
   static constexpr bool value = false;
 };
 
-template <class EOS, class Gravity>
-class euler_like<Euler<EOS, Gravity>> {
+template <>
+class euler_like<Euler> {
 public:
   static constexpr bool value = true;
 };

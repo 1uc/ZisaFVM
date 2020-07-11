@@ -7,6 +7,7 @@
 #include <zisa/math/reference_solution.hpp>
 #include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/euler_factory.hpp>
+#include <zisa/model/local_eos_state.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 
 namespace zisa {
@@ -19,14 +20,16 @@ private:
 protected:
   using eos_t = EOS;
   using gravity_t = Gravity;
-  using euler_t = Euler<eos_t, gravity_t>;
+  using euler_t = Euler;
   using cvars_t = typename euler_t::cvars_t;
-  using flux_t = HLLCBatten<euler_t>;
-  using scaling_t = EulerScaling<euler_t>;
+  using flux_t = HLLCBatten<eos_t>;
+  using scaling_t = EulerScaling<eos_t>;
 
 public:
   explicit EulerExperiment(const InputParameters &params)
-      : super(params), euler(make_euler<euler_t>(params)) {}
+      : super(params),
+        euler(make_euler(params)),
+        gravity(make_gravity<Gravity>(params)) {}
 
   EulerExperiment(const InputParameters &params,
                   const std::shared_ptr<euler_t> &euler);
@@ -68,13 +71,13 @@ protected:
   std::shared_ptr<RateOfChange> deduce_reconstruction();
 
   std::shared_ptr<ReferenceSolution>
-  deduce_reference_solution(const std::shared_ptr<AllVariables> &u1) const;
+  deduce_reference_solution(const AllVariables &u1);
 
   template <class Equilibrium, class Scaling>
-  std::shared_ptr<ReferenceSolution>
-  deduce_reference_solution_eq(const std::shared_ptr<AllVariables> &u1,
-                               const Equilibrium &eq,
-                               const Scaling &scaling) const;
+  std::shared_ptr<ReferenceSolution> deduce_reference_solution_eq(
+      const AllVariables &u1,
+      const std::shared_ptr<
+          EulerGlobalReconstruction<Equilibrium, CWENO_AO, Scaling>> &grc);
 
   template <class Equilibrium, class RC>
   auto choose_reconstruction() -> decltype(auto);
@@ -82,8 +85,28 @@ protected:
   template <class Equilibrium, class RC, class RCParams>
   auto choose_reconstruction(const RCParams &rc_params) -> decltype(auto);
 
+  HybridWENOParams choose_weno_reference_params() const;
+
+  std::shared_ptr<LocalEOSState<EOS>> choose_local_eos() {
+    if (local_eos_ == nullptr) {
+      local_eos_ = compute_local_eos();
+    }
+    return local_eos_;
+  }
+
+  virtual std::shared_ptr<LocalEOSState<EOS>> compute_local_eos() {
+    auto grid = choose_grid();
+    return compute_local_eos(grid->n_cells);
+  }
+
+  virtual std::shared_ptr<LocalEOSState<EOS>> compute_local_eos(int_t n_cells) {
+    return make_local_eos<EOS>(n_cells, params);
+  }
+
 protected:
   std::shared_ptr<euler_t> euler;
+  std::shared_ptr<LocalEOSState<eos_t>> local_eos_ = nullptr;
+  std::shared_ptr<gravity_t> gravity;
   std::shared_ptr<GlobalReconstruction<euler_var_t>> grc_ = nullptr;
 };
 

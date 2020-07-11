@@ -136,7 +136,7 @@ protected:
       return;
     }
 
-    auto u1_ref = this->deduce_reference_solution(u1);
+    auto u1_ref = this->deduce_reference_solution(*u1);
     down_sample(u1_ref, "reference.h5");
 
     auto fng = this->choose_file_name_generator();
@@ -150,9 +150,20 @@ protected:
       (*u_delta)[i] = (*u1)[i] - (*u_delta)[i];
     }
 
-    auto u_delta_ref = this->deduce_reference_solution_eq(
-        u_delta, NoEquilibrium{}, UnityScaling{});
+    auto grid = this->choose_grid();
+    auto local_eos = this->choose_local_eos();
+    auto weno_params = this->choose_weno_reference_params();
+    auto rc = make_reconstruction_array<NoEquilibrium,
+                                        CWENO_AO,
+                                        UnityScaling,
+                                        typename super::eos_t,
+                                        typename super::gravity_t>(
+        grid, weno_params, *local_eos, this->gravity);
+    auto grc = std::make_shared<
+        EulerGlobalReconstruction<NoEquilibrium, CWENO_AO, UnityScaling>>(
+        weno_params, std::move(rc));
 
+    auto u_delta_ref = this->deduce_reference_solution_eq(*u1, grc);
     down_sample(u_delta_ref, "delta.h5");
   }
 
@@ -253,7 +264,9 @@ protected:
 
         apply_permutation(array_view(gathered_all_vars.cvars),
                           *vis_info->permutation);
-        save_state(writer, *this->euler, gathered_all_vars, t_end, n_steps);
+
+        auto labels = all_labels<euler_var_t>();
+        save_state(writer, gathered_all_vars, t_end, n_steps, labels);
       }
     };
 
@@ -432,10 +445,11 @@ protected:
   std::shared_ptr<Visualization> compute_unstructured_visualization() {
     const auto &fng = this->choose_file_name_generator();
     auto file_dims = choose_file_dimensions();
+    auto local_eos = this->compute_local_eos();
 
     // TODO here we just made this only work for Euler.
-    return std::make_shared<ParallelDumpSnapshot<typename super::euler_t>>(
-        this->euler, fng, file_dims);
+    return std::make_shared<ParallelDumpSnapshot<typename super::eos_t>>(
+        local_eos, fng, file_dims);
   }
 
   std::shared_ptr<GatheredVisInfo> choose_gathered_vis_info() {
@@ -624,9 +638,10 @@ protected:
       auto fng = this->choose_file_name_generator();
 
       auto file_dims = choose_gathered_file_info();
+      auto local_eos = this->compute_local_eos(file_dims->n_cells_local);
       auto dump_snapshot
-          = std::make_shared<ParallelDumpSnapshot<typename super::euler_t>>(
-              this->euler, fng, file_dims);
+          = std::make_shared<ParallelDumpSnapshot<typename super::eos_t>>(
+              local_eos, fng, file_dims);
 
       auto all_var_dims = this->choose_all_variable_dims();
       all_var_dims.n_cells = n_vis_cells;

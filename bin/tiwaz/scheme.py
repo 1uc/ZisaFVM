@@ -68,6 +68,18 @@ class IdealGasEOS(Subsection):
         super().__init__({"gamma": gamma, "specific-gas-constant": r_gas})
 
 
+class HelmholtzEOS(Subsection):
+    def __init__(self, data_location, element_keys, mass_number, charge_number):
+        super().__init__(
+            {
+                "data": data_location,
+                "element_keys": element_keys,
+                "mass_number": mass_number,
+                "charge_number": charge_number,
+            }
+        )
+
+
 class JankaEOS(Subsection):
     def __init__(self, rho_bounce, gamma1, gamma2, gamma_thermal, E1):
 
@@ -106,6 +118,11 @@ class ConstantGravity(Subsection):
 class PolytropeGravity(Subsection):
     def __init__(self, rhoC=1.0, K=1.0, G=1.0):
         super().__init__({"mode": "polytrope", "rhoC": rhoC, "K": K, "G": G})
+
+
+class RadialGravity(Subsection):
+    def __init__(self, profile):
+        super().__init__({"mode": "radial_interpolation", "profile": profile})
 
 
 class PolytropeGravityWithJump(Subsection):
@@ -249,7 +266,7 @@ class Reference(Subsection):
 
 def read_n_cells(filename):
     if os.path.isdir(filename):
-        filename = filename + ".msh.h5"
+        filename = filename + "/grid.msh.h5"
 
     with h5py.File(filename, "r") as h5:
         return h5["vertex_indices"].shape[0]

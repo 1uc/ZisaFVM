@@ -15,15 +15,15 @@
 
 namespace zisa {
 
-template <class Model>
-DumpSnapshot<Model>::DumpSnapshot(
-    std::shared_ptr<Model> model,
+template <class EOS>
+DumpSnapshot<EOS>::DumpSnapshot(
+    std::shared_ptr<LocalEOSState<EOS>> local_eos,
     std::shared_ptr<FileNameGenerator> file_name_generator)
-    : model(std::move(model)),
+    : local_eos(std::move(local_eos)),
       file_name_generator(std::move(file_name_generator)) {}
 
-template <class Model>
-void DumpSnapshot<Model>::do_visualization(
+template <class EOS>
+void DumpSnapshot<EOS>::do_visualization(
     const AllVariables &all_variables,
     const SimulationClock &simulation_clock) {
 
@@ -31,18 +31,19 @@ void DumpSnapshot<Model>::do_visualization(
   auto n_steps = simulation_clock.current_step();
 
   auto writer = pick_writer(file_name_generator->next_name());
-  save_full_state(*writer, *model, all_variables, t, n_steps);
+  local_eos->compute(all_variables);
+  save_full_state(*writer, *local_eos, all_variables, t, n_steps);
 }
 
-template <class Model>
-void DumpSnapshot<Model>::do_steady_state(const AllVariables &steady_state) {
+template <class EOS>
+void DumpSnapshot<EOS>::do_steady_state(const AllVariables &steady_state) {
   auto writer = pick_writer(file_name_generator->steady_state_filename);
-  save(*writer, steady_state, all_labels<typename Model::cvars_t>());
+  save(*writer, steady_state, all_labels<typename EOS::cvars_t>());
 }
 
-template <class Model>
+template <class EOS>
 std::unique_ptr<HDF5Writer>
-SerialDumpSnapshot<Model>::pick_writer(const std::string &file_name) {
+SerialDumpSnapshot<EOS>::pick_writer(const std::string &file_name) {
   return std::make_unique<HDF5SerialWriter>(file_name);
 }
 

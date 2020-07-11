@@ -23,12 +23,13 @@ Polytrope::compute_initial_conditions(double amp, double width) {
   auto dims = choose_all_variable_dims();
   auto all_variables = std::make_shared<AllVariables>(dims);
   auto grid = choose_grid();
+  auto local_eos = choose_local_eos();
+  const auto &eos = (*local_eos)(0);
 
   auto qr = choose_volume_rule();
-  const auto &eos = euler->eos;
 
   // FIXME revert
-  auto ic_ = GeneralPolytropeIC(euler, {1.0, 1.0});
+  auto ic_ = GeneralPolytropeIC(eos, gravity, {1.0, 1.0});
   auto ic = [&eos, &ic_, amp, width](const auto &x) {
     // Avoid any silent conversion when the return type changes.
     RhoP rhoP = ic_(x);
@@ -37,7 +38,7 @@ Polytrope::compute_initial_conditions(double amp, double width) {
     auto &[rho_eq, p_eq] = rhoP;
     double p = p_eq * (1 + amp * exp(-zisa::pow<2>(r / width)));
 
-    return eos.cvars(RhoP{rho_eq, p});
+    return eos->cvars(RhoP{rho_eq, p});
   };
 
   auto &u0 = all_variables->cvars;

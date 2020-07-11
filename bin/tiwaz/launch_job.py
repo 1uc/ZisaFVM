@@ -74,7 +74,17 @@ class LaunchNewJob(LaunchJob):
         self.write_config(directory, launch_param)
         self.copy_grid(zisa_home, directory, launch_param)
         self.copy_shaders(zisa_home, directory)
+        self.copy_data(zisa_home, directory, launch_param)
         self.write_gitinfo(zisa_home, directory)
+
+    def copy_data(self, zisa_home, directory, launch_param):
+        experiment = launch_param["experiment"]["name"]
+        src = f"{zisa_home}/data/{experiment}"
+        dst = f"{directory}/data/{experiment}"
+
+        if os.path.isdir(src):
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copytree(src, dst)
 
     def copy_binaries(self, zisa_home, directory):
         self.copy(zisa_home + "/build-release", directory, ["zisa"])

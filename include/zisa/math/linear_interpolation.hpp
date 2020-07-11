@@ -33,7 +33,7 @@ public:
     if (i == 0) {
       return i;
     }
-    assert(i < values.size() - 1);
+    assert(i < values.size());
     return i - 1;
   }
 

@@ -6,14 +6,18 @@
 
 namespace zisa {
 
-template <class Model>
+template <class EOS>
 class FluxBC : public RateOfChange {
 private:
-  using cvars_t = typename Model::cvars_t;
+  using cvars_t = typename Euler::cvars_t;
 
 public:
-  FluxBC(std::shared_ptr<Model> model, std::shared_ptr<Grid> grid)
-      : model(std::move(model)), grid(std::move(grid)) {}
+  FluxBC(std::shared_ptr<Euler> euler,
+         std::shared_ptr<LocalEOSState<EOS>> local_eos,
+         std::shared_ptr<Grid> grid)
+      : euler(std::move(euler)),
+        local_eos(std::move(local_eos)),
+        grid(std::move(grid)) {}
 
   virtual void compute(AllVariables &tendency,
                        const AllVariables &current_state,
@@ -21,12 +25,13 @@ public:
 
     for (auto &&[e, face] : exterior_faces(*grid)) {
       auto i = grid->left_right(e).first;
+      const auto &eos = (*local_eos)(i);
 
       auto u = cvars_t(current_state.cvars(i));
       coord_transform(u, face);
 
-      auto xvars = model->eos.xvars(u);
-      auto f = model->flux(u, xvars.p);
+      auto xvars = eos->xvars(u);
+      auto f = euler->flux(u, xvars.p);
       inv_coord_transform(f, face);
 
       tendency.cvars(i) -= volume(face) / grid->volumes(i) * f;
@@ -38,7 +43,8 @@ public:
   }
 
 private:
-  std::shared_ptr<Model> model;
+  std::shared_ptr<Euler> euler;
+  std::shared_ptr<LocalEOSState<EOS>> local_eos;
   std::shared_ptr<Grid> grid;
 };
 

@@ -29,7 +29,7 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
 
   x_ref = cell_ref.qr.points[0];
 
-  const auto &eos = equilibrium.euler->eos;
+  const auto &eos = *equilibrium.eos;
 
   auto full_guess = eos.full_extra_variables(rhoE_bar);
   auto enthalpy_entropy_guess = EnthalpyEntropy{full_guess.h, full_guess.s};
@@ -76,8 +76,7 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
   auto [hS, has_eq] = quasi_newton(f, inv_df, enthalpy_entropy_guess, atol);
 
   found_equilibrium = has_eq;
-  theta.h() = hS.h();
-  theta.s() = hS.s();
+  theta = isentropic_equilibrium_values(eos, hS, rhoT_guess);
 }
 
 template <class Equilibrium>

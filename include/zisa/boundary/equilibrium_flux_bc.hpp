@@ -11,23 +11,22 @@
 
 namespace zisa {
 
-template <class Equilibrium, class EULER>
-class EquilibriumFluxBC;
-
 template <class Equilibrium, class EOS, class Gravity>
-class EquilibriumFluxBC<Equilibrium, Euler<EOS, Gravity>>
-    : public RateOfChange {
+class EquilibriumFluxBC : public RateOfChange {
 private:
-  using euler_t = Euler<EOS, Gravity>;
+  using euler_t = Euler;
+  using eos_t = EOS;
   using cvars_t = typename euler_t::cvars_t;
 
 public:
   EquilibriumFluxBC(std::shared_ptr<euler_t> euler,
-                    const Equilibrium &equilibrium,
+                    std::shared_ptr<LocalEOSState<EOS>> local_eos,
+                    std::shared_ptr<Gravity> gravity,
                     std::shared_ptr<Grid> grid,
                     EdgeRule qr)
       : euler(std::move(euler)),
-        equilibrium(equilibrium),
+        local_eos(std::move(local_eos)),
+        gravity(std::move(gravity)),
         grid(std::move(grid)),
         qr(std::move(qr)) {}
 
@@ -36,18 +35,18 @@ public:
                        double /* t */) const override {
 
     const auto &euler = *this->euler;
-    const auto &eos = euler.eos;
 
     for (auto &&[e, face] : exterior_faces(*grid)) {
       auto i = grid->left_right(e).first;
       const auto &cell = grid->cells(i);
+      const auto &eos = (*local_eos)(i);
 
-      auto eq = LocalEquilibrium<Equilibrium>(equilibrium);
-      eq.solve(eos.rhoE(cvars_t(current_state.cvars(i))), cell);
+      auto eq = LocalEquilibrium(Equilibrium(eos, gravity));
+      eq.solve(eos->rhoE(cvars_t(current_state.cvars(i))), cell);
 
-      auto flux = [&euler, &eq, &face = face](XYZ x) {
-        auto u = euler.eos.cvars(eq.extrapolate(x));
-        auto xvars = euler.eos.xvars(u);
+      auto flux = [&euler, &eos = *eos, &eq, &face = face](XYZ x) {
+        auto u = eos.cvars(eq.extrapolate(x));
+        auto xvars = eos.xvars(u);
         auto f = euler.flux(u, xvars.p);
         inv_coord_transform(f, face);
 
@@ -66,7 +65,8 @@ public:
 
 private:
   std::shared_ptr<euler_t> euler;
-  Equilibrium equilibrium;
+  std::shared_ptr<LocalEOSState<eos_t>> local_eos;
+  std::shared_ptr<Gravity> gravity;
   std::shared_ptr<Grid> grid;
   EdgeRule qr;
 };

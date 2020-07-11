@@ -7,18 +7,22 @@
 
 namespace zisa {
 
-template <class Equilibrium, class RC, class EULER, class Scaling>
+template <class Equilibrium, class RC, class LEOS, class Gravity, class Scaling>
 class GravitySourceLoop : public RateOfChange {
 private:
-  using euler_t = EULER;
+  using euler_t = Euler;
+  using leos_t = LEOS;
+  using gravity_t = Gravity;
   using cvars_t = euler_var_t;
   using grc_t = EulerGlobalReconstruction<Equilibrium, RC, Scaling>;
 
 public:
   GravitySourceLoop(std::shared_ptr<Grid> grid,
-                    std::shared_ptr<euler_t> euler,
+                    std::shared_ptr<leos_t> local_eos,
+                    std::shared_ptr<gravity_t> gravity,
                     std::shared_ptr<grc_t> global_reconstruction)
-      : euler(std::move(euler)),
+      : local_eos(std::move(local_eos)),
+        gravity(std::move(gravity)),
         grid(std::move(grid)),
         global_reconstruction(std::move(global_reconstruction)) {}
 
@@ -26,11 +30,9 @@ public:
                        const AllVariables & /* current_state */,
                        double /* t */) const override {
 
-    const auto &eos = euler->eos;
-    const auto &gravity = euler->gravity;
-
-    auto f = [this, &eos, &gravity, &tendency](int_t i, const Cell &cell) {
+    auto f = [this, &tendency](int_t i, const Cell &cell) {
       const auto &rc = (*global_reconstruction)(i);
+      const auto &eos = *(*local_eos)(i);
 
       auto x_cell = grid->cell_centers(i);
 
@@ -54,7 +56,7 @@ public:
       }
 
       // delta terms
-      auto s_delta = [&rc, &gravity](const XYZ &x) {
+      auto s_delta = [&rc, &gravity = *this->gravity](const XYZ &x) {
         static_assert(XYZ::size() == 3);
 
         auto u_eq = rc.background(x);
@@ -88,25 +90,29 @@ public:
   }
 
 private:
-  std::shared_ptr<euler_t> euler;
+  std::shared_ptr<leos_t> local_eos;
+  std::shared_ptr<gravity_t> gravity;
   std::shared_ptr<Grid> grid;
   std::shared_ptr<grc_t> global_reconstruction;
 };
 
-template <class RC, class EULER, class Scaling>
-class GravitySourceLoop<NoEquilibrium, RC, EULER, Scaling>
+template <class RC, class EOS, class Gravity, class Scaling>
+class GravitySourceLoop<NoEquilibrium, RC, EOS, Gravity, Scaling>
     : public RateOfChange {
 
 private:
-  using euler_t = EULER;
+  using euler_t = Euler;
+  using eos_t = EOS;
+  using gravity_t = Gravity;
   using cvars_t = euler_var_t;
   using grc_t = EulerGlobalReconstruction<NoEquilibrium, RC, Scaling>;
 
 public:
   GravitySourceLoop(std::shared_ptr<Grid> grid,
-                    std::shared_ptr<euler_t> euler,
+                    std::shared_ptr<eos_t>,
+                    std::shared_ptr<gravity_t> gravity,
                     std::shared_ptr<grc_t> global_reconstruction)
-      : euler(std::move(euler)),
+      : gravity(std::move(gravity)),
         grid(std::move(grid)),
         global_reconstruction(std::move(global_reconstruction)) {}
 
@@ -114,13 +120,10 @@ public:
                        const AllVariables & /* current_state */,
                        double /* t */) const override {
 
-    const auto &eos = euler->eos;
-    const auto &gravity = euler->gravity;
-
-    auto f = [this, &eos, &gravity, &tendency](int_t i, const Cell &cell) {
+    auto f = [this, &tendency](int_t i, const Cell &cell) {
       const auto &rc = (*global_reconstruction)(i);
 
-      auto s = [&rc, &gravity](const XYZ &x) {
+      auto s = [&rc, &gravity = *this->gravity](const XYZ &x) {
         static_assert(XYZ::size() == 3);
 
         auto u = rc(x);
@@ -149,7 +152,7 @@ public:
   }
 
 private:
-  std::shared_ptr<euler_t> euler;
+  std::shared_ptr<gravity_t> gravity;
   std::shared_ptr<Grid> grid;
   std::shared_ptr<grc_t> global_reconstruction;
 };

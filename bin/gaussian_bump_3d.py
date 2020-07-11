@@ -67,7 +67,7 @@ io = sc.IO(
 
 
 def make_work_estimate():
-    n0 = sc.read_n_cells(grid_name.msh_h5(1))
+    n0 = 240_000  # L=1
 
     t0 = 2 * timedelta(seconds=t_end / 0.09 * 90 * 24)
 
@@ -117,9 +117,9 @@ dependent_choices_b = {
         sc.Reconstruction(
             "CWENO-AO", [2, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
         ),
-        # sc.Reconstruction(
-        #     "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
-        # ),
+        sc.Reconstruction(
+            "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[4.0, 2.5, 2.5, 2.5, 2.5]
+        ),
         sc.Reconstruction(
             "CWENO-AO", [3, 3, 3, 3, 3], overfit_factors=[4.0, 2.5, 2.5, 2.5, 2.5]
         ),

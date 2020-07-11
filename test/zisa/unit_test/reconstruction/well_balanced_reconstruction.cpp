@@ -23,10 +23,12 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
   using eos_t = zisa::IdealGasEOS;
   using gravity_t = zisa::PolytropeGravityRadial;
-  using euler_t = zisa::Euler<eos_t, gravity_t>;
+  using euler_t = zisa::Euler;
 
-  auto euler = std::make_shared<euler_t>(eos_t{2.0, 1.0}, gravity_t{});
-  const auto &eos = euler->eos;
+  auto local_eos = zisa::LocalEOSState<eos_t>(2.0, 1.0);
+  auto eos = local_eos(0);
+  auto gravity = std::make_shared<gravity_t>();
+  auto euler = std::make_shared<euler_t>();
 
   double width = 0.05;
   double amp = 0.0;
@@ -37,7 +39,7 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
   auto gen = std::mt19937(rd());
   auto dist = std::uniform_int_distribution(-1, 1);
 
-  auto ic_ = zisa::PolytropeIC(euler);
+  auto ic_ = zisa::PolytropeIC(eos, gravity);
   auto ic = [&eos, &ic_, amp, width](const auto &x) {
     // Avoid implicit conversion.
     zisa::RhoP rhoP = ic_(x);
@@ -46,7 +48,7 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
     auto &[rho_eq, p_eq] = rhoP;
     double p = p_eq * (1 + amp * zisa::exp(-zisa::pow<2>(r / width)));
 
-    return eos.cvars(zisa::RhoP{rho_eq, p});
+    return eos->cvars(zisa::RhoP{rho_eq, p});
   };
 
   auto &u0 = all_variables->cvars;
@@ -65,14 +67,16 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
       s);
 
   using eq_t = zisa::IsentropicEquilibrium<eos_t, gravity_t>;
-  auto eq = eq_t(euler);
+  auto eq = eq_t(eos, gravity);
 
   using rc_t = zisa::CWENO_AO;
   using scaling_t = zisa::UnityScaling;
   auto scaling = scaling_t{};
+  auto rc = zisa::
+      make_reconstruction_array<eq_t, rc_t, scaling_t, eos_t, gravity_t>(
+          grid, weno_params, local_eos, gravity);
 
-  auto grc = zisa::EulerGlobalReconstruction<eq_t, rc_t, scaling_t>(
-      grid, weno_params, eq, scaling);
+  auto grc = zisa::EulerGlobalReconstruction(weno_params, rc);
 
   grc.compute(*all_variables);
 

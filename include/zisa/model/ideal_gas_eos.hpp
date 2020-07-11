@@ -9,7 +9,7 @@
 namespace zisa {
 
 class IdealGasEOS : public EquationOfState {
-private:
+public:
   using cvars_t = euler_var_t;
   using xvars_t = cvars_t::xvars_t;
 

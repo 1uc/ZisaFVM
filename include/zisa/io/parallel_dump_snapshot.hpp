@@ -6,17 +6,17 @@
 
 namespace zisa {
 
-template <class Model>
-class ParallelDumpSnapshot : public DumpSnapshot<Model> {
+template <class EOS>
+class ParallelDumpSnapshot : public DumpSnapshot<EOS> {
 private:
-  using super = DumpSnapshot<Model>;
+  using super = DumpSnapshot<EOS>;
 
 public:
   ParallelDumpSnapshot(
-      std::shared_ptr<Model> model,
+      std::shared_ptr<LocalEOSState<EOS>> local_eos,
       std::shared_ptr<FileNameGenerator> file_name_generator,
       std::shared_ptr<HDF5UnstructuredFileDimensions> file_dimensions)
-      : super(std::move(model), std::move(file_name_generator)),
+      : super(std::move(local_eos), std::move(file_name_generator)),
         file_dims(std::move(file_dimensions)) {}
 
 protected:

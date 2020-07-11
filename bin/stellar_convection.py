@@ -3,6 +3,8 @@
 import os
 import shutil
 import glob
+import h5py
+import numpy as np
 from datetime import timedelta
 
 import matplotlib.pyplot as plt
@@ -21,6 +23,7 @@ from tiwaz.latex_tables import write_convergence_table
 from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
 from tiwaz.gmsh import generate_spherical_shell_grids
+from tiwaz.gmsh import generate_spherical_grids
 from tiwaz.gmsh import decompose_grids
 from tiwaz.gmsh import renumber_grids
 from tiwaz.gmsh import GridNamingScheme
@@ -37,20 +40,62 @@ cm = 1
 m = 1e2 * cm
 km = 1e3 * m
 
+one_dimensional_profile = "data/stellar_convection/non_ideal_gas_profile.h5"
+
+
+def mass_mixing_ratio(filename):
+    with h5py.File(filename, "r") as h5:
+        r = np.array(h5["x1"])
+        rho = np.array(h5["conserved/density"])
+        C12 = np.array(h5["advected/C12"])
+        H1 = np.array(h5["advected/H1"])
+        He4 = np.array(h5["advected/He4"])
+        Ne20 = np.array(h5["advected/Ne20"])
+        O16 = np.array(h5["advected/O16"])
+        Si28 = np.array(h5["advected/Si28"])
+
+    km = 1e5
+    I = np.logical_and(5000 * km < r, r < 40000 * km)
+    # print(C12[I][0])
+    # print(H1[I][0])
+    # print(He4[I][0])
+    # print(Ne20[I][0])
+    # print(O16[I][0])
+    # print(Si28[I][0])
+
+    print(np.min(C12 + H1 + He4 + Ne20 + O16 + Si28))
+    print(np.max(C12 + H1 + He4 + Ne20 + O16 + Si28))
+    # plt.plot(r[I] / km, rho[I])
+    # plt.plot(C12)
+    # plt.plot(H1)
+    # plt.plot(He4)
+    # plt.plot(Ne20)
+    # plt.plot(O16)
+    # plt.plot(Si28)
+
 
 class StellarConvectionExperiment(sc.Subsection):
     def __init__(self):
-        super().__init__({"name": "stellar_convection"})
+        mass_mixing_ratio(one_dimensional_profile)
+
+        super().__init__(
+            {
+                "name": "stellar_convection",
+                "initial_conditions": {"profile": one_dimensional_profile,},
+            }
+        )
 
     def short_id(self):
-        amp = self["initial_conditions"]["amplitude"]
-        return self["name"] + "_amp{:.2e}".format(amp)
+        return self["name"]
 
 
-eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
-gravity = sc.PolytropeGravity()
-# gravity = sc.NoGravity()
-# gravity = sc.ConstantGravity(g=1.0)
+eos = sc.HelmholtzEOS(
+    "data/stellar_convection/helm_table.dat",
+    element_keys=["C12", "H1", "He4", "Ne20", "O16", "Si28"],
+    mass_number=[12, 1, 4, 20, 16, 28],
+    charge_number=[6, 1, 2, 10, 8, 14],
+)
+gravity = sc.RadialGravity(one_dimensional_profile)
 euler = sc.Euler(eos, gravity)
 
 t_end = 0.09
@@ -65,13 +110,14 @@ io = sc.IO(
 
 
 def make_work_estimate():
-    n0 = sc.read_n_cells(grid_name.msh_h5(4))
+    n0 = 10_000
 
     t0 = 2 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
     b0 = 0.0
     o0 = 100 * 1e6
+    unit_work = 256
 
-    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
+    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, unit_work=512)
 
 
 grid_name = GridNamingScheme("stellar_convection")
@@ -80,10 +126,10 @@ parallelization = {"mode": "mpi"}
 
 radii = [5000 * km, 40_000 * km]
 # mesh_levels = list(range(0, 6)) + [7]
-mesh_levels = list(range(0, 1))
+mesh_levels = list(range(1, 2))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
-coarse_grid_levels = list(range(0, 6))
+coarse_grid_levels = [1]
 
 coarse_grid_choices = {
     "grid": [
@@ -104,52 +150,18 @@ independent_choices = {
 }
 
 dependent_choices_a = {
-    "flux-bc": [sc.FluxBC("constant"), sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
+    # "flux-bc": [sc.FluxBC("constant")],
+    # "well-balancing": [sc.WellBalancing("constant")],
+    "flux-bc": [sc.FluxBC(k) for k in ["constant", "isentropic"]],
+    "well-balancing": [sc.WellBalancing(k) for k in ["constant", "isentropic"]],
 }
 
 dependent_choices_b = {
-    "reconstruction": [
-        sc.Reconstruction("CWENO-AO", [1]),
-        sc.Reconstruction(
-            "CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]
-        ),
-        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
-        sc.Reconstruction("CWENO-AO", [4, 2, 2, 2]),
-        sc.Reconstruction("CWENO-AO", [5, 2, 2, 2]),
-    ],
-    "ode": [
-        sc.ODE("ForwardEuler"),
-        sc.ODE("SSP2"),
-        sc.ODE("SSP3"),
-        sc.ODE("KR4"),
-        sc.ODE("Fehlberg"),
-    ],
-    "quadrature": [
-        sc.Quadrature(1),
-        sc.Quadrature(1),
-        sc.Quadrature(2),
-        sc.Quadrature(3),
-        sc.Quadrature(4),
-    ],
+    "reconstruction": [sc.Reconstruction("CWENO-AO", [3, 2, 2, 2, 2])],
+    "ode": [sc.ODE("SSP3")],
+    "quadrature": [sc.Quadrature(2)],
 }
 
-reference_choices = {
-    "euler": [euler],
-    "flux-bc": [sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("isentropic")],
-    "time": [time],
-    "io": [io],
-    "reconstruction": [sc.Reconstruction("CWENO-AO", [4, 2, 2, 2])],
-    "ode": [sc.ODE("Fehlberg")],
-    "quadrature": [sc.Quadrature(3)],
-    "grid": [reference_grid],
-    "reference": [
-        sc.Reference("isentropic", [grid_name.stem(l) for l in coarse_grid_levels])
-    ],
-    "parallelization": [parallelization],
-    "debug": [{"global_indices": False, "stencils": False}],
-}
 
 base_choices = all_combinations(independent_choices)
 choices_a = pointwise_combinations(dependent_choices_a)
@@ -157,14 +169,13 @@ choices_b = pointwise_combinations(dependent_choices_b)
 model_choices = base_choices.product(choices_a).product(choices_b)
 
 coarse_runs_ = model_choices.product(coarse_grids)
-reference_runs_ = all_combinations(reference_choices)
 
 
 def make_runs():
     coarse_runs = coarse_runs_.product([{"experiment": StellarConvectionExperiment()}])
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]
 
-    return coarse_runs, list()
+    return coarse_runs
 
 
 all_runs = make_runs()
@@ -180,7 +191,9 @@ def compute_parts(mesh_levels, host):
 
     parts_ = dict()
     for l in mesh_levels:
-        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})]
+        parts_[l] = [2] + [
+            queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})
+        ]
 
     return parts_
 
@@ -193,8 +206,8 @@ def generate_grids(cluster, must_generate, must_decompose):
         for l in mesh_levels:
             shutil.rmtree(grid_name.dir(l), ignore_errors=True)
 
-        generate_spherical_shell_grids(
-            geo_name, radii, lc_rel, mesh_levels, with_halo=True
+        generate_spherical_grids(
+            geo_name, radii[1], lc_rel, mesh_levels, with_halo=True
         )
         renumber_grids(msh_h5_name, mesh_levels)
 
@@ -220,22 +233,17 @@ def main():
         else:
             queue_args = dict()
 
-        for c, r in all_runs:
-            if not args.reference_only:
-                launch_all(c, force=args.force, queue_args=queue_args)
-
-            if args.reference or args.reference_only:
-                launch_all(r, force=args.force, queue_args=queue_args)
+        launch_all(all_runs, force=args.force, queue_args=queue_args)
 
     if args.post_process:
-        for c, r in all_runs:
-            post_process(c, r[0])
+        for c in all_runs:
+            post_process(c)
 
     if args.copy_to_paper:
         d = "${HOME}/git/papers/LucGrosheintz/papers/unstructured_well_balancing/img/stellar_convection"
         d = os.path.expandvars(d)
 
-        for c, _ in all_runs:
+        for c in all_runs:
             stem = c[0]["experiment"].short_id()
             files = glob.glob(stem + "*.tex")
 
