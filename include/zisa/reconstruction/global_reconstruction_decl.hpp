@@ -66,7 +66,8 @@ array<LocalReconstruction<Equilibrium, RC, Scaling>, 1>
 make_reconstruction_array(const std::shared_ptr<Grid> &grid,
                           const HybridWENOParams &weno_params,
                           const LocalEOSState<EOS> &local_eos_state,
-                          const std::shared_ptr<Gravity> &gravity) {
+                          const std::shared_ptr<Gravity> &gravity,
+                          const LocalRCParams &local_rc_params) {
 
   auto n_cells = grid->n_cells;
 
@@ -82,7 +83,8 @@ make_reconstruction_array(const std::shared_ptr<Grid> &grid,
             make_equilibrium<Equilibrium>(eos, gravity)),
         rc,
         i_cell,
-        Scaling(eos));
+        Scaling(eos),
+        local_rc_params);
   }
 
   return lrc;
@@ -94,7 +96,8 @@ make_reconstruction_array(const std::shared_ptr<Grid> &grid,
                           const array<StencilFamily, 1> &stencils,
                           const HybridWENOParams &weno_params,
                           const LocalEOSState<EOS> &local_eos_state,
-                          const std::shared_ptr<Gravity> &gravity) {
+                          const std::shared_ptr<Gravity> &gravity,
+                          const LocalRCParams &local_rc_params) {
 
   auto n_cells = grid->n_cells;
 
@@ -114,7 +117,8 @@ make_reconstruction_array(const std::shared_ptr<Grid> &grid,
           LocalEquilibrium(eq),
           RC(grid, stencils[i], i, o1_params),
           i,
-          scaling);
+          scaling,
+          local_rc_params);
 
     } else {
       lrc[i] = LocalReconstruction<Equilibrium, RC, Scaling>(
@@ -122,7 +126,8 @@ make_reconstruction_array(const std::shared_ptr<Grid> &grid,
           LocalEquilibrium(eq),
           RC(grid, stencils[i], i, weno_params),
           i,
-          scaling);
+          scaling,
+          local_rc_params);
     }
   }
 

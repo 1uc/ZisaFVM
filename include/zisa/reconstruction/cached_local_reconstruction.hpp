@@ -1,5 +1,5 @@
-#ifndef LOCAL_RECONSTRUCTION_H_VF8YB
-#define LOCAL_RECONSTRUCTION_H_VF8YB
+#ifndef ZISA_CACHED_LOCAL_RECONSTRUCTION_HPP_ZOQENI
+#define ZISA_CACHED_LOCAL_RECONSTRUCTION_HPP_ZOQENI
 
 #include <zisa/grid/grid.hpp>
 #include <zisa/memory/array.hpp>
@@ -11,71 +11,44 @@
 
 namespace zisa {
 
-struct LocalRCParams {
-  int_t steps_per_recompute;
-  double recompute_threshold;
-};
-
 template <class Equilibrium, class RC, class Scaling>
-class LocalReconstruction {
+class CachedLocalReconstruction {
 private:
   using cvars_t = euler_var_t;
 
 public:
-  LocalReconstruction() = default;
-  LocalReconstruction(std::shared_ptr<Grid> grid,
+  CachedLocalReconstruction() = default;
+  CachedLocalReconstruction(std::shared_ptr<Grid> grid,
                       const LocalEquilibrium<Equilibrium> &eq,
                       const RC &rc,
                       int_t i_cell,
-                      Scaling scaling,
-                      const LocalRCParams &params)
-      : grid(grid),
-        eq(eq),
-        rc(rc),
-        i_cell(i_cell),
-        scaling(scaling),
-        rhoE_cache(shape_t<1>{rc.local2global().size()}),
-        steps_per_recompute(params.steps_per_recompute),
-        recompute_threshold(params.recompute_threshold) {}
+                      Scaling scaling)
+      : grid(grid), eq(eq), rc(rc), i_cell(i_cell), scaling(scaling) {
 
-  void compute_equilibrium(const array_view<cvars_t, 1> &u_local) {
-    const auto &u0 = u_local(int_t(0));
-    auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
-
-    scale = scaling(rhoE_self);
-    eq.solve(rhoE_self, grid->cells(i_cell));
-    auto &l2g = rc.local2global();
-    for (int_t il = 0; il < l2g.size(); ++il) {
-      rhoE_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
-    }
-
-    steps_since_recompute = 0;
-  }
-
-  void recompute_equilibrium(const array_view<cvars_t, 1> &u_local) {
-    if (steps_since_recompute % steps_per_recompute == 0) {
-      compute_equilibrium(u_local);
-    } else {
-      const auto &u0 = u_local(int_t(0));
-      auto [rho, E] = RhoE{u0[0], internal_energy(u0)};
-      auto [rho_c, E_c] = rhoE_cache(0);
-      auto delta_rhoE = RhoE{(rho - rho_c) / scale[0], (E - E_c) / scale[4]};
-
-      if (zisa::norm(delta_rhoE) >= recompute_threshold) {
-        compute_equilibrium(u_local);
-      }
-    }
+    u_eq_bar = array<cvars_t, 1>(rc.l2g().size());
   }
 
   void compute(const array_view<double, 2, row_major> &rhs,
                const array_view<WENOPoly, 1> &polys,
                const array_view<cvars_t, 1> &u_local) {
 
-    recompute_equilibrium(u_local);
+    if (steps_since_recompute % steps_per_recompute == 0) {
+            recompute_cache(rhs, polys, u_local);
+    } else {
+      const auto &u0 = u_local(int_t(0));
+      auto [rho, E] = RhoE{u0[0], internal_energy(u0)};
+      auto [rho_c, E_c] = rhoE_eq_cache(0);
+      auto elta_rhoE = RhoE{(rho - rho_c) / scale[0],
+                        (E - E_c) / scale[4]};
+
+      if (zisa::norm(delta_rhoE) >= recompute_threshold) {
+        recompute_cache(rhs, polys, u_local);
+      }
+    }
 
     auto &l2g = rc.local2global();
     for (int_t il = 0; il < l2g.size(); ++il) {
-      auto [rho_eq_bar, E_eq_bar] = equilibrium_cell_average(il);
+      auto [rho_eq_bar, E_eq_bar] = rhoE_eq_cache(il);
 
       u_local(il)[0] -= rho_eq_bar;
       u_local(il)[4] -= E_eq_bar;
@@ -84,10 +57,27 @@ public:
     }
 
     weno_poly = rc.reconstruct(rhs, polys, u_local);
-    ++steps_since_recompute;
+
+    ++steps_since_recomputes;
   }
 
-  RhoE equilibrium_cell_average(int_t il) { return rhoE_cache(il); }
+
+  void recompute_cache(const array_view<double, 2, row_major> &rhs,
+               const array_view<WENOPoly, 1> &polys,
+               const array_view<cvars_t, 1> &u_local) {
+
+    const auto &u0 = u_local(int_t(0));
+    auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
+
+    scale = scaling(rhoE_self);
+    eq.solve(rhoE_self, grid->cells(i_cell));
+    auto &l2g = rc.local2global();
+    for (int_t il = 0; il < l2g.size(); ++il) {
+      rhoE_eq_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
+    }
+
+    steps_since_recompute = 0;
+  }
 
   void compute_tracer(const array_view<double, 2, row_major> &rhs,
                       const array_view<ScalarPoly, 1> &polys,
@@ -127,7 +117,7 @@ public:
   }
 
   auto combined_stencil_size() const
-      -> decltype(std::declval<RC>().combined_stencil_size()) {
+  -> decltype(std::declval<RC>().combined_stencil_size()) {
     return rc.combined_stencil_size();
   }
 
@@ -148,17 +138,18 @@ public:
 private:
   std::shared_ptr<Grid> grid;
   LocalEquilibrium<Equilibrium> eq;
+
+  array<cvars_t, 1> rhoE_eq_cache;
+  int_t steps_since_recompute;
+  int_t steps_per_recompute;
+  double recompute_threshold;
+
   RC rc;
   int_t i_cell;
   WENOPoly weno_poly;
   array<ScalarPoly, 1> scalar_polys;
   Scaling scaling;
   cvars_t scale = cvars_t::zeros();
-
-  array<RhoE, 1> rhoE_cache;
-  int_t steps_per_recompute;
-  int_t steps_since_recompute = 0;
-  double recompute_threshold;
 };
 
 } // namespace zisa

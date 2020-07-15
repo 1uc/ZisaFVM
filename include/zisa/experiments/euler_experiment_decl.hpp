@@ -86,6 +86,7 @@ protected:
   auto choose_reconstruction(const RCParams &rc_params) -> decltype(auto);
 
   HybridWENOParams choose_weno_reference_params() const;
+  LocalRCParams choose_local_rc_params() const;
 
   std::shared_ptr<LocalEOSState<EOS>> choose_local_eos() {
     if (local_eos_ == nullptr) {

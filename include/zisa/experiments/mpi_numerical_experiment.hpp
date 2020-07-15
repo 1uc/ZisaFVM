@@ -153,12 +153,13 @@ protected:
     auto grid = this->choose_grid();
     auto local_eos = this->choose_local_eos();
     auto weno_params = this->choose_weno_reference_params();
+    auto local_rc_params = this->choose_local_rc_params();
     auto rc = make_reconstruction_array<NoEquilibrium,
                                         CWENO_AO,
                                         UnityScaling,
                                         typename super::eos_t,
                                         typename super::gravity_t>(
-        grid, weno_params, *local_eos, this->gravity);
+        grid, weno_params, *local_eos, this->gravity, local_rc_params);
     auto grc = std::make_shared<
         EulerGlobalReconstruction<NoEquilibrium, CWENO_AO, UnityScaling>>(
         weno_params, std::move(rc));
