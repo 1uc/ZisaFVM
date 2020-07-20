@@ -44,7 +44,9 @@ class SumRatesOfChange : public RateOfChange {
 private:
   template <class... Args>
   void push_back_all(std::shared_ptr<RateOfChange> roc, Args &&... args) {
-    rates_of_change.push_back(roc);
+    if(roc != nullptr) {
+      rates_of_change.push_back(roc);
+    }
     push_back_all(std::forward<Args>(args)...);
   }
 
