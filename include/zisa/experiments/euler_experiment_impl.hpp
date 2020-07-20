@@ -23,9 +23,9 @@
 namespace zisa {
 
 template <class EOS, class Gravity>
-EulerExperiment<EOS, Gravity>::EulerExperiment(
-    const InputParameters &params, const std::shared_ptr<euler_t> &euler_)
-    : super(params), euler(euler_) {
+EulerExperiment<EOS, Gravity>::EulerExperiment(const InputParameters &params,
+                                               std::shared_ptr<euler_t> euler_)
+    : super(params), euler(std::move(euler_)) {
 
   if (is_restart()) {
     auto reader = HDF5SerialReader(params["restart"]["file"]);

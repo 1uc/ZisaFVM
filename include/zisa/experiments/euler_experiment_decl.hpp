@@ -32,7 +32,7 @@ public:
         gravity(make_gravity<Gravity>(params)) {}
 
   EulerExperiment(const InputParameters &params,
-                  const std::shared_ptr<euler_t> &euler);
+                  std::shared_ptr<euler_t> euler);
 
 protected:
   virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) override;
