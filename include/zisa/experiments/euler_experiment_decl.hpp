@@ -67,6 +67,12 @@ protected:
           EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
           &global_reconstruction);
 
+  template <class Equilibrium, class RC>
+  std::shared_ptr<RateOfChange> choose_heating_source_loop(
+      const std::shared_ptr<
+          EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
+      &global_reconstruction);
+
   template <class Equilibrium>
   std::shared_ptr<RateOfChange> deduce_reconstruction();
 

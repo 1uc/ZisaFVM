@@ -6,6 +6,7 @@
 
 #include <zisa/experiments/euler_experiment.hpp>
 #include <zisa/math/linear_interpolation.hpp>
+#include <zisa/model/heating.hpp>
 #include <zisa/model/helmholtz_eos.hpp>
 
 namespace zisa {
@@ -29,6 +30,9 @@ protected:
 
   virtual std::function<bool(const Grid &grid, int_t i)>
   boundary_mask() const override;
+
+private:
+  std::shared_ptr<RateOfChange> heating_rate_;
 };
 
 }

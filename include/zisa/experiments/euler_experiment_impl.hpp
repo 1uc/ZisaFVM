@@ -12,6 +12,7 @@
 #include <zisa/io/euler_plots.hpp>
 #include <zisa/io/no_visualization.hpp>
 #include <zisa/math/reference_solution.hpp>
+#include <zisa/model/heating.hpp>
 #include <zisa/model/isentropic_equilibrium.hpp>
 #include <zisa/model/local_cfl_condition.hpp>
 #include <zisa/model/no_equilibrium.hpp>
@@ -270,8 +271,10 @@ EulerExperiment<EOS, Gravity>::choose_physical_rate_of_change() {
   auto rc = choose_reconstruction<Equilibrium, RC>();
   auto fvm_change = choose_flux_loop<Equilibrium, RC>(rc);
   auto source_change = choose_gravity_source_loop<Equilibrium, RC>(rc);
+  auto heating_change = choose_heating_source_loop<Equilibrium, RC>(rc);
 
-  return std::make_shared<SumRatesOfChange>(fvm_change, source_change);
+  return std::make_shared<SumRatesOfChange>(
+      fvm_change, source_change, heating_change);
 }
 
 template <class EOS, class Gravity>
@@ -303,6 +306,16 @@ EulerExperiment<EOS, Gravity>::choose_gravity_source_loop(
                                             gravity_t,
                                             scaling_t>>(
       grid, local_eos, gravity, rc);
+}
+
+template <class EOS, class Gravity>
+template <class Equilibrium, class RC>
+std::shared_ptr<RateOfChange>
+EulerExperiment<EOS, Gravity>::choose_heating_source_loop(
+    const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
+        &rc) {
+  auto grid = choose_grid();
+  return make_heating_source(grid, rc, params);
 }
 
 template <class EOS, class Gravity>
