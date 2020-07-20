@@ -37,7 +37,7 @@ class ZisaWorkEstimate:
         """
 
         n_cells = self.n_cells(launch_param)
-        return n_cells / 1024
+        return n_cells / self.unit_work
 
     def memory_usage(self, launch_param):
         """Return the required memory.

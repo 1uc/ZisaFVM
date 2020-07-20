@@ -167,18 +167,31 @@ class WellBalancing(Subsection):
 
 class Reconstruction(Subsection):
     def __init__(
-        self, rc, orders, biases=None, overfit_factors=None, linear_weights=None
+        self,
+        rc,
+        orders,
+        biases=None,
+        overfit_factors=None,
+        linear_weights=None,
+        steps_per_recompute=None,
+        recompute_threshold=None,
     ):
         n_stencils = len(orders)
 
-        if not biases:
+        if biases is None:
             biases = ["c" if i == 0 else "b" for i in range(n_stencils)]
 
-        if not overfit_factors:
+        if overfit_factors is None:
             overfit_factors = [2.0 if i == 0 else 1.5 for i in range(n_stencils)]
 
-        if not linear_weights:
+        if linear_weights is None:
             linear_weights = [100 if i == 0 else 1 for i in range(n_stencils)]
+
+        if recompute_threshold is None:
+            recompute_threshold = -1.0
+
+        if steps_per_recompute is None:
+            steps_per_recompute = 1
 
         super().__init__(
             {
@@ -188,6 +201,8 @@ class Reconstruction(Subsection):
                 "overfit_factors": overfit_factors,
                 "linear_weights": linear_weights,
                 "smoothness_indicator": {"epsilon": 1e-10, "exponent": 4},
+                "recompute_threshold": recompute_threshold,
+                "steps_per_recompute": steps_per_recompute,
             }
         )
 

@@ -98,12 +98,13 @@ eos = sc.HelmholtzEOS(
 gravity = sc.RadialGravity(one_dimensional_profile)
 euler = sc.Euler(eos, gravity)
 
-t_end = 0.09
-time = sc.Time(t_end=t_end)
+t_end = 0.9
+n_steps = 10
+time = sc.Time(n_steps=n_steps)
 io = sc.IO(
     "hdf5",
     "stellar_convection",
-    n_snapshots=1,
+    steps_per_frame=n_steps,
     parallel_strategy="gathered",
     n_writers=4,
 )
@@ -115,9 +116,9 @@ def make_work_estimate():
     t0 = 2 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
     b0 = 0.0
     o0 = 100 * 1e6
-    unit_work = 256
+    unit_work = 512
 
-    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, unit_work=512)
+    return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, unit_work=unit_work)
 
 
 grid_name = GridNamingScheme("stellar_convection")
@@ -126,11 +127,11 @@ parallelization = {"mode": "mpi"}
 
 radii = [5000 * km, 40_000 * km]
 # mesh_levels = list(range(0, 6)) + [7]
-mesh_levels = list(range(1, 2))
+mesh_levels = [1]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
+local_rc_param = {"steps_per_recompute": int(1), "recompute_threshold": 1e10}
 
 coarse_grid_levels = [1]
-
 coarse_grid_choices = {
     "grid": [
         sc.Grid(grid_name.config_string(l, parallelization), l)
@@ -157,7 +158,9 @@ dependent_choices_a = {
 }
 
 dependent_choices_b = {
-    "reconstruction": [sc.Reconstruction("CWENO-AO", [3, 2, 2, 2, 2])],
+    "reconstruction": [
+        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2, 2], **local_rc_param)
+    ],
     "ode": [sc.ODE("SSP3")],
     "quadrature": [sc.Quadrature(2)],
 }
