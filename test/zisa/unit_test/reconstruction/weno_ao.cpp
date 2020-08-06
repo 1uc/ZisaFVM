@@ -77,10 +77,10 @@ TEST_CASE("WENO_AO; reconstruct smooth", "[weno_ao][math]") {
 
   for (auto &[expected_rate, is_stable, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::WENO_AO>(
-        grid_names, expected_rate, params);
+        grid_names, expected_rate, params, 2);
 
     if (is_stable) {
-      zisa::test_hybrid_weno_stability<zisa::WENO_AO>(grid_names, params);
+      zisa::test_hybrid_weno_stability<zisa::WENO_AO>(grid_names, params, 2);
     }
   }
 }

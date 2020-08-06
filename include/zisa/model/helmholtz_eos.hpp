@@ -107,8 +107,10 @@ public:
     int status = -1;
     eos_state_type eos_ret;
 
-    LOG_ERR_IF(tv1 <= 0, string_format("Negative `tv1`. [%e]", tv1));
-    LOG_ERR_IF(tv2 <= 0, string_format("Negative `tv2`. [%e]", tv2));
+    LOG_ERR_IF(
+        (tv1 <= 0.0) || (tv2 <= 0.0),
+        string_format(
+            "Invalid input to EOS. %d : tv1 = %e, tv2 = %e", id, tv1, tv2));
 
     helmholtz_eos_bar_c(&id, &tv1, &tv2, &a_bar, &z_bar, &eos_ret, &status);
     LOG_ERR_IF(
@@ -135,6 +137,15 @@ public:
 
     double rho_guess = rhoT_guess.rho();
     double T_guess = rhoT_guess.T();
+
+    LOG_ERR_IF(
+        ((h <= 0.0) || (s <= 0.0) || (rho_guess <= 0.0) || (T_guess <= 0.0)),
+        string_format("Invalid input to EOS. h = %e, s = %e; rho_guess "
+                      "= %e, T_guess = %e",
+                      h,
+                      s,
+                      rho_guess,
+                      T_guess));
 
     helmholtz_eos_wguess_bar_c(
         &TD_HS, &h, &s, &a_bar, &z_bar, &ret, &status, &T_guess, &rho_guess);

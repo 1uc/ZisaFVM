@@ -81,7 +81,7 @@ TEST_CASE("CWENO; reconstruct smooth (stencil)",
 
   for (auto &[expected_rate, params] : cases) {
     zisa::test_hybrid_weno_valid_stencil<zisa::CWENO_AO>(
-        grid_names, expected_rate, params);
+        grid_names, expected_rate, params, 2);
   }
 }
 
@@ -91,7 +91,7 @@ TEST_CASE("CWENO; reconstruct smooth (rate)", "[weno_ao][math][2d][rate]") {
 
   for (auto &[expected_rate, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::CWENO_AO>(
-        grid_names, expected_rate, params);
+        grid_names, expected_rate, params, 2);
   }
 }
 
@@ -101,7 +101,7 @@ TEST_CASE("CWENO; reconstruct smooth (stability)",
   auto cases = cweno_ao_2d_cases();
 
   for (auto &[expected_rate, params] : cases) {
-    zisa::test_hybrid_weno_stability<zisa::CWENO_AO>(grid_names, params);
+    zisa::test_hybrid_weno_stability<zisa::CWENO_AO>(grid_names, params, 2);
   }
 }
 
@@ -115,6 +115,10 @@ cweno_3d_cases() {
   double eps = 1e-10;
   double s = 4.0;
   double o2 = 2.5;
+
+  cases.push_back({false, {1.8, 2.2}, {{{2}, {"c"}, {4.0}}, {1.0}, eps, s}});
+  cases.push_back({false, {2.7, 3.35}, {{{3}, {"c"}, {2.0}}, {1.0}, eps, s}});
+  cases.push_back({false, {3.5, 4.35}, {{{4}, {"c"}, {3.0}}, {1.0}, eps, s}});
 
   cases.push_back(
       {true,
@@ -132,14 +136,14 @@ cweno_3d_cases() {
         eps,
         s}});
 
-  cases.push_back({true,
-                   {3.7, 4.5},
-                   {{{4, 2, 2, 2, 2, 2},
-                     {"c", "c", "b", "b", "b", "b"},
-                     {4.0, 4.0, o2, o2, o2, o2}},
-                    {100.0, 10.0, 1.0, 1.0, 1.0, 1.0},
-                    eps,
-                    s}});
+  //  cases.push_back({true,
+  //                   {3.7, 4.5},
+  //                   {{{4, 2, 2, 2, 2, 2},
+  //                     {"c", "c", "b", "b", "b", "b"},
+  //                     {4.0, 4.0, o2, o2, o2, o2}},
+  //                    {100.0, 10.0, 1.0, 1.0, 1.0, 1.0},
+  //                    eps,
+  //                    s}});
 
   cases.push_back({true,
                    {3.7, 4.5},
@@ -149,10 +153,6 @@ cweno_3d_cases() {
                     {100.0, 10.0, 1.0, 1.0, 1.0, 1.0},
                     eps,
                     s}});
-
-  cases.push_back({false, {1.8, 2.2}, {{{2}, {"c"}, {4.0}}, {1.0}, eps, s}});
-  cases.push_back({false, {2.7, 3.35}, {{{3}, {"c"}, {2.0}}, {1.0}, eps, s}});
-  cases.push_back({false, {3.5, 4.35}, {{{4}, {"c"}, {3.0}}, {1.0}, eps, s}});
 
   return cases;
 }
@@ -169,7 +169,7 @@ TEST_CASE("CWENO; reconstruct smooth 3D (matrices)",
   auto cases = cweno_3d_cases();
 
   for (auto &[_, expected_rate, params] : cases) {
-    zisa::test_hybrid_weno_matrices<zisa::CWENO_AO>(grid_names, params);
+    zisa::test_hybrid_weno_matrices<zisa::CWENO_AO>(grid_names, params, 3);
   }
 }
 
@@ -180,7 +180,7 @@ TEST_CASE("CWENO; reconstruct smooth 3D (stencil)",
 
   for (auto &[_, expected_rate, params] : cases) {
     zisa::test_hybrid_weno_valid_stencil<zisa::CWENO_AO>(
-        grid_names, expected_rate, params);
+        grid_names, expected_rate, params, 3);
   }
 }
 
@@ -190,7 +190,7 @@ TEST_CASE("CWENO; reconstruct smooth 3D (rate)", "[weno_ao][3d][math][rate]") {
 
   for (auto &[_, expected_rate, params] : cases) {
     zisa::test_hybrid_weno_convergence<zisa::CWENO_AO>(
-        grid_names, expected_rate, params);
+        grid_names, expected_rate, params, 3);
   }
 }
 
@@ -200,7 +200,7 @@ TEST_CASE("CWENO; reconstruct smooth 3D (stability)",
   auto cases = cweno_3d_cases();
   for (auto &[is_stable, expected_rate, params] : cases) {
     if (is_stable) {
-      zisa::test_hybrid_weno_stability<zisa::CWENO_AO>(grid_names, params);
+      zisa::test_hybrid_weno_stability<zisa::CWENO_AO>(grid_names, params, 3);
     }
   }
 }

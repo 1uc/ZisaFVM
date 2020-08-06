@@ -35,6 +35,8 @@ TetrahedralRule make_tetrahedral_rule(int_t deg);
 
 const TetrahedralRule &cached_tetrahedral_rule(int_t deg);
 
+constexpr int_t MAX_TETRAHEDRAL_RULE_DEGREE = 3;
+
 }
 
 #endif // ZISA_TETRAHEDRAL_RULE_HPP

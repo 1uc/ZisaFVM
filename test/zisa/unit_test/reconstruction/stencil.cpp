@@ -127,15 +127,16 @@ TEST_CASE("deduce_max_order", "[stencil]") {
 
   REQUIRE(zisa::deduce_max_order(1, factor, n_dims) == 1);
   REQUIRE(zisa::deduce_max_order(2, factor, n_dims) == 1);
+  REQUIRE(zisa::deduce_max_order(4, factor, n_dims) == 1);
 
-  REQUIRE(zisa::deduce_max_order(4, factor, n_dims) == 2);
-  REQUIRE(zisa::deduce_max_order(9, factor, n_dims) == 2);
+  REQUIRE(zisa::deduce_max_order(5, factor, n_dims) == 2);
+  REQUIRE(zisa::deduce_max_order(10, factor, n_dims) == 2);
 
-  REQUIRE(zisa::deduce_max_order(10, factor, n_dims) == 3);
-  REQUIRE(zisa::deduce_max_order(17, factor, n_dims) == 3);
+  REQUIRE(zisa::deduce_max_order(11, factor, n_dims) == 3);
+  REQUIRE(zisa::deduce_max_order(18, factor, n_dims) == 3);
 
-  REQUIRE(zisa::deduce_max_order(18, factor, n_dims) == 4);
-  REQUIRE(zisa::deduce_max_order(27, factor, n_dims) == 4);
+  REQUIRE(zisa::deduce_max_order(19, factor, n_dims) == 4);
+  REQUIRE(zisa::deduce_max_order(28, factor, n_dims) == 4);
 
-  REQUIRE(zisa::deduce_max_order(28, factor, n_dims) == 5);
+  REQUIRE(zisa::deduce_max_order(29, factor, n_dims) == 5);
 }

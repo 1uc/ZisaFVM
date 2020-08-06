@@ -16,20 +16,17 @@ class GridNamingScheme:
     def dir(self, l):
         return f"grids/{self.basename}-{l}"
 
-    def stem(self, l):
-        return f"{self.dir(l)}/grid"
-
     def geo(self, l):
-        return self.stem(l) + ".geo"
+        return self._stem(l) + ".geo"
 
     def msh_h5(self, l):
-        return self.stem(l) + ".msh.h5"
+        return self._stem(l) + ".msh.h5"
 
     def config_string(self, l, parallelization):
-        if parallelization["mode"] == "mpi":
-            return self.dir(l)
-
         return self.dir(l)
+
+    def _stem(self, l):
+        return f"{self.dir(l)}/grid"
 
 
 def generate_grids_from_template(template_name, filename, substitutions, levels):
@@ -47,11 +44,11 @@ def generate_grids_from_template(template_name, filename, substitutions, levels)
 
 
 def generate_spherical_shell_grids(filename, radii, lc_rel, levels, with_halo):
-    template_name = "grids/spherical_shell" + (
+    template_name = "grids.light/spherical_shell" + (
         "_with_halo.tmpl" if with_halo else ".tmpl"
     )
 
-    with open("grids/sphere.macro", "r") as f:
+    with open("grids.light/sphere.macro", "r") as f:
         sphere_macro = f.read()
 
     substitutions = [
@@ -68,8 +65,10 @@ def generate_spherical_shell_grids(filename, radii, lc_rel, levels, with_halo):
 
 
 def generate_spherical_grids(filename, radius, lc_rel, levels, with_halo):
-    template_name = "grids/sphere_with_halo.tmpl" if with_halo else "grids/sphere.tmpl"
-    with open("grids/sphere.macro", "r") as f:
+    template_name = (
+        "grids.light/sphere_with_halo.tmpl" if with_halo else "grids.light/sphere.tmpl"
+    )
+    with open("grids.light/sphere.macro", "r") as f:
         sphere_macro = f.read()
 
     substitutions = [
@@ -81,14 +80,16 @@ def generate_spherical_grids(filename, radius, lc_rel, levels, with_halo):
 
 
 def generate_circular_grids(filename, radius, lc_rel, levels, with_halo):
-    template_name = "grids/circle_with_halo.tmpl" if with_halo else "grids/circle.tmpl"
+    template_name = (
+        "grids.light/circle_with_halo.tmpl" if with_halo else "grids.light/circle.tmpl"
+    )
     substitutions = [{"RADIUS": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
 
     generate_grids_from_template(template_name, filename, substitutions, levels)
 
 
 def generate_cube_grids(filename, width, lc_rel, levels):
-    template_name = "grids/cube.tmpl"
+    template_name = "grids.light/cube.tmpl"
     substitutions = [{"WIDTH": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
 
     generate_grids_from_template(template_name, filename, substitutions, levels)

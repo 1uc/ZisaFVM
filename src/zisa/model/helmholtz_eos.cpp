@@ -1,6 +1,5 @@
-#include <zisa/model/helmholtz_eos.hpp>
-
 #if ZISA_HAS_HELMHOLTZ_EOS == 1
+#include <zisa/model/helmholtz_eos.hpp>
 
 namespace zisa {
 void initialize_helmholtz_eos(std::string &eos_table) {

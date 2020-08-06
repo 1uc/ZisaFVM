@@ -99,12 +99,12 @@ gravity = sc.RadialGravity(one_dimensional_profile)
 euler = sc.Euler(eos, gravity)
 
 t_end = 0.9
-n_steps = 10
+n_steps = 100
 time = sc.Time(n_steps=n_steps)
 io = sc.IO(
     "hdf5",
     "stellar_convection",
-    steps_per_frame=n_steps,
+    steps_per_frame=1,
     parallel_strategy="gathered",
     n_writers=4,
 )
@@ -113,7 +113,7 @@ io = sc.IO(
 def make_work_estimate():
     n0 = 10_000
 
-    t0 = 2 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
+    t0 = 2 * timedelta(seconds=t_end / 1 * 60 * 96)
     b0 = 0.0
     o0 = 100 * 1e6
     unit_work = 512
@@ -129,7 +129,7 @@ radii = [5000 * km, 40_000 * km]
 # mesh_levels = list(range(0, 6)) + [7]
 mesh_levels = [1]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
-local_rc_param = {"steps_per_recompute": int(1), "recompute_threshold": 1e10}
+local_rc_param = {"steps_per_recompute": int(100), "recompute_threshold": 1e10}
 
 coarse_grid_levels = [1]
 coarse_grid_choices = {
@@ -150,11 +150,13 @@ independent_choices = {
     "debug": [{"global_indices": False, "stencils": False}],
 }
 
+
+wb_keys = ["isentropic"]
 dependent_choices_a = {
     # "flux-bc": [sc.FluxBC("constant")],
     # "well-balancing": [sc.WellBalancing("constant")],
-    "flux-bc": [sc.FluxBC(k) for k in ["constant", "isentropic"]],
-    "well-balancing": [sc.WellBalancing(k) for k in ["constant", "isentropic"]],
+    "flux-bc": [sc.FluxBC(k) for k in wb_keys],
+    "well-balancing": [sc.WellBalancing(k) for k in wb_keys],
 }
 
 dependent_choices_b = {

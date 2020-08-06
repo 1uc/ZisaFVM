@@ -147,6 +147,7 @@ def find_data_files(directory):
 
 
 def find_last_data_file(directory):
+    print(directory)
     return max(find_data_files(directory))
 
 

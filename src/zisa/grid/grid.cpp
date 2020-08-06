@@ -535,17 +535,18 @@ neighbours_t compute_neighbours(GMSHElementType element_type,
   return neighbours;
 }
 
-array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid) {
+array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid,
+                                                      int_t quad_deg) {
   auto n_cells = grid.n_cells;
   auto normalized_moments = array<array<double, 1>, 1>(shape_t<1>{n_cells});
 
   for (const auto &i : cell_indices(grid)) {
     if (grid.is_triangular()) {
       auto tri = triangle(grid, i);
-      normalized_moments(i) = zisa::normalized_moments(tri, 4, 4);
+      normalized_moments(i) = zisa::normalized_moments(tri, quad_deg, quad_deg);
     } else if (grid.is_tetrahedral()) {
       auto tet = tetrahedron(grid, i);
-      normalized_moments(i) = zisa::normalized_moments(tet, 4, 4);
+      normalized_moments(i) = zisa::normalized_moments(tet, quad_deg, quad_deg);
     } else {
       LOG_ERR("Implement this first.");
     }
@@ -695,7 +696,7 @@ Grid::Grid(GMSHElementType element_type,
 
     face_centers = compute_barycenters(this->faces);
 
-    normalized_moments = compute_normalized_moments(*this);
+    normalized_moments = compute_normalized_moments(*this, quad_deg);
   }
 
   cell_flags = array<CellFlags, 1>(shape_t<1>{n_cells});
@@ -966,7 +967,7 @@ Grid Grid::load(HDF5Reader &reader) {
 
   grid.left_right
       = compute_left_right(grid.edge_indices, grid.neighbours, grid.is_valid);
-  grid.normalized_moments = compute_normalized_moments(grid);
+  grid.normalized_moments = compute_normalized_moments(grid, 0);
 
   return grid;
 }

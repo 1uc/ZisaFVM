@@ -9,6 +9,7 @@
 #include <zisa/memory/array_view.hpp>
 #include <zisa/reconstruction/lsq_solver.hpp>
 #include <zisa/reconstruction/stencil.hpp>
+#include <zisa/utils/indent_block.hpp>
 
 namespace zisa {
 
@@ -175,10 +176,10 @@ DenormalizedRule make_stencil_selection_query_points(const Grid &grid,
                                                      int_t i) {
 
   if (grid.is_triangular()) {
-    auto qr_hat = cached_triangular_quadrature_rule(5);
+    auto qr_hat = cached_triangular_quadrature_rule(MAX_TRIANGULAR_RULE_DEGREE);
     return denormalize(qr_hat, triangle(grid, i));
   } else if (grid.is_tetrahedral()) {
-    auto qr_hat = cached_tetrahedral_rule(5);
+    auto qr_hat = cached_tetrahedral_rule(MAX_TETRAHEDRAL_RULE_DEGREE);
     return denormalize(qr_hat, tetrahedron(grid, i));
   }
 
@@ -316,11 +317,13 @@ std::vector<int_t> tryhard_stencil(
     return std::vector<int_t>{i_center};
   }
   if (!is_good(candidates)) {
-    PRINT(format_as_list(candidates));
-    PRINT(i_center);
-    PRINT(k);
-    PRINT(n_points);
-    LOG_ERR("This wont work.");
+    std::stringstream ss;
+    ss << "It is impossible to find a suitable stencil.\n";
+    ss << "  candidates = " << format_as_list(candidates) << "\n";
+    ss << "  i_center = " << i_center << "\n";
+    ss << "  k = " << k << "\n";
+    ss << "  n_points = " << n_points << "\n";
+    LOG_ERR(ss.str());
   }
 
   std::random_device rd;
@@ -344,6 +347,32 @@ std::vector<int_t> biased_stencil(
   auto is_good = [&](const array_const_view<int_t, 1> &s) {
     auto A = assemble_weno_ao_matrix(grid, s, order);
     auto svd = Eigen::JacobiSVD(A);
+
+    if (svd.rank() != A.cols()) {
+
+      Eigen::IOFormat python_fmt(
+          Eigen::FullPrecision, 0, ", ", ",\n", "[", "]", "[", "]");
+
+      std::stringstream ss;
+      ss.precision(16);
+      ss << "n_dims = " << grid.n_dims() << "\n";
+      ss << "rank = " << svd.rank() << "\n";
+      ss << "cols = " << svd.cols() << "\n";
+      ss << "A = \n" << A.format(python_fmt) << "\n";
+      ss << "sv = \n" << svd.singularValues().format(python_fmt) << "\n";
+
+      for (auto j : s) {
+        ss << "j = " << j << "\n";
+        ss << indent_block(
+            1,
+            string_format("points = %s\nweights = %s\n",
+                          format_as_list(grid.cells[j].qr.weights).c_str(),
+                          format_as_list(grid.cells[j].qr.points).c_str()));
+      }
+
+      LOG_WARN(ss.str());
+    }
+
     return svd.rank() == A.cols();
   };
 

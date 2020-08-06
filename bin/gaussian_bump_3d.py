@@ -61,7 +61,11 @@ euler = sc.Euler(eos, gravity)
 t_end = 0.09
 time = sc.Time(t_end=t_end)
 io = sc.IO(
-    "hdf5", "gaussian_bump", n_snapshots=1, parallel_strategy="gathered", n_writers=8
+    "hdf5",
+    "gaussian_bump",
+    steps_per_frame=1,
+    parallel_strategy="gathered",
+    n_writers=8,
 )
 # io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
 
@@ -72,7 +76,7 @@ def make_work_estimate():
     t0 = 2 * timedelta(seconds=t_end / 0.09 * 90 * 24)
 
     b0 = 0.0 * 1e9
-    o0 = 100 * 1e6
+    o0 = 500 * 1e6
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, n_dims=3)
 
@@ -81,8 +85,8 @@ grid_name = GridNamingScheme("gaussian_bump_3d")
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-# mesh_levels = list(range(0, 3)) + [3]
-mesh_levels = [0]
+mesh_levels = list(range(0, 3)) + [3]
+# mesh_levels = [0]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))
@@ -105,9 +109,10 @@ independent_choices = {
     "debug": [{"global_indices": False, "stencils": False}],
 }
 
+wb_keys = ["constant", "isentropic"]
 dependent_choices_a = {
-    "flux-bc": [sc.FluxBC("constant"), sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
+    "flux-bc": [sc.FluxBC(key) for key in wb_keys],
+    "well-balancing": [sc.WellBalancing(key) for key in wb_keys],
 }
 
 # fmt: off
@@ -131,13 +136,15 @@ dependent_choices_b = {
         sc.ODE("ForwardEuler"),
         sc.ODE("SSP2"),
         sc.ODE("SSP3"),
+        sc.ODE("SSP3"),
         sc.ODE("RK4")
     ],
     "quadrature": [
         sc.Quadrature(1),
         sc.Quadrature(1),
         sc.Quadrature(2),
-        sc.Quadrature(3),
+        sc.Quadrature(2),
+        sc.Quadrature(3)
     ],
 }
 # fmt: on
@@ -153,11 +160,14 @@ reference_choices = {
             "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
         )
     ],
-    "ode": [sc.ODE("Fehlberg")],
-    "quadrature": [sc.Quadrature(4)],
+    "ode": [sc.ODE("SSP3")],
+    "quadrature": [sc.Quadrature(3)],
     "grid": [reference_grid],
     "reference": [
-        sc.Reference("isentropic", [grid_name.stem(l) for l in coarse_grid_levels])
+        sc.Reference(
+            "isentropic",
+            [grid_name.config_string(l, parallelization) for l in coarse_grid_levels],
+        )
     ],
     "parallelization": [{"mode": "mpi"}],
     "debug": [{"global_indices": False, "stencils": False}],
@@ -226,20 +236,19 @@ class TableLabels:
 
 
 def compute_parts(mesh_levels, host):
-    return {0: [2]}
-    # work_estimate = make_work_estimate()
+    work_estimate = make_work_estimate()
 
-    # heuristics = MPIHeuristics(host=host)
-    # queue_args = MPIQueueArgs(work_estimate, heuristics=heuristics)
+    heuristics = MPIHeuristics(host=host)
+    queue_args = MPIQueueArgs(work_estimate, heuristics=heuristics)
 
-    # parts_ = dict()
-    # for l in mesh_levels:
-    #     parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})]
+    parts_ = dict()
+    for l in mesh_levels:
+        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})]
 
-    #     if l <= 5:
-    #         parts_[l].append(2)
+        if l <= 5:
+            parts_[l].append(2)
 
-    # return parts_
+    return parts_
 
 
 def generate_grids(cluster, must_generate, must_decompose):

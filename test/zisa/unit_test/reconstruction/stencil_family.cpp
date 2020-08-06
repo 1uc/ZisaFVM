@@ -16,7 +16,7 @@ void check_uniqueness(const zisa::StencilFamily &stencils, zisa::int_t i_cell) {
 TEST_CASE("StencilFamily", "[weno_ao]") {
 
   SECTION("initialization") {
-    auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(0));
+    auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(0), 3);
 
     SECTION("is_unique") {
       for (zisa::int_t i_cell = 0; i_cell < grid->n_cells; ++i_cell) {
@@ -85,7 +85,7 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
 }
 
 TEST_CASE("StencilFamily, 3D", "[stencil][3d]") {
-  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(1));
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(1), 3);
   zisa::int_t i_cell = 90;
   auto n_cells = grid->n_cells;
 
@@ -119,7 +119,7 @@ TEST_CASE("StencilFamily, 3D", "[stencil][3d]") {
 }
 
 TEST_CASE("StencilFamily; real-world issue", "[2d][stencil]") {
-  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube_with_halo(1));
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube_with_halo(1), 3);
 
   zisa::int_t i = 24;
 

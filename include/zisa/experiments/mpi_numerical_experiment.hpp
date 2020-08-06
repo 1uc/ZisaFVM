@@ -344,7 +344,8 @@ protected:
 
     // Side effect: store the stencils.
 
-    auto super_subgrid = zisa::load_grid(subgrid_name());
+    auto quad_deg = this->choose_volume_deg();
+    auto super_subgrid = zisa::load_grid(subgrid_name(), quad_deg);
     auto super_sub_dgrid = zisa::load_distributed_grid(subgrid_name());
 
     auto stencils = compute_stencils(*super_subgrid);

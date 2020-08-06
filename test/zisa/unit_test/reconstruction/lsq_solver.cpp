@@ -18,7 +18,8 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
   auto params = zisa::StencilFamilyParams(
       {3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5, 1.5});
 
-  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(1));
+  auto quad_deg = max_order(params);
+  auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(0), quad_deg);
 
   auto n_cells = grid->n_cells;
   for (zisa::int_t i_cell = 0; i_cell < n_cells; ++i_cell) {

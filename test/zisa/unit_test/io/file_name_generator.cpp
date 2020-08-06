@@ -6,7 +6,7 @@
 #include <zisa/io/file_name_generator.hpp>
 
 TEST_CASE("FileNameGenerator; find_last_data_file", "[io]") {
-  auto fng = zisa::FileNameGenerator("data/__fng", "_data-%04d", ".h5");
+  auto fng = zisa::FileNameGenerator("__data/__fng", "_data-%04d", ".h5");
 
   zisa::create_directory(zisa::dirname(fng.next_name()));
   fng.advance_to(10);
@@ -27,7 +27,7 @@ TEST_CASE("FileNameGenerator; find_last_data_file", "[io]") {
   }
 
   auto actual = zisa::find_last_data_file(fng);
-  auto expected = std::string("data/__fng_data-0014.h5");
+  auto expected = std::string("__data/__fng_data-0014.h5");
 
   REQUIRE(actual == expected);
 }

@@ -50,7 +50,7 @@ static void check_convergence(double expected, double atol, zisa::int_t deg) {
 }
 
 TEST_CASE("Quadrature tets; smooth f", "[math]") {
-  SECTION("p == 1") { check_convergence(2.0, 1e-10, 1); }
-  SECTION("p == 3") { check_convergence(4.0, 1e-10, 3); }
-  SECTION("p == 5") { check_convergence(6.0, 2e-10, 5); }
+  SECTION("p == 1") { check_convergence(2.0, 1e-12, 1); }
+  SECTION("p == 2") { check_convergence(3.0, 1e-12, 2); }
+  SECTION("p == 3") { check_convergence(4.0, 2e-12, 3); }
 }

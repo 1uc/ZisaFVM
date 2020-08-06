@@ -1,5 +1,7 @@
 #include <zisa/io/file_name_generator.hpp>
 
+#include <zisa/io/format_as_list.hpp>
+
 namespace zisa {
 FileNameGenerator::FileNameGenerator(const std::string &stem,
                                      const std::string &pattern,
@@ -21,10 +23,7 @@ std::string FileNameGenerator::filename(int generation) {
   return string_format(pattern_, generation);
 }
 
-
-std::string FileNameGenerator::next_name() {
-  return filename(count_++);
-}
+std::string FileNameGenerator::next_name() { return filename(count_++); }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
 void FileNameGenerator::advance_to(const std::string &filename) {
@@ -39,6 +38,7 @@ int FileNameGenerator::generation(const std::filesystem::path &rel_path) {
 
   auto path = std::string(std::filesystem::absolute(rel_path));
   auto pattern = std::string(std::filesystem::absolute(pattern_));
+
   auto status = sscanf(path.c_str(), pattern.c_str(), &gen);
 
   return (status == 1 ? gen : -1);
@@ -47,7 +47,8 @@ int FileNameGenerator::generation(const std::filesystem::path &rel_path) {
 std::string find_last_data_file(FileNameGenerator &fng) {
   namespace fs = std::filesystem;
 
-  std::string path = fs::relative(zisa::dirname(fs::absolute(fng.filename_stem)));
+  std::string path
+      = fs::relative(zisa::dirname(fs::absolute(fng.filename_stem)));
   LOG_ERR_IF(!fs::is_directory(path),
              string_format("Not a directory. [%s]", path.c_str()));
 
@@ -68,7 +69,6 @@ std::string find_last_data_file(FileNameGenerator &fng) {
 std::string find_first_data_file(FileNameGenerator &fng) {
   return fng.filename(0);
 };
-
 
 std::shared_ptr<FileNameGenerator>
 make_file_name_generator(const std::string &dir,

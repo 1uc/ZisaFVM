@@ -24,6 +24,8 @@ struct TriangularRule {
  */
 TriangularRule make_triangular_rule(int_t deg);
 
+constexpr int_t MAX_TRIANGULAR_RULE_DEGREE = 5;
+
 const TriangularRule &cached_triangular_quadrature_rule(int_t deg);
 
 } // namespace zisa

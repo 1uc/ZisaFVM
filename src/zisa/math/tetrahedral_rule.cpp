@@ -13,7 +13,7 @@ TetrahedralRule make_tetrahedral_rule(int_t deg) {
     return qr;
   }
 
-  if (deg <= 3) {
+  if (deg == 2) {
     auto qr = TetrahedralRule(4);
 
     qr.weights[0] = 0.25;
@@ -43,7 +43,7 @@ TetrahedralRule make_tetrahedral_rule(int_t deg) {
     return qr;
   }
 
-  if (deg <= 5) {
+  if (deg == 3) {
     auto qr = TetrahedralRule(10);
 
     qr.weights[0] = 0.0476331348432089;

@@ -6,6 +6,34 @@
 
 namespace zisa {
 
+void test_evil_grid() {
+  auto gridname = "grids/gaussian_bump_3d-0/partitioned/24/subgrid-0020.msh.h5";
+
+  double o2 = 2.5;
+  double eps = 1e-10;
+  double s = 4.0;
+  auto params = HybridWENOParams(
+      {{3, 3, 3, 3, 3}, {"c", "b", "b", "b", "b"}, {4.0, o2, o2, o2, o2}},
+      {100.0, 1.0, 1.0, 1.0, 1.0},
+      eps,
+      s);
+
+  auto quad_deg = int_t(2);
+  auto grid = load_grid(gridname, quad_deg);
+
+  mask_ghost_cells(*grid, [](const Grid &grid, int_t i) {
+    auto r = zisa::norm(grid.cell_centers(i));
+    return r > 0.5;
+  });
+
+  auto n_cells = grid->n_cells;
+  auto sf = array<StencilFamily, 1>(shape_t<1>{n_cells});
+  for (auto i : cell_indices(*grid)) {
+    sf[i] = StencilFamily(*grid, i, params.stencil_family_params);
+    PRINT(sf[i][0].global(0));
+  }
+}
+
 void test_helmholtz_eos() {
   auto table_path = std::string("data/stellar_convection/helm_table.dat");
   initialize_helmholtz_eos(table_path);
@@ -45,7 +73,6 @@ void test_helmholtz_eos() {
   PRINT(full_xvars.E);
   PRINT(full_xvars.T);
 }
-
 }
 
 int main(int argc, char *argv[]) {
@@ -58,7 +85,8 @@ int main(int argc, char *argv[]) {
              "Can't init MPI.");
 #endif
 
-  zisa::test_helmholtz_eos();
+  //  zisa::test_helmholtz_eos();
+  zisa::test_evil_grid();
 
 #if ZISA_HAS_MPI == 1
   MPI_Finalize();

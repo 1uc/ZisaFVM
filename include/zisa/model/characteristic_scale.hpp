@@ -22,8 +22,8 @@ public:
     auto xvars = eos->xvars(rhoE);
     double cs = xvars.a;
 
-    LOG_ERR_IF(rho <= 0.0, "Invalid density.");
-    LOG_ERR_IF(E <= 0.0, "Invalid energy.");
+    LOG_ERR_IF(rho <= 0.0, string_format("Invalid density. [%e]", rho));
+    LOG_ERR_IF(E <= 0.0, string_format("Invalid energy. [%e]", E));
 
     return {rho, cs, cs, cs, E};
   }
