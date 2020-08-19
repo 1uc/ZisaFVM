@@ -1,9 +1,15 @@
 #include <map>
+#include <zisa/math/max_quadrature_degree.hpp>
 #include <zisa/math/tetrahedral_rule.hpp>
 
 namespace zisa {
 
 TetrahedralRule make_tetrahedral_rule(int_t deg) {
+
+  if (deg == MAX_QUADRATURE_DEGREE) {
+    deg = MAX_TETRAHEDRAL_RULE_DEGREE;
+  }
+
   if (deg <= 1) {
     auto qr = TetrahedralRule(1);
 

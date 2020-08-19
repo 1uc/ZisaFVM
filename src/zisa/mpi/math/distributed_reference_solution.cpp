@@ -2,6 +2,7 @@
 
 #include <zisa/grid/neighbour_range.hpp>
 #include <zisa/loops/reduction/all.hpp>
+#include <zisa/math/max_quadrature_degree.hpp>
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
@@ -192,7 +193,7 @@ void DistributedReferenceSolution::load_subgrid(
   small_grid = std::make_shared<Grid>(grid->element_type(),
                                       std::move(vertices),
                                       std::move(vertex_indices),
-                                      /* quad_deg = */ 5);
+                                      MAX_QUADRATURE_DEGREE);
 
   mask_ghost_cells(*small_grid, mask);
 

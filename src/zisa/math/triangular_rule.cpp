@@ -28,6 +28,10 @@ make_quadrature_rule(const std::vector<double> &w,
 }
 
 TriangularRule make_triangular_rule(int_t deg) {
+  if (deg == MAX_QUADRATURE_DEGREE) {
+    deg = MAX_TRIANGULAR_RULE_DEGREE;
+  }
+
   if (deg == 1) {
     auto [w, x] = permutate(1.0, {1.0 / 3.0});
     return make_quadrature_rule(w, x);

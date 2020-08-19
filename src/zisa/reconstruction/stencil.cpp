@@ -348,30 +348,31 @@ std::vector<int_t> biased_stencil(
     auto A = assemble_weno_ao_matrix(grid, s, order);
     auto svd = Eigen::JacobiSVD(A);
 
-    if (svd.rank() != A.cols()) {
-
-      Eigen::IOFormat python_fmt(
-          Eigen::FullPrecision, 0, ", ", ",\n", "[", "]", "[", "]");
-
-      std::stringstream ss;
-      ss.precision(16);
-      ss << "n_dims = " << grid.n_dims() << "\n";
-      ss << "rank = " << svd.rank() << "\n";
-      ss << "cols = " << svd.cols() << "\n";
-      ss << "A = \n" << A.format(python_fmt) << "\n";
-      ss << "sv = \n" << svd.singularValues().format(python_fmt) << "\n";
-
-      for (auto j : s) {
-        ss << "j = " << j << "\n";
-        ss << indent_block(
-            1,
-            string_format("points = %s\nweights = %s\n",
-                          format_as_list(grid.cells[j].qr.weights).c_str(),
-                          format_as_list(grid.cells[j].qr.points).c_str()));
-      }
-
-      LOG_WARN(ss.str());
-    }
+    //    if (svd.rank() != A.cols()) {
+    //
+    //      Eigen::IOFormat python_fmt(
+    //          Eigen::FullPrecision, 0, ", ", ",\n", "[", "]", "[", "]");
+    //
+    //      std::stringstream ss;
+    //      ss.precision(16);
+    //      ss << "n_dims = " << grid.n_dims() << "\n";
+    //      ss << "rank = " << svd.rank() << "\n";
+    //      ss << "cols = " << svd.cols() << "\n";
+    //      ss << "A = \n" << A.format(python_fmt) << "\n";
+    //      ss << "sv = \n" << svd.singularValues().format(python_fmt) <<
+    //      "\n";
+    //
+    //      for (auto j : s) {
+    //        ss << "j = " << j << "\n";
+    //        ss << indent_block(
+    //            1,
+    //            string_format("points = %s\nweights = %s\n",
+    //                          format_as_list(grid.cells[j].qr.weights).c_str(),
+    //                          format_as_list(grid.cells[j].qr.points).c_str()));
+    //      }
+    //
+    //      LOG_WARN(ss.str());
+    //      }
 
     return svd.rank() == A.cols();
   };

@@ -37,6 +37,7 @@ def tri_plot(grid, q):
     plot.color_plot(grid, q)
     plt.show()
 
+
 def stencil_indicator(grid, I):
     data = np.zeros(grid.n_cells)
     data[I] = 1.0
@@ -45,7 +46,7 @@ def stencil_indicator(grid, I):
     return data
 
 
-def plot_all(grid, data_files, keys):
+def plot_all(grid, data_files, keys, with_ghost_cells=False):
     n_dims = 2 if grid.vertex_indices.shape[1] == 3 else 3
 
     for f in data_files:
@@ -57,7 +58,7 @@ def plot_all(grid, data_files, keys):
                 plot.color_plot(grid, u[key])
                 plot.save(plot.filename(f, key))
 
-            plot = ScatterPlot()
+            plot = ScatterPlot(with_ghost_cells)
             plot(grid, u[key])
             plot.save(plot.filename(f, key))
 
@@ -79,6 +80,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--with-ghost-cells",
+        action="store_true",
+        help="The ghost-cells are only included in the plots if this flag is passed.",
+    )
+
+    parser.add_argument(
         "data_files",
         nargs="*",
         type=str,
@@ -97,4 +104,4 @@ if __name__ == "__main__":
 
     grid = load_grid(args.grid or find_grid(base_directory))
     if not getattr(sys, "ps1", sys.flags.interactive):
-        plot_all(grid, files, args.vars)
+        plot_all(grid, files, args.vars, args.with_ghost_cells)

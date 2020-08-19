@@ -88,9 +88,20 @@ def generate_circular_grids(filename, radius, lc_rel, levels, with_halo):
     generate_grids_from_template(template_name, filename, substitutions, levels)
 
 
-def generate_cube_grids(filename, width, lc_rel, levels):
-    template_name = "grids.light/cube.tmpl"
-    substitutions = [{"WIDTH": str(radius), "LC_REL": str(lc_rel[l])} for l in levels]
+def generate_cube_grids(filename, domain, lc_rel, levels, with_halo):
+    template_name = (
+        "grids.light/cube_with_halo.tmpl" if with_halo else "grids.light/cube.tmpl"
+    )
+
+    substitutions = [
+        {
+            "X0": str(domain[0]),
+            "X1": str(domain[1]),
+            "CUBE_MACRO": cube_macro,
+            "LC": str(lc_rel[l] * (domain[1] - domain[0])),
+        }
+        for l in levels
+    ]
 
     generate_grids_from_template(template_name, filename, substitutions, levels)
 
@@ -114,8 +125,6 @@ def convert_msh_to_hdf5(msh):
 def renumber_grids(grid_name_generator, mesh_levels):
     zisa_home = zisa_home_directory()
     build_target("renumber-grid")
-
-    print(mesh_levels)
 
     binary = zisa_home + "/build-release/renumber-grid"
     for l in mesh_levels:
@@ -142,7 +151,16 @@ def decompose_grids(grid_name_generator, mesh_levels, parts):
 
 def run_gmesh(geo):
     gmsh = "bin/gmsh"
-    cmd = [gmsh, "-3", "-format", "msh22", geo]
+    cmd = [
+        gmsh,
+        "-optimize_netgen",
+        "-optimize_threshold",
+        "0.9",
+        "-3",
+        "-format",
+        "msh22",
+        geo,
+    ]
     subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     convert_msh_to_hdf5(geo[:-4] + ".msh")
 

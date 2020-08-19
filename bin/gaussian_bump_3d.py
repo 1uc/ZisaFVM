@@ -49,23 +49,17 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [0.1]
+amplitudes = [0.0]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
 gravity = sc.PolytropeGravity()
-# gravity = sc.NoGravity()
-# gravity = sc.ConstantGravity(g=1.0)
 euler = sc.Euler(eos, gravity)
 
 t_end = 0.09
 time = sc.Time(t_end=t_end)
 io = sc.IO(
-    "hdf5",
-    "gaussian_bump",
-    steps_per_frame=1,
-    parallel_strategy="gathered",
-    n_writers=8,
+    "hdf5", "gaussian_bump", n_snapshots=2, parallel_strategy="gathered", n_writers=8,
 )
 # io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
 
@@ -86,7 +80,6 @@ parallelization = {"mode": "mpi"}
 
 radius = 0.5
 mesh_levels = list(range(0, 3)) + [3]
-# mesh_levels = [0]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))

@@ -25,6 +25,7 @@
 #include <zisa/math/face_factory.hpp>
 #include <zisa/math/poly2d.hpp>
 #include <zisa/math/symmetric_choices.hpp>
+#include <zisa/math/tetrahedral_rule.hpp>
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangular_rule.hpp>
 #include <zisa/memory/array_cell_flags.hpp>
@@ -1024,6 +1025,11 @@ GMSHElementType Grid::element_type() const {
 
 array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
+  if (quad_deg == MAX_QUADRATURE_DEGREE) {
+    quad_deg = MAX_TRIANGULAR_RULE_DEGREE;
+    degree = quad_deg;
+  }
+
   auto length = characteristic_length(tri);
   auto cell = make_cell(tri, quad_deg);
 
@@ -1044,6 +1050,11 @@ normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
 
 array<double, 1>
 normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
+  if (quad_deg == MAX_QUADRATURE_DEGREE) {
+    quad_deg = MAX_TETRAHEDRAL_RULE_DEGREE;
+    degree = quad_deg;
+  }
+
   auto length = characteristic_length(tet);
   auto cell = make_cell(tet, quad_deg);
 

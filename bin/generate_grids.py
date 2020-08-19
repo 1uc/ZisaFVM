@@ -16,7 +16,7 @@ def minimal_geo_files():
 
 
 def matching_geo_files(pattern):
-    return glob.glob("{}*.geo".format(pattern))
+    return glob.glob("{}*/*.geo".format(pattern))
 
 
 def all_geo_files():
@@ -29,8 +29,8 @@ def generate_geo_files():
     generate_unit_cube_geo_files()
 
 
-def generate_convergence_geo_files(basename, n_grids):
-    template = tiwaz.utils.read_txt(f"grids/convergence/{basename}.tmpl")
+def generate_convergence_geo_files(basename, tmpl, shape, n_grids):
+    template = tiwaz.utils.read_txt("grids.light/square.tmpl")
 
     for k in range(n_grids):
         geo = template.replace("LC", str(0.1 * 2 ** (-k)))
@@ -43,8 +43,25 @@ def generate_unit_square_geo_files():
 
 
 def generate_unit_cube_geo_files():
+    n_grids = 4
+    domain = [-0.5, 0.5]
+
+    def filename(l):
+        return f"grids/convergence/{basename}_{l}/grid.geo"
+
+    for with_halo in [True, False]:
+        template = tiwaz.utils.read_txt(
+            "grids.light/cube" + ("_with_halo" if with_halo else "") + ".tmpl"
+        )
+
+        geo = template.replace("LC", str(0.1 * 2 ** (-k)))
+
     generate_convergence_geo_files("unit_cube", 4)
     generate_convergence_geo_files("unit_cube_with_halo", 4)
+
+    for k in range(n_grids):
+        geo = template.replace("LC", str(0.1 * 2 ** (-k)))
+        tiwaz.utils.write_txt(f"grids/convergence/{basename}_{k}/grid.geo", geo)
 
 
 if __name__ == "__main__":

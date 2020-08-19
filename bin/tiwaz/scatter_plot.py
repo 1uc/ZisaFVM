@@ -6,22 +6,27 @@ from .colors import graded_colors
 
 
 class ScatterPlot:
-    def __init__(self):
+    def __init__(self, with_ghost_cells=False):
         self.fig = plt.figure()
+        self.with_ghost_cells = with_ghost_cells
 
     def __del__(self):
         plt.close(fig=self.fig)
 
     def __call__(self, grid, data, color=None, marker="*"):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
-        data = np.ma.masked_where(grid.is_ghost_cell, data)
+
+        if not self.with_ghost_cells:
+            data = np.ma.masked_where(grid.is_ghost_cell, data)
 
         plt.figure(self.fig.number)
         plt.plot(radii, data, marker, markersize=2, color=color)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
-        data = np.ma.masked_where(grid.is_ghost_cell, data)
+
+        if not self.with_ghost_cells:
+            data = np.ma.masked_where(grid.is_ghost_cell, data)
 
         plt.figure(self.fig.number)
         plt.plot(radii[::100], data[::100], "k.", markersize=2)
@@ -45,8 +50,8 @@ class ScatterPlot:
         ax.text(0.05, 0.05, text, transform=ax.transAxes)
 
 
-def scatter_plot(grid, data):
-    plot = ScatterPlot()
+def scatter_plot(grid, data, with_ghost_cells=False):
+    plot = ScatterPlot(with_ghost_cells)
     plot(grid, data)
 
     return plot

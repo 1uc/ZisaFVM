@@ -272,7 +272,7 @@ protected:
     };
 
     auto fine_grid = this->choose_grid();
-    auto mask = this->boundary_mask();
+    auto mask = super::boundary_mask();
 
     auto interpolation = [&ref_soln](int_t i, const XYZ &x, int_t k) {
       return ref_soln->q_ref(x, k, i);
@@ -281,11 +281,11 @@ protected:
     auto dref = DistributedReferenceSolution(
         serialize, fine_grid, interpolation, euler_var_t::size());
 
-    for (const auto &coarse_grid_folder : coarse_grid_paths) {
-      dref.compute_and_save(filename,
-                            coarse_grid_folder,
-                            small_comm_size(coarse_grid_folder),
-                            mask);
+    for (const auto &coarse_base_folder : coarse_grid_paths) {
+      auto coarse_folder
+          = std::filesystem::path(coarse_base_folder) / "partitioned";
+      dref.compute_and_save(
+          filename, coarse_folder, small_comm_size(coarse_folder), mask);
     }
   }
 

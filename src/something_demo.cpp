@@ -7,7 +7,7 @@
 namespace zisa {
 
 void test_evil_grid() {
-  auto gridname = "grids/gaussian_bump_3d-0/partitioned/24/subgrid-0020.msh.h5";
+  auto gridname = "grids/gaussian_bump_3d-3/grid.msh.h5";
 
   double o2 = 2.5;
   double eps = 1e-10;
@@ -28,9 +28,18 @@ void test_evil_grid() {
 
   auto n_cells = grid->n_cells;
   auto sf = array<StencilFamily, 1>(shape_t<1>{n_cells});
-  for (auto i : cell_indices(*grid)) {
-    sf[i] = StencilFamily(*grid, i, params.stencil_family_params);
-    PRINT(sf[i][0].global(0));
+
+  auto indices = std::vector<int_t>{52889, 53162};
+
+  for (auto i : indices) {
+    auto sfi = StencilFamily(*grid, i, params.stencil_family_params);
+    PRINT(i);
+    auto s = sfi.local2global();
+    for (auto j : s) {
+      auto sfj = StencilFamily(*grid, j, params.stencil_family_params);
+      PRINT(sfj.order());
+    }
+    PRINT(format_as_list(s));
   }
 }
 

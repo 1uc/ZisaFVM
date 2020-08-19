@@ -26,11 +26,11 @@ protected:
   using grc_t = EulerGlobalReconstruction<Equilibrium, CWENO_AO, Scaling>;
 
 public:
-  EulerReferenceSolution(std::shared_ptr<Grid> fine_grid,
+  EulerReferenceSolution(std::shared_ptr<Grid> fine_grid_,
                          const AllVariables &fine_vars,
-                         std::shared_ptr<grc_t> grc)
-      : fine_grid(std::move(fine_grid)),
-        grc(std::move(grc)),
+                         std::shared_ptr<grc_t> grc_)
+      : fine_grid(std::move(fine_grid_)),
+        grc(std::move(grc_)),
         n_cvars(fine_vars.cvars.shape(1)) {
 
     // FIXME we now have tracers.

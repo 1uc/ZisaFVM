@@ -5,6 +5,7 @@
 namespace po = boost::program_options;
 
 #include <filesystem>
+#include <numeric>
 #include <zisa/grid/grid.hpp>
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/cartesian.hpp>
@@ -14,6 +15,31 @@ namespace po = boost::program_options;
 #include <zisa/memory/array_view.hpp>
 
 namespace zisa {
+
+void sanity_check(const array_const_view<int_t, 2> &vertex_indices,
+                  const array_const_view<XYZ, 1> vertices) {
+
+  auto v = [&vertex_indices, &vertices](int_t i, int_t k) {
+    return vertices[vertex_indices(i, k)];
+  };
+
+  auto n_cells = vertex_indices.shape(0);
+  auto volumes = array<double, 1>(n_cells);
+  auto areas = array<double, 1>(n_cells);
+
+  for (int_t i = 0; i < n_cells; ++i) {
+    auto tet = Tetrahedron(v(i, 0), v(i, 1), v(i, 2), v(i, 3));
+    volumes(i) = volume(tet);
+    areas(i) = volume(face(tet, 0)) + volume(face(tet, 1))
+               + volume(face(tet, 2)) + volume(face(tet, 3));
+  }
+
+  auto [vol_min, vol_max] = std::minmax_element(volumes.begin(), volumes.end());
+
+  LOG_WARN_IF(*vol_max / *vol_min > 10.0, "Suspect cell found.");
+  LOG_ERR_IF(*vol_max / *vol_min > 100.0, "Faulty cell found.");
+}
+
 void renumber_grid(const std::string &grid_file) {
 
   auto [vertices, vertex_indices, n_dims] = [&grid_file]() {
@@ -26,6 +52,8 @@ void renumber_grid(const std::string &grid_file) {
     return std::tuple{
         std::move(vertices), std::move(vertex_indices), std::move(n_dims)};
   }();
+
+  sanity_check(vertex_indices, vertices);
 
   auto n_cells = vertex_indices.shape(0);
   auto max_vertices = vertex_indices.shape(1);

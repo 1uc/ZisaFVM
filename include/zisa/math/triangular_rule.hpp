@@ -3,6 +3,7 @@
 
 #include <zisa/config.hpp>
 #include <zisa/math/barycentric.hpp>
+#include <zisa/math/max_quadrature_degree.hpp>
 #include <zisa/memory/array.hpp>
 
 namespace zisa {
