@@ -20,7 +20,10 @@ class ScatterPlot:
             data = np.ma.masked_where(grid.is_ghost_cell, data)
 
         plt.figure(self.fig.number)
-        plt.plot(radii, data, marker, markersize=2, color=color)
+        self._plot(radii, data, marker, markersize=2, color=color)
+
+    def _plot(self, *args, **kwargs):
+        plt.plot(*args, **kwargs)
 
     def reference(self, grid, data):
         radii = np.linalg.norm(grid.cell_centers, axis=1)
@@ -48,6 +51,11 @@ class ScatterPlot:
 
         text = "t = {:.3e}".format(time)
         ax.text(0.05, 0.05, text, transform=ax.transAxes)
+
+
+class ScatterSemilogY(ScatterPlot):
+    def _plot(self, *args, **kwargs):
+        plt.semilogy(*args, **kwargs)
 
 
 def scatter_plot(grid, data, with_ghost_cells=False):

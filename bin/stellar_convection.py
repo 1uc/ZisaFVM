@@ -126,12 +126,11 @@ grid_name = GridNamingScheme("stellar_convection")
 parallelization = {"mode": "mpi"}
 
 radii = [5000 * km, 40_000 * km]
-# mesh_levels = list(range(0, 6)) + [7]
-mesh_levels = [1]
+mesh_levels = [0]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 local_rc_param = {"steps_per_recompute": int(100), "recompute_threshold": 1e10}
 
-coarse_grid_levels = [1]
+coarse_grid_levels = [0]
 coarse_grid_choices = {
     "grid": [
         sc.Grid(grid_name.config_string(l, parallelization), l)
@@ -151,7 +150,7 @@ independent_choices = {
 }
 
 
-wb_keys = ["isentropic"]
+wb_keys = ["constant", "isentropic"]
 dependent_choices_a = {
     # "flux-bc": [sc.FluxBC("constant")],
     # "well-balancing": [sc.WellBalancing("constant")],
@@ -181,9 +180,6 @@ def make_runs():
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]
 
     return coarse_runs
-
-
-all_runs = make_runs()
 
 
 def compute_parts(mesh_levels, host):
@@ -238,9 +234,11 @@ def main():
         else:
             queue_args = dict()
 
+        all_runs = make_runs()
         launch_all(all_runs, force=args.force, queue_args=queue_args)
 
     if args.post_process:
+        all_runs = make_runs()
         for c in all_runs:
             post_process(c)
 
@@ -248,6 +246,7 @@ def main():
         d = "${HOME}/git/papers/LucGrosheintz/papers/unstructured_well_balancing/img/stellar_convection"
         d = os.path.expandvars(d)
 
+        all_runs = make_runs()
         for c in all_runs:
             stem = c[0]["experiment"].short_id()
             files = glob.glob(stem + "*.tex")

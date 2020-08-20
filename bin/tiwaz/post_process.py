@@ -36,7 +36,6 @@ class Snapshot:
     def __init__(self, data_filename, delta_filename=None, steady_state_filename=None):
 
         cvar_keys = ["rho", "mv1", "mv2", "E"]
-        avar_keys = [f"mq{i}" for i in range(128)]
         xvar_keys = [
             "v1",
             "v2",

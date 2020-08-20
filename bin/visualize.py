@@ -16,6 +16,7 @@ from tiwaz.post_process import find_data_files
 from tiwaz.post_process import load_grid
 
 from tiwaz.scatter_plot import ScatterPlot
+from tiwaz.scatter_plot import ScatterSemilogY
 from tiwaz.tri_plot import TriPlot
 
 
@@ -46,7 +47,7 @@ def stencil_indicator(grid, I):
     return data
 
 
-def plot_all(grid, data_files, keys, with_ghost_cells=False):
+def plot_all(grid, data_files, keys, log_keys, with_ghost_cells=False):
     n_dims = 2 if grid.vertex_indices.shape[1] == 3 else 3
 
     for f in data_files:
@@ -61,6 +62,16 @@ def plot_all(grid, data_files, keys, with_ghost_cells=False):
             plot = ScatterPlot(with_ghost_cells)
             plot(grid, u[key])
             plot.save(plot.filename(f, key))
+
+        for key in log_keys:
+            if n_dims == 2:
+                plot = TriPlot()
+                plot.color_plot(grid, np.log10(u[key]))
+                plot.save(plot.filename(f, "log" + key))
+
+            plot = ScatterSemilogY(with_ghost_cells)
+            plot(grid, np.log10(u[key]))
+            plot.save(plot.filename(f, "log" + key))
 
 
 if __name__ == "__main__":
@@ -77,6 +88,14 @@ if __name__ == "__main__":
         type=str,
         default=["rho", "drho"],
         help="Plot these variables, e.g. 'rho', 'drho', 'mv1', 'E', 'p', 'h', etc.",
+    )
+
+    parser.add_argument(
+        "--log-vars",
+        nargs="*",
+        type=str,
+        default=[],
+        help="Plot these variables in a semilog-y plot, e.g. 'rho', 'E', 'p', 'h', etc.",
     )
 
     parser.add_argument(
@@ -104,4 +123,4 @@ if __name__ == "__main__":
 
     grid = load_grid(args.grid or find_grid(base_directory))
     if not getattr(sys, "ps1", sys.flags.interactive):
-        plot_all(grid, files, args.vars, args.with_ghost_cells)
+        plot_all(grid, files, args.vars, args.log_vars, args.with_ghost_cells)
