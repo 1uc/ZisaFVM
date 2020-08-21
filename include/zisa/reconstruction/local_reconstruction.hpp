@@ -9,6 +9,9 @@
 #include <zisa/model/local_equilibrium.hpp>
 #include <zisa/reconstruction/weno_poly.hpp>
 
+// TODO remove
+#include <zisa/mpi/mpi.hpp>
+
 namespace zisa {
 
 struct LocalRCParams {
@@ -42,11 +45,40 @@ public:
     const auto &u0 = u_local(int_t(0));
     auto rhoE_self = RhoE{u0[0], internal_energy(u0)};
 
-    scale = scaling(rhoE_self);
-    eq.solve(rhoE_self, grid->cells(i_cell));
     auto &l2g = rc.local2global();
+    scale = scaling(rhoE_self);
+    try {
+      eq.solve(rhoE_self, grid->cells(i_cell));
+    } catch (const std::runtime_error &e) {
+      auto msg = string_format("%d %d", zisa::mpi::rank(), l2g[0]);
+      PRINT(msg);
+      throw e;
+    }
     for (int_t il = 0; il < l2g.size(); ++il) {
-      rhoE_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
+      try {
+        rhoE_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
+      } catch (const std::runtime_error &e) {
+        auto x0 = grid->cell_centers[l2g[0]];
+        auto xil = grid->cell_centers[l2g[il]];
+        auto msg1 = string_format("%d %d %s %s",
+                                  l2g[0],
+                                  l2g[il],
+                                  format_as_list(x0).c_str(),
+                                  format_as_list(xil).c_str());
+
+        auto rhoE_self_str = format_as_list(rhoE_self);
+        auto rhoE_0_str = format_as_list(rhoE_cache(0));
+        auto drhoE_str
+            = format_as_list(Cartesian<2>(rhoE_self - rhoE_cache(0)));
+
+        auto msg2 = string_format("%s - %s = %s",
+                                  rhoE_self_str.c_str(),
+                                  rhoE_0_str.c_str(),
+                                  drhoE_str.c_str());
+        PRINT(msg1);
+        PRINT(msg2);
+        throw e;
+      }
     }
 
     steps_since_recompute = 0;

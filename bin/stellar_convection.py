@@ -126,11 +126,11 @@ grid_name = GridNamingScheme("stellar_convection")
 parallelization = {"mode": "mpi"}
 
 radii = [5000 * km, 40_000 * km]
-mesh_levels = [0]
+mesh_levels = [0, 1]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
-local_rc_param = {"steps_per_recompute": int(100), "recompute_threshold": 1e10}
+local_rc_param = {"steps_per_recompute": int(1), "recompute_threshold": 1e10}
 
-coarse_grid_levels = [0]
+coarse_grid_levels = [1]
 coarse_grid_choices = {
     "grid": [
         sc.Grid(grid_name.config_string(l, parallelization), l)
@@ -150,7 +150,7 @@ independent_choices = {
 }
 
 
-wb_keys = ["constant", "isentropic"]
+wb_keys = ["isentropic"]
 dependent_choices_a = {
     # "flux-bc": [sc.FluxBC("constant")],
     # "well-balancing": [sc.WellBalancing("constant")],
