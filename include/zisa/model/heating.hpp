@@ -3,13 +3,12 @@
 
 #include <zisa/config.hpp>
 
-#include <memory>
 #include <functional>
+#include <memory>
 
-#include <zisa/grid/grid.hpp>
 #include <zisa/cli/input_parameters.hpp>
+#include <zisa/grid/grid.hpp>
 #include <zisa/math/quadrature.hpp>
-
 
 namespace zisa {
 
@@ -57,13 +56,11 @@ make_heating_source(const std::shared_ptr<Grid> &grid,
 
   if (has_key(params, "heating")) {
     double epsilon = params["heating"]["rate"];
-    auto xi = [](const XYZ &x) {
-      double km = 1e5;
+    double r0 = params["heating"]["lower_boundary"];
+    double r1 = params["heating"]["upper_boundary"];
 
-      double r0 = 1.19 * 1e4 * km;
-      double r1 = 1.35 * 1e4 * km;
+    auto xi = [r0, r1](const XYZ &x) {
       double r = zisa::norm(x);
-
       return (r0 <= r) && (r <= r1);
     };
 

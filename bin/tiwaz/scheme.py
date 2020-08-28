@@ -144,6 +144,11 @@ class GeneralPolytropeGravity(Subsection):
         super().__init__(kwargs)
 
 
+class Heating(Subsection):
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
+
+
 class Quadrature(Subsection):
     def __init__(self, volume_deg, edge_deg=None):
         edge_deg = edge_deg if edge_deg else volume_deg

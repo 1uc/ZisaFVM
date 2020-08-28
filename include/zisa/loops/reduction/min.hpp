@@ -5,6 +5,7 @@
 #include <zisa/loops/execution_policies.hpp>
 #include <zisa/loops/range.hpp>
 #include <zisa/loops/reduction/return_type.hpp>
+#include <zisa/math/comparison.hpp>
 
 namespace zisa::reduce {
 

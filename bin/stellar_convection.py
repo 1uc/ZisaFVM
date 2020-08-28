@@ -43,41 +43,8 @@ km = 1e3 * m
 one_dimensional_profile = "data/stellar_convection/non_ideal_gas_profile.h5"
 
 
-def mass_mixing_ratio(filename):
-    with h5py.File(filename, "r") as h5:
-        r = np.array(h5["x1"])
-        rho = np.array(h5["conserved/density"])
-        C12 = np.array(h5["advected/C12"])
-        H1 = np.array(h5["advected/H1"])
-        He4 = np.array(h5["advected/He4"])
-        Ne20 = np.array(h5["advected/Ne20"])
-        O16 = np.array(h5["advected/O16"])
-        Si28 = np.array(h5["advected/Si28"])
-
-    km = 1e5
-    I = np.logical_and(5000 * km < r, r < 40000 * km)
-    # print(C12[I][0])
-    # print(H1[I][0])
-    # print(He4[I][0])
-    # print(Ne20[I][0])
-    # print(O16[I][0])
-    # print(Si28[I][0])
-
-    print(np.min(C12 + H1 + He4 + Ne20 + O16 + Si28))
-    print(np.max(C12 + H1 + He4 + Ne20 + O16 + Si28))
-    # plt.plot(r[I] / km, rho[I])
-    # plt.plot(C12)
-    # plt.plot(H1)
-    # plt.plot(He4)
-    # plt.plot(Ne20)
-    # plt.plot(O16)
-    # plt.plot(Si28)
-
-
 class StellarConvectionExperiment(sc.Subsection):
     def __init__(self):
-        mass_mixing_ratio(one_dimensional_profile)
-
         super().__init__(
             {
                 "name": "stellar_convection",
@@ -98,24 +65,29 @@ eos = sc.HelmholtzEOS(
 gravity = sc.RadialGravity(one_dimensional_profile)
 euler = sc.Euler(eos, gravity)
 
-t_end = 0.9
-n_steps = 100
-time = sc.Time(n_steps=n_steps)
+
+heating_rate = 2e11
+r0 = 1.19 * 1e4 * km
+r1 = 1.35 * 1e4 * km
+heating = sc.Heating(rate=heating_rate, lower_boundary=r0, upper_boundary=r1)
+
+t_end = 600
+time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5",
     "stellar_convection",
-    steps_per_frame=1,
+    steps_per_frame=100,
     parallel_strategy="gathered",
     n_writers=4,
 )
 
 
 def make_work_estimate():
-    n0 = 10_000
+    n0 = 165_000
 
-    t0 = 2 * timedelta(seconds=t_end / 1 * 60 * 96)
+    t0 = 2 * timedelta(seconds=t_end / 7.3 * 1000 * 168)
     b0 = 0.0
-    o0 = 100 * 1e6
+    o0 = 150 * 1e6
     unit_work = 512
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, unit_work=unit_work)
@@ -128,7 +100,7 @@ parallelization = {"mode": "mpi"}
 radii = [5000 * km, 40_000 * km]
 mesh_levels = [0, 1]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
-local_rc_param = {"steps_per_recompute": int(1), "recompute_threshold": 1e10}
+local_rc_param = {"steps_per_recompute": int(100), "recompute_threshold": 1e10}
 
 coarse_grid_levels = [1]
 coarse_grid_choices = {
@@ -142,6 +114,7 @@ reference_grid = sc.Grid(grid_name.config_string(7, parallelization), 7)
 
 independent_choices = {
     "euler": [euler],
+    "heating": [heating],
     "io": [io],
     "time": [time],
     "parallelization": [parallelization],
@@ -160,10 +133,11 @@ dependent_choices_a = {
 
 dependent_choices_b = {
     "reconstruction": [
-        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2, 2], **local_rc_param)
+        sc.Reconstruction("CWENO-AO", [1], **local_rc_param),
+        sc.Reconstruction("CWENO-AO", [3, 2, 2, 2, 2], **local_rc_param),
     ],
-    "ode": [sc.ODE("SSP3")],
-    "quadrature": [sc.Quadrature(2)],
+    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP3")],
+    "quadrature": [sc.Quadrature(1), sc.Quadrature(2)],
 }
 
 
@@ -226,7 +200,7 @@ def main():
         build_zisa()
 
         t_min = timedelta(minutes=30)
-        t_max = timedelta(hours=24)
+        t_max = timedelta(days=4)
         work_estimate = make_work_estimate()
 
         if parallelization["mode"] == "mpi":

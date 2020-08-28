@@ -2,6 +2,7 @@
 #define LOCAL_RECONSTRUCTION_H_VF8YB
 
 #include <zisa/grid/grid.hpp>
+#include <zisa/math/few_points_cache.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/memory/array_view.hpp>
 #include <zisa/model/characteristic_scale.hpp>
@@ -26,20 +27,42 @@ private:
 
 public:
   LocalReconstruction() = default;
-  LocalReconstruction(std::shared_ptr<Grid> grid,
+  LocalReconstruction(std::shared_ptr<Grid> grid_,
                       const LocalEquilibrium<Equilibrium> &eq,
                       const RC &rc,
                       int_t i_cell,
                       Scaling scaling,
                       const LocalRCParams &params)
-      : grid(grid),
+      : grid(std::move(grid_)),
         eq(eq),
         rc(rc),
         i_cell(i_cell),
         scaling(scaling),
-        rhoE_cache(shape_t<1>{rc.local2global().size()}),
+        rhoEbar_cache(shape_t<1>{rc.local2global().size()}),
         steps_per_recompute(params.steps_per_recompute),
-        recompute_threshold(params.recompute_threshold) {}
+        recompute_threshold(params.recompute_threshold) {
+
+    auto n_points = grid->cells[i_cell].qr.points.size();
+    for (int_t k = 0; k < grid->max_neighbours; ++k) {
+      n_points += grid->face(i_cell, k).qr.points.size();
+    }
+
+    auto points = array<XYZ, 1>(n_points);
+    int_t k_point = 0;
+    for (const auto &p : grid->cells[i_cell].qr.points) {
+      points[k_point] = p;
+      ++k_point;
+    }
+
+    for (int_t k = 0; k < grid->max_neighbours; ++k) {
+      for (const auto &p : grid->face(i_cell, k).qr.points) {
+        points[k_point] = p;
+        ++k_point;
+      }
+    }
+
+    rhoE_cache = FewPointsCache<RhoE>(std::move(points));
+  }
 
   void compute_equilibrium(const array_view<cvars_t, 1> &u_local) {
     const auto &u0 = u_local(int_t(0));
@@ -47,38 +70,12 @@ public:
 
     auto &l2g = rc.local2global();
     scale = scaling(rhoE_self);
-    try {
-      eq.solve(rhoE_self, grid->cells(i_cell));
-    } catch (const std::runtime_error &e) {
-      auto msg = string_format("%d %d", zisa::mpi::rank(), l2g[0]);
-      PRINT(msg);
-      throw e;
-    }
+    eq.solve(rhoE_self, grid->cells(i_cell));
+
+    rhoE_cache.update([this](const XYZ &x) { return eq.extrapolate(x); });
+
     for (int_t il = 0; il < l2g.size(); ++il) {
-      try {
-        rhoE_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
-      } catch (const std::runtime_error &e) {
-        auto x0 = grid->cell_centers[l2g[0]];
-        auto xil = grid->cell_centers[l2g[il]];
-        auto msg1 = string_format("%d %d %s %s",
-                                  l2g[0],
-                                  l2g[il],
-                                  format_as_list(x0).c_str(),
-                                  format_as_list(xil).c_str());
-
-        auto rhoE_self_str = format_as_list(rhoE_self);
-        auto rhoE_0_str = format_as_list(rhoE_cache(0));
-        auto drhoE_str
-            = format_as_list(Cartesian<2>(rhoE_self - rhoE_cache(0)));
-
-        auto msg2 = string_format("%s - %s = %s",
-                                  rhoE_self_str.c_str(),
-                                  rhoE_0_str.c_str(),
-                                  drhoE_str.c_str());
-        PRINT(msg1);
-        PRINT(msg2);
-        throw e;
-      }
+      rhoEbar_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
     }
 
     steps_since_recompute = 0;
@@ -90,7 +87,7 @@ public:
     } else {
       const auto &u0 = u_local(int_t(0));
       auto [rho, E] = RhoE{u0[0], internal_energy(u0)};
-      auto [rho_c, E_c] = rhoE_cache(0);
+      auto [rho_c, E_c] = rhoEbar_cache(0);
       auto delta_rhoE = RhoE{(rho - rho_c) / scale[0], (E - E_c) / scale[4]};
 
       if (zisa::norm(delta_rhoE) >= recompute_threshold) {
@@ -119,7 +116,8 @@ public:
     ++steps_since_recompute;
   }
 
-  RhoE equilibrium_cell_average(int_t il) { return rhoE_cache(il); }
+  RhoE equilibrium_cell_average(int_t il) { return rhoEbar_cache(il); }
+  RhoE equilibrium_points_values(const XYZ &x) { return rhoE_cache.get(x); }
 
   void compute_tracer(const array_view<double, 2, row_major> &rhs,
                       const array_view<ScalarPoly, 1> &polys,
@@ -154,7 +152,7 @@ public:
   cvars_t delta(const XYZ &x) const { return cvars_t(scale * weno_poly(x)); }
 
   cvars_t background(const XYZ &x) const {
-    auto [rho, E] = eq.extrapolate(x);
+    auto [rho, E] = rhoE_cache.get(x);
     return cvars_t{rho, 0.0, 0.0, 0.0, E};
   }
 
@@ -187,7 +185,8 @@ private:
   Scaling scaling;
   cvars_t scale = cvars_t::zeros();
 
-  array<RhoE, 1> rhoE_cache;
+  array<RhoE, 1> rhoEbar_cache;
+  FewPointsCache<RhoE> rhoE_cache;
   int_t steps_per_recompute;
   int_t steps_since_recompute = 0;
   double recompute_threshold;

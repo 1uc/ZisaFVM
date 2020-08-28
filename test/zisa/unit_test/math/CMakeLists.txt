@@ -6,6 +6,7 @@ target_sources(unit_tests
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/edge.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/edge_rule.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/face.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/few_points_cache.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/gauss_legendre.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/linear_interpolation.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/permutation.cpp
