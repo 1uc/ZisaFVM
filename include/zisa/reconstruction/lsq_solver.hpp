@@ -20,7 +20,7 @@ namespace zisa {
  */
 class LSQSolver {
 private:
-  using QR = Eigen::HouseholderQR<Eigen::MatrixXd>;
+  using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
 
 public:
   LSQSolver() = default;
