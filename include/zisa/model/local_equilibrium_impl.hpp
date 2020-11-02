@@ -89,6 +89,16 @@ RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const XYZ &xy) const {
 }
 
 template <class Equilibrium>
+std::pair<RhoE, euler_xvar_t>
+LocalEquilibriumBase<Equilibrium>::extrapolate_full(const XYZ &xy) const {
+  if (found_equilibrium) {
+    return equilibrium.extrapolate_full(theta, x_ref, xy);
+  } else {
+    return {RhoE(RhoE::zeros()), xvars_t{}};
+  }
+}
+
+template <class Equilibrium>
 RhoE LocalEquilibriumBase<Equilibrium>::extrapolate(const Cell &cell) const {
   if (found_equilibrium) {
     return average(cell, [this](const XYZ &xy) { return extrapolate(xy); });

@@ -12,6 +12,9 @@ namespace zisa {
 
 template <class Equilibrium>
 class LocalEquilibriumBase {
+private:
+  using xvars_t = euler_xvar_t;
+
 public:
   using equilibrium_values_t = typename Equilibrium::equilibrium_values_t;
 
@@ -24,6 +27,8 @@ public:
 
   void solve(const RhoE &rhoE_bar, const Cell &cell_ref);
   RhoE extrapolate(const XYZ &xy) const;
+  std::pair<RhoE, xvars_t> extrapolate_full(const XYZ &xy) const;
+
   RhoE extrapolate(const Cell &cell) const;
 
   std::string str(int verbose = 0) const;
@@ -70,6 +75,11 @@ public:
   template <class... Args>
   RhoE extrapolate(Args &&... /* args */) const {
     return {0.0, 0.0};
+  }
+
+  template <class... Args>
+  std::pair<RhoE, euler_xvar_t> extrapolate_full(Args &&... /* args */) const {
+    return {RhoE{0.0, 0.0}, euler_xvar_t{0.0, 0.0}};
   }
 
   std::string str(int /* verbose */ = 0) const {

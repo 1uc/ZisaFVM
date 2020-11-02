@@ -58,12 +58,14 @@ public:
                              format_as_list(charge_number).c_str()));
   }
 
+  using super::rhoE;
   RhoE rhoE(const euler_var_t &u) const { return {u[0], internal_energy(u)}; }
 
   euler_var_t cvars(const RhoE &rhoE) const {
     return {rhoE.rho(), 0.0, 0.0, 0.0, rhoE.E()};
   }
 
+  using super::xvars;
   xvars_t xvars(const RhoE &rhoE) const { return xvars(cvars(rhoE)); }
 
   xvars_t xvars(const cvars_t &u) const {

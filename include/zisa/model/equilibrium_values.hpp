@@ -29,6 +29,12 @@ ANY_DEVICE_INLINE RhoE conserved_variables(const IdealGasEOS &eos,
   return eos.rhoE(theta);
 }
 
+ANY_DEVICE_INLINE std::pair<RhoE, euler_xvar_t>
+full_variables(const IdealGasEOS &eos, const EnthalpyEntropy &theta) {
+  auto rhoE = eos.rhoE(theta);
+  return {rhoE, eos.xvars(rhoE)};
+}
+
 }
 
 #if ZISA_HAS_HELMHOLTZ_EOS == 1
@@ -66,6 +72,16 @@ RhoE conserved_variables(const HelmholtzEOS &eos,
                          const HelmholtzIsentropicEquilibriumValues &theta) {
   return eos.rhoE(theta.enthalpy_entropy, theta.rhoT_guess);
 }
+
+ANY_DEVICE_INLINE std::pair<RhoE, euler_xvar_t>
+full_variables(const HelmholtzEOS &eos,
+               const HelmholtzIsentropicEquilibriumValues &theta) {
+
+  auto full_xvars
+      = eos.full_extra_variables(theta.enthalpy_entropy, theta.rhoT_guess);
+  return {eos.rhoE(full_xvars), eos.xvars(full_xvars)};
+}
+
 }
 
 #endif

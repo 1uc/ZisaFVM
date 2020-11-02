@@ -42,9 +42,8 @@ public:
         auto face = grid->face(i, k);
 
         auto s_eq = [&x_cell, &rc, &eos, &face](const XYZ &x) {
-          // TODO optimize number of EOS calls by returning `u_eq`, `xvars_eq`.
-          auto u_eq = rc.background(x);
-          auto p_eq = eos.pressure(RhoE{u_eq[0], u_eq[4]});
+          auto [u_eq, w_eq] = rc.background(x);
+          auto p_eq = w_eq.p;
 
           auto n = unit_outward_normal(face, x_cell);
           auto s = cvars_t{0.0, p_eq * n[0], p_eq * n[1], p_eq * n[2], 0.0};
@@ -59,7 +58,7 @@ public:
       auto s_delta = [&rc, &gravity = *this->gravity](const XYZ &x) {
         static_assert(XYZ::size() == 3);
 
-        auto u_eq = rc.background(x);
+        auto [u_eq, _] = rc.background(x);
         auto du = rc.delta(x);
         auto u = cvars_t(u_eq + du);
 

@@ -13,6 +13,7 @@ template <class EOS, class Gravity>
 struct IsentropicEquilibrium {
 public:
   using equilibrium_values_t = isentropic_equilibrium_values_t<EOS>;
+  using xvars_t = euler_xvar_t;
 
 public:
   IsentropicEquilibrium() = default;
@@ -20,9 +21,26 @@ public:
                                  std::shared_ptr<Gravity> gravity)
       : eos(std::move(eos)), gravity(std::move(gravity)) {}
 
-  RhoE extrapolate(equilibrium_values_t theta_ref,
+  RhoE extrapolate(const equilibrium_values_t &theta_ref,
                    const XYZ &x_ref,
                    const XYZ &x) const {
+
+    auto theta = extrapolate_theta(theta_ref, x_ref, x);
+    return conserved_variables(*eos, theta);
+  }
+
+  std::pair<RhoE, xvars_t> extrapolate_full(equilibrium_values_t theta_ref,
+                                            const XYZ &x_ref,
+                                            const XYZ &x) const {
+
+    auto theta = extrapolate_theta(theta_ref, x_ref, x);
+    return full_variables(*eos, theta);
+  }
+
+private:
+  equilibrium_values_t extrapolate_theta(equilibrium_values_t theta_ref,
+                                         const XYZ &x_ref,
+                                         const XYZ &x) const {
 
     double phi_ref = gravity->phi(x_ref);
     double phi = gravity->phi(x);
@@ -36,9 +54,10 @@ public:
     theta_ref.h() = h;
     theta_ref.s() = s;
 
-    return conserved_variables(*eos, theta_ref);
+    return theta_ref;
   }
 
+public: // TODO why are these public? Probably shouldn't be.
   std::shared_ptr<EOS> eos;
   std::shared_ptr<Gravity> gravity;
 };

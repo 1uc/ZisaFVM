@@ -21,6 +21,7 @@ template <class Equilibrium, class RC, class Scaling>
 class LocalReconstruction {
 private:
   using cvars_t = euler_var_t;
+  using xvars_t = euler_xvar_t;
 
 public:
   LocalReconstruction() = default;
@@ -58,7 +59,8 @@ public:
       }
     }
 
-    rhoE_cache = FewPointsCache<RhoE>(std::move(points));
+    point_values_cache
+        = FewPointsCache<std::pair<RhoE, xvars_t>>(std::move(points));
   }
 
   void compute_equilibrium(const array_view<cvars_t, 1> &u_local) {
@@ -69,7 +71,8 @@ public:
     scale = scaling(rhoE_self);
     eq.solve(rhoE_self, grid->cells(i_cell));
 
-    rhoE_cache.update([this](const XYZ &x) { return eq.extrapolate(x); });
+    point_values_cache.update(
+        [this](const XYZ &x) { return eq.extrapolate_full(x); });
 
     for (int_t il = 0; il < l2g.size(); ++il) {
       rhoEbar_cache(il) = eq.extrapolate(grid->cells(l2g[il]));
@@ -114,7 +117,9 @@ public:
   }
 
   RhoE equilibrium_cell_average(int_t il) { return rhoEbar_cache(il); }
-  RhoE equilibrium_points_values(const XYZ &x) { return rhoE_cache.get(x); }
+  const auto &equilibrium_points_values(const XYZ &x) {
+    return point_values_cache.get(x);
+  }
 
   void compute_tracer(const array_view<double, 2, row_major> &rhs,
                       const array_view<ScalarPoly, 1> &polys,
@@ -139,7 +144,7 @@ public:
   }
 
   cvars_t operator()(const XYZ &x) const {
-    return cvars_t(background(x) + delta(x));
+    return cvars_t(background(x).first + delta(x));
   }
 
   double tracer(const XYZ &x, int_t k_var) const {
@@ -148,9 +153,10 @@ public:
 
   cvars_t delta(const XYZ &x) const { return cvars_t(scale * weno_poly(x)); }
 
-  cvars_t background(const XYZ &x) const {
-    auto [rho, E] = rhoE_cache.get(x);
-    return cvars_t{rho, 0.0, 0.0, 0.0, E};
+  std::pair<cvars_t, xvars_t> background(const XYZ &x) const {
+    auto [rhoE, w] = point_values_cache.get(x);
+    auto u = cvars_t{rhoE.rho(), 0.0, 0.0, 0.0, rhoE.E()};
+    return {u, w};
   }
 
   auto combined_stencil_size() const
@@ -183,7 +189,7 @@ private:
   cvars_t scale = cvars_t::zeros();
 
   array<RhoE, 1> rhoEbar_cache;
-  FewPointsCache<RhoE> rhoE_cache;
+  FewPointsCache<std::pair<RhoE, xvars_t>> point_values_cache;
   int_t steps_per_recompute;
   int_t steps_since_recompute = 0;
   double recompute_threshold;
