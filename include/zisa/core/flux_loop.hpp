@@ -10,6 +10,7 @@
 #include <zisa/ode/rate_of_change.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 #include <zisa/utils/indent_block.hpp>
+#include <zisa/utils/timer.hpp>
 
 namespace zisa {
 
@@ -41,7 +42,18 @@ public:
                        double /* t */) const override {
 
     (*local_eos).compute(current_state);
+
+    auto grc_timer = Timer();
     (*global_reconstruction).compute(current_state);
+    PRINT(grc_timer.elapsed_seconds());
+
+    auto fl_timer = Timer();
+    auto timer = Timer();
+    double t_nf = 0.0;
+    double t_nf2 = 0.0;
+    double t_rc = 0.0;
+    double t_qrc = 0.0;
+    double t_qnf = 0.0;
 
     const auto n_avars = tendency.avars.shape(1);
     const auto n_interior_edges = grid->n_interior_edges;
@@ -78,19 +90,28 @@ public:
           const auto w = face.qr.weights[k];
           const auto x = face.qr.points[k];
 
+          timer.reset();
           const auto uL = rc(iL, x);
           const auto uR = rc(iR, x);
+          t_rc += timer.elapsed_seconds();
 
+          timer.reset();
           const auto [f, speeds] = numerical_flux(eosL, uL, eosR, uR);
           nf += w * f;
+          t_nf += timer.elapsed_seconds();
 
           for (int_t a = 0; a < n_avars; ++a) {
+            timer.reset();
             const auto qL = (*global_reconstruction)(iL).tracer(x, a);
             const auto qR = (*global_reconstruction)(iR).tracer(x, a);
+            t_qrc += timer.elapsed_seconds();
+            timer.reset();
             qnf[a] += w * tracer_flux(uL, uR, qL, qR, speeds);
+            t_qnf += timer.elapsed_seconds();
           }
         }
 
+        timer.reset();
         inv_coord_transform(nf, face);
 
         for (int_t k = 0; k < cvars_t::size(); ++k) {
@@ -106,7 +127,9 @@ public:
 #endif
           tendency.cvars(iR, k) += nfR;
         }
+        t_nf2 += timer.elapsed_seconds();
 
+        timer.reset();
         for (int_t k = 0; k < n_avars; ++k) {
           const auto qfL = qnf(k) / grid->volumes(iL);
 #if ZISA_HAS_OPENMP == 1
@@ -120,8 +143,16 @@ public:
 #endif
           tendency.avars(iR, k) += qfR;
         }
+        t_qnf += timer.elapsed_seconds();
       }
     }
+
+    PRINT(fl_timer.elapsed_seconds());
+    PRINT(t_rc);
+    PRINT(t_nf);
+    PRINT(t_nf2);
+    PRINT(t_qrc);
+    PRINT(t_qnf);
   }
 
   locked_ptr<array<double, 1>> fetch_avars_flux_buffer(int_t n_avars) const {

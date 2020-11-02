@@ -9,6 +9,7 @@
 #include <zisa/config.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/ode/rate_of_change.hpp>
+#include <zisa/utils/timer.hpp>
 
 namespace zisa {
 
@@ -22,8 +23,11 @@ SumRatesOfChange::SumRatesOfChange(
 void SumRatesOfChange::compute(AllVariables &tendency,
                                const AllVariables &current_state,
                                double t) const {
+  PRINT("--");
   for (auto &&roc : rates_of_change) {
+    auto roc_timer = Timer();
     roc->compute(tendency, current_state, t);
+    PRINT(roc_timer.elapsed_seconds());
   }
 }
 
