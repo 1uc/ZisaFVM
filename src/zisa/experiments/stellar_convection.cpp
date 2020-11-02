@@ -1,5 +1,7 @@
 #include <zisa/experiments/stellar_convection.hpp>
 
+#include <random>
+
 #if ZISA_HAS_HELMHOLTZ_EOS == 1
 
 namespace zisa {
@@ -51,8 +53,15 @@ std::shared_ptr<AllVariables> StellarConvection::compute_initial_conditions() {
     avar_interpolation.push_back(make_interpolation(key));
   }
 
+  reader.switch_group("supplementary");
+  auto cs_interpolation = make_interpolation("sound_speed");
+
   auto all_var_dims = choose_all_variable_dims();
   auto u0 = std::make_shared<AllVariables>(all_var_dims);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<double> uniform(-1.0, 1.0);
 
   for (const auto &[i, cell] : cells(*grid)) {
     auto wrap_interpolation = [](const auto &interpolation) {
@@ -64,6 +73,15 @@ std::shared_ptr<AllVariables> StellarConvection::compute_initial_conditions() {
     for (int_t k = 0; k < n_cvars; k++) {
       u0->cvars(i, k)
           = average(cell, wrap_interpolation(cvar_interpolation[k]));
+    }
+
+    double r = zisa::norm(grid->cell_centers[i]);
+    for (int_t k = 1; k < 4; k++) {
+      double km = 1e5;
+      if (1.2e4 * km < r && r < 2.2e4 * km) {
+        double vk = uniform(gen) * 1e-3 * cs_interpolation(r);
+        u0->cvars(i, k) += cvar_interpolation[0](r) * vk;
+      }
     }
 
     auto mass_weighted = [&rho_interpolation](const auto &interpolation) {
