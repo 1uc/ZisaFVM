@@ -26,8 +26,7 @@ public:
   }
 
   int_t index(double r) const {
-    auto first_past = std::find_if(
-        points.begin(), points.end(), [r](double rr) { return rr > r; });
+    auto first_past = std::lower_bound(points.cbegin(), points.cend(), r);
 
     auto i = int_t(first_past - points.begin());
     if (i == 0) {
