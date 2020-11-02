@@ -51,6 +51,8 @@ private:
     double h = h_ref + phi_ref - phi;
     double s = s_ref;
 
+    // This awkwardness serves a purpose, because `equilibrium_variables_t`
+    // can include more than {h, s}, e.g. `rhoT_guess`.
     theta_ref.h() = h;
     theta_ref.s() = s;
 

@@ -15,6 +15,8 @@ void save_full_state(HDF5Writer &writer,
                      double t,
                      int_t n_steps) {
 
+  ZISA_UNUSED(local_eos);
+
   auto labels = all_labels<typename Euler::cvars_t>();
   save_state(writer, all_variables, t, n_steps, labels);
   //  save_extended_state(writer, local_eos, all_variables);
