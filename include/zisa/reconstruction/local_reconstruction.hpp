@@ -10,9 +10,6 @@
 #include <zisa/model/local_equilibrium.hpp>
 #include <zisa/reconstruction/weno_poly.hpp>
 
-// TODO remove
-#include <zisa/mpi/mpi.hpp>
-
 namespace zisa {
 
 struct LocalRCParams {

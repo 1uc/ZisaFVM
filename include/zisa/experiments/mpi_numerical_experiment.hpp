@@ -447,7 +447,7 @@ protected:
   std::shared_ptr<Visualization> compute_unstructured_visualization() {
     const auto &fng = this->choose_file_name_generator();
     auto file_dims = choose_file_dimensions();
-    auto local_eos = this->compute_local_eos();
+    auto local_eos = this->compute_local_eos(file_dims->n_cells_local);
 
     // TODO here we just made this only work for Euler.
     return std::make_shared<ParallelDumpSnapshot<typename super::eos_t>>(
