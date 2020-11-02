@@ -23,7 +23,10 @@ class GridNamingScheme:
         return self._stem(l) + ".msh.h5"
 
     def config_string(self, l, parallelization):
-        return self.dir(l)
+        if parallelization["mode"] == "mpi":
+            return self.dir(l)
+        else:
+            return self.dir(l) + "/grid.msh.h5"
 
     def _stem(self, l):
         return f"{self.dir(l)}/grid"

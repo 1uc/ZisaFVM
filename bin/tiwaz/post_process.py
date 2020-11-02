@@ -35,15 +35,20 @@ class Grid:
 class Snapshot:
     def __init__(self, data_filename, delta_filename=None, steady_state_filename=None):
 
-        cvar_keys = ["rho", "mv1", "mv2", "E"]
+        cvar_keys = ["rho", "mv1", "mv2", "mv3", "E"]
         xvar_keys = [
             "v1",
             "v2",
             "v3",
+            "vr",
+            "vr_rel",
+            "vh",
+            "vh_rel",
             "p",
             "cs",
             "h",
             "s",
+            "T",
             "E_th",
             "E_p",
             "p_p",
@@ -71,6 +76,12 @@ class Snapshot:
             for key in xvar_keys:
                 if key in h5:
                     self.xvars[key] = np.array(h5[key])
+
+            for key in ["v1", "v2", "v3", "vr", "vh"]:
+                if key in h5 and "cs" in h5:
+                    rel_key = f"{key}_rel"
+                    if rel_key not in self.xvars:
+                        self.xvars[rel_key] = self.xvars[key] / self.xvars["cs"]
 
             self.gravity = dict()
             if "model/gravity/radii" in h5:

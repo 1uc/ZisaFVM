@@ -48,7 +48,9 @@ class StellarConvectionExperiment(sc.Subsection):
         super().__init__(
             {
                 "name": "stellar_convection",
-                "initial_conditions": {"profile": one_dimensional_profile,},
+                "initial_conditions": {
+                    "profile": one_dimensional_profile,
+                },
             }
         )
 
@@ -71,14 +73,15 @@ r0 = 1.19 * 1e4 * km
 r1 = 1.35 * 1e4 * km
 heating = sc.Heating(rate=heating_rate, lower_boundary=r0, upper_boundary=r1)
 
+# t_end = 3600
 t_end = 600
 time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5",
     "stellar_convection",
-    steps_per_frame=100,
+    steps_per_frame=400,
     parallel_strategy="gathered",
-    n_writers=4,
+    n_writers=16,
 )
 
 
@@ -123,7 +126,7 @@ independent_choices = {
 }
 
 
-wb_keys = ["isentropic"]
+wb_keys = ["constant", "isentropic"]
 dependent_choices_a = {
     # "flux-bc": [sc.FluxBC("constant")],
     # "well-balancing": [sc.WellBalancing("constant")],
@@ -133,11 +136,10 @@ dependent_choices_a = {
 
 dependent_choices_b = {
     "reconstruction": [
-        sc.Reconstruction("CWENO-AO", [1], **local_rc_param),
         sc.Reconstruction("CWENO-AO", [3, 2, 2, 2, 2], **local_rc_param),
     ],
-    "ode": [sc.ODE("ForwardEuler"), sc.ODE("SSP3")],
-    "quadrature": [sc.Quadrature(1), sc.Quadrature(2)],
+    "ode": [sc.ODE("SSP3")],
+    "quadrature": [sc.Quadrature(2)],
 }
 
 
@@ -200,7 +202,7 @@ def main():
         build_zisa()
 
         t_min = timedelta(minutes=30)
-        t_max = timedelta(days=4)
+        t_max = timedelta(days=24)
         work_estimate = make_work_estimate()
 
         if parallelization["mode"] == "mpi":
