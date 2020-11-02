@@ -401,7 +401,7 @@ template <class EOS, class Gravity>
 std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
 EulerExperiment<EOS, Gravity>::choose_grid_factory() {
   return [](const std::string &grid_name, int_t quad_deg) {
-    return load_grid(grid_name, quad_deg);
+    return load_grid(grid_name, QRDegrees{quad_deg, quad_deg, quad_deg});
   };
 }
 

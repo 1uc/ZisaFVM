@@ -28,8 +28,8 @@ std::shared_ptr<Grid> TypicalNumericalExperiment::choose_grid() const {
 }
 
 std::shared_ptr<Grid> TypicalNumericalExperiment::compute_grid() const {
-  int_t quad_deg = params["quadrature"]["volume"];
-  auto grid = load_grid(params["grid"]["file"], quad_deg);
+  auto qr_degrees = choose_qr_degrees();
+  auto grid = load_grid(params["grid"]["file"], qr_degrees);
   enforce_cell_flags(*grid);
 
   return grid;
@@ -198,6 +198,18 @@ EdgeRule TypicalNumericalExperiment::choose_edge_rule() {
 
 int_t TypicalNumericalExperiment::choose_edge_deg() const {
   return params["quadrature"]["edge"];
+}
+
+int_t TypicalNumericalExperiment::choose_moments_deg() const {
+  return params["grid"]["quad_deg"];
+}
+
+QRDegrees TypicalNumericalExperiment::choose_qr_degrees() const {
+  auto face_deg = choose_edge_deg();
+  auto volume_deg = choose_volume_deg();
+  auto moments_deg = choose_moments_deg();
+
+  return QRDegrees{face_deg, volume_deg, moments_deg};
 }
 
 TriangularRule TypicalNumericalExperiment::choose_volume_rule() {

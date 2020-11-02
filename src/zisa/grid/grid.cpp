@@ -640,8 +640,18 @@ Grid::Grid(GMSHElementType element_type,
            array<XYZ, 1> vertices_,
            array<int_t, 2> vertex_indices_,
            int_t quad_deg)
+    : Grid(element_type,
+           std::move(vertices_),
+           std::move(vertex_indices_),
+           QRDegrees{quad_deg, quad_deg, quad_deg}){};
+
+Grid::Grid(GMSHElementType element_type,
+           array<XYZ, 1> vertices_,
+           array<int_t, 2> vertex_indices_,
+           const QRDegrees &qr_degrees)
     : vertex_indices(std::move(vertex_indices_)),
       vertices(std::move(vertices_)) {
+
   n_cells = vertex_indices.shape(0);
   n_vertices = vertices.shape(0);
   max_neighbours = vertex_indices.shape(1);
@@ -681,11 +691,14 @@ Grid::Grid(GMSHElementType element_type,
                                     is_valid,
                                     edge_indices);
 
-  if (quad_deg != 0) {
+  if (auto quad_deg = qr_degrees.volume_deg) {
     cells = compute_cells(
         element_type, quad_deg, this->vertices, this->vertex_indices);
 
     cell_centers = compute_barycenters(this->cells);
+  }
+
+  if (auto quad_deg = qr_degrees.face_deg) {
 
     faces = compute_faces(element_type,
                           quad_deg,
@@ -696,7 +709,9 @@ Grid::Grid(GMSHElementType element_type,
                           this->edge_indices);
 
     face_centers = compute_barycenters(this->faces);
+  }
 
+  if (auto quad_deg = qr_degrees.moments_deg) {
     normalized_moments = compute_normalized_moments(*this, quad_deg);
   }
 
@@ -869,7 +884,7 @@ double volume(const Grid &grid) {
 }
 
 std::shared_ptr<Grid> load_grid_gmsh_h5(const std::string &filename,
-                                        int_t deg) {
+                                        const QRDegrees &qr_degrees) {
   auto reader = HDF5SerialReader(filename);
 
   int n_dims = reader.read_scalar<int>("n_dims");
@@ -879,17 +894,22 @@ std::shared_ptr<Grid> load_grid_gmsh_h5(const std::string &filename,
   auto vertex_indices = array<int_t, 2>::load(reader, "vertex_indices");
   auto vertices = array<XYZ, 1>::load(reader, "vertices");
   return std::make_shared<Grid>(
-      element_type, std::move(vertices), std::move(vertex_indices), deg);
+      element_type, std::move(vertices), std::move(vertex_indices), qr_degrees);
 }
 
 std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg) {
+  return load_grid(filename, QRDegrees{quad_deg, quad_deg, quad_deg});
+}
+
+std::shared_ptr<Grid> load_grid(const std::string &filename,
+                                const QRDegrees &qr_degrees) {
   auto len = filename.size();
 
   if (filename.substr(len - 4) == ".msh") {
     LOG_ERR("This feature was removed. Please use meshio to generate .msh.h5 "
             "files.");
   } else if (filename.substr(len - 7) == ".msh.h5") {
-    return load_grid_gmsh_h5(filename, quad_deg);
+    return load_grid_gmsh_h5(filename, qr_degrees);
   } else if (filename.substr(len - 3) == ".h5") {
     auto reader = HDF5SerialReader(filename);
     return std::make_shared<Grid>(Grid::load(reader));

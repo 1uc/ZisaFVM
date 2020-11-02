@@ -109,6 +109,8 @@ protected:
 
   int_t choose_volume_deg() const;
   int_t choose_edge_deg() const;
+  int_t choose_moments_deg() const;
+  QRDegrees choose_qr_degrees() const;
 
   virtual std::shared_ptr<TimeIntegration> choose_time_integration();
   virtual std::shared_ptr<SimulationClock> choose_simulation_clock();

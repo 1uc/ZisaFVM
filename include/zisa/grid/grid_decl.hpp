@@ -20,6 +20,11 @@
 #include <zisa/memory/array.hpp>
 
 namespace zisa {
+struct QRDegrees {
+  int_t face_deg;
+  int_t volume_deg;
+  int_t moments_deg;
+};
 
 struct Grid {
   int_t n_cells;
@@ -59,6 +64,11 @@ struct Grid {
   Grid() = default;
 
   /// Generate a grid optionally with quadrature rules.
+  Grid(GMSHElementType element_type,
+       array<XYZ, 1> vertices,
+       array<int_t, 2> vertex_indices,
+       const QRDegrees &qr_degrees);
+
   Grid(GMSHElementType element_type,
        array<XYZ, 1> vertices,
        array<int_t, 2> vertex_indices,
@@ -114,8 +124,11 @@ std::optional<int_t> locate(const Grid &grid, const XYZ &x, int_t i_guess = 0);
 double largest_circum_radius(const Grid &grid);
 double smallest_inradius(const Grid &grid);
 
-std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg);
+std::shared_ptr<Grid> load_grid(const std::string &filename,
+                                const QRDegrees &qr_degrees);
+
 std::shared_ptr<Grid> load_grid(const std::string &filename);
+std::shared_ptr<Grid> load_grid(const std::string &filename, int_t quad_deg);
 
 /// Generate all moment for a 2D poly of degree 'deg'.
 array<double, 1>

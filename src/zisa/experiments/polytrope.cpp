@@ -62,7 +62,7 @@ Polytrope::boundary_mask() const {
 std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
 Polytrope::choose_grid_factory() {
   return [this](const std::string &filename, int_t quad_deg) {
-    auto grid = load_grid(filename, quad_deg);
+    auto grid = load_grid(filename, QRDegrees{quad_deg, quad_deg, quad_deg});
     enforce_cell_flags(*grid);
     return grid;
   };
