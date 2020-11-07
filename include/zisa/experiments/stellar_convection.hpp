@@ -30,9 +30,28 @@ protected:
 
   virtual std::function<bool(const Grid &grid, int_t i)>
   boundary_mask() const override;
+};
 
+class IdealStellarConvection
+    : public EulerExperiment<IdealGasEOS, RadialGravity> {
 private:
-  std::shared_ptr<RateOfChange> heating_rate_;
+  using super = EulerExperiment<IdealGasEOS, RadialGravity>;
+
+protected:
+  using eos_t = typename super::eos_t;
+  using gravity_t = typename super::gravity_t;
+  using euler_t = typename super::euler_t;
+
+public:
+  IdealStellarConvection(const InputParameters &params) : super(params) {}
+
+protected:
+  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+
+  virtual AllVariablesDimensions choose_all_variable_dims() override;
+
+  virtual std::function<bool(const Grid &grid, int_t i)>
+  boundary_mask() const override;
 };
 
 }

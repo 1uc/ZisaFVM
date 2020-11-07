@@ -88,6 +88,7 @@ static NumericalExperimentFactory make_factory() {
 
 #if ZISA_HAS_HELMHOLTZ_EOS == 1
   factory.register_simple<StellarConvection>("stellar_convection");
+  factory.register_simple<IdealStellarConvection>("ideal_stellar_convection");
 #endif
 
   return factory;

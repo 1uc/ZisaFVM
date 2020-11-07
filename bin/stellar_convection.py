@@ -74,7 +74,7 @@ r1 = 1.35 * 1e4 * km
 heating = sc.Heating(rate=heating_rate, lower_boundary=r0, upper_boundary=r1)
 
 # t_end = 3600
-t_end = 600
+t_end = 6
 time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5",
@@ -101,11 +101,11 @@ grid_name = GridNamingScheme("stellar_convection")
 parallelization = {"mode": "mpi"}
 
 radii = [5000 * km, 40_000 * km]
-mesh_levels = [0, 1]
+mesh_levels = [2, 3]
+coarse_grid_levels = [2]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 local_rc_param = {"steps_per_recompute": int(100), "recompute_threshold": 1e10}
 
-coarse_grid_levels = [1]
 coarse_grid_choices = {
     "grid": [
         sc.Grid(grid_name.config_string(l, parallelization), l)
@@ -123,14 +123,13 @@ independent_choices = {
     "parallelization": [parallelization],
     "boundary-condition": [sc.BoundaryCondition("frozen")],
     "debug": [{"global_indices": False, "stencils": False}],
+    "flux-bc": [sc.FluxBC("constant")],
 }
 
 
 wb_keys = ["constant", "isentropic"]
 dependent_choices_a = {
-    # "flux-bc": [sc.FluxBC("constant")],
     # "well-balancing": [sc.WellBalancing("constant")],
-    "flux-bc": [sc.FluxBC(k) for k in wb_keys],
     "well-balancing": [sc.WellBalancing(k) for k in wb_keys],
 }
 
