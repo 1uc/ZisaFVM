@@ -32,18 +32,19 @@ class MPIQueueArgs(QueueArgs):
         n_tasks = self.n_mpi_tasks(launch_param)
         estimate = self.work_estimate.cpu_hours(launch_param) / n_tasks
 
-        print(estimate)
-
         if estimate > self.t_max:
-            raise RuntimeError("Warning: estimated runtime exceeds maximum.")
+            raise RuntimeError(
+                f"Warning: estimated runtime exceeds maximum. {estimate}"
+            )
 
         return min(max(estimate, self.t_min), self.t_max)
 
     def memory_per_core(self, launch_param):
         memory_usage = self.work_estimate.memory_usage(launch_param)
-        n_tasks = self.n_mpi_tasks(launch_param)
+        overhead_per_process, total_memory = memory_usage
 
-        sharp_requirement = self.heuristics.memory_per_core(*memory_usage, n_tasks)
+        n_tasks = self.n_mpi_tasks(launch_param)
+        sharp_requirement = overhead_per_process + total_memory / n_tasks
         return sharp_requirement
 
 

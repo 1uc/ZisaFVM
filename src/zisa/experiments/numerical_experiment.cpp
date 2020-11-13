@@ -201,7 +201,7 @@ int_t TypicalNumericalExperiment::choose_edge_deg() const {
 }
 
 int_t TypicalNumericalExperiment::choose_moments_deg() const {
-  return params["grid"]["quad_deg"];
+  return params["quadrature"]["moments"];
 }
 
 QRDegrees TypicalNumericalExperiment::choose_qr_degrees() const {

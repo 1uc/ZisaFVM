@@ -64,32 +64,34 @@ void test_hybrid_weno_valid_stencil(
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
 
     for (auto i : cell_indices(*grid)) {
-      if (!grid->cell_flags[i].ghost_cell) {
-        const auto &orders = params.stencil_family_params.orders;
-        for (int_t k = 0; k < orders.size(); ++k) {
-          if (sf[i][k].order() != orders[k]) {
+      // wlog we're not dealing with a ghost-cell
+      if (grid->cell_flags[i].ghost_cell) {
+        continue;
+      }
 
-            auto debug_filename
-                = std::string("__unit_tests-weno_ao-stencil.h5");
-            save_grid_with_stencil(debug_filename, *grid, sf);
+      const auto &orders = params.stencil_family_params.orders;
+      for (int_t k = 0; k < orders.size(); ++k) {
+        if (sf[i][k].order() != orders[k]) {
 
-            auto title = string_format("RC = %s", type_name<RC>().c_str());
-            auto desc_params = indent_block(1, zisa::to_string(params));
-            auto info = indent_block(
-                1,
-                string_format("(%d, %d) order = %d, size = %d, x = %s",
-                              i,
-                              k,
-                              sf[i][k].order(),
-                              sf[i][k].local().size(),
-                              format_as_list(grid->cell_centers[i]).c_str()));
-            INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
-                               title.c_str(),
-                               desc_params.c_str(),
-                               info.c_str(),
-                               debug_filename.c_str()));
-            REQUIRE(false);
-          }
+          auto debug_filename = std::string("__unit_tests-weno_ao-stencil.h5");
+          save_grid_with_stencil(debug_filename, *grid, sf);
+
+          auto title = string_format("RC = %s", type_name<RC>().c_str());
+          auto desc_params = indent_block(1, zisa::to_string(params));
+          auto info = indent_block(
+              1,
+              string_format("(%d, %d) order = %d, size = %d, x = %s",
+                            i,
+                            k,
+                            sf[i][k].order(),
+                            sf[i][k].local().size(),
+                            format_as_list(grid->cell_centers[i]).c_str()));
+          INFO(string_format("%s\n%s\n%s\ndebug_file = %s",
+                             title.c_str(),
+                             desc_params.c_str(),
+                             info.c_str(),
+                             debug_filename.c_str()));
+          REQUIRE(false);
         }
       }
     }
@@ -149,7 +151,7 @@ void test_hybrid_weno_convergence(
                          title.c_str(),
                          err_str.c_str(),
                          desc_params.c_str()));
-      REQUIRE(zisa::isreal(l1_errors[grid_level]));
+      CHECK(zisa::isreal(l1_errors[grid_level]));
     }
 
     // Check rates.
@@ -164,7 +166,9 @@ void test_hybrid_weno_convergence(
       err_str = indent_block(1, err_str);
       INFO(string_format(
           "%s\n%s\n%s", title.c_str(), err_str.c_str(), desc_params.c_str()));
-      REQUIRE(is_inside_interval(rates.back(), expected_rate));
+
+      PRINT(err_str);
+      CHECK(is_inside_interval(rates.back(), expected_rate));
     }
   }
 }
@@ -305,6 +309,11 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
         = array<double, 2>(shape_t<2>{max_stencil_size, WENOPoly::n_vars()});
 
     for (auto i : cell_indices(*grid)) {
+      // wlog there are no ghost-cells.
+      if (grid->cell_flags[i].ghost_cell) {
+        continue;
+      }
+
       auto stencil_family = sf[i];
       auto rc = RC(grid, stencil_family, i, params);
 

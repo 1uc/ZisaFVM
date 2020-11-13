@@ -116,25 +116,26 @@ cweno_3d_cases() {
   double s = 4.0;
   double o2 = 2.5;
 
-  cases.push_back({false, {1.8, 2.2}, {{{2}, {"c"}, {4.0}}, {1.0}, eps, s}});
-  cases.push_back({false, {2.7, 3.35}, {{{3}, {"c"}, {2.0}}, {1.0}, eps, s}});
-  cases.push_back({false, {3.5, 4.35}, {{{4}, {"c"}, {3.0}}, {1.0}, eps, s}});
-
-  cases.push_back(
-      {true,
-       {1.7, 2.2},
-       {{{2, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {4.0, o2, o2, o2, o2}},
-        {100.0, 1.0, 1.0, 1.0, 1.0},
-        eps,
-        s}});
-
-  cases.push_back(
-      {true,
-       {2.7, 3.1},
-       {{{3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {3.0, o2, o2, o2, o2}},
-        {100.0, 1.0, 1.0, 1.0, 1.0},
-        eps,
-        s}});
+  //  cases.push_back({false, {1.8, 2.2}, {{{2}, {"c"}, {4.0}}, {1.0}, eps,
+  //  s}}); cases.push_back({false, {2.7, 3.35}, {{{3}, {"c"}, {2.0}}, {1.0},
+  //  eps, s}}); cases.push_back({false, {3.5, 4.35}, {{{4}, {"c"}, {3.0}},
+  //  {1.0}, eps, s}});
+  //
+  //  cases.push_back(
+  //      {true,
+  //       {1.7, 2.2},
+  //       {{{2, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {4.0, o2, o2, o2, o2}},
+  //        {100.0, 1.0, 1.0, 1.0, 1.0},
+  //        eps,
+  //        s}});
+  //
+  //  cases.push_back(
+  //      {true,
+  //       {2.7, 3.1},
+  //       {{{3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {3.0, o2, o2, o2, o2}},
+  //        {100.0, 1.0, 1.0, 1.0, 1.0},
+  //        eps,
+  //        s}});
 
   cases.push_back({true,
                    {3.7, 4.5},
@@ -161,7 +162,9 @@ cweno_3d_cases() {
 auto cweno_3d_grid_names() {
   return std::vector<std::string>{
       zisa::TestGridFactory::unit_cube_with_halo(0),
-      zisa::TestGridFactory::unit_cube_with_halo(1)};
+      zisa::TestGridFactory::unit_cube_with_halo(1),
+      zisa::TestGridFactory::unit_cube_with_halo(2),
+      zisa::TestGridFactory::unit_cube_with_halo(3)};
 }
 
 TEST_CASE("CWENO; reconstruct smooth 3D (matrices)",

@@ -16,12 +16,12 @@ public:
   }
 
   static std::string unit_square(int i) {
-    return string_format("grids/convergence/unit_square_%d.msh.h5", i);
+    return string_format("grids/convergence/unit_square_%d/grid.msh.h5", i);
   }
 
   static std::string unit_square_with_halo(int i) {
-    return string_format("grids/convergence/unit_square_with_halo_%d.msh.h5",
-                         i);
+    return string_format(
+        "grids/convergence/unit_square_with_halo_%d/grid.msh.h5", i);
   }
 
   static std::vector<std::string> unit_square() {
@@ -31,11 +31,12 @@ public:
   }
 
   static std::string unit_cube(int i) {
-    return string_format("grids/convergence/unit_cube_%d.msh.h5", i);
+    return string_format("grids/convergence/unit_cube_%d/grid.msh.h5", i);
   }
 
   static std::string unit_cube_with_halo(int i) {
-    return string_format("grids/convergence/unit_cube_with_halo_%d.msh.h5", i);
+    return string_format("grids/convergence/unit_cube_with_halo_%d/grid.msh.h5",
+                         i);
   }
 
   static std::vector<std::string> unit_cube() {

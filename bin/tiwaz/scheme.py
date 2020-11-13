@@ -150,14 +150,16 @@ class Heating(Subsection):
 
 
 class Quadrature(Subsection):
-    def __init__(self, volume_deg, edge_deg=None):
+    def __init__(self, volume_deg, edge_deg=None, moments_deg=None):
         edge_deg = edge_deg if edge_deg else volume_deg
+        moments_deg = moments_deg if moments_deg else volume_deg
 
         super().__init__(
             {
                 "__comment": "Specify the quadrature degree (not #points).",
                 "edge": edge_deg,
                 "volume": volume_deg,
+                "moments": moments_deg,
             }
         )
 

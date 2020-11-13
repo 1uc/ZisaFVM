@@ -57,10 +57,27 @@ def get_host():
 
 
 class MPIHeuristics:
-    def __init__(self, host=None):
-        if host is None:
-            host = get_host()
+    def __init__(
+        self, host=None, cores_per_node=None, max_nodes=None, work_per_core=None
+    ):
 
+        if all(x is not None for x in [cores_per_node, max_nodes, work_per_core]):
+            self._init_by_hand(cores_per_node, max_nodes, work_per_core)
+
+        else:
+            if host is None:
+                host = get_host()
+
+            self._init_by_host(host)
+
+        self.max_cores = self.max_nodes * self.cores_per_node
+
+    def _init_by_hand(self, cores_per_node, max_nodes, work_per_core):
+        self.cores_per_node = cores_per_node
+        self.max_nodes = max_nodes
+        self.work_per_core = work_per_core
+
+    def _init_by_host(self, host):
         if host == "euler":
             self.cores_per_node = 12
             self.max_nodes = 20
@@ -95,8 +112,6 @@ class MPIHeuristics:
         else:
             raise Exception("Unknown host [{:s}]".format(host))
 
-        self.max_cores = self.max_nodes * self.cores_per_node
-
     def n_tasks(self, work):
         n_proc = int(work / self.work_per_core)
 
@@ -104,6 +119,3 @@ class MPIHeuristics:
         cpn = self.cores_per_node
         n_proc = ((n_proc + cpn - 1) // cpn) * cpn
         return max(2, min(n_proc, self.max_cores))
-
-    def memory_per_core(self, overhead_per_process, total_memory, n_tasks):
-        return overhead_per_process + total_memory / n_tasks

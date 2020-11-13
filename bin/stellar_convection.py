@@ -188,7 +188,10 @@ def generate_grids(cluster, must_generate, must_decompose):
         renumber_grids(msh_h5_name, mesh_levels)
 
     if must_decompose:
-        decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
+        # decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
+
+        parts = {l: [64, 128, 256, 512] for l in mesh_levels}
+        decompose_grids(msh_h5_name, mesh_levels, parts)
 
 
 def main():

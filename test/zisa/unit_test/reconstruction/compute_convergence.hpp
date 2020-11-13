@@ -30,9 +30,6 @@ compute_errors(const Grid &grid, const F &f, const array<RC, 1> &rc) {
   double l1_err = 0.0;
   double linf_err = 0.0;
 
-  double max_err = 0.0;
-  int_t i_max = 0;
-
   for (const auto &[i, cell] : cells(grid)) {
     const auto &l2g = rc[i].local2global();
 

@@ -96,11 +96,35 @@ def generate_cube_grids(filename, domain, lc_rel, levels, with_halo):
         "grids.light/cube_with_halo.tmpl" if with_halo else "grids.light/cube.tmpl"
     )
 
+    with open("grids.light/cube.macro", "r") as f:
+        cube_macro = f.read()
+
     substitutions = [
         {
             "X0": str(domain[0]),
             "X1": str(domain[1]),
             "CUBE_MACRO": cube_macro,
+            "LC": str(lc_rel[l] * (domain[1] - domain[0])),
+        }
+        for l in levels
+    ]
+
+    generate_grids_from_template(template_name, filename, substitutions, levels)
+
+
+def generate_square_grids(filename, domain, lc_rel, levels, with_halo):
+    template_name = (
+        "grids.light/square_with_halo.tmpl" if with_halo else "grids.light/square.tmpl"
+    )
+
+    with open("grids.light/square.macro", "r") as f:
+        square_macro = f.read()
+
+    substitutions = [
+        {
+            "X0": str(domain[0]),
+            "X1": str(domain[1]),
+            "SQUARE_MACRO": square_macro,
             "LC": str(lc_rel[l] * (domain[1] - domain[0])),
         }
         for l in levels

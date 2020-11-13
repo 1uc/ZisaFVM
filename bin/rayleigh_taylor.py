@@ -42,7 +42,7 @@ class RayleighTaylorExperiment(sc.Subsection):
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
                     "drho": 1e-4,
-                    "amplitude": 1e-5,
+                    "amplitude": 0.0,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
