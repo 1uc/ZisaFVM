@@ -73,8 +73,8 @@ r0 = 1.19 * 1e4 * km
 r1 = 1.35 * 1e4 * km
 heating = sc.Heating(rate=heating_rate, lower_boundary=r0, upper_boundary=r1)
 
+t_end = 600
 # t_end = 3600
-t_end = 6
 time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5",
@@ -90,7 +90,7 @@ def make_work_estimate():
 
     t0 = 2 * timedelta(seconds=t_end / 7.3 * 1000 * 168)
     b0 = 0.0
-    o0 = 150 * 1e6
+    o0 = 250 * 1e6
     unit_work = 512
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, unit_work=unit_work)
@@ -208,7 +208,12 @@ def main():
         work_estimate = make_work_estimate()
 
         if parallelization["mode"] == "mpi":
-            queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
+            heuristics = MPIHeuristics(
+                cores_per_node=16, max_nodes=512 // 16, work_per_core=2.0
+            )
+            queue_args = MPIQueueArgs(
+                work_estimate, t_min=t_min, t_max=t_max, heuristics=heuristics
+            )
         else:
             queue_args = dict()
 
