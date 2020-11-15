@@ -39,6 +39,7 @@ class Scheme:
     def short_id(self):
         subsections = [
             "experiment",
+            "mangle",
             "reconstruction",
             "order",
             "ode",
@@ -56,6 +57,14 @@ class Scheme:
     def save(self, filename):
         with open(filename, "w") as f:
             json.dump(self.subsections, f, indent=4)
+
+
+class Mangle(Subsection):
+    def __init__(self, mangle):
+        self.mangle = mangle
+
+    def short_id(self):
+        return self.mangle
 
 
 class Euler(Subsection):

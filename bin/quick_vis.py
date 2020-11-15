@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
 import os
 import sys
@@ -33,45 +33,52 @@ def load_array(h5_file, key):
         return np.array(h5[key])
 
 
-def tri_plot(grid, q):
-    plot = TriPlot()
-    plot.color_plot(grid, q)
-    plt.show()
+def transform(key, grid, u):
+    x = grid.cell_centers
+    xhat = x / np.linalg.norm(x, axis=1).reshape((-1, 1))
+
+    rho = u["rho"]
+
+    n_cells = x.shape[0]
+    v = np.empty((n_cells, 3))
+    v[:, 0] = u["mv1"] / rho
+    v[:, 1] = u["mv2"] / rho
+    v[:, 2] = u["mv3"] / rho
+
+    vr = np.sum(v * xhat, axis=1)
+    vh = np.linalg.norm(v - vr.reshape((-1, 1)) * xhat, axis=1)
+
+    if key == "vr":
+        return vr
+
+    elif key == "vh":
+        return vh
+
+    elif key == "v":
+        return np.linalg.norm(v, axis=1)
+
+    else:
+        raise Exception("Invalid key.")
 
 
-def stencil_indicator(grid, I):
-    data = np.zeros(grid.n_cells)
-    data[I] = 1.0
-    data[I[0]] = 2.0
-
-    return data
-
-
-def plot_all(grid, data_files, keys, log_keys, with_ghost_cells=False):
+def plot_all(grid, data_files, with_ghost_cells=False):
     n_dims = 2 if grid.vertex_indices.shape[1] == 3 else 3
+
+    keys = ["v"]
 
     for f in data_files:
         u = load(f)
 
-        for key in keys:
-            if n_dims == 2:
-                plot = TriPlot()
-                plot.color_plot(grid, u[key])
-                plot.save(plot.filename(f, key))
+        vh = transform("vh", grid, u)
+        with h5py.File(f[:-3] + "--velocity.h5", "w") as h5:
+            h5["vh"] = vh
 
-            plot = ScatterPlot(with_ghost_cells)
-            plot(grid, u[key])
-            plot.save(plot.filename(f, key))
+        # for key in keys:
+        #     q = transform(key, grid, u)
 
-        for key in log_keys:
-            if n_dims == 2:
-                plot = TriPlot()
-                plot.color_plot(grid, np.log10(u[key]))
-                plot.save(plot.filename(f, "log" + key))
-
-            plot = ScatterSemilogY(with_ghost_cells)
-            plot(grid, u[key])
-            plot.save(plot.filename(f, "log" + key))
+        #     plot = ScatterPlot(with_ghost_cells)
+        #     plot(grid, q)
+        #     plot.save(plot.filename(f, key))
 
 
 if __name__ == "__main__":
@@ -79,24 +86,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=parser_help)
 
     parser.add_argument(
-        "--grid",
-        help="The filename of the grid.",
-    )
-
-    parser.add_argument(
-        "--vars",
-        nargs="*",
-        type=str,
-        default=["rho", "drho"],
-        help="Plot these variables, e.g. 'rho', 'drho', 'mv1', 'E', 'p', 'h', etc.",
-    )
-
-    parser.add_argument(
-        "--log-vars",
-        nargs="*",
-        type=str,
-        default=[],
-        help="Plot these variables in a semilog-y plot, e.g. 'rho', 'E', 'p', 'h', etc.",
+        "--grid", help="The filename of the grid.",
     )
 
     parser.add_argument(
@@ -124,4 +114,4 @@ if __name__ == "__main__":
 
     grid = load_grid(args.grid or find_grid(base_directory))
     if not getattr(sys, "ps1", sys.flags.interactive):
-        plot_all(grid, files, args.vars, args.log_vars, args.with_ghost_cells)
+        plot_all(grid, files, args.with_ghost_cells)

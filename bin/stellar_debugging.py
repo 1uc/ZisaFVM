@@ -64,21 +64,22 @@ eos = sc.HelmholtzEOS(
     mass_number=[12, 1, 4, 20, 16, 28],
     charge_number=[6, 1, 2, 10, 8, 14],
 )
+# eos = sc.IdealGasEOS(gamma=5.0 / 3.0, r_gas=1.0)
 gravity = sc.RadialGravity(one_dimensional_profile)
 euler = sc.Euler(eos, gravity)
 
 
-heating_rate = 2e11
+heating_rate = 0.0
 r0 = 1.19 * 1e4 * km
 r1 = 1.35 * 1e4 * km
 heating = sc.Heating(rate=heating_rate, lower_boundary=r0, upper_boundary=r1)
 
-t_end = 600
 # t_end = 3600
-time = sc.Time(t_end=t_end)
+n_steps = 20
+time = sc.Time(n_steps=n_steps)
 io = sc.IO(
     "hdf5",
-    "stellar_convection",
+    "stellar_debugging",
     steps_per_frame=400,
     parallel_strategy="gathered",
     n_writers=16,
@@ -88,9 +89,9 @@ io = sc.IO(
 def make_work_estimate():
     n0 = 165_000
 
-    t0 = 2 * timedelta(seconds=t_end / 7.3 * 1000 * 168)
+    t0 = 2 * timedelta(seconds=10 / 7.3 * 1000 * 168)  # BOGUS.
     b0 = 0.0
-    o0 = 500 * 1e6
+    o0 = 150 * 1e6
     unit_work = 512
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0, unit_work=unit_work)
@@ -100,7 +101,7 @@ grid_name = GridNamingScheme("stellar_convection")
 
 parallelization = {"mode": "mpi"}
 
-radii = [5000 * km, 40_000 * km]
+radii = [5000 * km, 5_000 * km]
 mesh_levels = [2, 3]
 coarse_grid_levels = [2]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
@@ -123,13 +124,14 @@ independent_choices = {
     "parallelization": [parallelization],
     "boundary-condition": [sc.BoundaryCondition("frozen")],
     "debug": [{"global_indices": False, "stencils": False}],
-    "flux-bc": [sc.FluxBC("constant")],
 }
 
 
 wb_keys = ["constant", "isentropic"]
 dependent_choices_a = {
+    # "flux-bc": [sc.FluxBC("constant")],
     # "well-balancing": [sc.WellBalancing("constant")],
+    "flux-bc": [sc.FluxBC(k) for k in wb_keys],
     "well-balancing": [sc.WellBalancing(k) for k in wb_keys],
 }
 
@@ -188,14 +190,11 @@ def generate_grids(cluster, must_generate, must_decompose):
         renumber_grids(msh_h5_name, mesh_levels)
 
     if must_decompose:
-        # decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
-
-        parts = {l: [64, 128, 256, 512] for l in mesh_levels}
-        decompose_grids(msh_h5_name, mesh_levels, parts)
+        decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
 
 
 def main():
-    parser = default_cli_parser("'stellar_convection' numerical experiment.")
+    parser = default_cli_parser("'stellar_debugging' numerical experiment.")
     args = parser.parse_args()
 
     generate_grids(args.cluster, args.generate_grids, args.decompose_grids)
@@ -208,12 +207,7 @@ def main():
         work_estimate = make_work_estimate()
 
         if parallelization["mode"] == "mpi":
-            heuristics = MPIHeuristics(
-                cores_per_node=16, max_nodes=512 // 16, work_per_core=2.0
-            )
-            queue_args = MPIQueueArgs(
-                work_estimate, t_min=t_min, t_max=t_max, heuristics=heuristics
-            )
+            queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
         else:
             queue_args = dict()
 

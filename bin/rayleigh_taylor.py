@@ -36,12 +36,12 @@ from tiwaz.work_estimate import ZisaWorkEstimate
 
 
 class RayleighTaylorExperiment(sc.Subsection):
-    def __init__(self):
+    def __init__(self, drho):
         super().__init__(
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "drho": 1e-4,
+                    "drho": drho,
                     "amplitude": 0.0,
                     "width": 0.1,
                     "n_bumps": 6,
@@ -49,15 +49,19 @@ class RayleighTaylorExperiment(sc.Subsection):
             }
         )
 
-    def short_id(self):
-        return self["name"]
+        self.drho = drho
 
+    def short_id(self):
+        return self["name"] + f"_{self.drho:.2e}"
+
+
+mangle_str = "G4.0"
 
 # This is just in case we want to run the same experiment with many parameters.
-experiment_params = [None]
+experiment_params = [0.0, 1e-4]
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
-gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=3.0)
+gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=4.0)
 euler = sc.Euler(eos, gravity)
 
 t_end = 100.0
@@ -170,10 +174,22 @@ reference_runs_ = all_combinations(reference_choices)
 
 
 def make_runs(params):
-    coarse_runs = coarse_runs_.product([{"experiment": RayleighTaylorExperiment()}])
+    coarse_runs = coarse_runs_.product(
+        [
+            {
+                "experiment": RayleighTaylorExperiment(params),
+                "mangle": sc.Mangle(mangle_str),
+            }
+        ]
+    )
 
     reference_runs = reference_runs_.product(
-        [{"experiment": RayleighTaylorExperiment()}]
+        [
+            {
+                "experiment": RayleighTaylorExperiment(params),
+                "mangle": sc.Mangle(mangle_str),
+            }
+        ]
     )
 
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]

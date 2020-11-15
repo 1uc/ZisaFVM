@@ -180,40 +180,40 @@ all_runs = [make_runs(amp) for amp in amplitudes]
 
 
 def post_process(coarse_runs, reference_run):
-    # results, columns = load_results(coarse_runs, reference_run)
-    # labels = TableLabels()
+    results, columns = load_results(coarse_runs, reference_run)
+    labels = TableLabels()
 
-    # filename = coarse_runs[0]["experiment"].short_id()
-    # # write_convergence_table(results, columns, labels, filename)
-    # write_convergence_plots(results, columns, labels, filename)
-    # plot_visual_convergence(results, columns, labels, filename)
+    filename = coarse_runs[0]["experiment"].short_id()
+    write_convergence_table(results, columns, labels, filename)
+    write_convergence_plots(results, columns, labels, filename)
+    plot_visual_convergence(results, columns, labels, filename)
 
-    for coarse_run in coarse_runs:
-        coarse_dir = folder_name(coarse_run)
-        coarse_grid = load_grid(coarse_dir)
+    # for coarse_run in coarse_runs:
+    #     coarse_dir = folder_name(coarse_run)
+    #     coarse_grid = load_grid(coarse_dir)
 
-        data_files = find_data_files(coarse_dir)
+    #     data_files = find_data_files(coarse_dir)
 
-        key = "rho"
-        for l, data_file in enumerate(data_files):
-            u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
+    #     key = "rho"
+    #     for l, data_file in enumerate(data_files):
+    #         u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
 
-            rho = u_coarse.cvars[key]
-            drho = u_coarse.dvars[key]
+    #         rho = u_coarse.cvars[key]
+    #         drho = u_coarse.dvars[key]
 
-            # vx = u_coarse.cvars["mv1"] / rho
-            # vy = u_coarse.cvars["mv2"] / rho
+    #         # vx = u_coarse.cvars["mv1"] / rho
+    #         # vy = u_coarse.cvars["mv2"] / rho
 
-            trip = TriPlot()
-            trip.color_plot(coarse_grid, rho)
-            # trip.quiver(coarse_grid, vx, vy)
-            trip.save(f"{coarse_dir}/triplot_{key}_{l:04d}.png")
+    #         trip = TriPlot()
+    #         trip.color_plot(coarse_grid, rho)
+    #         # trip.quiver(coarse_grid, vx, vy)
+    #         trip.save(f"{coarse_dir}/triplot_{key}_{l:04d}.png")
 
-            trip = TriPlot()
-            trip.color_plot(coarse_grid, drho)
-            # trip.quiver(coarse_grid, vx, vy)
+    #         trip = TriPlot()
+    #         trip.color_plot(coarse_grid, drho)
+    #         # trip.quiver(coarse_grid, vx, vy)
 
-            trip.save(f"{coarse_dir}/triplot_d{key}_{l:04d}.png")
+    #         trip.save(f"{coarse_dir}/triplot_d{key}_{l:04d}.png")
 
 
 class TableLabels:
