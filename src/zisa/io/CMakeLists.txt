@@ -4,6 +4,7 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/exec.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/file_manipulation.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/file_name_generator.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/gathered_vis_info.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/gathered_visualization.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_file.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_serial_writer.cpp

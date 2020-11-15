@@ -8,6 +8,7 @@
 #include <zisa/math/permutation.hpp>
 #include <zisa/memory/array.hpp>
 #include <zisa/mpi/mpi.hpp>
+#include <zisa/parallelization/distributed_grid.hpp>
 
 namespace zisa {
 
@@ -40,13 +41,7 @@ struct GatheredVisInfo {
   array<int_t, 1> vis_file_ids;
   std::shared_ptr<Permutation> permutation;
 
-  inline int_t n_vis_cells() const {
-    if (h5_comm != MPI_COMM_NULL) {
-      return vis_boundaries[vis_boundaries.size() - 1];
-    } else {
-      return 0;
-    }
-  }
+  int_t n_vis_cells() const;
 
   int_t n_local_cells;
 
@@ -54,6 +49,11 @@ struct GatheredVisInfo {
   MPI_Comm h5_comm;
 };
 
+/// Generate `GatheredVisInfo` from a distributed grid.
+/** Note that `world_comm` refers to the 'large' communicator on which the data
+ *  lives. This is often `MPI_COMM_WORLD` but could be a subset of it.
+ */
+std::shared_ptr<GatheredVisInfo> make_gathered_vis_info(
+    MPI_Comm world_comm, const DistributedGrid &dgrid, int n_writers);
 }
-
 #endif // ZISA_GATHERED_VIS_INFO_HPP

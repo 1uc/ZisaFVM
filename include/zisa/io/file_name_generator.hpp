@@ -10,6 +10,13 @@
 
 namespace zisa {
 
+/// Minimal interface of a file name generator.
+class FNG {
+public:
+  virtual std::string next_name() = 0;
+  virtual std::string steady_state() = 0;
+};
+
 /// Sequentially numbered file names.
 /** Provides consistent names for snapshots, the grid and the steady-state
  *  files. The snapshot names are a incrementally numbered sequence.
@@ -33,7 +40,7 @@ namespace zisa {
  *
  *  @note The pattern should be a printf-style format for one integer.
  */
-class FileNameGenerator {
+class FileNameGenerator : public FNG {
 public:
   FileNameGenerator(const std::string &stem,
                     const std::string &pattern,
@@ -48,7 +55,10 @@ public:
   std::string filename(int generation);
 
   /// Generate the next numbered file name.
-  std::string next_name();
+  virtual std::string next_name() override;
+
+  /// Generate the file name for the steady state.
+  virtual std::string steady_state() override;
 
   /// Generate numbers starting from `k`.
   void advance_to(int k);
@@ -61,12 +71,30 @@ public:
 
   const std::string filename_stem;         ///< First part of all filenames.
   const std::string steady_state_filename; ///< Path of the steady-state.
-  const std::string reference_filename;    ///< Path of the reference solution.
   const std::string grid_filename;         ///< Path of the grid.
 
 private:
   std::string pattern_;
   int count_;
+};
+
+class SingleFileNameGenerator : public FNG {
+public:
+  SingleFileNameGenerator(std::string filename)
+      : filename(std::move(filename)) {}
+
+  virtual std::string next_name() override {
+    LOG_ERR_IF(used, "This filename generator has used up all its names.");
+    return filename;
+  }
+
+  virtual std::string steady_state() override {
+    LOG_ERR("No steady state filename available.");
+  }
+
+private:
+  std::string filename;
+  bool used = false;
 };
 
 std::shared_ptr<FileNameGenerator>

@@ -16,11 +16,9 @@
 namespace zisa {
 
 template <class EOS>
-DumpSnapshot<EOS>::DumpSnapshot(
-    std::shared_ptr<LocalEOSState<EOS>> local_eos,
-    std::shared_ptr<FileNameGenerator> file_name_generator)
-    : local_eos(std::move(local_eos)),
-      file_name_generator(std::move(file_name_generator)) {}
+DumpSnapshot<EOS>::DumpSnapshot(std::shared_ptr<LocalEOSState<EOS>> local_eos,
+                                std::shared_ptr<FNG> fng)
+    : local_eos(std::move(local_eos)), fng(std::move(fng)) {}
 
 template <class EOS>
 void DumpSnapshot<EOS>::do_visualization(
@@ -30,14 +28,14 @@ void DumpSnapshot<EOS>::do_visualization(
   auto t = simulation_clock.current_time();
   auto n_steps = simulation_clock.current_step();
 
-  auto writer = pick_writer(file_name_generator->next_name());
+  auto writer = pick_writer(fng->next_name());
   local_eos->compute(all_variables);
   save_full_state(*writer, *local_eos, all_variables, t, n_steps);
 }
 
 template <class EOS>
 void DumpSnapshot<EOS>::do_steady_state(const AllVariables &steady_state) {
-  auto writer = pick_writer(file_name_generator->steady_state_filename);
+  auto writer = pick_writer(fng->steady_state());
   save(*writer, steady_state, all_labels<typename EOS::cvars_t>());
 }
 

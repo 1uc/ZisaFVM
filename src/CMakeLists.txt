@@ -24,6 +24,10 @@ target_sources(renumber-grid
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/renumber_grid.cpp
 )
 
+target_sources(test-distributed-reference
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/test_distributed_reference.cpp
+)
+
 target_sources(space-filling-curve-demo
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/space_filling_curve_demo.cpp
 )

@@ -14,7 +14,6 @@ FileNameGenerator::FileNameGenerator(const std::string &dir,
                                      const std::string &suffix)
     : filename_stem(stem),
       steady_state_filename(dir + "steady_state" + suffix),
-      reference_filename(dir + stem + "_reference" + suffix),
       grid_filename(dir + "grid" + suffix),
       pattern_(dir + stem + pattern + suffix),
       count_(0) {}
@@ -24,6 +23,7 @@ std::string FileNameGenerator::filename(int generation) {
 }
 
 std::string FileNameGenerator::next_name() { return filename(count_++); }
+std::string FileNameGenerator::steady_state() { return steady_state_filename; }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
 void FileNameGenerator::advance_to(const std::string &filename) {

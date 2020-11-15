@@ -14,9 +14,9 @@ private:
 public:
   ParallelDumpSnapshot(
       std::shared_ptr<LocalEOSState<EOS>> local_eos,
-      std::shared_ptr<FileNameGenerator> file_name_generator,
+      std::shared_ptr<FNG> fng,
       std::shared_ptr<HDF5UnstructuredFileDimensions> file_dimensions)
-      : super(std::move(local_eos), std::move(file_name_generator)),
+      : super(std::move(local_eos), std::move(fng)),
         file_dims(std::move(file_dimensions)) {}
 
 protected:

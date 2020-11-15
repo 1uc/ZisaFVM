@@ -15,7 +15,7 @@ template <class EOS>
 class DumpSnapshot : public Visualization {
 public:
   DumpSnapshot(std::shared_ptr<LocalEOSState<EOS>> eos,
-               std::shared_ptr<FileNameGenerator> file_name_generator);
+               std::shared_ptr<FNG> fng);
 
 protected:
   virtual void
@@ -30,7 +30,7 @@ protected:
 
 private:
   std::shared_ptr<LocalEOSState<EOS>> local_eos;
-  std::shared_ptr<FileNameGenerator> file_name_generator;
+  std::shared_ptr<FNG> fng;
 };
 
 template <class EOS>
