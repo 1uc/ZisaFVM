@@ -7,6 +7,7 @@
 
 #include <zisa/math/permutation.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/mpi.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 
@@ -55,5 +56,9 @@ struct GatheredVisInfo {
  */
 std::shared_ptr<GatheredVisInfo> make_gathered_vis_info(
     MPI_Comm world_comm, const DistributedGrid &dgrid, int n_writers);
+
+std::shared_ptr<HDF5UnstructuredFileDimensions>
+make_hdf5_unstructured_file_dimensions(const GatheredVisInfo &vis_info);
+
 }
 #endif // ZISA_GATHERED_VIS_INFO_HPP

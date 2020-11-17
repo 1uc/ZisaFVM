@@ -101,4 +101,22 @@ std::shared_ptr<GatheredVisInfo> make_gathered_vis_info(
                                                              h5_comm});
   }
 }
+
+std::shared_ptr<HDF5UnstructuredFileDimensions>
+make_hdf5_unstructured_file_dimensions(const GatheredVisInfo &vis_info) {
+
+  if (vis_info.h5_comm != MPI_COMM_NULL) {
+    const auto &gids = vis_info.vis_file_ids;
+    std::vector<hsize_t> hids(gids.size());
+    for (int_t i = 0; i < hids.size(); ++i) {
+      hids[i] = integer_cast<hsize_t>(gids[i]);
+    }
+
+    return make_hdf5_unstructured_file_dimensions(
+        vis_info.n_vis_cells(), hids, vis_info.h5_comm);
+  } else {
+    return std::make_shared<HDF5UnstructuredFileDimensions>(
+        0, 0, std::vector<hsize_t>{}, MPI_COMM_NULL);
+  }
+}
 }

@@ -7,6 +7,7 @@
 #include <zisa/io/visualization.hpp>
 #include <zisa/model/all_variables_fwd.hpp>
 #include <zisa/model/grid_variables_decl.hpp>
+#include <zisa/model/local_eos_state.hpp>
 
 namespace zisa {
 

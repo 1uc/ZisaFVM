@@ -3,6 +3,7 @@
 
 #include <zisa/config.hpp>
 
+#include <zisa/io/gathered_vis_info.hpp>
 #include <zisa/mpi/mpi.hpp>
 #include <zisa/mpi/parallelization/distributed_array_info.hpp>
 #include <zisa/parallelization/array_gatherer.hpp>
@@ -67,6 +68,9 @@ private:
   MPI_Comm comm;
   int current_mpi_tag;
 };
+
+std::shared_ptr<MPISingleNodeArrayGathererFactory>
+make_mpi_single_node_array_gatherer_factory(const GatheredVisInfo &vis_info);
 
 }
 

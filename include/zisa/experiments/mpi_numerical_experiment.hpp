@@ -25,6 +25,7 @@
 #include <zisa/parallelization/all_variables_scatterer.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/domain_decomposition.hpp>
+#include <zisa/parallelization/local_grid.hpp>
 
 namespace zisa {
 
@@ -245,31 +246,22 @@ protected:
       auto vis_info = this->compute_gathered_vis_info(small_comm, small_dgrid);
       auto gatherer_factory = this->compute_gatherer_factory(*vis_info);
 
-      auto cvars_gatherer
-          = gatherer_factory->template create_pointer<double, 2>();
+      auto all_var_dims = this->choose_all_variable_dims();
+      auto simulation_clock = this->choose_simulation_clock();
 
-      // FIXME missing adv variables.
+      auto fng = std::make_shared<SingleFileNameGenerator>(filename);
+      auto file_dims = compute_gathered_file_info(*vis_info);
+      auto local_eos = this->compute_local_eos(file_dims->n_cells_local);
+      auto dump_snapshot
+          = std::make_shared<ParallelDumpSnapshot<typename super::eos_t>>(
+              local_eos, fng, file_dims);
 
-      auto n_local_cells = vis_info->n_local_cells;
-      auto n_vis_cells = vis_info->n_vis_cells();
-      auto all_var_gatherer = AllVariablesGatherer(
-          std::move(cvars_gatherer), nullptr, n_local_cells, n_vis_cells);
+      auto vis = make_gathered_visualization(std::move(vis_info),
+                                             std::move(gatherer_factory),
+                                             std::move(dump_snapshot),
+                                             all_var_dims);
 
-      auto gathered_all_vars = all_var_gatherer.gather(all_vars);
-
-      if (vis_info->h5_comm != MPI_COMM_NULL) {
-        auto array_info = compute_gathered_file_info(*vis_info);
-        auto writer = HDF5UnstructuredWriter(filename, array_info);
-
-        double t_end = 0.0;
-        int_t n_steps = 0;
-
-        apply_permutation(array_view(gathered_all_vars.cvars),
-                          *vis_info->permutation);
-
-        auto labels = all_labels<euler_var_t>();
-        save_state(writer, gathered_all_vars, t_end, n_steps, labels);
-      }
+      (*vis)(all_vars, *simulation_clock);
     };
 
     auto fine_grid = this->choose_grid();
@@ -322,14 +314,6 @@ protected:
     return this->distributed_grid_;
   }
 
-  std::shared_ptr<array<StencilFamily, 1>>
-  compute_stencils(const Grid &grid) const override {
-    auto stencil_params = this->choose_stencil_params();
-
-    return std::make_shared<array<StencilFamily, 1>>(
-        compute_stencil_families(grid, stencil_params));
-  }
-
   std::string subgrid_name() const {
     std::string dirname = this->params["grid"]["file"];
     return string_format("%s/partitioned/%d/subgrid-%04d.msh.h5",
@@ -343,49 +327,18 @@ protected:
     // 2. Decide how much we really need based on the stencil.
     // 3. Generate correctly sized grid.
 
-    // Side effect: store the stencils.
+    // Side effect: - store the stencils.
+    //              - store distributed grid info.
 
+    auto stencil_params = this->choose_stencil_params();
     auto qr_degrees = this->choose_qr_degrees();
-    auto super_subgrid = zisa::load_grid(subgrid_name(), qr_degrees);
-    auto super_sub_dgrid = zisa::load_distributed_grid(subgrid_name());
+    auto [stencils, dgrid, grid] = zisa::load_local_grid(
+        subgrid_name(), stencil_params, qr_degrees, mpi_rank);
 
-    auto stencils = compute_stencils(*super_subgrid);
-
-    auto is_interior = [this, &partition = super_sub_dgrid.partition](int_t i) {
-      return partition[i] == integer_cast<int_t>(mpi_rank);
-    };
-
-    auto is_needed
-        = StencilBasedIndicator(*super_subgrid, *stencils, is_interior);
-
-    auto [local_vertex_indices, local_vertices, super_sub_indices]
-        = extract_subgrid_v2(*super_subgrid, is_needed);
-
-    this->stencils_ = std::make_shared<array<StencilFamily, 1>>(
-        extract_stencils(*stencils,
-                         super_subgrid->neighbours,
-                         is_interior,
-                         super_sub_indices));
-
-    distributed_grid_ = std::make_shared<DistributedGrid>(
-        extract_distributed_subgrid(super_sub_dgrid, super_sub_indices));
-
-    return compute_local_grid(std::move(local_vertex_indices),
-                              std::move(local_vertices));
-  }
-
-  std::shared_ptr<Grid> compute_local_grid(array<int_t, 2> vertex_indices,
-                                           array<XYZ, 1> vertices) const {
-
-    auto quad_deg = this->choose_volume_deg();
-    auto max_neighbours = vertex_indices.shape(1);
-
-    auto grid = std::make_shared<Grid>(deduce_element_type(max_neighbours),
-                                       std::move(vertices),
-                                       std::move(vertex_indices),
-                                       quad_deg);
-
+    this->stencils_ = stencils;
+    this->distributed_grid_ = dgrid;
     this->enforce_cell_flags(*grid);
+
     return grid;
   }
 
@@ -489,19 +442,7 @@ protected:
 
   std::shared_ptr<HDF5UnstructuredFileDimensions>
   compute_gathered_file_info(const GatheredVisInfo &vis_info) {
-
-    if (vis_info.h5_comm != MPI_COMM_NULL) {
-      const auto &gids = vis_info.vis_file_ids;
-      std::vector<hsize_t> hids(gids.size());
-      for (int_t i = 0; i < hids.size(); ++i) {
-        hids[i] = integer_cast<hsize_t>(gids[i]);
-      }
-
-      return make_hdf5_unstructured_file_dimensions(
-          vis_info.n_vis_cells(), hids, vis_info.h5_comm);
-    } else {
-      return nullptr;
-    }
+    return make_hdf5_unstructured_file_dimensions(vis_info);
   }
 
   std::shared_ptr<MPISingleNodeArrayGathererFactory> choose_gatherer_factory() {
@@ -519,27 +460,15 @@ protected:
 
   std::shared_ptr<MPISingleNodeArrayGathererFactory>
   compute_gatherer_factory(const GatheredVisInfo &vis_info) {
-    auto vis_comm = vis_info.vis_comm;
-    auto vis_tag = ZISA_MPI_TAG_GATHERED_VIS;
-
-    auto h5_comm = vis_info.h5_comm;
-
-    if (h5_comm != MPI_COMM_NULL) {
-      auto darray_info = make_distributed_array_info(vis_info.vis_boundaries);
-      return std::make_shared<MPISingleNodeArrayGathererFactory>(
-          darray_info, vis_comm, vis_tag + 1);
-    } else {
-      return std::make_shared<MPISingleNodeArrayGathererFactory>(
-          nullptr, vis_comm, vis_tag + 1);
-    }
+    return make_mpi_single_node_array_gatherer_factory(vis_info);
   }
 
   std::shared_ptr<Visualization> compute_gathered_visualization() {
 
     auto vis_info = choose_gathered_vis_info();
     auto gatherer_factory = choose_gatherer_factory();
-    auto all_var_dims = this->choose_all_variable_dims();
 
+    auto all_var_dims = this->choose_all_variable_dims();
     auto fng = this->choose_file_name_generator();
     auto file_dims = choose_gathered_file_info();
     auto local_eos = this->compute_local_eos(file_dims->n_cells_local);

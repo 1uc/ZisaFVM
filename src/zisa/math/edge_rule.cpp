@@ -1,13 +1,18 @@
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/math/gauss_legendre.hpp>
+#include <zisa/math/max_quadrature_degree.hpp>
 
 namespace zisa {
 
-EdgeRule::EdgeRule(int_t deg)
+EdgeRule::EdgeRule(int_t deg) {
 
-    : weights(deg / 2 + 1), points(deg / 2 + 1) {
+  if (deg == MAX_QUADRATURE_DEGREE) {
+    deg = 7;
+  }
 
   int_t n_points = deg / 2 + 1;
+  weights = array<double, 1>(n_points);
+  points = array<double, 1>(n_points);
 
   if (n_points == 1) {
     init<1>();
