@@ -76,12 +76,16 @@ public:
     }
   }
 
+  //  const FX &get(const std::function<FX(const XYZ &x)> &f, const XYZ &x)
+  //  const {
   const FX &get(const XYZ &x) const {
     double hash = zisa::dot(projection, x);
     auto it = std::lower_bound(hashes.cbegin(), hashes.cend(), hash - atol);
+    if (std::abs(*it - hash) <= atol) {
+      return cache[integer_cast<int_t>(it - hashes.begin())];
+    }
 
-    LOG_ERR_IF(it == hashes.cend(), "This value certainly isn't in the cache.");
-    return cache[integer_cast<int_t>(it - hashes.begin())];
+    LOG_ERR("Requesting a point not in the cache.");
   }
 
 private:
