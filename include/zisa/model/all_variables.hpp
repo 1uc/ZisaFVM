@@ -48,6 +48,10 @@ public:
   [[nodiscard]] static AllVariables
   load(HDF5Reader &reader, const std::vector<std::string> &labels);
 
+  static void load(HDF5Reader &reader,
+                   AllVariables &all_vars,
+                   const std::vector<std::string> &labels);
+
 protected:
   void allocate(const AllVariablesDimensions &dims);
 };

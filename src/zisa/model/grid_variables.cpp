@@ -27,6 +27,24 @@ GridVariables GridVariables::load(HDF5Reader &reader,
   auto shape = shape_t<2>{n_cells, n_vars};
 
   GridVariables vars(shape, device_type::cpu);
+  GridVariables::load(reader, vars, labels);
+  return vars;
+}
+
+void GridVariables::load(HDF5Reader &reader,
+                         GridVariables &vars,
+                         const std::vector<std::string> &labels) {
+
+  if (labels.empty()) {
+    return;
+  }
+
+  auto n_cells = int_t(reader.dims(labels[0])[0]);
+  auto n_vars = int_t(labels.size());
+  auto shape = shape_t<2>{n_cells, n_vars};
+
+  LOG_ERR_IF(vars.shape(0) < shape(0), "Invalid shape.");
+  LOG_ERR_IF(vars.shape(1) != shape(1), "Invalid shape.");
 
   for (int_t k = 0; k < labels.size(); ++k) {
     auto component = array<double, 1>::load(reader, labels[k]);
@@ -36,8 +54,6 @@ GridVariables GridVariables::load(HDF5Reader &reader,
       vars(i, k) = component[i];
     }
   }
-
-  return vars;
 }
 
 DereferenceConstGridVariables::DereferenceConstGridVariables(

@@ -89,8 +89,8 @@ void save(HDF5Writer &writer,
   save(writer, avars, numbered_labels("mq%d", n_avars));
 }
 
-AllVariables AllVariables::load(HDF5Reader &reader,
-                                const std::vector<std::string> &labels) {
+[[nodiscard]] AllVariables
+AllVariables::load(HDF5Reader &reader, const std::vector<std::string> &labels) {
 
   auto all_vars = AllVariables{};
   all_vars.cvars = GridVariables::load(reader, labels);
@@ -100,6 +100,17 @@ AllVariables AllVariables::load(HDF5Reader &reader,
   all_vars.avars = GridVariables::load(reader, avar_labels);
 
   return all_vars;
+}
+
+void AllVariables::load(HDF5Reader &reader,
+                        AllVariables &all_vars,
+                        const std::vector<std::string> &labels) {
+
+  GridVariables::load(reader, all_vars.cvars, labels);
+
+  auto n_avars = reader.read_scalar<int_t>("n_avars");
+  auto avar_labels = numbered_labels("mq%d", n_avars);
+  GridVariables::load(reader, all_vars.avars, avar_labels);
 }
 
 } // namespace zisa
