@@ -71,7 +71,7 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
     };
   };
 
-  auto atol = EnthalpyEntropy(1e-10 * enthalpy_entropy_guess);
+  auto atol = EnthalpyEntropy(1e-13 * enthalpy_entropy_guess);
 
   auto [hS, has_eq] = quasi_newton(f, inv_df, enthalpy_entropy_guess, atol);
 

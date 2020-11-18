@@ -26,13 +26,7 @@ namespace zisa {
 template <class EOS, class Gravity>
 EulerExperiment<EOS, Gravity>::EulerExperiment(const InputParameters &params,
                                                std::shared_ptr<euler_t> euler_)
-    : super(params), euler(std::move(euler_)) {
-
-  if (is_restart()) {
-    auto reader = HDF5SerialReader(params["restart"]["file"]);
-    LOG_ERR("load EOS & Gravity.");
-  }
-}
+    : super(params), euler(std::move(euler_)) {}
 
 template <class EOS, class Gravity>
 void EulerExperiment<EOS, Gravity>::do_post_run(
@@ -72,6 +66,7 @@ void EulerExperiment<EOS, Gravity>::do_post_run(
                                       EOS,
                                       Gravity>(
       grid, weno_params, *local_eos, gravity, local_rc_params);
+
   auto grc = std::make_shared<
       EulerGlobalReconstruction<NoEquilibrium, CWENO_AO, UnityScaling>>(
       weno_params, std::move(rc));
@@ -105,13 +100,31 @@ void EulerExperiment<EOS, Gravity>::do_post_process() {
 }
 
 template <class EOS, class Gravity>
+std::string EulerExperiment<EOS, Gravity>::compute_restart_datafile() {
+  if (has_key(params["restart"], "file")) {
+    return std::string(params["restart"]["file"]);
+  } else {
+    auto fng = choose_file_name_generator();
+    return find_last_data_file(*fng);
+  }
+}
+
+template <class EOS, class Gravity>
 std::shared_ptr<AllVariables>
 EulerExperiment<EOS, Gravity>::load_initial_conditions() {
-  std::string datafile = params["restart"]["file"];
+  auto simulation_clock = choose_simulation_clock();
+  auto datafile = compute_restart_datafile();
 
-  auto reader = HDF5SerialReader(datafile);
-  return std::make_shared<AllVariables>(
-      AllVariables::load(reader, all_labels<euler_var_t>()));
+  auto fng = choose_file_name_generator();
+  fng->advance_to(datafile);
+
+  auto sfng = std::make_shared<SingleFileNameGenerator>(datafile);
+  auto data_source = compute_data_source(sfng);
+
+  auto all_vars = std::make_shared<AllVariables>(choose_all_variable_dims());
+  (*data_source)(*all_vars, *simulation_clock);
+
+  return all_vars;
 }
 
 template <class EOS, class Gravity>
@@ -403,6 +416,12 @@ EulerExperiment<EOS, Gravity>::choose_grid_factory() {
   return [](const std::string &grid_name, int_t quad_deg) {
     return load_grid(grid_name, QRDegrees{quad_deg, quad_deg, quad_deg});
   };
+}
+
+template <class EOS, class Gravity>
+std::shared_ptr<DataSource>
+EulerExperiment<EOS, Gravity>::compute_data_source(std::shared_ptr<FNG> fng) {
+  return std::make_shared<SerialLoadSnapshot>(std::move(fng));
 }
 
 } // namespace zisa

@@ -16,13 +16,13 @@ PlottingStepsParameters::PlottingStepsParameters(const InputParameters &params)
 
   const auto &params_plotting = params["io"];
 
-  if (has_key(params, "restart")) {
-    auto filename = std::string(params["restart"]["file"]);
-    auto reader = HDF5SerialReader(filename);
-
-    t0 = reader.read_scalar<double>("time");
-    k0 = reader.read_scalar<int_t>("n_steps");
-  }
+  //  if (has_key(params, "restart")) {
+  //    auto filename = std::string(params["restart"]["file"]);
+  //    auto reader = HDF5SerialReader(filename);
+  //
+  //    t0 = reader.read_scalar<double>("time");
+  //    k0 = reader.read_scalar<int_t>("n_steps");
+  //  }
 
   if (has_key(params_plotting, "fps")) {
     fps = params_plotting["fps"];

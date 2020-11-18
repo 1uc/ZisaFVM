@@ -102,6 +102,15 @@ TypicalNumericalExperiment::choose_initial_conditions() {
 
 std::shared_ptr<SimulationClock>
 TypicalNumericalExperiment::choose_simulation_clock() {
+  if (simulation_clock_ == nullptr) {
+    simulation_clock_ = compute_simulation_clock();
+  }
+
+  return simulation_clock_;
+}
+
+std::shared_ptr<SimulationClock>
+TypicalNumericalExperiment::compute_simulation_clock() {
 
   auto time_keeper_params = TimeKeeperParameters(params);
   auto plotting_params = PlottingStepsParameters(params);
@@ -112,16 +121,6 @@ TypicalNumericalExperiment::choose_simulation_clock() {
 
   auto simulation_clock
       = std::make_shared<SerialSimulationClock>(time_keeper, plotting_steps);
-
-  if (is_restart()) {
-    std::string datafile = params["restart"]["file"];
-
-    auto reader = HDF5SerialReader(datafile);
-    auto t = reader.read_scalar<double>("time");
-    auto k = reader.read_scalar<int_t>("n_steps");
-
-    simulation_clock->advance_to(t, k);
-  }
 
   return simulation_clock;
 }
@@ -300,5 +299,8 @@ TypicalNumericalExperiment::boundary_mask() const {
 }
 
 int_t TypicalNumericalExperiment::choose_n_avars() { return 0; }
+bool TypicalNumericalExperiment::is_restart() const {
+  return has_key(params, "restart");
+}
 
 } // namespace zisa

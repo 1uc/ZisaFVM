@@ -1,8 +1,8 @@
 #ifndef ZISA_GATHERED_VISUALIZATION_FACTORY_HPP_EUYBY
 #define ZISA_GATHERED_VISUALIZATION_FACTORY_HPP_EUYBY
 
-#include <zisa/io/gathered_vis_info.hpp>
 #include <zisa/io/gathered_visualization.hpp>
+#include <zisa/mpi/io/gathered_vis_info.hpp>
 #include <zisa/mpi/parallelization/mpi_single_node_array_gatherer.hpp>
 
 namespace zisa {

@@ -51,7 +51,7 @@ public:
 
       // Are the points are reasonably well separated?
       if (dx_min > dx_max / 100000.0) {
-        atol = 0.25 * dx_min;
+        atol = 1e-10 * dx_max;
         projection = rp;
         is_good = true;
         break;
@@ -69,26 +69,27 @@ public:
     }
   }
 
-  void update(const std::function<FX(const XYZ &x)> &f) {
+  void update(const std::function<FX(const XYZ &x)> &f_) {
+    this->f = f_;
+
     auto n_points = points.size();
     for (int_t i = 0; i < n_points; ++i) {
       cache[i] = f(points[i]);
     }
   }
 
-  //  const FX &get(const std::function<FX(const XYZ &x)> &f, const XYZ &x)
-  //  const {
-  const FX &get(const XYZ &x) const {
+  FX get(const XYZ &x) const {
     double hash = zisa::dot(projection, x);
     auto it = std::lower_bound(hashes.cbegin(), hashes.cend(), hash - atol);
     if (std::abs(*it - hash) <= atol) {
       return cache[integer_cast<int_t>(it - hashes.begin())];
+    } else {
+      return f(x);
     }
-
-    LOG_ERR("Requesting a point not in the cache.");
   }
 
 private:
+  std::function<FX(const XYZ &x)> f;
   array<XYZ, 1> points;
   array<double, 1> hashes;
   array<FX, 1> cache;

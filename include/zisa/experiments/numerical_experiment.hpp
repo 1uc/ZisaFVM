@@ -55,7 +55,7 @@ protected:
   virtual void do_run() override;
   virtual void do_post_run(const std::shared_ptr<AllVariables> &u1) = 0;
 
-  bool is_restart() const { return has_key(params, "restart"); }
+  bool is_restart() const;
 
   std::shared_ptr<Grid> choose_grid() const;
   virtual std::shared_ptr<Grid> compute_grid() const;
@@ -113,7 +113,9 @@ protected:
   QRDegrees choose_qr_degrees() const;
 
   virtual std::shared_ptr<TimeIntegration> choose_time_integration();
+
   virtual std::shared_ptr<SimulationClock> choose_simulation_clock();
+  virtual std::shared_ptr<SimulationClock> compute_simulation_clock();
 
   std::shared_ptr<BoundaryCondition> choose_boundary_condition();
   virtual std::shared_ptr<BoundaryCondition> compute_boundary_condition();
@@ -132,9 +134,10 @@ protected:
   std::shared_ptr<FileNameGenerator> file_name_generator_;
 
 protected:
-  mutable std::shared_ptr<Grid> grid_;
-  mutable std::shared_ptr<Visualization> visualization_;
-  mutable std::shared_ptr<BoundaryCondition> boundary_condition_;
+  mutable std::shared_ptr<Grid> grid_ = nullptr;
+  mutable std::shared_ptr<Visualization> visualization_ = nullptr;
+  mutable std::shared_ptr<BoundaryCondition> boundary_condition_ = nullptr;
+  mutable std::shared_ptr<SimulationClock> simulation_clock_ = nullptr;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
   mutable std::shared_ptr<AllVariables> all_vars_ = nullptr;
 

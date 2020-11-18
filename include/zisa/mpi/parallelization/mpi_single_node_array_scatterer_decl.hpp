@@ -3,6 +3,8 @@
 
 #include <zisa/config.hpp>
 
+#include <zisa/mpi/io/gathered_vis_info.hpp>
+#include <zisa/mpi/mpi.hpp>
 #include <zisa/mpi/parallelization/distributed_array_info.hpp>
 #include <zisa/parallelization/array_scatterer.hpp>
 
@@ -38,6 +40,35 @@ private:
   int scatter_rank = 0;
   MPI_Comm comm = MPI_COMM_WORLD;
 };
+
+class MPISingleNodeArrayScattererFactory {
+public:
+  MPISingleNodeArrayScattererFactory(
+      std::shared_ptr<DistributedArrayInfo> array_info,
+      MPI_Comm comm,
+      int mpi_base_tag);
+
+  template <class T, int n_dims>
+  MPISingleNodeArrayScatterer<T, n_dims> create_object() {
+    return MPISingleNodeArrayScatterer<T, n_dims>(
+        array_info, comm, current_mpi_tag++);
+  }
+
+  template <class T, int n_dims>
+  std::unique_ptr<MPISingleNodeArrayScatterer<T, n_dims>> create_pointer() {
+    return std::make_unique<MPISingleNodeArrayScatterer<T, n_dims>>(
+        array_info, comm, current_mpi_tag++);
+  }
+
+private:
+  std::shared_ptr<DistributedArrayInfo> array_info;
+  MPI_Comm comm;
+  int current_mpi_tag;
+};
+
+std::shared_ptr<MPISingleNodeArrayScattererFactory>
+make_mpi_single_node_array_scatterer_factory(const GatheredVisInfo &vis_info);
+
 }
 
 #endif // ZISA_MPI_SINGLE_NODE_ARRAY_SCATTERER_DECL_HPP

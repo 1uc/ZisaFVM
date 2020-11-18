@@ -4,6 +4,7 @@
 #include <zisa/config.hpp>
 #include <zisa/experiments/numerical_experiment.hpp>
 #include <zisa/flux/hllc.hpp>
+#include <zisa/io/load_snapshot.hpp>
 #include <zisa/math/reference_solution.hpp>
 #include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/euler_factory.hpp>
@@ -42,6 +43,10 @@ protected:
   virtual std::shared_ptr<RateOfChange> choose_rate_of_change() override;
   virtual std::shared_ptr<RateOfChange> choose_flux_bc() override;
   virtual std::shared_ptr<Visualization> compute_visualization() override;
+  virtual std::shared_ptr<DataSource>
+  compute_data_source(std::shared_ptr<FNG> fng);
+  virtual std::string compute_restart_datafile();
+
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() override;
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() override;
   virtual AllVariablesDimensions choose_all_variable_dims() override;
@@ -71,7 +76,7 @@ protected:
   std::shared_ptr<RateOfChange> choose_heating_source_loop(
       const std::shared_ptr<
           EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
-      &global_reconstruction);
+          &global_reconstruction);
 
   template <class Equilibrium>
   std::shared_ptr<RateOfChange> deduce_reconstruction();

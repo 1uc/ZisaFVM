@@ -3,7 +3,7 @@
 
 #include <zisa/config.hpp>
 
-#include <zisa/io/gathered_vis_info.hpp>
+#include <zisa/mpi/io/gathered_vis_info.hpp>
 #include <zisa/mpi/mpi.hpp>
 #include <zisa/mpi/parallelization/distributed_array_info.hpp>
 #include <zisa/parallelization/array_gatherer.hpp>

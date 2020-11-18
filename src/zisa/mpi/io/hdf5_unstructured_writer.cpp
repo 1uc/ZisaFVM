@@ -299,7 +299,7 @@ void HDF5UnstructuredReader::do_read_array(void *data,
   zisa::H5P::set_dxpl_mpio(plist, H5FD_MPIO_COLLECTIVE);
 
   auto gids = global_ids(file_dims->ids, rank, local_dims.data());
-  H5S::select_elements(
+  zisa::H5S::select_elements(
       filespace, H5S_SELECT_SET, gids.size() / rank, gids.data());
 
   // read slab from file

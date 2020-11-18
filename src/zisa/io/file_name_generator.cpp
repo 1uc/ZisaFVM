@@ -27,18 +27,14 @@ std::string FileNameGenerator::steady_state() { return steady_state_filename; }
 
 void FileNameGenerator::advance_to(int k) { count_ = k; }
 void FileNameGenerator::advance_to(const std::string &filename) {
-  int k = -1;
-  sscanf(filename.c_str(), pattern_.c_str(), &k);
-
-  advance_to(k + 1);
+  advance_to(generation(filename) + 1);
 }
 
 int FileNameGenerator::generation(const std::filesystem::path &rel_path) {
+  auto path = std::string(std::filesystem::weakly_canonical(rel_path));
+  auto pattern = std::string(std::filesystem::weakly_canonical(pattern_));
+
   int gen = -1;
-
-  auto path = std::string(std::filesystem::absolute(rel_path));
-  auto pattern = std::string(std::filesystem::absolute(pattern_));
-
   auto status = sscanf(path.c_str(), pattern.c_str(), &gen);
 
   return (status == 1 ? gen : -1);

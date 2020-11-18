@@ -16,7 +16,7 @@ public:
       int_t n_cells_local,
       int_t n_cells_global);
 
-  AllVariables scatter(const AllVariables &all_vars_part);
+  AllVariables scatter(const AllVariables &all_vars_full);
   AllVariables scatter(int_t n_cvars, int_t n_avars);
 
   void copy_local_patch(AllVariables &out, const AllVariables &in);

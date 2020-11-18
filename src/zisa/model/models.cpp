@@ -11,4 +11,16 @@ void save_state(HDF5Writer &writer,
 
   save(writer, u, labels);
 }
+
+std::pair<double, int_t> load_state(HDF5Reader &reader,
+                                    AllVariables &u,
+                                    const std::vector<std::string> &labels) {
+
+  auto time = reader.read_scalar<double>("time");
+  auto n_steps = reader.read_scalar<int_t>("n_steps");
+
+  AllVariables::load(reader, u, labels);
+  return {time, n_steps};
+}
+
 }

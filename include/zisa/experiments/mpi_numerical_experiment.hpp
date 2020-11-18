@@ -5,14 +5,16 @@
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/cli/input_parameters.hpp>
 #include <zisa/io/backtrace.hpp>
-#include <zisa/io/gathered_vis_info.hpp>
 #include <zisa/io/gathered_visualization.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
+#include <zisa/io/parallel_load_snapshot.hpp>
 #include <zisa/memory/array_cell_flags.hpp>
 #include <zisa/model/distributed_cfl_condition.hpp>
+#include <zisa/mpi/io/gathered_vis_info.hpp>
 #include <zisa/mpi/io/gathered_visualization_factory.hpp>
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/io/mpi_progress_bar.hpp>
+#include <zisa/mpi/io/scattered_data_source_factory.hpp>
 #include <zisa/mpi/math/distributed_reference_solution.hpp>
 #include <zisa/mpi/parallelization/mpi_all_reduce.hpp>
 #include <zisa/mpi/parallelization/mpi_all_variables_gatherer.hpp>
@@ -300,7 +302,7 @@ protected:
     return *std::max_element(sizes.begin(), sizes.end());
   }
 
-  void do_post_process() override {}
+  void do_post_process() override { LOG_ERR("Implement this first."); }
 
   std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const override {
     LOG_ERR_IF(this->stencils_ == nullptr,
@@ -352,8 +354,19 @@ protected:
     };
   }
 
-  std::shared_ptr<AllVariables> load_initial_conditions() override {
-    LOG_ERR("Implement first.");
+  std::shared_ptr<DataSource>
+  compute_data_source(std::shared_ptr<FNG> fng) override {
+
+    auto all_var_dims = this->choose_all_variable_dims();
+    auto vis_info = choose_gathered_vis_info();
+    auto file_dims = make_hdf5_unstructured_file_dimensions(*vis_info);
+    auto scatterer_factory
+        = make_mpi_single_node_array_scatterer_factory(*vis_info);
+
+    auto load_snapshot = std::make_shared<ParallelLoadSnapshot>(fng, file_dims);
+
+    return make_scattered_data_source(
+        vis_info, scatterer_factory, load_snapshot, all_var_dims);
   }
 
   std::shared_ptr<StepRejection> choose_step_rejection() override {
@@ -482,7 +495,7 @@ protected:
                                        all_var_dims);
   }
 
-  std::shared_ptr<SimulationClock> choose_simulation_clock() override {
+  std::shared_ptr<SimulationClock> compute_simulation_clock() override {
     auto time_keeper_params = TimeKeeperParameters(this->params);
     auto plotting_params = PlottingStepsParameters(this->params);
 

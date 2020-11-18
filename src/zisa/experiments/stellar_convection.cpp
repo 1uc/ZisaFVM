@@ -120,7 +120,7 @@ IdealStellarConvection::compute_initial_conditions() {
   };
 
   auto dims = choose_all_variable_dims();
-  auto n_cvars = dims.n_cvars;
+  //  auto n_cvars = dims.n_cvars;
   auto n_avars = dims.n_avars;
 
   reader.open_group("conserved");

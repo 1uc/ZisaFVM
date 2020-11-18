@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <numeric>
-#include <zisa/io/gathered_vis_info.hpp>
 #include <zisa/math/comparison.hpp>
+#include <zisa/mpi/io/gathered_vis_info.hpp>
 
 namespace zisa {
 

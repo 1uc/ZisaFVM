@@ -29,5 +29,9 @@ void save_state(HDF5Writer &writer,
                 int_t n_steps,
                 const std::vector<std::string> &labels);
 
+std::pair<double, int_t> load_state(HDF5Reader &reader,
+                                    AllVariables &u,
+                                    const std::vector<std::string> &labels);
+
 } // namespace zisa
 #endif /* end of include guard: MODELS_H_KL3BI6CZ */

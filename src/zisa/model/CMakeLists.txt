@@ -10,6 +10,7 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/ideal_gas_eos.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/instantaneous_physics.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/janka_eos.cpp
+  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/load_full_state.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/models.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/polytrope.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/radial_poisson_solver.cpp
