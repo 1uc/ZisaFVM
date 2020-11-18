@@ -20,7 +20,7 @@ namespace zisa {
  */
 class LSQSolver {
 private:
-  using LDLT = Eigen::LDLT<Eigen::MatrixXd>;
+  using QR = Eigen::FullPivHouseholderQR<Eigen::MatrixXd>;
 
 public:
   LSQSolver() = default;
@@ -47,8 +47,7 @@ private:
   int_t i_cell;
   int order;
 
-  LDLT ldlt;
-  Eigen::MatrixXd A;
+  QR qr;
 };
 
 Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,

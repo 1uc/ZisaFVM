@@ -40,8 +40,8 @@ LSQSolver::LSQSolver(const std::shared_ptr<Grid> &grid, const Stencil &stencil)
   assert(grid != nullptr);
   assert(stencil.size() > 0);
 
-  A = assemble_weno_ao_matrix(*grid, stencil);
-  ldlt.compute(A.transpose() * A);
+  auto A = assemble_weno_ao_matrix(*grid, stencil);
+  qr.compute(A);
 }
 
 int LSQSolver::n_dims() const { return grid->n_dims(); }
@@ -74,9 +74,9 @@ Poly LSQSolver::solve_impl(
       poly.coeffs_ptr() + n_vars, n_coeffs, n_vars);
 
   auto mapped_rhs
-      = Eigen::Map<const RowMajorMatrix>(rhs.raw(), A.rows(), n_vars);
+      = Eigen::Map<const RowMajorMatrix>(rhs.raw(), qr.rows(), n_vars);
 
-  coeffs = ldlt.solve(A.transpose() * mapped_rhs);
+  coeffs = qr.solve(mapped_rhs);
 
   return poly;
 }
@@ -412,9 +412,7 @@ bool LSQSolver::operator==(const LSQSolver &other) const {
     return false;
   }
 
-  // FIXME
-  //  return qr.matrixQR() == other.qr.matrixQR();
-  return true;
+  return qr.matrixQR() == other.qr.matrixQR();
 }
 
 bool LSQSolver::operator!=(const LSQSolver &other) const {
