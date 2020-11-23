@@ -11,7 +11,6 @@ target_sources(zisa_generic_obj
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/hdf5_writer.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/load_snapshot.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/no_visualization.cpp
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/parallel_load_snapshot.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/progress_bar.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/scalar_plot.cpp
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/scattered_data_source.cpp

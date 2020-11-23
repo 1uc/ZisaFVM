@@ -6,10 +6,12 @@ ScatteredDataSource::ScatteredDataSource(
     std::unique_ptr<AllVariablesScatterer> all_vars_scatterer,
     std::shared_ptr<Permutation> permutation,
     std::shared_ptr<DataSource> data_source,
+    std::shared_ptr<HaloExchange> halo_exchange,
     const AllVariablesDimensions &all_var_dims)
     : scatterer(std::move(all_vars_scatterer)),
       permutation(std::move(permutation)),
-      data_source(std::move(data_source)) {
+      data_source(std::move(data_source)),
+      halo_exchange(std::move(halo_exchange)) {
 
   LOG_ERR_IF(this->scatterer == nullptr, "Received a `nullptr`.");
 
@@ -33,5 +35,7 @@ void ScatteredDataSource::do_load(AllVariables &all_variables,
   } else {
     scatterer->receive(all_variables);
   }
+
+  (*halo_exchange)(all_variables);
 }
 }

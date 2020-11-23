@@ -13,9 +13,9 @@ std::shared_ptr<ScatteredDataSource> make_scattered_data_source(
     std::shared_ptr<GatheredVisInfo> vis_info,
     std::shared_ptr<MPISingleNodeArrayScattererFactory> scatterer_factory,
     std::shared_ptr<DataSource> data_source,
+    std::shared_ptr<HaloExchange> halo_exchange,
     AllVariablesDimensions all_var_dims);
 
 }
-
 
 #endif // ZISA_SCATTERED_DATA_SOURCE_FACTORY_HPP

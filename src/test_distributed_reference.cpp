@@ -8,6 +8,7 @@
 #include <zisa/mpi/io/gathered_visualization_factory.hpp>
 #include <zisa/mpi/io/scattered_data_source_factory.hpp>
 #include <zisa/mpi/math/distributed_reference_solution.hpp>
+#include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
 #include <zisa/mpi/parallelization/mpi_single_node_array_gatherer_decl.hpp>
 #include <zisa/mpi/parallelization/mpi_single_node_array_scatterer_decl.hpp>
 #include <zisa/ode/simulation_clock.hpp>
@@ -90,7 +91,7 @@ reference_all_vars(const Grid &grid, int_t n_cvars, int_t n_avars) {
     }
 
     for (int_t k = 0; k < n_avars; ++k) {
-      all_vars.avars(i, k) = 10.0 * (k + 1) + zisa::sin2pi(x);
+      all_vars.avars(i, k) = 10.0 * (n_cvars + k + 1) + zisa::sin2pi(x);
     }
   }
 
@@ -106,7 +107,7 @@ void test_distributed_write() {
   int n_writers = 2;
   int_t n_dummy = 0;
   int_t n_cvars = 5;
-  int_t n_avars = 0;
+  int_t n_avars = 2;
   double t_final = 12.0;
   int_t n_steps = 14;
   double atol = 1e-10;
@@ -171,15 +172,20 @@ void test_distributed_write() {
         std::make_shared<DummyPlottingSteps>());
 
     auto load_snapshot = std::make_shared<ParallelLoadSnapshot>(fng, file_dims);
+    auto halo_exchange = std::make_shared<MPIHaloExchange>(
+        make_mpi_halo_exchange(*dgrid, world_comm));
 
-    auto data_source = make_scattered_data_source(
-        vis_info, scatterer_factory, load_snapshot, all_var_dims);
+    auto data_source = make_scattered_data_source(vis_info,
+                                                  scatterer_factory,
+                                                  load_snapshot,
+                                                  halo_exchange,
+                                                  all_var_dims);
 
     (*data_source)(in_vars, *in_clock);
 
     LOG_ERR_IF(in_vars.dims() != in_dims, "Wrong dimensions.");
 
-    for (int_t i = 0; i < vis_info->n_local_cells; ++i) {
+    for (int_t i = 0; i < n_cells; ++i) {
       for (int_t k = 0; k < n_cvars; ++k) {
         auto is_good
             = zisa::abs(in_vars.cvars(i, k) - out_vars.cvars(i, k)) < atol;
@@ -188,8 +194,19 @@ void test_distributed_write() {
         PRINT_IF(!is_good, world_rank);
         LOG_ERR_IF(!is_good, "Failed.");
       }
+
+      for (int_t k = 0; k < n_avars; ++k) {
+        auto is_good
+            = zisa::abs(in_vars.avars(i, k) - out_vars.avars(i, k)) < atol;
+
+        PRINT_IF(!is_good, in_vars.avars(i, k) - out_vars.avars(i, k));
+        PRINT_IF(!is_good, world_rank);
+        LOG_ERR_IF(!is_good, "Failed.");
+      }
     }
   }
+
+  PRINT("SUCCESS!");
 }
 
 }

@@ -1,5 +1,6 @@
 #include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
 
+#include <algorithm>
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 
@@ -187,6 +188,42 @@ void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {
   }
 }
 
+Halo make_halo(const DistributedGrid &dgrid, const MPI_Comm &mpi_comm) {
+  auto mpi_rank = zisa::mpi::rank(mpi_comm);
+
+  auto i_need_this = std::vector<HaloRemoteInfo>();
+  auto local_halo_info = std::vector<HaloReceiveInfo>();
+
+  const auto &partition = dgrid.partition;
+  const auto &global_indices = dgrid.global_cell_indices;
+
+  auto n_owned_cells = std::count(partition.begin(), partition.end(), mpi_rank);
+  auto n_cells = partition.shape(0);
+
+  int_t i_start = integer_cast<int_t>(n_owned_cells);
+  while (i_start < n_cells) {
+    auto p = integer_cast<int>(partition(i_start));
+
+    int_t i_end = i_start;
+    while (i_end < n_cells && integer_cast<int>(partition[i_end]) == p) {
+      ++i_end;
+    }
+
+    auto n_patch = i_end - i_start;
+    auto indices = array<int_t, 1>(n_patch);
+    for (int_t i = i_start; i < i_end; ++i) {
+      indices[i - i_start] = global_indices[i];
+    }
+
+    i_need_this.emplace_back(p, indices);
+    local_halo_info.emplace_back(p, i_start, i_end);
+
+    i_start = i_end;
+  }
+
+  return {std::move(i_need_this), std::move(local_halo_info)};
+}
+
 MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
                                        const Halo &halo,
                                        const MPI_Comm &comm) {
@@ -197,4 +234,8 @@ MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
   return zisa::MPIHaloExchange(std::move(remote_info), local_info);
 }
 
+MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
+                                       const MPI_Comm &mpi_comm) {
+  return make_mpi_halo_exchange(dgrid, make_halo(dgrid, mpi_comm), mpi_comm);
+}
 }

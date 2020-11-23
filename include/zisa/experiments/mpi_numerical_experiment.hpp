@@ -364,9 +364,13 @@ protected:
         = make_mpi_single_node_array_scatterer_factory(*vis_info);
 
     auto load_snapshot = std::make_shared<ParallelLoadSnapshot>(fng, file_dims);
+    auto halo_exchange = choose_halo_exchange();
 
-    return make_scattered_data_source(
-        vis_info, scatterer_factory, load_snapshot, all_var_dims);
+    return make_scattered_data_source(vis_info,
+                                      scatterer_factory,
+                                      load_snapshot,
+                                      halo_exchange,
+                                      all_var_dims);
   }
 
   std::shared_ptr<StepRejection> choose_step_rejection() override {
@@ -525,42 +529,10 @@ protected:
   }
 
   std::shared_ptr<HaloExchange> compute_halo_exchange() {
-    auto i_need_this = std::vector<HaloRemoteInfo>();
-    auto local_halo_info = std::vector<HaloReceiveInfo>();
-
     auto dgrid = choose_distributed_grid();
-    const auto &partition = dgrid->partition;
-    const auto &global_indices = dgrid->global_cell_indices;
 
-    auto n_owned_cells
-        = std::count(partition.begin(), partition.end(), mpi_rank);
-    auto n_cells = partition.shape(0);
-
-    int_t i_start = integer_cast<int_t>(n_owned_cells);
-    while (i_start < n_cells) {
-      auto p = integer_cast<int>(partition(i_start));
-
-      int_t i_end = i_start;
-      while (i_end < n_cells && integer_cast<int>(partition[i_end]) == p) {
-        ++i_end;
-      }
-
-      auto n_patch = i_end - i_start;
-      auto indices = array<int_t, 1>(n_patch);
-      for (int_t i = i_start; i < i_end; ++i) {
-        indices[i - i_start] = global_indices[i];
-      }
-
-      i_need_this.emplace_back(p, indices);
-      local_halo_info.emplace_back(p, i_start, i_end);
-
-      i_start = i_end;
-    }
-
-    return std::make_shared<MPIHaloExchange>(make_mpi_halo_exchange(
-        *dgrid,
-        {std::move(i_need_this), std::move(local_halo_info)},
-        mpi_comm));
+    return std::make_shared<MPIHaloExchange>(
+        make_mpi_halo_exchange(*dgrid, mpi_comm));
   }
 
   std::shared_ptr<BoundaryCondition> compute_boundary_condition() override {

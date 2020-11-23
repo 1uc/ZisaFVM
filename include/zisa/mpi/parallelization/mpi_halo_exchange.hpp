@@ -113,5 +113,8 @@ MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
                                        const Halo &halo,
                                        const MPI_Comm &comm);
 
+MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
+                                       const MPI_Comm &mpi_comm);
+
 }
 #endif // ZISA_MPI_HALO_EXCHANGE_HPP
