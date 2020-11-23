@@ -21,7 +21,7 @@ void down_sample_euler_reference(
     auto coarse_grid = factory(grid_name, MAX_QUADRATURE_DEGREE);
     auto all_vars_coarse = reference_solution.average(*coarse_grid);
 
-    std::string stem = zisa::stem(zisa::basename(grid_name));
+    std::string stem = zisa::stem(grid_name);
     std::string output_name
         = string_format("down_sampled/%s/%s", stem.c_str(), filename.c_str());
 

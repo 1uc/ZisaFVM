@@ -105,6 +105,15 @@ std::shared_ptr<AllVariables> StellarConvection::compute_initial_conditions() {
   return u0;
 }
 
+std::shared_ptr<AllVariables> StellarConvection::load_initial_conditions() {
+  auto u0 = super::load_initial_conditions();
+
+  auto local_eos = choose_local_eos();
+  local_eos->compute(*u0);
+
+  return u0;
+}
+
 std::shared_ptr<AllVariables>
 IdealStellarConvection::compute_initial_conditions() {
   auto grid = choose_grid();
@@ -215,7 +224,7 @@ StellarConvection::boundary_mask() const {
   return [](const Grid &grid, int_t i) {
     double km = 1e5 * 1.0;
 
-    double r_inner = 5e3 * km;
+    double r_inner = 0.0 * km;
     double r_outer = 4e4 * km;
     double r = zisa::norm(grid.cell_centers[i]);
     return (r < r_inner) || (r_outer < r);

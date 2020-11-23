@@ -90,13 +90,19 @@ LocalRCParams EulerExperiment<EOS, Gravity>::choose_local_rc_params() const {
 template <class EOS, class Gravity>
 void EulerExperiment<EOS, Gravity>::do_post_process() {
   auto fng = choose_file_name_generator();
-
   auto data_filename = find_last_data_file(*fng);
-  auto reader = HDF5SerialReader(data_filename);
-  auto u1 = std::make_shared<AllVariables>(
-      AllVariables::load(reader, all_labels<euler_var_t>()));
 
-  do_post_run(u1);
+  auto dummy_simulation_clock = compute_simulation_clock();
+  auto sfng = std::make_shared<SingleFileNameGenerator>(data_filename);
+  auto data_source = compute_data_source(sfng);
+
+  auto all_vars = std::make_shared<AllVariables>(choose_all_variable_dims());
+  (*data_source)(*all_vars, *dummy_simulation_clock);
+
+  auto bc = choose_boundary_condition();
+  bc->apply(*all_vars, dummy_simulation_clock->current_time());
+
+  do_post_run(all_vars);
 }
 
 template <class EOS, class Gravity>

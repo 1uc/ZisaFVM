@@ -49,6 +49,7 @@ class Snapshot:
             "h",
             "s",
             "T",
+            "E_kin",
             "E_th",
             "E_p",
             "p_p",
@@ -77,11 +78,23 @@ class Snapshot:
                 if key in h5:
                     self.xvars[key] = np.array(h5[key])
 
+            for k in range(1, 4):
+                if f"v{k}" not in self.xvars:
+                    self.xvars[f"v{k}"] = self.cvars[f"mv{k}"] / self.cvars["rho"]
+
+            if "v" not in self.xvars:
+                self.xvars["v"] = np.sqrt(
+                    sum(self.xvars[f"v{k}"] ** 2 for k in range(1, 4))
+                )
+
             for key in ["v1", "v2", "v3", "vr", "vh"]:
                 if key in h5 and "cs" in h5:
                     rel_key = f"{key}_rel"
                     if rel_key not in self.xvars:
                         self.xvars[rel_key] = self.xvars[key] / self.xvars["cs"]
+
+            if "E_kin" not in self.xvars:
+                self.xvars["E_kin"] = 0.5 * self.cvars["rho"] * self.xvars["v"] ** 2
 
             self.gravity = dict()
             if "model/gravity/radii" in h5:

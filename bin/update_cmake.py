@@ -125,6 +125,9 @@ if __name__ == "__main__":
     add_executable(cmake_file, "something-demo", "something_demo.cpp")
     add_executable(cmake_file, "renumber-grid", "renumber_grid.cpp")
     add_executable(
+        cmake_file, "test-distributed-reference", "test_distributed_reference.cpp"
+    )
+    add_executable(
         cmake_file, "space-filling-curve-demo", "space_filling_curve_demo.cpp"
     )
 

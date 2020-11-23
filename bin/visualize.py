@@ -74,6 +74,50 @@ def plot_all(grid, data_files, keys, log_keys, with_ghost_cells=False):
             plot.save(plot.filename(f, "log" + key))
 
 
+def plot_radial_average(grid, data_files, lin_keys, log_keys):
+    keys = list(set(lin_keys + log_keys))
+    for key in keys:
+        n_bins = 50
+        n_steps = len(data_files)
+
+        r = np.linalg.norm(grid.cell_centers, axis=1)
+        r_min, r_max = np.min(r), np.max(r)
+        r_bins = np.linspace(r_min, r_max, n_bins + 1)
+        indices = [
+            np.argwhere(np.logical_and(a < r, r <= b))
+            for a, b in zip(r_bins[:-1], r_bins[1:])
+        ]
+
+        t = np.empty(n_steps)
+        avg_values = np.empty((n_bins, n_steps))
+        for l, f in enumerate(data_files):
+            u = load(f)
+            values = u[key]
+            t[l] = u.time
+
+            for k, I in enumerate(indices):
+                avg_values[k, l] = np.average(values[I])
+
+        T, R = np.meshgrid(t, 0.5 * (r_bins[1:] + r_bins[:-1]))
+
+        if key in lin_keys:
+            fig = plt.figure()
+            plt.contourf(T, R, avg_values, 100, cmap="jet")
+            figname = os.path.dirname(data_files[0]) + f"radial_average-{key}.png"
+            plt.colorbar()
+            plt.savefig(figname, dpi=300)
+            plt.close(fig)
+
+        if key in log_keys:
+            fig = plt.figure()
+            levels = np.linspace(14.0, 19.0, 101)
+            plt.contourf(T, R, np.log10(avg_values), levels, cmap="jet", extend="min")
+            figname = os.path.dirname(data_files[0]) + f"radial_average-log10{key}.png"
+            plt.colorbar()
+            plt.savefig(figname, dpi=300)
+            plt.close(fig)
+
+
 if __name__ == "__main__":
     parser_help = "Visualize the output Zisa."
     parser = argparse.ArgumentParser(description=parser_help)
@@ -106,6 +150,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--radial-average",
+        action="store_true",
+        help="Plot the radial average of `vars` over time.",
+    )
+
+    parser.add_argument(
         "data_files",
         nargs="*",
         type=str,
@@ -124,4 +174,8 @@ if __name__ == "__main__":
 
     grid = load_grid(args.grid or find_grid(base_directory))
     if not getattr(sys, "ps1", sys.flags.interactive):
-        plot_all(grid, files, args.vars, args.log_vars, args.with_ghost_cells)
+        if args.radial_average:
+            plot_radial_average(grid, files, args.vars, args.log_vars)
+
+        else:
+            plot_all(grid, files, args.vars, args.log_vars, args.with_ghost_cells)

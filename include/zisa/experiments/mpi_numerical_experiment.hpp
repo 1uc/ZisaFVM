@@ -168,7 +168,7 @@ protected:
         EulerGlobalReconstruction<NoEquilibrium, CWENO_AO, UnityScaling>>(
         weno_params, std::move(rc));
 
-    auto u_delta_ref = this->deduce_reference_solution_eq(*u1, grc);
+    auto u_delta_ref = this->deduce_reference_solution_eq(*u_delta, grc);
     down_sample(u_delta_ref, "delta.h5");
   }
 
@@ -301,8 +301,6 @@ protected:
     LOG_ERR_IF(sizes.empty(), "Failed to deduce any valid `small_comm_size`.");
     return *std::max_element(sizes.begin(), sizes.end());
   }
-
-  void do_post_process() override { LOG_ERR("Implement this first."); }
 
   std::shared_ptr<array<StencilFamily, 1>> choose_stencils() const override {
     LOG_ERR_IF(this->stencils_ == nullptr,

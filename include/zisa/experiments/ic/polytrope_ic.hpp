@@ -73,11 +73,15 @@ public:
                       const std::shared_ptr<gravity_t> &gravity,
                       const EnthalpyEntropy &theta_inner,
                       const EnthalpyEntropy &theta_outer,
-                      const XYZ &x_ref)
+                      const XYZ &x_ref,
+                      double amp_shape,
+                      int n_bumps)
       : eos(eos),
         x_ref(x_ref),
         inner_equilibrium(eq_t(eos, gravity), theta_inner, x_ref),
-        outer_equilibrium(eq_t(eos, gravity), theta_outer, x_ref) {}
+        outer_equilibrium(eq_t(eos, gravity), theta_outer, x_ref),
+        amp_shape(amp_shape),
+        n_bumps(n_bumps) {}
 
   RhoP operator()(const XYZ &x) const {
     const auto &eq = (is_inner(x) ? inner_equilibrium : outer_equilibrium);
@@ -86,7 +90,10 @@ public:
   }
 
   bool is_inner(const XYZ &x) const {
-    return zisa::norm(x) < zisa::norm(x_ref);
+    double alpha = n_bumps * zisa::angle(x);
+    double r_ref = zisa::norm(x_ref) + amp_shape * zisa::sin(alpha);
+
+    return zisa::norm(x) < r_ref;
   }
 
 private:
@@ -94,6 +101,9 @@ private:
   XYZ x_ref;
   LocalEquilibrium<eq_t> inner_equilibrium;
   LocalEquilibrium<eq_t> outer_equilibrium;
+
+  double amp_shape;
+  int n_bumps;
 };
 
 } // namespace zisa

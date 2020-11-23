@@ -73,13 +73,12 @@ r0 = 1.19 * 1e4 * km
 r1 = 1.35 * 1e4 * km
 heating = sc.Heating(rate=heating_rate, lower_boundary=r0, upper_boundary=r1)
 
-t_end = 600
-# t_end = 3600
+t_end = 1200
 time = sc.Time(t_end=t_end)
 io = sc.IO(
     "hdf5",
     "stellar_convection",
-    steps_per_frame=400,
+    fps=0.1,
     parallel_strategy="gathered",
     n_writers=16,
 )
@@ -88,7 +87,7 @@ io = sc.IO(
 def make_work_estimate():
     n0 = 165_000
 
-    t0 = 2 * timedelta(seconds=t_end / 7.3 * 1000 * 168)
+    t0 = 2 * timedelta(seconds=t_end / 7.3 * 100 * 168)
     b0 = 0.0
     o0 = 500 * 1e6
     unit_work = 512
@@ -101,7 +100,7 @@ grid_name = GridNamingScheme("stellar_convection")
 parallelization = {"mode": "mpi"}
 
 radii = [5000 * km, 40_000 * km]
-mesh_levels = [2, 3]
+mesh_levels = [3]
 coarse_grid_levels = [2]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 local_rc_param = {"steps_per_recompute": int(100), "recompute_threshold": 1e10}
@@ -190,7 +189,7 @@ def generate_grids(cluster, must_generate, must_decompose):
     if must_decompose:
         # decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
 
-        parts = {l: [64, 128, 256, 512] for l in mesh_levels}
+        parts = {2: [64, 128, 256, 512], 3: [2048]}
         decompose_grids(msh_h5_name, mesh_levels, parts)
 
 

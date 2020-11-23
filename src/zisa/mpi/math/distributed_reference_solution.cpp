@@ -1,5 +1,6 @@
 #include <zisa/mpi/math/distributed_reference_solution.hpp>
 
+#include <filesystem>
 #include <zisa/grid/neighbour_range.hpp>
 #include <zisa/loops/reduction/all.hpp>
 #include <zisa/math/max_quadrature_degree.hpp>
@@ -164,7 +165,8 @@ void DistributedReferenceSolution::compute_and_save(
     auto all_vars = AllVariables{};
     all_vars.cvars = average_data();
 
-    std::string stem = zisa::basename(small_grid_folder);
+    std::string stem
+        = std::filesystem::path(small_grid_folder).parent_path().filename();
     std::string filename = string_format(
         "down_sampled/%s/%s", stem.c_str(), output_name.c_str());
 

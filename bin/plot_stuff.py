@@ -2,6 +2,7 @@
 
 import os
 import sys
+import glob
 
 import h5py
 import numpy as np
@@ -109,37 +110,38 @@ def plot_all(grid, data_files, with_ghost_cells=False):
 
 
 if __name__ == "__main__":
-    parser_help = "Visualize the output Zisa."
-    parser = argparse.ArgumentParser(description=parser_help)
+    levels = range(2, 5)
+    dirs = [
+        "rayleigh_taylor_atol1e-13_0.00e+00_G2.500000_o3222_SSP3_isentropic_L2",
+        "rayleigh_taylor_atol1e-13_0.00e+00_G2.500000_o3222_SSP3_isentropic_L3",
+        "rayleigh_taylor_atol1e-13_0.00e+00_G2.500000_o3222_SSP3_isentropic_L4",
+    ]
 
-    parser.add_argument(
-        "--grid",
-        help="The filename of the grid.",
-    )
+    r_min, r_max = 0.35, 0.45
 
-    parser.add_argument(
-        "--with-ghost-cells",
-        action="store_true",
-        help="The ghost-cells are only included in the plots if this flag is passed.",
-    )
+    linf_errors = dict()
 
-    parser.add_argument(
-        "data_files",
-        nargs="*",
-        type=str,
-        default=["."],
-        help="Either the directory to visualize, or the datafiles.",
-    )
+    for l, d in zip(levels, dirs):
+        files = sorted(glob.glob(f"{d}/*_data-????.h5"))
+        gridname = f"{d}/grids/rayleigh_taylor_with_halo-{l}/grid.h5"
+        grid = load_grid(gridname)
 
-    args = parser.parse_args()
+        rho_eq = load_array(f"{d}/steady_state.h5", "rho")
+        r = np.linalg.norm(grid.cell_centers, axis=1)
+        I = np.logical_and(r_min < r, r < r_max)
 
-    if os.path.isdir(args.data_files[0]):
-        base_directory = args.data_files[0]
-        files = find_data_files(base_directory)
-    else:
-        base_directory = os.path.dirname(args.data_files[0])
-        files = args.data_files
+        linf_errors[l] = np.empty(len(files))
+        for k, f in enumerate(files):
+            rho = load_array(f, "rho")
+            drho = rho - rho_eq
 
-    grid = load_grid(args.grid or find_grid(base_directory))
-    if not getattr(sys, "ps1", sys.flags.interactive):
-        plot_all(grid, files, args.with_ghost_cells)
+            linf_errors[l][k] = np.max(np.abs(drho[I]))
+
+    print(linf_errors)
+
+    for l in linf_errors:
+        plt.semilogy(linf_errors[l], label=f"L = {l}")
+
+    plt.legend()
+    plt.savefig(dirs[0][:-3] + "_linf.png")
+    plt.show()

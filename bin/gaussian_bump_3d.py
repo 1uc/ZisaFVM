@@ -49,7 +49,7 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [0.0]
+amplitudes = [1e-4]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
@@ -59,7 +59,11 @@ euler = sc.Euler(eos, gravity)
 t_end = 0.09
 time = sc.Time(t_end=t_end)
 io = sc.IO(
-    "hdf5", "gaussian_bump", n_snapshots=2, parallel_strategy="gathered", n_writers=8,
+    "hdf5",
+    "gaussian_bump",
+    n_snapshots=2,
+    parallel_strategy="gathered",
+    n_writers=8,
 )
 # io = sc.IO("opengl", "gaussian_bump", steps_per_frame=1)
 
@@ -117,27 +121,17 @@ dependent_choices_b = {
         ),
         sc.Reconstruction(
             "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[4.0, 2.5, 2.5, 2.5, 2.5]
-        ),
-        sc.Reconstruction(
-            "CWENO-AO", [3, 3, 3, 3, 3], overfit_factors=[4.0, 2.5, 2.5, 2.5, 2.5]
-        ),
-        sc.Reconstruction(
-            "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
-        ),
+        )
     ],
     "ode": [
         sc.ODE("ForwardEuler"),
         sc.ODE("SSP2"),
-        sc.ODE("SSP3"),
-        sc.ODE("SSP3"),
-        sc.ODE("RK4")
+        sc.ODE("SSP3")
     ],
     "quadrature": [
         sc.Quadrature(1),
         sc.Quadrature(1),
-        sc.Quadrature(2),
-        sc.Quadrature(2),
-        sc.Quadrature(3)
+        sc.Quadrature(2)
     ],
 }
 # fmt: on
@@ -150,11 +144,11 @@ reference_choices = {
     "io": [io],
     "reconstruction": [
         sc.Reconstruction(
-            "CWENO-AO", [4, 2, 2, 2, 2], overfit_factors=[3.0, 2.5, 2.5, 2.5, 2.5]
+            "CWENO-AO", [3, 2, 2, 2, 2], overfit_factors=[4.0, 2.5, 2.5, 2.5, 2.5]
         )
     ],
     "ode": [sc.ODE("SSP3")],
-    "quadrature": [sc.Quadrature(3)],
+    "quadrature": [sc.Quadrature(2, moments_deg=3)],
     "grid": [reference_grid],
     "reference": [
         sc.Reference(

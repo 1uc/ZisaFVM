@@ -25,6 +25,7 @@ public:
 
 protected:
   virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+  virtual std::shared_ptr<AllVariables> load_initial_conditions() override;
 
   virtual AllVariablesDimensions choose_all_variable_dims() override;
 

@@ -6,9 +6,9 @@
 namespace zisa {
 
 class RayleighTaylor
-    : public EulerExperiment<IdealGasEOS, PolytropeGravityWithJumpRadial> {
+    : public EulerExperiment<IdealGasEOS, PolytropeGravityRadial> {
 private:
-  using super = EulerExperiment<IdealGasEOS, PolytropeGravityWithJumpRadial>;
+  using super = EulerExperiment<IdealGasEOS, PolytropeGravityRadial>;
 
 protected:
   using eos_t = typename super::eos_t;
@@ -21,8 +21,10 @@ public:
 
 protected:
   virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
-  std::shared_ptr<AllVariables>
-  compute_initial_conditions(double amp, double width, int n_bumps);
+  std::shared_ptr<AllVariables> compute_initial_conditions(double amp,
+                                                           double amp_noise,
+                                                           double width,
+                                                           int n_bumps);
 
   int_t choose_n_avars() override;
 

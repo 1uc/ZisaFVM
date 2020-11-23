@@ -68,7 +68,7 @@ def make_work_estimate():
     nproc_ref, t_ref = 120, 161
     t0 = 1.5 * timedelta(seconds=t_end / 0.09 * t_ref * nproc_ref)
     b0 = 0.0
-    o0 = 100 * 1e6
+    o0 = 800 * 1e6
 
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
@@ -79,7 +79,6 @@ parallelization = {"mode": "mpi"}
 
 radius = 0.5
 mesh_levels = list(range(0, 6)) + [7]
-# mesh_levels = list(range(0, 3))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 6))
@@ -138,9 +137,9 @@ reference_choices = {
     "well-balancing": [sc.WellBalancing("isentropic")],
     "time": [time],
     "io": [io],
-    "reconstruction": [sc.Reconstruction("CWENO-AO", [4, 2, 2, 2])],
+    "reconstruction": [sc.Reconstruction("CWENO-AO", [5, 2, 2, 2])],
     "ode": [sc.ODE("Fehlberg")],
-    "quadrature": [sc.Quadrature(3)],
+    "quadrature": [sc.Quadrature(4, moments_deg=4)],
     "grid": [reference_grid],
     "reference": [
         sc.Reference(

@@ -36,13 +36,18 @@ from tiwaz.work_estimate import ZisaWorkEstimate
 
 
 class RayleighTaylorExperiment(sc.Subsection):
-    def __init__(self, drho):
+    def __init__(self, param):
+        drho, v_amp = param
         super().__init__(
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
+                    "r_crit": 0.25,
                     "drho": drho,
-                    "amplitude": 0.0,
+                    "amplitude": v_amp,
+                    "A_noise": 0.0,
+                    "A_shape": 0.0,
+                    "r_noise": 0.4,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -50,18 +55,26 @@ class RayleighTaylorExperiment(sc.Subsection):
         )
 
         self.drho = drho
+        self.v_amp = v_amp
 
     def short_id(self):
-        return self["name"] + f"_{self.drho:.2e}"
+        return self["name"] + f"_drho{self.drho:.2e}_vamp{self.v_amp:.2e}"
 
 
-mangle_str = "G4.0"
+G = 4.0
+mangle_str = f"PT_G{G:f}"
 
 # This is just in case we want to run the same experiment with many parameters.
-experiment_params = [0.0, 1e-4]
+# experiment_params = [0.0, 1e-4]
+# experiment_params = [1e-4 * 3 ** k for k in range(1, 5)]
+# experiment_params = [0.0]
+experiment_params = [
+    (drho, v_amp) for drho in [1e-4, 1e-3, 1e-2] for v_amp in [1e-6, 1e-4, 1e-2]
+]
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
-gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=4.0)
+gravity = sc.PolytropeGravity(rhoC=1.0, K=1.0, G=G)
+# gravity = sc.ConstantGravity(g=0.0)
 euler = sc.Euler(eos, gravity)
 
 t_end = 100.0
@@ -81,7 +94,8 @@ io = sc.IO(
 parallelization = {"mode": "mpi"}
 radius = 0.6
 # mesh_levels = list(range(1, 8))
-mesh_levels = [4]
+# mesh_levels = [2, 3, 4]
+mesh_levels = [1, 2, 3, 4]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 grid_name = GridNamingScheme("rayleigh_taylor_with_halo")
 
