@@ -162,18 +162,21 @@ def renumber_grids(grid_name_generator, mesh_levels):
 
 
 def decompose_grids(grid_name_generator, mesh_levels, parts):
-    zisa_home = zisa_home_directory()
-    build_target("domain-decomposition")
-
-    dd_binary = zisa_home + "/build-release/domain-decomposition"
-    for l in mesh_levels:
-        grid_name = grid_name_generator(l)
-        outdir = os.path.dirname(grid_name) + "/partitioned"
-
-        for n in parts[l]:
-            output = outdir + f"/{n}"
-            os.makedirs(output, exist_ok=True)
-            subprocess.run([dd_binary, "-n", str(n), "--grid", grid_name, "-o", output])
+    raise Exception("Use the new system to run on Euler.")
+    # zisa_home = zisa_home_directory()
+    # build_target("domain-decomposition")
+    #
+    # dd_binary = zisa_home + "/build-release/domain-decomposition"
+    # for l in mesh_levels:
+    #     grid_name = grid_name_generator(l)
+    #     outdir = os.path.dirname(grid_name) + "/partitioned"
+    #
+    #     for n in parts[l]:
+    #         output = outdir + f"/{n}"
+    #         os.makedirs(output, exist_ok=True)
+    #         cmd = [dd_binary, "-n", str(n), "--grid", grid_name, "-o", output]
+    #         print(" ".join(cmd))
+    #         subprocess.run(cmd)
 
 
 def run_gmesh(geo):

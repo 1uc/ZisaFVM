@@ -3,7 +3,7 @@ set -x
 
 TOP="${PWD}"
 
-GMSH_VERSION="4.3.0"
+GMSH_VERSION="4.7.1"
 GMSH_DIR=third_party/gmsh-${GMSH_VERSION}
 GMSH_BIN_DIR=${GMSH_DIR}/bin
 GMSH_NAME=gmsh-${GMSH_VERSION}-source

@@ -1,4 +1,4 @@
-#include <zisa/io/parallel_load_snapshot.hpp>
+#include <zisa/mpi/io/parallel_load_snapshot.hpp>
 
 namespace zisa {
 

@@ -57,8 +57,8 @@ TypicalNumericalExperiment::compute_file_name_generator() {
 }
 
 void TypicalNumericalExperiment::write_grid() {
-  auto writer = HDF5SerialWriter("grid.h5");
-  save(writer, *choose_grid());
+  auto writer = HDF5SerialWriter("cell_flags.h5");
+  save(writer, choose_grid()->cell_flags, "cell_flags");
 }
 
 void TypicalNumericalExperiment::do_run() {
@@ -72,7 +72,7 @@ void TypicalNumericalExperiment::do_run() {
   print_grid_info();
 
   auto bc = choose_boundary_condition();
-  auto u0 = choose_initial_conditions();
+  auto [u0, _] = choose_initial_conditions();
   bc->apply(*u0, /* t = */ 0.0);
 
   auto time_loop = choose_time_loop();
@@ -82,22 +82,30 @@ void TypicalNumericalExperiment::do_run() {
   do_post_run(u1);
 }
 
+std::shared_ptr<BoundaryCondition>
+TypicalNumericalExperiment::compute_boundary_condition() {
+  auto grid = choose_grid();
+  auto [u0, steady_state] = choose_initial_conditions();
+
+  return make_boundary_condition(params, grid, u0, steady_state);
+}
+
 void TypicalNumericalExperiment::print_grid_info() {
   std::cout << " --- Grid ---------- \n";
   std::cout << choose_grid()->str() << "\n";
 }
 
-std::shared_ptr<AllVariables>
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
 TypicalNumericalExperiment::choose_initial_conditions() {
   if (all_vars_ == nullptr) {
     if (is_restart()) {
-      all_vars_ = load_initial_conditions();
+      std::tie(all_vars_, steady_state_) = load_initial_conditions();
     } else {
-      all_vars_ = compute_initial_conditions();
+      std::tie(all_vars_, steady_state_) = compute_initial_conditions();
     }
   }
 
-  return all_vars_;
+  return {all_vars_, steady_state_};
 }
 
 std::shared_ptr<SimulationClock>
@@ -177,14 +185,6 @@ TypicalNumericalExperiment::choose_boundary_condition() {
     boundary_condition_ = compute_boundary_condition();
   }
   return boundary_condition_;
-}
-
-std::shared_ptr<BoundaryCondition>
-TypicalNumericalExperiment::compute_boundary_condition() {
-  auto grid = choose_grid();
-  auto u0 = choose_initial_conditions();
-
-  return make_boundary_condition(params, grid, u0);
 }
 
 int_t TypicalNumericalExperiment::choose_volume_deg() const {

@@ -5,7 +5,8 @@
 
 namespace zisa {
 
-std::shared_ptr<AllVariables> Polytrope::compute_initial_conditions() {
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
+Polytrope::compute_initial_conditions() {
   double amp = params["experiment"]["initial_conditions"]["amplitude"];
   double width = params["experiment"]["initial_conditions"]["width"];
 
@@ -15,7 +16,7 @@ std::shared_ptr<AllVariables> Polytrope::compute_initial_conditions() {
   auto vis = choose_visualization();
   vis->steady_state(*steady_state);
 
-  return all_variables;
+  return {all_variables, steady_state};
 }
 
 std::shared_ptr<AllVariables>
@@ -28,7 +29,6 @@ Polytrope::compute_initial_conditions(double amp, double width) {
 
   auto qr = choose_volume_rule();
 
-  // FIXME revert
   auto ic_ = GeneralPolytropeIC(eos, gravity, {1.0, 1.0});
   auto ic = [&eos, &ic_, amp, width](const auto &x) {
     // Avoid any silent conversion when the return type changes.

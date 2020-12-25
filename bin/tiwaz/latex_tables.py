@@ -34,12 +34,6 @@ class LatexConvergenceTable(object):
         )
         return header
 
-    def error_subheader(self):
-        return "\n\\multicolumn{1}{c}{err}"
-
-    def rate_subheader(self):
-        return "\n\\multicolumn{1}{c}{rate}"
-
     def footer(self):
         return "".join(["\\bottomrule\n", "\\end{tabular}"])
 

@@ -72,6 +72,7 @@ public:
   const std::string filename_stem;         ///< First part of all filenames.
   const std::string steady_state_filename; ///< Path of the steady-state.
   const std::string grid_filename;         ///< Path of the grid.
+  const std::string dirname;               ///< Directory containing all files.
 
 private:
   std::string pattern_;
@@ -95,6 +96,27 @@ public:
 private:
   std::string filename;
   bool used = false;
+};
+
+class FixedFileNameGenerator : public FNG {
+public:
+  FixedFileNameGenerator(std::vector<std::string> filenames)
+      : filenames(std::move(filenames)) {}
+
+  virtual std::string next_name() override {
+    LOG_ERR_IF(n_used >= filenames.size(),
+               "This filename generator has used up all its names.");
+
+    return filenames[n_used];
+  }
+
+  virtual std::string steady_state() override {
+    LOG_ERR("No steady state filename available.");
+  }
+
+private:
+  std::vector<std::string> filenames;
+  std::size_t n_used = 0;
 };
 
 std::shared_ptr<FileNameGenerator>

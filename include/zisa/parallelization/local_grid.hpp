@@ -12,6 +12,7 @@ std::tuple<std::shared_ptr<array<StencilFamily, 1>>,
            std::shared_ptr<DistributedGrid>,
            std::shared_ptr<Grid>>
 load_local_grid(const std::string &subgrid_name,
+                const std::function<bool(const Grid &, int_t)> &boundary_mask,
                 const StencilFamilyParams &stencil_params,
                 const QRDegrees &qr_degrees,
                 int mpi_rank);

@@ -49,7 +49,8 @@ class GaussianBumpExperiment(sc.Subsection):
         return self["name"] + "_amp{:.2e}".format(amp)
 
 
-amplitudes = [1e-4]
+# amplitudes = [0.0, 1e-4, 0.1]
+amplitudes = [0.0, 0.1]
 width = 0.05
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
@@ -83,7 +84,7 @@ grid_name = GridNamingScheme("gaussian_bump_3d")
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-mesh_levels = list(range(0, 3)) + [3]
+mesh_levels = list(range(0, 4)) + [5]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 3))
@@ -192,29 +193,8 @@ def post_process(coarse_runs, reference_run):
     labels = TableLabels()
 
     filename = coarse_runs[0]["experiment"].short_id()
-    # write_convergence_table(results, columns, labels, filename)
+    write_convergence_table(results, columns, labels, filename)
     write_convergence_plots(results, columns, labels, filename)
-    plot_visual_convergence(results, columns, labels, filename)
-
-    # for coarse_run in coarse_runs:
-    #     coarse_dir = folder_name(coarse_run)
-    #     coarse_grid = load_grid(coarse_dir)
-    #     data_files = find_data_files(coarse_dir)
-
-    #     key = "rho"
-    #     for l, data_file in enumerate(data_files):
-    #         u_coarse = load_data(data_file, find_steady_state_file(coarse_dir))
-
-    #         q = u_coarse.cvars[key]
-    #         dq = u_coarse.dvars[key]
-
-    #         scatter = ScatterPlot()
-    #         scatter(coarse_grid, q)
-    #         scatter.save(f"{coarse_dir}/scatter_{key}_{l:04d}.png")
-
-    #         scatter = ScatterPlot()
-    #         scatter(coarse_grid, dq)
-    #         scatter.save(f"{coarse_dir}/triplot_d{key}_{l:04d}.png")
 
 
 class TableLabels:

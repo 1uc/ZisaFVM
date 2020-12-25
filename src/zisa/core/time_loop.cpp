@@ -42,8 +42,7 @@ TimeLoop::operator()(std::shared_ptr<AllVariables> u0) {
   print_welcome_message();
   progress_bar->reset();
 
-  (*visualization)(*u0, *simulation_clock);
-  //  write_output(*u0);
+  write_output(*u0);
   sanity_check(*u0);
 
   pick_time_step(*u0);
@@ -150,9 +149,15 @@ void TimeLoop::print(const std::string &str) const {
 #endif
 }
 
-void TimeLoop::start_timer() { start_time = current_time_stamp(); }
+void TimeLoop::start_timer() {
+  MPI_Barrier(MPI_COMM_WORLD); // FIXME
+  start_time = current_time_stamp();
+}
 
-void TimeLoop::stop_timer() { end_time = current_time_stamp(); }
+void TimeLoop::stop_timer() {
+  MPI_Barrier(MPI_COMM_WORLD); // FIXME
+  end_time = current_time_stamp();
+}
 
 void TimeLoop::write_output(const AllVariables &all_variables) {
   if (simulation_clock->is_plotting_step()) {

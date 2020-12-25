@@ -5,7 +5,8 @@
 #if ZISA_HAS_HELMHOLTZ_EOS == 1
 
 namespace zisa {
-std::shared_ptr<AllVariables> StellarConvection::compute_initial_conditions() {
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
+StellarConvection::compute_initial_conditions() {
   auto grid = choose_grid();
   auto profile
       = std::string(params["experiment"]["initial_conditions"]["profile"]);
@@ -102,19 +103,20 @@ std::shared_ptr<AllVariables> StellarConvection::compute_initial_conditions() {
   vis->steady_state(*u0);
   vis->wait();
 
-  return u0;
+  return {u0, u0};
 }
 
-std::shared_ptr<AllVariables> StellarConvection::load_initial_conditions() {
-  auto u0 = super::load_initial_conditions();
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
+StellarConvection::load_initial_conditions() {
+  auto [u0, steady_state] = super::load_initial_conditions();
 
   auto local_eos = choose_local_eos();
   local_eos->compute(*u0);
 
-  return u0;
+  return {u0, steady_state};
 }
 
-std::shared_ptr<AllVariables>
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
 IdealStellarConvection::compute_initial_conditions() {
   auto grid = choose_grid();
   auto profile
@@ -215,7 +217,7 @@ IdealStellarConvection::compute_initial_conditions() {
   vis->steady_state(*u0);
   vis->wait();
 
-  return u0;
+  return {u0, u0};
 }
 
 std::function<bool(const Grid &grid, int_t i)>

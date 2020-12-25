@@ -41,6 +41,15 @@ public:
                        const AllVariables &current_state,
                        double /* t */) const override {
 
+    // 1. perform halo-exchange
+    // 2.1. local_eos interior
+    // 2.2. global_reconstruction interior
+    // 2.3. fluxes interior
+    // 3. wait for halo-exchange
+    // 4.1. local_eos exterior
+    // 4.2. global_reconstruction exterior
+    // 4.3. fluxes exterior
+
     (*local_eos).compute(current_state);
     (*global_reconstruction).compute(current_state);
 

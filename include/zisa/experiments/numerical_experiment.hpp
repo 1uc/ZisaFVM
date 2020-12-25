@@ -72,9 +72,15 @@ protected:
   std::shared_ptr<FileNameGenerator> choose_file_name_generator();
   virtual std::shared_ptr<FileNameGenerator> compute_file_name_generator();
 
-  std::shared_ptr<AllVariables> choose_initial_conditions();
-  virtual std::shared_ptr<AllVariables> compute_initial_conditions() = 0;
-  virtual std::shared_ptr<AllVariables> load_initial_conditions() = 0;
+  std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
+  choose_initial_conditions();
+
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  compute_initial_conditions() = 0;
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  load_initial_conditions() = 0;
 
   /// Total rate of change in the system.
   /** See also:
@@ -140,6 +146,7 @@ protected:
   mutable std::shared_ptr<SimulationClock> simulation_clock_ = nullptr;
   mutable std::shared_ptr<array<StencilFamily, 1>> stencils_ = nullptr;
   mutable std::shared_ptr<AllVariables> all_vars_ = nullptr;
+  mutable std::shared_ptr<AllVariables> steady_state_ = nullptr;
 
   time_stamp_t t_start_ = current_time_stamp();
 };

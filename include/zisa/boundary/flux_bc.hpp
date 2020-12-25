@@ -48,6 +48,21 @@ private:
   std::shared_ptr<Grid> grid;
 };
 
+
+class NoFluxBC : public RateOfChange {
+public:
+  virtual void compute(AllVariables &,
+                       const AllVariables &,
+                       double /* t */) const override {
+    return;
+  }
+
+  virtual std::string str() const override {
+    return "No flux boundary conditions.";
+  }
+
+};
+
 } // namespace zisa
 
 #endif /* end of include guard */

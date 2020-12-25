@@ -95,7 +95,7 @@ class LaunchNewJob(LaunchJob):
         if "reference" in launch_params:
             grid_paths += launch_params["reference"]["coarse_grids"]
 
-        self.copy(zisa_home, directory, grid_paths)
+        self.link(zisa_home, directory, grid_paths)
 
     def copy_shaders(self, zisa_home, directory):
         shaders = glob.glob("shaders/*")
@@ -107,6 +107,14 @@ class LaunchNewJob(LaunchJob):
     def write_gitinfo(self, zisa_home, directory):
         print("warning: remember to implement git info.")
         # self.copy(zisa_home + "/build", directory, ["git.diff", "git.hash", "git.status"])
+
+    def link(self, src, dest, files):
+        for f in files:
+            src_ = os.path.join(src, f)
+            dest_ = os.path.join(dest, f)
+
+            os.makedirs(os.path.dirname(dest_), exist_ok=True)
+            os.symlink(src_, dest_)
 
     def copy(self, src, dest, files):
         for f in files:

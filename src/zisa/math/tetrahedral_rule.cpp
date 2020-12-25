@@ -115,7 +115,7 @@ TetrahedralRule make_tetrahedral_rule(int_t deg) {
     return qr;
   }
 
-  LOG_ERR("Quadrature rules of order 7 and higher have not been implemented.")
+  LOG_ERR("Quadrature rules of order 4 and higher have not been implemented.")
 }
 
 const TetrahedralRule &cached_tetrahedral_rule(int_t deg) {

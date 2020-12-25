@@ -8,7 +8,8 @@
 
 namespace zisa {
 
-class SmoothBubble : public EulerExperiment<IdealGasEOS, ConstantGravityRadial> {
+class SmoothBubble
+    : public EulerExperiment<IdealGasEOS, ConstantGravityRadial> {
 private:
   using super = EulerExperiment<IdealGasEOS, ConstantGravityRadial>;
 
@@ -22,7 +23,9 @@ public:
   using super::super;
 
 protected:
-  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  compute_initial_conditions() override;
 };
 
 } // namespace zisa

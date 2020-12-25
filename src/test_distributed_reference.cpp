@@ -1,11 +1,11 @@
 #include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/load_snapshot.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
-#include <zisa/io/parallel_load_snapshot.hpp>
 #include <zisa/model/ideal_gas_eos.hpp>
 #include <zisa/model/local_eos_state.hpp>
 #include <zisa/mpi/io/gathered_vis_info.hpp>
 #include <zisa/mpi/io/gathered_visualization_factory.hpp>
+#include <zisa/mpi/io/parallel_load_snapshot.hpp>
 #include <zisa/mpi/io/scattered_data_source_factory.hpp>
 #include <zisa/mpi/math/distributed_reference_solution.hpp>
 #include <zisa/mpi/parallelization/mpi_halo_exchange.hpp>
@@ -66,8 +66,9 @@ void test_distributed_reference() {
   auto stencil_params = StencilFamilyParams({});
   auto qr_degrees = QRDegrees{2, 2, 2};
 
-  auto large_grid = std::get<2>(
-      load_local_grid(subgrid_name, stencil_params, qr_degrees, world_rank));
+  auto boundary_mask = [](const Grid &, int_t i) { return true; };
+  auto large_grid = std::get<2>(load_local_grid(
+      subgrid_name, boundary_mask, stencil_params, qr_degrees, world_rank));
 
   auto interpolation = [](int_t, const XYZ &x, int_t) {
     return sin(2.0 * zisa::pi * zisa::norm(x));
@@ -128,8 +129,9 @@ void test_distributed_write() {
 
   auto qr_degrees = QRDegrees{2, 2, 4};
 
-  auto [stencils, dgrid, grid]
-      = load_local_grid(subgrid_name, stencil_params, qr_degrees, world_rank);
+  auto boundary_mask = [](const Grid &, int_t i) { return true; };
+  auto [stencils, dgrid, grid] = load_local_grid(
+      subgrid_name, boundary_mask, stencil_params, qr_degrees, world_rank);
 
   auto vis_info = make_gathered_vis_info(world_comm, *dgrid, n_writers);
   auto gatherer_factory
@@ -172,8 +174,7 @@ void test_distributed_write() {
         std::make_shared<DummyPlottingSteps>());
 
     auto load_snapshot = std::make_shared<ParallelLoadSnapshot>(fng, file_dims);
-    auto halo_exchange = std::make_shared<MPIHaloExchange>(
-        make_mpi_halo_exchange(*dgrid, world_comm));
+    auto halo_exchange = make_mpi_halo_exchange(*dgrid, world_comm);
 
     auto data_source = make_scattered_data_source(vis_info,
                                                   scatterer_factory,

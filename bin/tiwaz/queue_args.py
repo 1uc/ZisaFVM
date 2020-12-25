@@ -63,3 +63,22 @@ class FixedMPIQueueArgs(QueueArgs):
 
     def memory_per_core(self, launch_params):
         return self._mem_per_core
+
+
+class TabularMPIQueueArgs(QueueArgs):
+    def __init__(self, table):
+        self._table = table
+        self.use_mpi = True
+
+    def n_mpi_tasks(self, launch_params):
+        return launch_params["experiment"]["n_proc"]
+
+    def wall_clock(self, launch_params):
+        L = launch_params.grid_level()
+        n_cores = self.n_mpi_tasks(launch_params)
+        return self._table["wall-clock"][L][n_cores]
+
+    def memory_per_core(self, launch_params):
+        L = launch_params.grid_level()
+        n_cores = self.n_mpi_tasks(launch_params)
+        return self._table["mem-per-core"][L][n_cores]

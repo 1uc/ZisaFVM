@@ -66,6 +66,8 @@ public:
   MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
                   std::vector<HaloSendPart> send_parts);
 
+  virtual ~MPIHaloExchange();
+
   void operator()(AllVariables &all_vars) override;
 
   void exchange(array_view<T, n_dims, row_major> data, int tag);
@@ -76,6 +78,8 @@ private:
 
   int cvars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_CVARS;
   int avars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_AVARS;
+
+  double t_prof_ = 0.0;
 };
 
 /// Prepare for data exchange.
@@ -109,12 +113,11 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
  *  global indices that this partition needs from the other partitions. This
  *  routine therefore internally performs a `exchange_halo_info`.
  */
-MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
-                                       const Halo &halo,
-                                       const MPI_Comm &comm);
+std::shared_ptr<MPIHaloExchange> make_mpi_halo_exchange(
+    const DistributedGrid &dgrid, const Halo &halo, const MPI_Comm &comm);
 
-MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
-                                       const MPI_Comm &mpi_comm);
+std::shared_ptr<MPIHaloExchange>
+make_mpi_halo_exchange(const DistributedGrid &dgrid, const MPI_Comm &mpi_comm);
 
 }
 #endif // ZISA_MPI_HALO_EXCHANGE_HPP

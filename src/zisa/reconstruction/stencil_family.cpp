@@ -97,7 +97,13 @@ compute_stencil_families(const Grid &grid, const StencilFamilyParams &params) {
   auto stencil_families = array<StencilFamily, 1>(grid.n_cells);
   for_each(flat_range(stencil_families),
            [&stencil_families, &grid, &params](int_t i) {
-             stencil_families(i) = StencilFamily(grid, i, params);
+             if (grid.cell_flags[i].interior
+                 || grid.cell_flags[i].ghost_cell_l1) {
+               stencil_families(i) = StencilFamily(grid, i, params);
+             } else {
+               auto o1 = StencilFamilyParams{{1}, {"c"}, {1.0}};
+               stencil_families(i) = StencilFamily(grid, i, o1);
+             }
            });
 
   return stencil_families;

@@ -106,31 +106,40 @@ void EulerExperiment<EOS, Gravity>::do_post_process() {
 }
 
 template <class EOS, class Gravity>
-std::string EulerExperiment<EOS, Gravity>::compute_restart_datafile() {
+std::pair<std::string, std::string>
+EulerExperiment<EOS, Gravity>::compute_restart_datafile() {
   if (has_key(params["restart"], "file")) {
-    return std::string(params["restart"]["file"]);
+    return {std::string(params["restart"]["file"]), ""};
   } else {
     auto fng = choose_file_name_generator();
-    return find_last_data_file(*fng);
+    return {find_last_data_file(*fng), fng->steady_state()};
   }
 }
 
 template <class EOS, class Gravity>
-std::shared_ptr<AllVariables>
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
 EulerExperiment<EOS, Gravity>::load_initial_conditions() {
   auto simulation_clock = choose_simulation_clock();
-  auto datafile = compute_restart_datafile();
+  auto [data_file, steady_state_file] = compute_restart_datafile();
 
   auto fng = choose_file_name_generator();
-  fng->advance_to(datafile);
+  fng->advance_to(data_file);
 
-  auto sfng = std::make_shared<SingleFileNameGenerator>(datafile);
+  auto sfng = std::make_shared<FixedFileNameGenerator>(
+      std::vector<std::string>{data_file, steady_state_file});
   auto data_source = compute_data_source(sfng);
-
   auto all_vars = std::make_shared<AllVariables>(choose_all_variable_dims());
   (*data_source)(*all_vars, *simulation_clock);
 
-  return all_vars;
+  std::shared_ptr<AllVariables> steady_state = nullptr;
+  if (zisa::file_exists(steady_state_file)) {
+    steady_state = std::make_shared<AllVariables>(choose_all_variable_dims());
+
+    auto dummy_simulation_clock = compute_simulation_clock();
+    (*data_source)(*steady_state, *dummy_simulation_clock);
+  }
+
+  return {all_vars, steady_state};
 }
 
 template <class EOS, class Gravity>
@@ -266,6 +275,10 @@ std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_bc() {
   std::string flux_bc = params["flux-bc"]["mode"];
   auto grid = choose_grid();
   auto local_eos = choose_local_eos();
+
+  if (flux_bc == "none") {
+    return std::make_shared<NoFluxBC>();
+  }
 
   if (flux_bc == "constant") {
     return std::make_shared<FluxBC<eos_t>>(euler, local_eos, grid);

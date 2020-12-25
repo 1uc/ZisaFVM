@@ -15,6 +15,7 @@ FileNameGenerator::FileNameGenerator(const std::string &dir,
     : filename_stem(stem),
       steady_state_filename(dir + "steady_state" + suffix),
       grid_filename(dir + "grid" + suffix),
+      dirname(dir),
       pattern_(dir + stem + pattern + suffix),
       count_(0) {}
 

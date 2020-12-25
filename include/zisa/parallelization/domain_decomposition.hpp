@@ -19,6 +19,9 @@ struct PartitionedGrid {
   array<int_t, 1> permutation;
 };
 
+std::vector<std::vector<int_t>>
+compute_effective_stencils(const Grid &grid, const StencilFamilyParams &params);
+
 std::map<int_t, int_t>
 sparse_inverse_permutation(const array_const_view<int_t, 1> &sigma);
 
@@ -26,6 +29,10 @@ PartitionedGrid compute_partitioned_grid_by_sfc(const Grid &grid,
                                                 int_t n_parts);
 
 PartitionedGrid compute_partitioned_grid(const Grid &grid, int_t n_parts);
+PartitionedGrid
+compute_partitioned_grid(const Grid &grid,
+                         const std::vector<std::vector<int_t>> &stencils,
+                         int_t n_parts);
 
 array<int_t, 2> renumbered_vertex_indices(const array<int_t, 2> &vertex_indices,
                                           const array<int_t, 1> &permutation);
@@ -81,6 +88,5 @@ protected:
 private:
   std::vector<int_t> good_indices;
 };
-
 }
 #endif // ZISA_DOMAIN_DECOMPOSITION_HPP

@@ -4,16 +4,16 @@
 #if ZISA_HAS_MPI == 1
 #include <zisa/boundary/halo_exchange_bc.hpp>
 #include <zisa/cli/input_parameters.hpp>
+#include <zisa/grid/grid.hpp>
 #include <zisa/io/backtrace.hpp>
 #include <zisa/io/gathered_visualization.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
-#include <zisa/io/parallel_load_snapshot.hpp>
-#include <zisa/memory/array_cell_flags.hpp>
 #include <zisa/model/distributed_cfl_condition.hpp>
 #include <zisa/mpi/io/gathered_vis_info.hpp>
 #include <zisa/mpi/io/gathered_visualization_factory.hpp>
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/io/mpi_progress_bar.hpp>
+#include <zisa/mpi/io/parallel_load_snapshot.hpp>
 #include <zisa/mpi/io/scattered_data_source_factory.hpp>
 #include <zisa/mpi/math/distributed_reference_solution.hpp>
 #include <zisa/mpi/parallelization/mpi_all_reduce.hpp>
@@ -66,6 +66,7 @@ protected:
 
   void write_grid() override {
     auto grid = this->choose_grid();
+    auto fng = this->choose_file_name_generator();
 
     if (is_gathered_visualization()) {
       auto vis_info = choose_gathered_vis_info();
@@ -84,17 +85,10 @@ protected:
         gatherer.receive(array_view(cell_flags));
         apply_permutation(array_view(cell_flags), *vis_info->permutation);
 
-        std::string dirname = this->params["grid"]["file"];
-        auto grid_name
-            = string_format("%s/grid.h5", dirname.c_str(), mpi_comm_size);
-
+        auto flags_name = std::filesystem::path(fng->dirname) / "cell_flags.h5";
         auto file_dims = choose_gathered_file_info();
-        auto writer
-            = HDF5UnstructuredWriter(grid_name, file_dims, HDF5Access::modify);
-
-        writer.open_group("cell_flags");
-        writer.unlink("ghost_cell");
-        writer.close_group();
+        auto writer = HDF5UnstructuredWriter(
+            flags_name, file_dims, HDF5Access::overwrite);
 
         save(writer, cell_flags, "cell_flags");
       } else {
@@ -106,23 +100,17 @@ protected:
       auto dir = string_format("part-%04d/", mpi_rank);
       create_directory(dir);
 
-      auto writer = HDF5SerialWriter(dir + "grid.h5");
-      save(writer, *grid);
-
-    } else if (is_unstructured_visualization()) {
-      std::string dirname = this->params["grid"]["file"];
-      auto grid_name
-          = string_format("%s/grid.h5", dirname.c_str(), mpi_comm_size);
-
-      auto file_dims = choose_file_dimensions();
-      auto writer
-          = HDF5UnstructuredWriter(grid_name, file_dims, HDF5Access::modify);
-
-      writer.open_group("cell_flags");
-      writer.unlink("ghost_cell");
-      writer.close_group();
+      auto writer = HDF5SerialWriter(dir + "cell_flags.h5");
       save(writer, grid->cell_flags, "cell_flags");
 
+    } else if (is_unstructured_visualization()) {
+      auto flags_name = std::filesystem::path(fng->dirname) / "cell_flags.h5";
+
+      auto file_dims = choose_file_dimensions();
+      auto writer = HDF5UnstructuredWriter(
+          flags_name, file_dims, HDF5Access::overwrite);
+
+      save(writer, grid->cell_flags, "cell_flags");
     } else {
       LOG_ERR("Broken logic.");
     }
@@ -332,12 +320,32 @@ protected:
 
     auto stencil_params = this->choose_stencil_params();
     auto qr_degrees = this->choose_qr_degrees();
-    auto [stencils, dgrid, grid] = zisa::load_local_grid(
-        subgrid_name(), stencil_params, qr_degrees, mpi_rank);
+    auto [stencils, dgrid, grid] = zisa::load_local_grid(subgrid_name(),
+                                                         super::boundary_mask(),
+                                                         stencil_params,
+                                                         qr_degrees,
+                                                         mpi_rank);
 
     this->stencils_ = stencils;
     this->distributed_grid_ = dgrid;
     this->enforce_cell_flags(*grid);
+
+    {
+      auto p = this->distributed_grid_->partition;
+      auto k = zisa::mpi::rank();
+
+      auto n_local_cells = std::count_if(p.begin(), p.end(), [k](int_t i) {
+        return i == integer_cast<int_t>(k);
+      });
+
+      auto n_non_local_cells = p.size() - n_local_cells;
+
+      auto lc = string_format("local_cells-%d.txt", k);
+      write_string_to_file(string_format("%d", n_local_cells), lc);
+
+      auto nlc = string_format("non_local_cells-%d.txt", k);
+      write_string_to_file(string_format("%d", n_non_local_cells), nlc);
+    }
 
     return grid;
   }
@@ -529,8 +537,7 @@ protected:
   std::shared_ptr<HaloExchange> compute_halo_exchange() {
     auto dgrid = choose_distributed_grid();
 
-    return std::make_shared<MPIHaloExchange>(
-        make_mpi_halo_exchange(*dgrid, mpi_comm));
+    return make_mpi_halo_exchange(*dgrid, mpi_comm);
   }
 
   std::shared_ptr<BoundaryCondition> compute_boundary_condition() override {

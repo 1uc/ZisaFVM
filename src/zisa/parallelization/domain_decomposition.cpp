@@ -14,26 +14,39 @@ PartitionedGrid::PartitionedGrid(array<int_t, 1> partition,
       boundaries(std::move(boundaries)),
       permutation(std::move(permutation)) {}
 
-array<int_t, 1> compute_partition_full_stencil(
-    const Grid &grid,
-    const std::vector<std::vector<int_t>> & /*stencils*/,
-    int n_parts) {
+array<int_t, 1>
+compute_partition_full_stencil(const Grid &grid,
+                               const std::vector<std::vector<int_t>> &stencils,
+                               int n_parts) {
 
   auto n_cells = grid.n_cells;
   auto nvtxs = metis_idx_t(n_cells);
   auto ncon = metis_idx_t(1); // # constraints
 
+  auto stencil_size = [&grid, &stencils](int_t i) {
+    if (stencils.empty()) {
+      return grid.max_neighbours;
+    } else {
+      return stencils[i].size();
+    }
+  };
+
+  auto stencil_element = [&grid, &stencils](int_t i, int_t k) {
+    if (stencils.empty()) {
+      return grid.neighbours(i, k);
+    } else {
+      return stencils[i][k];
+    }
+  };
+
   std::vector<std::vector<int_t>> graph(n_cells);
   for (int_t i = 0; i < n_cells; ++i) {
-    // FIXME: currently nearest neighbours
-    //    for (int_t k = 0; k < stencils[i].size(); ++k) {
-    for (int_t k = 0; k < grid.max_neighbours; ++k) {
-      if (!grid.is_valid(i, k)) {
+    for (int_t k = 0; k < stencil_size(i); ++k) {
+      if (stencils.empty() && !grid.is_valid(i, k)) {
         continue;
       }
 
-      int_t j = grid.neighbours(i, k);
-      // int_t j = stencils[i][k];
+      int_t j = stencil_element(i, k);
 
       if (std::find(graph[i].cbegin(), graph[i].cend(), j) == graph[i].cend()) {
         graph[i].push_back(j);
@@ -66,10 +79,15 @@ array<int_t, 1> compute_partition_full_stencil(
 
   array<metis_idx_t, 1> part(n_cells);
 
+  idx_t metis_options[METIS_NOPTIONS];
+  METIS_SetDefaultOptions(metis_options);
+  metis_options[METIS_OPTION_MINCONN] = 1;
+  metis_options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
+
   // clang-format off
   METIS_PartGraphKway(
       &nvtxs, &ncon, xadj.raw(), adjncy.raw(), nullptr, nullptr, nullptr,
-      &nparts, nullptr, nullptr, nullptr, &objval, part.raw());
+      &nparts, nullptr, nullptr, metis_options, &objval, part.raw());
   // clang-format on
 
   array<int_t, 1> partition(n_cells);
@@ -192,10 +210,28 @@ compute_effective_stencils(const array<StencilFamily, 1> &stencils) {
   return effective_stencils;
 }
 
-PartitionedGrid compute_partitioned_grid(const Grid &grid, int_t n_parts) {
+std::vector<std::vector<int_t>>
+compute_effective_stencils(const Grid &grid,
+                           const StencilFamilyParams &params) {
+
+  std::vector<std::vector<int_t>> effective_stencils(grid.n_cells);
+
+#pragma omp parallel for
+  for (int_t i = 0; i < grid.n_cells; ++i) {
+    auto stencils = StencilFamily(grid, i, params);
+    effective_stencils[i] = stencils.local2global();
+  }
+
+  return effective_stencils;
+}
+
+PartitionedGrid
+compute_partitioned_grid(const Grid &grid,
+                         const std::vector<std::vector<int_t>> &stencils,
+                         int_t n_parts) {
 
   auto cell_partition = compute_partition_full_stencil(
-      grid, std::vector<std::vector<int_t>>{}, integer_cast<int>(n_parts));
+      grid, stencils, integer_cast<int>(n_parts));
 
   auto sigma = compute_cell_permutation(grid, cell_partition);
 
@@ -204,6 +240,11 @@ PartitionedGrid compute_partitioned_grid(const Grid &grid, int_t n_parts) {
 
   return PartitionedGrid{
       std::move(cell_partition), std::move(boundaries), std::move(sigma)};
+}
+
+PartitionedGrid compute_partitioned_grid(const Grid &grid, int_t n_parts) {
+  return compute_partitioned_grid(
+      grid, std::vector<std::vector<int_t>>{}, n_parts);
 }
 
 std::tuple<array<int_t, 2>, array<int_t, 1>>

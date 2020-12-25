@@ -18,6 +18,7 @@ from tiwaz.post_process import load_grid
 from tiwaz.scatter_plot import ScatterPlot
 from tiwaz.scatter_plot import ScatterSemilogY
 from tiwaz.tri_plot import TriPlot
+from tinga.io import write_pickle
 
 
 def load(data_file):
@@ -47,7 +48,7 @@ def stencil_indicator(grid, I):
     return data
 
 
-def plot_all(grid, data_files, keys, log_keys, with_ghost_cells=False):
+def plot_all(grid, data_files, keys, delta_keys, log_keys, with_ghost_cells=False):
     n_dims = 2 if grid.vertex_indices.shape[1] == 3 else 3
 
     for f in data_files:
@@ -56,6 +57,16 @@ def plot_all(grid, data_files, keys, log_keys, with_ghost_cells=False):
         for key in keys:
             if n_dims == 2:
                 plot = TriPlot()
+                plot.color_plot(grid, u[key])
+                plot.save(plot.filename(f, key))
+
+            plot = ScatterPlot(with_ghost_cells)
+            plot(grid, u[key])
+            plot.save(plot.filename(f, key))
+
+        for key in delta_keys:
+            if n_dims == 2:
+                plot = TriPlot("PRGn", symmetric_limits=True)
                 plot.color_plot(grid, u[key])
                 plot.save(plot.filename(f, key))
 
@@ -108,6 +119,11 @@ def plot_radial_average(grid, data_files, lin_keys, log_keys):
             plt.savefig(figname, dpi=300)
             plt.close(fig)
 
+            write_pickle(
+                os.path.dirname(data_files[0]) + f"radial_average-{key}.pkl",
+                {"R": R, "T": T, "Z": avg_values},
+            )
+
         if key in log_keys:
             fig = plt.figure()
             levels = np.linspace(14.0, 19.0, 101)
@@ -116,6 +132,11 @@ def plot_radial_average(grid, data_files, lin_keys, log_keys):
             plt.colorbar()
             plt.savefig(figname, dpi=300)
             plt.close(fig)
+
+            write_pickle(
+                os.path.dirname(data_files[0]) + f"radial_average-log10{key}.pkl",
+                {"R": R, "T": T, "Z": np.log10(avg_values)},
+            )
 
 
 if __name__ == "__main__":
@@ -131,8 +152,16 @@ if __name__ == "__main__":
         "--vars",
         nargs="*",
         type=str,
-        default=["rho", "drho"],
-        help="Plot these variables, e.g. 'rho', 'drho', 'mv1', 'E', 'p', 'h', etc.",
+        default=["rho"],
+        help="Plot these variables, e.g. 'rho', 'mv1', 'E', 'p', 'h', etc.",
+    )
+
+    parser.add_argument(
+        "--delta-vars",
+        nargs="*",
+        type=str,
+        default=["drho"],
+        help="Plot these variables with symmetric colorbar, e.g. 'drho', 'dp', etc.",
     )
 
     parser.add_argument(
@@ -178,4 +207,11 @@ if __name__ == "__main__":
             plot_radial_average(grid, files, args.vars, args.log_vars)
 
         else:
-            plot_all(grid, files, args.vars, args.log_vars, args.with_ghost_cells)
+            plot_all(
+                grid,
+                files,
+                args.vars,
+                args.delta_vars,
+                args.log_vars,
+                args.with_ghost_cells,
+            )

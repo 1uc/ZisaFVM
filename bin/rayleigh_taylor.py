@@ -61,8 +61,8 @@ class RayleighTaylorExperiment(sc.Subsection):
         return self["name"] + f"_drho{self.drho:.2e}_vamp{self.v_amp:.2e}"
 
 
-G = 4.0
-mangle_str = f"PT_G{G:f}"
+G = 2.5
+mangle_str = f"bcPT_G{G:f}"
 
 # This is just in case we want to run the same experiment with many parameters.
 # experiment_params = [0.0, 1e-4]
@@ -99,7 +99,7 @@ mesh_levels = [1, 2, 3, 4]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 grid_name = GridNamingScheme("rayleigh_taylor_with_halo")
 
-coarse_grid_levels = [4]
+coarse_grid_levels = [2, 3, 4]
 coarse_grid_names = [grid_name.msh_h5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -282,7 +282,7 @@ def make_work_estimate():
     n0 = sc.read_n_cells(grid_name.msh_h5(4))
 
     # 'measured' on Euler on L=4 with 96 cores.
-    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
+    t0 = 2.0 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
 
     # measured on Euler on L=4 with 2 and 96 cores.
     b0 = 0.0

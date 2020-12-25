@@ -24,8 +24,13 @@ public:
   StellarConvection(const InputParameters &params) : super(params) {}
 
 protected:
-  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
-  virtual std::shared_ptr<AllVariables> load_initial_conditions() override;
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  compute_initial_conditions() override;
+
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  load_initial_conditions() override;
 
   virtual AllVariablesDimensions choose_all_variable_dims() override;
 
@@ -47,7 +52,9 @@ public:
   IdealStellarConvection(const InputParameters &params) : super(params) {}
 
 protected:
-  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  compute_initial_conditions() override;
 
   virtual AllVariablesDimensions choose_all_variable_dims() override;
 

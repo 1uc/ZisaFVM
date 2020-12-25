@@ -3,6 +3,7 @@
 import os
 import shutil
 import glob
+import pickle
 from datetime import timedelta
 
 import matplotlib.pyplot as plt
@@ -180,12 +181,16 @@ all_runs = [make_runs(amp) for amp in amplitudes]
 
 def post_process(coarse_runs, reference_run):
     results, columns = load_results(coarse_runs, reference_run)
-    labels = TableLabels()
 
     filename = coarse_runs[0]["experiment"].short_id()
+    with open(f"{filename}_results.pkl", "wb") as f:
+        pickle.dump((results, columns), f)
+
+    labels = TableLabels()
+
     write_convergence_table(results, columns, labels, filename)
     write_convergence_plots(results, columns, labels, filename)
-    plot_visual_convergence(results, columns, labels, filename)
+    # plot_visual_convergence(results, columns, labels, filename)
 
     # for coarse_run in coarse_runs:
     #     coarse_dir = folder_name(coarse_run)

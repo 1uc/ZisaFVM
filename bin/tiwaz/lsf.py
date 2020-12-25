@@ -27,7 +27,7 @@ class LSF(object):
         c = ["bsub", "-J", launch_params.short_id()]
 
         if hasattr(queue_args, "lsf_args"):
-            c += queue_args["lsf_args"]
+            c += queue_args.lsf_args
 
         if hasattr(queue_args, "wall_clock"):
             c += ["-W", hhmm(queue_args.wall_clock(launch_params))]

@@ -18,6 +18,7 @@
 #include <zisa/math/tetrahedron.hpp>
 #include <zisa/math/triangle.hpp>
 #include <zisa/memory/array.hpp>
+#include <zisa/memory/array_cell_flags.hpp>
 
 namespace zisa {
 struct QRDegrees {

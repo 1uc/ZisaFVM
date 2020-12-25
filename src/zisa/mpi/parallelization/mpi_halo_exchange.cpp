@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
+#include <zisa/utils/timer.hpp>
 
 namespace zisa {
 
@@ -163,12 +164,23 @@ MPIHaloExchange::MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
     : receive_parts(std::move(receive_parts)),
       send_parts(std::move(send_parts)) {}
 
+MPIHaloExchange::~MPIHaloExchange() {
+  auto mpi_rank = zisa::mpi::rank();
+  auto fn = string_format("mpi_exchange_runtime-%d.txt", mpi_rank);
+
+  write_string_to_file(string_format("%.8e", t_prof_), fn);
+}
+
 void MPIHaloExchange::operator()(AllVariables &all_vars) {
+  auto timer = Timer();
+
   exchange(all_vars.cvars, cvars_tag);
 
   if (all_vars.avars.shape(1) != 0) {
     exchange(all_vars.avars, avars_tag);
   }
+
+  t_prof_ += timer.elapsed_seconds();
 }
 
 void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {
@@ -224,18 +236,18 @@ Halo make_halo(const DistributedGrid &dgrid, const MPI_Comm &mpi_comm) {
   return {std::move(i_need_this), std::move(local_halo_info)};
 }
 
-MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
-                                       const Halo &halo,
-                                       const MPI_Comm &comm) {
+std::shared_ptr<MPIHaloExchange> make_mpi_halo_exchange(
+    const DistributedGrid &dgrid, const Halo &halo, const MPI_Comm &comm) {
   auto g2l = make_global2local(dgrid.global_cell_indices);
   auto remote_info = exchange_halo_info(halo.remote_info, g2l, comm);
   auto &local_info = halo.local_info;
 
-  return zisa::MPIHaloExchange(std::move(remote_info), local_info);
+  return std::make_shared<zisa::MPIHaloExchange>(std::move(remote_info),
+                                                 local_info);
 }
 
-MPIHaloExchange make_mpi_halo_exchange(const DistributedGrid &dgrid,
-                                       const MPI_Comm &mpi_comm) {
+std::shared_ptr<MPIHaloExchange>
+make_mpi_halo_exchange(const DistributedGrid &dgrid, const MPI_Comm &mpi_comm) {
   return make_mpi_halo_exchange(dgrid, make_halo(dgrid, mpi_comm), mpi_comm);
 }
 }

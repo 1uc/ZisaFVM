@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 
 from .post_process import extract_solver_data
 
+import tinga
+from tinga.io import write_pickle
+
 
 def linestyle(solver):
     wb = solver["wb"]
@@ -129,7 +132,8 @@ class SplitConvergencePlot:
             [10 ** k for k in range(int(logy_min), int(logy_max) + 1)], minor=True
         )
         ax1.set_yticklabels(
-            ["" for k in range(int(logy_min), int(logy_max) + 1)], minor=True,
+            ["" for k in range(int(logy_min), int(logy_max) + 1)],
+            minor=True,
         )
         ax1.grid(which="major", axis="y", color="k", linewidth=0.8, alpha=1.0)
         ax1.grid(which="minor", axis="y", color="k", linewidth=0.5, alpha=0.6)
@@ -197,8 +201,8 @@ def write_convergence_plots(results, solvers, labels, filename):
         solver_keys = [labels(s) for s in solvers]
 
         plot = SplitConvergencePlot()
+        plot_data = []
 
-        m, M = np.inf, 0.0
         for solver in solvers:
             result = extract_solver_data(solver, results)
             resolutions = np.array([r["dx_max"] for r in result])
@@ -206,11 +210,17 @@ def write_convergence_plots(results, solvers, labels, filename):
             l1_err = np.array([r[key] for r in result])
             l1_rate = compute_rates(resolutions, l1_err)
 
-            print(solver)
-            print(l1_err)
-            print(l1_rate)
+            plot_data.append(
+                {
+                    "solver": solver,
+                    "l1_err": l1_err,
+                    "l1_rate": l1_rate,
+                    "resolutions": resolutions,
+                }
+            )
 
             plot.add(resolutions, l1_err, l1_rate, method=solver)
 
         plot.finalize(key, "")
-        plot.save(filename + key + ".png")
+        plot.save(filename + "_" + key + ".png")
+        write_pickle(filename + "_" + key + ".pkl", plot_data)

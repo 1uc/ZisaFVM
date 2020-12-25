@@ -2,7 +2,8 @@
 
 namespace zisa {
 
-std::shared_ptr<AllVariables> SmoothBubble::compute_initial_conditions() {
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
+SmoothBubble::compute_initial_conditions() {
   auto all_variables
       = std::make_shared<AllVariables>(choose_all_variable_dims());
   auto &u0 = all_variables->cvars;
@@ -22,7 +23,7 @@ std::shared_ptr<AllVariables> SmoothBubble::compute_initial_conditions() {
     u0(i) = cvars_t{0.1, 0.0, 0.0, 0.0, E + dE};
   }
 
-  return all_variables;
+  return {all_variables, nullptr};
 }
 
 } // namespace zisa

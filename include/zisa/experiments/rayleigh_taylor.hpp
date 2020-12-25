@@ -20,7 +20,9 @@ public:
   using super::super;
 
 protected:
-  virtual std::shared_ptr<AllVariables> compute_initial_conditions() override;
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  compute_initial_conditions() override;
   std::shared_ptr<AllVariables> compute_initial_conditions(double amp,
                                                            double amp_noise,
                                                            double width,

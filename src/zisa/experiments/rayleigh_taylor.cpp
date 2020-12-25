@@ -3,7 +3,8 @@
 
 namespace zisa {
 
-std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
+std::pair<std::shared_ptr<AllVariables>, std::shared_ptr<AllVariables>>
+RayleighTaylor::compute_initial_conditions() {
   double amp = params["experiment"]["initial_conditions"]["amplitude"];
   double amp_noise = params["experiment"]["initial_conditions"]["A_noise"];
   double width = params["experiment"]["initial_conditions"]["width"];
@@ -16,7 +17,7 @@ std::shared_ptr<AllVariables> RayleighTaylor::compute_initial_conditions() {
   auto vis = choose_visualization();
   vis->steady_state(*steady_state);
 
-  return all_variables;
+  return {all_variables, steady_state};
 }
 
 int_t RayleighTaylor::choose_n_avars() { return 1; }

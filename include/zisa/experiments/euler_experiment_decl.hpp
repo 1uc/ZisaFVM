@@ -45,12 +45,14 @@ protected:
   virtual std::shared_ptr<Visualization> compute_visualization() override;
   virtual std::shared_ptr<DataSource>
   compute_data_source(std::shared_ptr<FNG> fng);
-  virtual std::string compute_restart_datafile();
+  virtual std::pair<std::string, std::string> compute_restart_datafile();
 
   virtual std::shared_ptr<SanityCheck> choose_sanity_check() override;
   virtual std::shared_ptr<CFLCondition> choose_cfl_condition() override;
   virtual AllVariablesDimensions choose_all_variable_dims() override;
-  virtual std::shared_ptr<AllVariables> load_initial_conditions() override;
+  virtual std::pair<std::shared_ptr<AllVariables>,
+                    std::shared_ptr<AllVariables>>
+  load_initial_conditions() override;
 
   /// This is used for down-sampling the reference solution.
   virtual std::function<std::shared_ptr<Grid>(const std::string &, int_t)>
