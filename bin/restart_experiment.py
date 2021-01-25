@@ -36,18 +36,13 @@ from tiwaz.work_estimate import ZisaWorkEstimate
 
 
 class RayleighTaylorExperiment(sc.Subsection):
-    def __init__(self, param):
-        drho, v_amp = param
+    def __init__(self, drho):
         super().__init__(
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "r_crit": 0.25,
                     "drho": drho,
-                    "amplitude": v_amp,
-                    "A_noise": 0.0,
-                    "A_shape": 0.0,
-                    "r_noise": 0.4,
+                    "amplitude": 0.4,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -55,51 +50,38 @@ class RayleighTaylorExperiment(sc.Subsection):
         )
 
         self.drho = drho
-        self.v_amp = v_amp
 
     def short_id(self):
-        return self["name"] + f"_drho{self.drho:.2e}_vamp{self.v_amp:.2e}"
+        return "restart_experiment"
 
 
 G = 2.5
-mangle_str = f"bcPT_G{G:f}"
+mangle_str = f"G{G:f}"
 
 # This is just in case we want to run the same experiment with many parameters.
-# experiment_params = [0.0, 1e-4]
-# experiment_params = [1e-4 * 3 ** k for k in range(1, 5)]
-# experiment_params = [0.0]
-experiment_params = [
-    (drho, v_amp) for drho in [1e-4, 1e-3, 1e-2] for v_amp in [1e-6, 1e-4, 1e-2]
-]
+experiment_params = [0.1]
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
-gravity = sc.PolytropeGravity(rhoC=1.0, K=1.0, G=G)
-# gravity = sc.ConstantGravity(g=0.0)
+gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=G)
 euler = sc.Euler(eos, gravity)
 
-t_end = 100.0
+t_end = 0.4
 time = sc.Time(t_end=t_end)
-# io = sc.IO(
-#     "hdf5", "rayleigh_taylor", n_snapshots=20, parallel_strategy="gathered", n_writers=4
-# )
 io = sc.IO(
     "hdf5",
-    "rayleigh_taylor",
+    "restart_experiment",
     n_snapshots=100,
     parallel_strategy="gathered",
     n_writers=4,
 )
-# io = sc.IO("opengl", "rayleigh_taylor", steps_per_frame=2)
 
 parallelization = {"mode": "mpi"}
 radius = 0.6
-# mesh_levels = list(range(1, 8))
-# mesh_levels = [2, 3, 4]
-mesh_levels = [1, 2, 3, 4]
+mesh_levels = [2]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
-grid_name = GridNamingScheme("rayleigh_taylor_with_halo")
+grid_name = GridNamingScheme("restart_experiment")
 
-coarse_grid_levels = [2, 3, 4]
+coarse_grid_levels = [2]
 coarse_grid_names = [grid_name.msh_h5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -116,7 +98,7 @@ independent_choices = {
     "euler": [euler],
     "flux-bc": [sc.FluxBC("isentropic")],
     "boundary-condition": [sc.BoundaryCondition("frozen")],
-    "well-balancing": [sc.WellBalancing("constant"), sc.WellBalancing("isentropic")],
+    "well-balancing": [sc.WellBalancing("constant")],
     "io": [io],
     "time": [time],
     "parallelization": [parallelization],
@@ -125,66 +107,20 @@ independent_choices = {
 
 dependent_choices = {
     "reconstruction": [
-        # sc.Reconstruction("CWENO-AO", [1]),
         sc.Reconstruction(
             "CWENO-AO", [3, 2, 2, 2], overfit_factors=[3.0, 3.0, 3.0, 3.0]
         ),
-        # sc.Reconstruction("CWENO-AO", [1], overfit_factors=[1.0],),
     ],
     "ode": [
-        # sc.ODE("ForwardEuler"),
         sc.ODE("SSP3"),
-        # sc.ODE("SSP3", cfl_number=0.4)
     ],
-    "quadrature": [
-        # sc.Quadrature(1),
-        sc.Quadrature(2)
-        # sc.Quadrature(3)
-    ],
-}
-
-# dependent_choices = {
-#     "reconstruction": [
-#         sc.Reconstruction("CWENO-AO", [1]),
-#         sc.Reconstruction("CWENO-AO", [2, 2, 2, 2], overfit_factors=[3.0, 2.0, 2.0, 2.0]),
-#         sc.Reconstruction("CWENO-AO", [3, 2, 2, 2]),
-#         sc.Reconstruction("CWENO-AO", [4, 2, 2, 2])
-#     ],
-#
-#     "ode": [
-#         sc.ODE("ForwardEuler"),
-#         sc.ODE("SSP2"),
-#         sc.ODE("SSP3"),
-#         sc.ODE("SSP3")
-#     ],
-#
-#     "quadrature": [
-#         sc.Quadrature(1),
-#         sc.Quadrature(2),
-#         sc.Quadrature(3),
-#         sc.Quadrature(4)
-#     ]
-# }
-
-reference_choices = {
-    "euler": [euler],
-    "flux-bc": [sc.FluxBC("isentropic")],
-    "well-balancing": [sc.WellBalancing("isentropic")],
-    "time": [time],
-    "io": [io],
-    "reconstruction": [sc.Reconstruction("CWENO-AO", [5, 2, 2, 2])],
-    "ode": [sc.ODE("SSP3")],
-    "quadrature": [sc.Quadrature(4)],
-    "grid": [reference_grid],
-    "reference": [sc.Reference("isentropic", coarse_grid_names)],
-    "parallelization": [parallelization],
+    "quadrature": [sc.Quadrature(2)],
 }
 
 base_choices = all_combinations(independent_choices)
 model_choices = base_choices.product(pointwise_combinations(dependent_choices))
 
 coarse_runs_ = model_choices.product(coarse_grids)
-reference_runs_ = all_combinations(reference_choices)
 
 
 def make_runs(params):
@@ -197,52 +133,12 @@ def make_runs(params):
         ]
     )
 
-    reference_runs = reference_runs_.product(
-        [
-            {
-                "experiment": RayleighTaylorExperiment(params),
-                "mangle": sc.Mangle(mangle_str),
-            }
-        ]
-    )
-
     coarse_runs = [sc.Scheme(choice) for choice in coarse_runs]
-    reference_runs = [sc.Scheme(choice) for choice in reference_runs]
 
-    return coarse_runs, reference_runs
+    return coarse_runs, []
 
 
 all_runs = [make_runs(param) for param in experiment_params]
-
-
-def post_process(coarse_runs, reference_run):
-    for coarse_run in coarse_runs:
-        coarse_dir = folder_name(coarse_run)
-        coarse_grid = load_grid(coarse_dir)
-        data_files = find_data_files(coarse_dir)
-
-        for filename in data_files:
-            u_coarse = load_data(filename, find_steady_state_file(coarse_dir))
-
-            rho = u_coarse.cvars["rho"]
-            drho = u_coarse.dvars["rho"]
-
-            plot = tri_plot(coarse_grid, rho)
-            plot.save(filename[:-3] + "-rho.png")
-
-            plot = tri_plot(coarse_grid, drho)
-            plot.save(filename[:-3] + "-drho.png")
-
-            plot = scatter_plot(coarse_grid, rho)
-            plot.save(filename[:-3] + "-scatter-rho.png")
-
-            plot = scatter_plot(coarse_grid, drho)
-            plot.save(filename[:-3] + "-scatter-drho.png")
-
-
-class TableLabels:
-    def __call__(self, col):
-        return " ".join(str(v) for v in col.values())
 
 
 def compute_parts(mesh_levels, host):
@@ -279,10 +175,10 @@ def generate_grids(cluster, must_generate, must_decompose):
 
 
 def make_work_estimate():
-    n0 = sc.read_n_cells(grid_name.msh_h5(4))
+    n0 = 200_000
 
     # 'measured' on Euler on L=4 with 96 cores.
-    t0 = 2.0 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
+    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
 
     # measured on Euler on L=4 with 2 and 96 cores.
     b0 = 0.0
@@ -294,7 +190,7 @@ def make_work_estimate():
 
 
 def main():
-    parser = default_cli_parser("'rayleigh_taylor' numerical experiment.")
+    parser = default_cli_parser("'restart_experiment' numerical experiment.")
     args = parser.parse_args()
 
     generate_grids(args.cluster, args.generate_grids, args.decompose_grids)
@@ -307,17 +203,12 @@ def main():
         work_estimate = make_work_estimate()
 
         queue_args = MPIQueueArgs(work_estimate, t_min=t_min, t_max=t_max)
-        # queue_args = dict()
 
         for c, r in all_runs:
             launch_all(c, force=args.force, queue_args=queue_args)
 
             if args.reference:
                 launch_all(r, force=args.force, queue_args=queue_args)
-
-    if args.post_process:
-        for c, r in all_runs:
-            post_process(c, r)
 
 
 if __name__ == "__main__":

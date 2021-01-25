@@ -32,17 +32,57 @@ class LSF(object):
         if hasattr(queue_args, "wall_clock"):
             c += ["-W", hhmm(queue_args.wall_clock(launch_params))]
 
-        if hasattr(queue_args, "n_mpi_tasks"):
+        is_mpi = hasattr(queue_args, "n_mpi_tasks")
+        is_omp = hasattr(queue_args, "n_omp_threads")
+
+        if is_mpi and not is_omp:
             # MPI has been requested.
             n_mpi_tasks = queue_args.n_mpi_tasks(launch_params)
             mem = queue_args.memory_per_core(launch_params) * 1e-6
+            ptile = min(128, n_mpi_tasks)
 
-            c += ["-n", str(n_mpi_tasks), "-R", f"rusage[mem={mem:.0f}]"]
+            c += [
+                "-n",
+                str(n_mpi_tasks),
+                "-R",
+                f"rusage[mem={mem:.0f}]",
+                "-R",
+                f"span[ptile={ptile}]",
+            ]
             cmd = [f"mpirun -np {n_mpi_tasks} " + " ".join(cmd)]
 
-        elif hasattr(queue_args, "n_omp_threads"):
+        elif is_mpi and is_omp:
+            # OpenMP has been requested.
+            n_mpi_tasks = queue_args.n_mpi_tasks(launch_params)
+            n_omp_threads = queue_args.n_omp_threads(launch_params)
+            n_cores = n_mpi_tasks * n_omp_threads
+            mem = queue_args.memory_per_core(launch_params) * 1e-6
+            ptile = min(128, n_cores)
+
+            c += [
+                "-n",
+                str(n_cores),
+                "-R",
+                f"rusage[mem={mem:.0f}]",
+                "-R",
+                f"span[ptile={ptile}]",
+            ]
+            cmd = [
+                " ".join(
+                    [
+                        f"'export OMP_NUM_THREADS={n_omp_threads};",
+                        "unset LSF_AFFINITY_HOSTFILE;",
+                        f"mpirun -np {n_mpi_tasks} --map-by node:PE={n_omp_threads}",
+                    ]
+                    + cmd
+                    + ["'"]
+                )
+            ]
+
+        elif not is_mpi and is_omp:
             # OpenMP has been requested.
             raise Exception("Implement first.")
+
         else:
             # Okay, must be serial.
             c += ["-n", "1"]

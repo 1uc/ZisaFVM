@@ -9,6 +9,7 @@ doc/*
 data/*
 junk
 lib/*
+lsf.o*
 
 grids/*
 runjobs.sh

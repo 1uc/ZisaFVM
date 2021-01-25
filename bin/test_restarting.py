@@ -36,18 +36,13 @@ from tiwaz.work_estimate import ZisaWorkEstimate
 
 
 class RayleighTaylorExperiment(sc.Subsection):
-    def __init__(self, param):
-        drho, v_amp = param
+    def __init__(self, drho):
         super().__init__(
             {
                 "name": "rayleigh_taylor",
                 "initial_conditions": {
-                    "r_crit": 0.25,
                     "drho": drho,
-                    "amplitude": v_amp,
-                    "A_noise": 0.0,
-                    "A_shape": 0.0,
-                    "r_noise": 0.4,
+                    "amplitude": 0.0,
                     "width": 0.1,
                     "n_bumps": 6,
                 },
@@ -55,25 +50,21 @@ class RayleighTaylorExperiment(sc.Subsection):
         )
 
         self.drho = drho
-        self.v_amp = v_amp
 
     def short_id(self):
-        return self["name"] + f"_drho{self.drho:.2e}_vamp{self.v_amp:.2e}"
+        return self["name"] + f"_{self.drho:.2e}"
 
 
-G = 2.5
-mangle_str = f"bcPT_G{G:f}"
+G = 4.0
+mangle_str = f"G{G:f}"
 
 # This is just in case we want to run the same experiment with many parameters.
 # experiment_params = [0.0, 1e-4]
 # experiment_params = [1e-4 * 3 ** k for k in range(1, 5)]
-# experiment_params = [0.0]
-experiment_params = [
-    (drho, v_amp) for drho in [1e-4, 1e-3, 1e-2] for v_amp in [1e-6, 1e-4, 1e-2]
-]
+experiment_params = [0.0]
 
 eos = sc.IdealGasEOS(gamma=2.0, r_gas=1.0)
-gravity = sc.PolytropeGravity(rhoC=1.0, K=1.0, G=G)
+gravity = sc.PolytropeGravityWithJump(rhoC=1.0, K_inner=1.0, K_outer=1.0, G=G)
 # gravity = sc.ConstantGravity(g=0.0)
 euler = sc.Euler(eos, gravity)
 
@@ -94,12 +85,11 @@ io = sc.IO(
 parallelization = {"mode": "mpi"}
 radius = 0.6
 # mesh_levels = list(range(1, 8))
-# mesh_levels = [2, 3, 4]
-mesh_levels = [1, 2, 3, 4]
+mesh_levels = [1]
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 grid_name = GridNamingScheme("rayleigh_taylor_with_halo")
 
-coarse_grid_levels = [2, 3, 4]
+coarse_grid_levels = [4]
 coarse_grid_names = [grid_name.msh_h5(level) for level in coarse_grid_levels]
 
 coarse_grid_choices = {
@@ -282,7 +272,7 @@ def make_work_estimate():
     n0 = sc.read_n_cells(grid_name.msh_h5(4))
 
     # 'measured' on Euler on L=4 with 96 cores.
-    t0 = 2.0 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
+    t0 = 1.5 * timedelta(seconds=t_end / 1e-1 * 60 * 96)
 
     # measured on Euler on L=4 with 2 and 96 cores.
     b0 = 0.0
@@ -318,6 +308,17 @@ def main():
     if args.post_process:
         for c, r in all_runs:
             post_process(c, r)
+
+    if args.copy_to_paper:
+        dir = "${HOME}/git/papers/LucGrosheintz/papers/unstructured_well_balancing/img/rayleigh_taylor"
+        dir = os.path.expandvars(dir)
+
+        for c, _ in all_runs:
+            stem = c[0]["experiment"].short_id()
+            files = glob.glob(stem + "*.tex")
+
+            for f in files:
+                shutil.copy(f, os.path.join(dir, os.path.basename(f)))
 
 
 if __name__ == "__main__":
