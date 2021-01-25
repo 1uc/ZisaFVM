@@ -171,9 +171,15 @@ MPIHaloExchange::MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
 
 MPIHaloExchange::~MPIHaloExchange() {
   auto mpi_rank = zisa::mpi::rank();
-  auto fn = string_format("mpi_exchange_runtime-%d.txt", mpi_rank);
+  {
+    auto fn = string_format("mpi_exchange_runtime_wait-%d.txt", mpi_rank);
+    write_string_to_file(string_format("%.8e", t_wait_), fn);
+  }
 
-  write_string_to_file(string_format("%.8e", t_prof_), fn);
+  {
+    auto fn = string_format("mpi_exchange_runtime_post-%d.txt", mpi_rank);
+    write_string_to_file(string_format("%.8e", t_post_), fn);
+  }
 }
 
 void MPIHaloExchange::operator()(AllVariables &all_vars) {
@@ -183,6 +189,7 @@ void MPIHaloExchange::operator()(AllVariables &all_vars) {
   if (all_vars.avars.shape(1) != 0) {
     exchange(all_vars.avars, avars_tag);
   }
+  t_post_ += timer.elapsed_seconds();
 }
 
 void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {
@@ -196,11 +203,14 @@ void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {
 }
 
 void MPIHaloExchange::wait() {
+  auto timer = Timer();
 
   for (const auto &r : requests) {
     r.wait();
   }
   requests.clear();
+
+  t_wait_ += timer.elapsed_seconds();
 }
 
 Halo make_halo(const DistributedGrid &dgrid, const MPI_Comm &mpi_comm) {

@@ -82,7 +82,8 @@ private:
   int cvars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_CVARS;
   int avars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_AVARS;
 
-  double t_prof_ = 0.0;
+  double t_wait_ = 0.0;
+  double t_post_ = 0.0;
 };
 
 /// Prepare for data exchange.
