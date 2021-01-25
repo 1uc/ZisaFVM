@@ -66,8 +66,6 @@ public:
   MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
                   std::vector<HaloSendPart> send_parts);
 
-  virtual ~MPIHaloExchange();
-
   void operator()(AllVariables &all_vars) override;
 
   void wait() override;
@@ -81,9 +79,6 @@ private:
 
   int cvars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_CVARS;
   int avars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_AVARS;
-
-  double t_wait_ = 0.0;
-  double t_post_ = 0.0;
 };
 
 /// Prepare for data exchange.
