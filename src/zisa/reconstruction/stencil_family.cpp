@@ -95,7 +95,11 @@ bool operator!=(const StencilFamily &lhs, const StencilFamily &rhs) {
 array<StencilFamily, 1>
 compute_stencil_families(const Grid &grid, const StencilFamilyParams &params) {
   auto stencil_families = array<StencilFamily, 1>(grid.n_cells);
-  for_each(flat_range(stencil_families),
+  // Empirically, this loop *must* be serial or else the code will segfault,
+  // occasionally.
+  // TODO Find out why, then make it parallel.
+  for_each(serial_policy{},
+           flat_range(stencil_families),
            [&stencil_families, &grid, &params](int_t i) {
              if (grid.cell_flags[i].interior
                  || grid.cell_flags[i].ghost_cell_l1) {

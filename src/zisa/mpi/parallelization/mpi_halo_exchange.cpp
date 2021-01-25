@@ -157,12 +157,17 @@ MPIHaloExchange::MPIHaloExchange(
   for (const auto &l : local_info) {
     receive_parts.emplace_back(l);
   }
+
+  requests.reserve(2 * receive_parts.size());
 }
 
 MPIHaloExchange::MPIHaloExchange(std::vector<HaloReceivePart> receive_parts,
                                  std::vector<HaloSendPart> send_parts)
     : receive_parts(std::move(receive_parts)),
-      send_parts(std::move(send_parts)) {}
+      send_parts(std::move(send_parts)) {
+
+  requests.reserve(2 * receive_parts.size());
+}
 
 MPIHaloExchange::~MPIHaloExchange() {
   auto mpi_rank = zisa::mpi::rank();
@@ -173,20 +178,14 @@ MPIHaloExchange::~MPIHaloExchange() {
 
 void MPIHaloExchange::operator()(AllVariables &all_vars) {
   auto timer = Timer();
-
   exchange(all_vars.cvars, cvars_tag);
 
   if (all_vars.avars.shape(1) != 0) {
     exchange(all_vars.avars, avars_tag);
   }
-
-  t_prof_ += timer.elapsed_seconds();
 }
 
 void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {
-  std::vector<HaloExchangeRequest> requests;
-  requests.reserve(receive_parts.size());
-
   for (auto &p : receive_parts) {
     requests.push_back(p.receive(data, tag));
   }
@@ -194,10 +193,14 @@ void MPIHaloExchange::exchange(array_view<T, n_dims, row_major> data, int tag) {
   for (auto &p : send_parts) {
     p.send(data, tag);
   }
+}
+
+void MPIHaloExchange::wait() {
 
   for (const auto &r : requests) {
     r.wait();
   }
+  requests.clear();
 }
 
 Halo make_halo(const DistributedGrid &dgrid, const MPI_Comm &mpi_comm) {

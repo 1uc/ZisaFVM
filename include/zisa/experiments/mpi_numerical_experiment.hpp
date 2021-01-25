@@ -137,6 +137,7 @@ protected:
 
     auto halo_exchange = choose_halo_exchange();
     (*halo_exchange)(*u_delta);
+    (*halo_exchange).wait();
 
     for (int_t i = 0; i < u_delta->size(); ++i) {
       (*u_delta)[i] = (*u1)[i] - (*u_delta)[i];
@@ -538,12 +539,6 @@ protected:
     auto dgrid = choose_distributed_grid();
 
     return make_mpi_halo_exchange(*dgrid, mpi_comm);
-  }
-
-  std::shared_ptr<BoundaryCondition> compute_boundary_condition() override {
-    auto bc = super::compute_boundary_condition();
-    auto halo_exchange = choose_halo_exchange();
-    return std::make_shared<HaloExchangeBC>(bc, halo_exchange);
   }
 
   std::shared_ptr<ProgressBar> choose_progress_bar() override {

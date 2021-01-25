@@ -125,6 +125,40 @@ void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
   }
 }
 
+// TODO refactor with the above.
+template <class Equilibrium, class RC, class Scaling>
+void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::compute(
+    const AllVariables &current_state,
+    const array_const_view<int_t, 1> &cells) {
+  auto n_cells = cells.size();
+
+#if ZISA_HAS_OPENMP == 1
+#pragma omp parallel
+#endif
+  {
+    auto qbar_local = qbar_allocator->allocate(shape_t<1>{max_stencil_size});
+    auto tracer_local = tracer_allocator->allocate(
+        shape_t<2>{max_stencil_size, current_state.avars.shape(1)});
+    auto polys = polys_allocator->allocate(shape_t<1>{n_polys});
+    auto rhs = rhs_allocator->allocate(
+        shape_t<2>{max_stencil_size, WENOPoly::n_vars()});
+
+#if ZISA_HAS_OPENMP == 1
+#pragma omp for ZISA_OMP_FOR_SCHEDULE_DEFAULT
+#endif
+    for (int_t ii = 0; ii < n_cells; ++ii) {
+      auto i = cells[ii];
+      set_qbar_local(*qbar_local, current_state, i);
+      rc[i].compute(*rhs, *polys, *qbar_local);
+
+      auto tracer_polys = array_view<ScalarPoly, 1>(
+          shape_t<1>(polys->shape(0)), (ScalarPoly *)(polys->raw()));
+      set_tracer_local(*tracer_local, current_state, i);
+      rc[i].compute_tracer(*rhs, tracer_polys, *tracer_local);
+    }
+  }
+}
+
 template <class Equilibrium, class RC, class Scaling>
 void EulerGlobalReconstruction<Equilibrium, RC, Scaling>::set_qbar_local(
     array<cvars_t, 1> &qbar_local, const AllVariables &current_state, int_t i) {
@@ -158,6 +192,12 @@ std::string EulerGlobalReconstruction<Equilibrium, RC, Scaling>::str() const {
   return string_format("EulerGlobalReconstruction<%s>: \n",
                        type_name<RC>().c_str())
          + indent_block(1, zisa::to_string(params));
+}
+
+template <class Equilibrium, class RC, class Scaling>
+array_const_view<int_t, 1>
+EulerGlobalReconstruction<Equilibrium, RC, Scaling>::stencil(int_t i) const {
+  return array_const_view<int_t, 1>(rc[i].local2global());
 }
 
 } // namespace zisa

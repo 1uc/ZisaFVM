@@ -22,6 +22,10 @@ public:
     // nothing to do.
   }
 
+  void compute(const AllVariables &, const array_const_view<int_t, 1> &) {
+    // nothing to do.
+  }
+
   std::shared_ptr<IdealGasEOS> operator()(int_t /* i */) const { return eos; }
 
 private:
@@ -61,6 +65,30 @@ public:
                    "Sizes don't match: %d != %d", n_cells, local_eos.shape(0)));
 
     for (int_t i = 0; i < n_cells; ++i) {
+      for (int_t k = 0; k < n_avars; ++k) {
+        mass_fraction[k] = zisa::max(0.0, avars(i, k) / cvars(i, 0));
+      }
+
+      *local_eos[i] = HelmholtzEOS(mass_fraction, mass_number, charge_number);
+    }
+  }
+
+  void compute(const AllVariables &all_variables,
+               const array_const_view<int_t, 1> &cells) {
+
+    const auto &avars = all_variables.avars;
+    const auto &cvars = all_variables.cvars;
+
+    auto n_cells = cells.size();
+    auto n_avars = avars.shape(1);
+
+    LOG_ERR_IF(avars.shape(0) != local_eos.shape(0),
+               string_format(
+                   "Sizes don't match: %d != %d", n_cells, local_eos.shape(0)));
+
+    // TODO not OpenMP parallel
+    for (int_t ii = 0; ii < n_cells; ++ii) {
+      auto i = cells[ii];
       for (int_t k = 0; k < n_avars; ++k) {
         mass_fraction[k] = zisa::max(0.0, avars(i, k) / cvars(i, 0));
       }

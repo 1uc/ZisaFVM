@@ -51,7 +51,7 @@ TimeLoop::operator()(std::shared_ptr<AllVariables> u0) {
     double t = simulation_clock->current_time();
     double dt = simulation_clock->current_time_step();
 
-    // v-- possibly different buffer, contains u1.
+    //   v-- possibly different buffer, contains u1.
     auto u1 = time_integration->compute_step(u0, t, dt);
 
     step_rejection->check(*u0, *u1);

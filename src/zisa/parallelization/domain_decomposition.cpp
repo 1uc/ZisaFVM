@@ -326,10 +326,13 @@ extract_vertices(const array<XYZ, 1> &vertices,
   vi_local2old.resize(integer_cast<size_t>(n_unique));
 
   std::map<int_t, int_t> vi_old2local;
-  zisa::for_each(index_range(vi_local2old.size()),
+  zisa::for_each(serial_policy{},
+                 index_range(vi_local2old.size()),
                  [&](int_t i) { vi_old2local[vi_local2old[i]] = i; });
 
-  zisa::for_each(index_range(local_vertex_indices.shape(0)), [&](int_t i) {
+  zisa::for_each(
+                 serial_policy{},
+                 index_range(local_vertex_indices.shape(0)), [&](int_t i) {
     for (int_t k : index_range(local_vertex_indices.shape(1))) {
       local_vertex_indices(i, k) = vi_old2local[local_vertex_indices(i, k)];
     }

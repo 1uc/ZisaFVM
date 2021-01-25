@@ -20,7 +20,12 @@ public:
   virtual ~GlobalReconstruction() = default;
 
   virtual void compute(const AllVariables &current_state) = 0;
+  virtual void compute(const AllVariables &current_state,
+                       const array_const_view<int_t, 1> &cells)
+      = 0;
+
   virtual CVars operator()(int_t i, const XYZ &x) const = 0;
+  virtual array_const_view<int_t, 1> stencil(int_t i) const = 0;
 };
 
 template <class Equilibrium, class RC, class Scaling>
@@ -36,6 +41,10 @@ public:
 
   virtual euler_var_t operator()(int_t i, const XYZ &x) const override;
   virtual void compute(const AllVariables &current_state) override;
+  virtual void compute(const AllVariables &current_state,
+                       const array_const_view<int_t, 1> &cells) override;
+
+  virtual array_const_view<int_t, 1> stencil(int_t i) const override;
 
   std::string str() const;
 

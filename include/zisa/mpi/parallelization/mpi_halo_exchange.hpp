@@ -70,11 +70,14 @@ public:
 
   void operator()(AllVariables &all_vars) override;
 
+  void wait() override;
+
   void exchange(array_view<T, n_dims, row_major> data, int tag);
 
 private:
   std::vector<HaloReceivePart> receive_parts;
   std::vector<HaloSendPart> send_parts;
+  std::vector<HaloExchangeRequest> requests;
 
   int cvars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_CVARS;
   int avars_tag = ZISA_MPI_TAG_HALO_EXCHANGE_AVARS;

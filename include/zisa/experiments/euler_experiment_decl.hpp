@@ -9,6 +9,7 @@
 #include <zisa/model/cfl_condition.hpp>
 #include <zisa/model/euler_factory.hpp>
 #include <zisa/model/local_eos_state.hpp>
+#include <zisa/parallelization/halo_exchange.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 
 namespace zisa {
@@ -42,6 +43,7 @@ protected:
   virtual std::shared_ptr<RateOfChange> choose_fvm_rate_of_change();
   virtual std::shared_ptr<RateOfChange> choose_rate_of_change() override;
   virtual std::shared_ptr<RateOfChange> choose_flux_bc() override;
+  virtual std::shared_ptr<HaloExchange> choose_halo_exchange();
   virtual std::shared_ptr<Visualization> compute_visualization() override;
   virtual std::shared_ptr<DataSource>
   compute_data_source(std::shared_ptr<FNG> fng);

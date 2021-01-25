@@ -310,6 +310,12 @@ EulerExperiment<EOS, Gravity>::choose_physical_rate_of_change() {
 }
 
 template <class EOS, class Gravity>
+std::shared_ptr<HaloExchange>
+EulerExperiment<EOS, Gravity>::choose_halo_exchange() {
+  return std::make_shared<NoHaloExchange>();
+}
+
+template <class EOS, class Gravity>
 template <class Equilibrium, class RC>
 std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_loop(
     const std::shared_ptr<EulerGlobalReconstruction<Equilibrium, RC, scaling_t>>
@@ -317,11 +323,12 @@ std::shared_ptr<RateOfChange> EulerExperiment<EOS, Gravity>::choose_flux_loop(
   using grc_t = EulerGlobalReconstruction<Equilibrium, RC, scaling_t>;
   auto grid = choose_grid();
   auto local_eos = choose_local_eos();
+  auto halo_exchange = choose_halo_exchange();
 
   auto edge_rule = choose_edge_rule();
   return std::make_shared<
       FluxLoop<euler_t, flux_t, LocalEOSState<eos_t>, grc_t>>(
-      grid, euler, local_eos, rc, edge_rule);
+      grid, euler, local_eos, rc, halo_exchange, edge_rule);
 }
 
 template <class EOS, class Gravity>

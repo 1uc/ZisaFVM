@@ -34,22 +34,24 @@ void save_partitioned_grid(const std::string &dirname,
 
   LOG_ERR_IF(n_parts <= 1, "You need 2 or more parts.");
 
-  auto sharp_stencil_params = StencilFamilyParams{
-      {3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"}, {2.0, 1.5, 1.5, 1.5, 1.5}};
+  //  auto sharp_stencil_params = StencilFamilyParams{
+  //      {3, 2, 2, 2, 2}, {"c", "b", "b", "b", "b"},
+  //      {2.0, 1.5, 1.5, 1.5, 1.5}};
+  //
+  //  auto stencil_timer = Timer();
+  //  auto effective_stencils
+  //      = compute_effective_stencils(grid, sharp_stencil_params);
+  //  PRINT(stencil_timer.elapsed_seconds());
+  //
+  //  auto metis_timer = Timer();
+  //  //  auto partitioned_grid = compute_partitioned_grid(grid, n_parts);
+  //  auto partitioned_grid
+  //      = compute_partitioned_grid(grid, effective_stencils, n_parts);
+  //  PRINT(metis_timer.elapsed_seconds());
 
-  auto stencil_timer = Timer();
-  auto effective_stencils
-      = compute_effective_stencils(grid, sharp_stencil_params);
-  PRINT(stencil_timer.elapsed_seconds());
-
-  auto metis_timer = Timer();
-  //  auto partitioned_grid = compute_partitioned_grid(grid, n_parts);
-  auto partitioned_grid
-      = compute_partitioned_grid(grid, effective_stencils, n_parts);
-  PRINT(metis_timer.elapsed_seconds());
+  auto partitioned_grid = compute_partitioned_grid_by_sfc(grid, n_parts);
 
   const auto &permutation = partitioned_grid.permutation;
-
   const auto &partition = partitioned_grid.partition;
   const auto &boundaries = partitioned_grid.boundaries;
 

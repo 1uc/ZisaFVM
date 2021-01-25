@@ -37,5 +37,6 @@ void ScatteredDataSource::do_load(AllVariables &all_variables,
   }
 
   (*halo_exchange)(all_variables);
+  (*halo_exchange).wait();
 }
 }
