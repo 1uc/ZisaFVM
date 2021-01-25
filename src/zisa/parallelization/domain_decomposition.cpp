@@ -81,8 +81,11 @@ compute_partition_full_stencil(const Grid &grid,
 
   idx_t metis_options[METIS_NOPTIONS];
   METIS_SetDefaultOptions(metis_options);
-  metis_options[METIS_OPTION_MINCONN] = 1;
+  // metis_options[METIS_OPTION_MINCONN] = 1;
   metis_options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
+  metis_options[METIS_OPTION_NCUTS] = 10;
+  metis_options[METIS_OPTION_NITER] = 20;
+  metis_options[METIS_OPTION_UFACTOR] = 100;
 
   // clang-format off
   METIS_PartGraphKway(
@@ -553,6 +556,40 @@ extract_subgrid(const Grid &grid,
   return std::tuple{std::move(local_vertex_indices),
                     std::move(local_vertices),
                     std::move(global_cell_indices)};
+}
+
+PartitionedGrid compute_partitioned_grid_by_sfc(const Grid &grid,
+                                                int_t n_parts) {
+  auto partition = array<int_t, 1>(grid.n_cells);
+  auto boundaries = array<int_t, 1>(n_parts + 1);
+  auto permutation = array<int_t, 1>(grid.n_cells);
+
+  auto balanced_chunks = [](int_t length, int_t n_chunks, int_t k_chunk) {
+    int_t chunk_size = length / n_chunks;
+    int_t n_large_chunks = length % n_chunks;
+
+    int_t low = k_chunk * chunk_size + zisa::min(k_chunk, n_large_chunks);
+
+    int_t high
+        = (k_chunk + 1) * chunk_size + zisa::min(k_chunk + 1, n_large_chunks);
+
+    return std::pair<int_t, int_t>{zisa::min(low, length),
+                                   zisa::min(high, length)};
+  };
+
+  for (int_t k_part = 0; k_part < n_parts; ++k_part) {
+    auto [low, high] = balanced_chunks(grid.n_cells, n_parts, k_part);
+    boundaries[k_part] = low;
+    boundaries[k_part + 1] = high;
+
+    for (int_t i = boundaries[k_part]; i < boundaries[k_part + 1]; ++i) {
+      partition[i] = k_part;
+      permutation[i] = i;
+    }
+  }
+
+  return PartitionedGrid{
+      std::move(partition), std::move(boundaries), std::move(permutation)};
 }
 
 }
