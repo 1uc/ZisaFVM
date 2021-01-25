@@ -10,6 +10,7 @@ load_local_grid(const std::string &subgrid_name,
                 const StencilFamilyParams &stencil_params,
                 const QRDegrees &qr_degrees,
                 int mpi_rank) {
+
   auto super_subgrid = zisa::load_grid(subgrid_name, qr_degrees);
   auto super_sub_dgrid = zisa::load_distributed_grid(subgrid_name);
 

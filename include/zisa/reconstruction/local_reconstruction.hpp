@@ -164,9 +164,7 @@ public:
     return rc.combined_stencil_size();
   }
 
-  auto local2global() const -> decltype(std::declval<RC>().local2global()) {
-    return rc.local2global();
-  }
+  const std::vector<int_t> &local2global() const { return rc.local2global(); }
 
   std::string str(int verbose = 0) const {
     std::stringstream ss;

@@ -40,7 +40,7 @@ public:
              int_t i_cell,
              const HybridWENOParams &params);
 
-  auto local2global() const -> decltype(stencils.local2global());
+  const std::vector<int_t> &local2global() const;
   int_t combined_stencil_size() const;
 
   /// Indistinguishable by calls to the public interface.

@@ -161,7 +161,7 @@ bool HybridWENO::operator!=(const HybridWENO &other) const {
   return !((*this) == other);
 }
 
-auto HybridWENO::local2global() const -> decltype(stencils.local2global()) {
+const std::vector<int_t> &HybridWENO::local2global() const {
   return stencils.local2global();
 }
 
