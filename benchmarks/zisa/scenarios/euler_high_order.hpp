@@ -3,8 +3,8 @@
 
 #include <zisa/boundary/flux_bc.hpp>
 #include <zisa/boundary/no_boundary_condition.hpp>
-#include <zisa/core/flux_loop.hpp>
-#include <zisa/core/gravity_source_loop.hpp>
+#include <zisa/fvm_loops/flux_loop.hpp>
+#include <zisa/fvm_loops/gravity_source_loop.hpp>
 #include <zisa/flux/hllc.hpp>
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/model/euler.hpp>

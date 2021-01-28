@@ -6,7 +6,7 @@
 
 #include <zisa/config.hpp>
 
-#include <zisa/core/time_loop.hpp>
+#include <zisa/fvm_loops/time_loop.hpp>
 
 #include <zisa/math/cartesian.hpp>
 #include <zisa/model/all_variables.hpp>

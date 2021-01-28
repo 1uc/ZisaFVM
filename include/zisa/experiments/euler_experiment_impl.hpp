@@ -5,8 +5,8 @@
 
 #include <zisa/boundary/equilibrium_flux_bc.hpp>
 #include <zisa/boundary/flux_bc.hpp>
-#include <zisa/core/flux_loop.hpp>
-#include <zisa/core/gravity_source_loop.hpp>
+#include <zisa/fvm_loops/flux_loop.hpp>
+#include <zisa/fvm_loops/gravity_source_loop.hpp>
 #include <zisa/experiments/down_sample_reference.hpp>
 #include <zisa/io/dump_snapshot.hpp>
 #include <zisa/io/euler_plots.hpp>

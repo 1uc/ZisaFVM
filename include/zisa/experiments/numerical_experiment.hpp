@@ -3,7 +3,7 @@
 
 #include <zisa/boundary/boundary_condition.hpp>
 #include <zisa/cli/input_parameters.hpp>
-#include <zisa/core/time_loop.hpp>
+#include <zisa/fvm_loops/time_loop.hpp>
 #include <zisa/grid/grid.hpp>
 #include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/visualization.hpp>
