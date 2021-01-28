@@ -1,0 +1,34 @@
+r = INNER_RADIUS;
+R = OUTER_RADIUS;
+lc_rel = LC_REL;
+
+r0 = r - 5.0 * lc_rel * r;
+r1 = r;
+r2 = R;
+r3 = R + 5.0 * lc_rel * R;
+
+SPHERE_MACRO
+
+lc = lc_rel * r1;
+r = r0;
+Call SPHERE;
+sphere_0 = sl;
+
+lc = lc_rel * r2;
+r = r1;
+Call SPHERE;
+sphere_1 = sl;
+
+lc = lc_rel * r2;
+r = r2;
+Call SPHERE;
+sphere_2 = sl;
+
+lc = lc_rel * r2;
+r = r3;
+Call SPHERE;
+sphere_3 = sl;
+
+Volume(1) = {-sphere_0, sphere_1};
+Volume(2) = {-sphere_1, sphere_2};
+Volume(3) = {-sphere_2, sphere_3};
