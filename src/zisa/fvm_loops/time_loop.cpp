@@ -150,12 +150,16 @@ void TimeLoop::print(const std::string &str) const {
 }
 
 void TimeLoop::start_timer() {
+#if ZISA_HAS_MPI == 1
   MPI_Barrier(MPI_COMM_WORLD); // FIXME
+#endif
   start_time = current_time_stamp();
 }
 
 void TimeLoop::stop_timer() {
+#if ZISA_HAS_MPI == 1
   MPI_Barrier(MPI_COMM_WORLD); // FIXME
+#endif
   end_time = current_time_stamp();
 }
 
