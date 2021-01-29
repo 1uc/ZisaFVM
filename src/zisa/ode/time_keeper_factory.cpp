@@ -1,6 +1,5 @@
 /* Generate TimeKeeper from CLI input parameters.
  */
-#include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/ode/time_keeper.hpp>
 #include <zisa/ode/time_keeper_factory.hpp>
 
@@ -15,14 +14,6 @@ PlottingStepsParameters::PlottingStepsParameters(const InputParameters &params)
   LOG_ERR_IF(!has_key(params, "io"), "Missing config section 'io'.");
 
   const auto &params_plotting = params["io"];
-
-  //  if (has_key(params, "restart")) {
-  //    auto filename = std::string(params["restart"]["file"]);
-  //    auto reader = HDF5SerialReader(filename);
-  //
-  //    t0 = reader.read_scalar<double>("time");
-  //    k0 = reader.read_scalar<int_t>("n_steps");
-  //  }
 
   if (has_key(params_plotting, "fps")) {
     fps = params_plotting["fps"];
