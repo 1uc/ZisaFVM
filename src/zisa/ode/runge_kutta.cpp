@@ -7,6 +7,7 @@
 #include <zisa/model/all_variables.hpp>
 #include <zisa/ode/runge_kutta.hpp>
 #include <zisa/parallelization/omp.h>
+#include <zisa/loops/for_each.hpp>
 
 namespace zisa {
 

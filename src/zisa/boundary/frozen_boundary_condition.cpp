@@ -1,6 +1,7 @@
 #include <zisa/boundary/frozen_boundary_condition.hpp>
 
 #include <algorithm>
+#include <zisa/loops/for_each.hpp>
 
 namespace zisa {
 

@@ -3,6 +3,7 @@
 #include <map>
 #include <metis.h>
 #include <zisa/grid/neighbour_range.hpp>
+#include <zisa/loops/for_each.hpp>
 
 namespace zisa {
 using metis_idx_t = ::idx_t;

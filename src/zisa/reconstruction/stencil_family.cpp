@@ -1,5 +1,6 @@
 #include <limits>
 
+#include <zisa/loops/for_each.hpp>
 #include <zisa/math/comparison.hpp>
 #include <zisa/reconstruction/stencil.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
