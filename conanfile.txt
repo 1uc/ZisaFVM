@@ -1,0 +1,6 @@
+[generators]
+cmake_find_package
+cmake_paths
+
+[requires]
+nlohmann_json/3.9.1

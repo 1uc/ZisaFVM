@@ -22,9 +22,9 @@ target_link_libraries(zisa_dependencies INTERFACE stdc++fs)
 find_package(Boost CONFIG REQUIRED program_options)
 target_link_libraries(zisa_dependencies INTERFACE Boost::program_options)
 
-# # JSON
-# find_package(nlohmann_json CONFIG REQUIRED)
-# target_link_libraries(zisa_dependencies INTERFACE nlohmann_json)
+# JSON
+find_package(nlohmann_json MODULE REQUIRED)
+target_link_libraries(zisa_dependencies INTERFACE nlohmann_json::nlohmann_json)
 
 # Eigen
 find_package(Eigen3 CONFIG REQUIRED)
