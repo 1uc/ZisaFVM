@@ -186,7 +186,6 @@ add_test(NAME UnitTests COMMAND unit_tests)
 
 # -- Micro benchmarks ----------------------------------------------------------
 if(ZISA_HAS_BENCHMARK)
-  hunter_add_package(benchmark)
   find_package(benchmark CONFIG REQUIRED)
 
   add_executable(micro_benchmarks "")
