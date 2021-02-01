@@ -106,8 +106,7 @@ set_target_properties(zisa_generic PROPERTIES CXX_STANDARD 17)
 set_target_properties(zisa_generic PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(zisa_generic PUBLIC include)
 target_link_libraries(zisa_generic PUBLIC zisa_dependencies)
-target_link_libraries(zisa_generic PRIVATE warning_flags)
-target_link_libraries(zisa_generic PUBLIC Zisa::core)
+target_link_libraries(zisa_generic PRIVATE zisa_warning_flags)
 
 # -- MPI dependency ------------------------------------------------------------
 if(ZISA_HAS_MPI)
@@ -116,7 +115,7 @@ if(ZISA_HAS_MPI)
   set_target_properties(zisa_mpi PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_include_directories(zisa_mpi PUBLIC include)
   target_link_libraries(zisa_mpi PUBLIC zisa_dependencies)
-  target_link_libraries(zisa_mpi PRIVATE warning_flags)
+  target_link_libraries(zisa_mpi PRIVATE zisa_warning_flags)
   target_link_libraries(zisa_mpi PUBLIC Zisa::core)
 endif()
 
