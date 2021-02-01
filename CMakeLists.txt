@@ -74,13 +74,6 @@ if(ZISA_HAS_OPENMP)
     target_link_libraries(zisa_dependencies INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
-# MPI
-if(ZISA_HAS_MPI)
-    find_package(MPI REQUIRED)
-    target_compile_definitions(zisa_dependencies INTERFACE ZISA_HAS_MPI=1)
-    target_link_libraries(zisa_dependencies INTERFACE MPI::MPI_CXX)
-endif()
-
 # C++11 threads
 find_package(Threads REQUIRED)
 target_link_libraries(zisa_dependencies INTERFACE ${CMAKE_THREAD_LIBS_INIT})
@@ -97,6 +90,11 @@ target_link_libraries(zisa_dependencies INTERFACE Zisa::sfc)
 
 find_package(ZisaTimeStepping REQUIRED)
 target_link_libraries(zisa_dependencies INTERFACE Zisa::time_stepping)
+
+if(ZISA_HAS_MPI)
+  find_package(ZisaMPI REQUIRED)
+  target_link_libraries(zisa_dependencies INTERFACE Zisa::mpi)
+endif()
 
 
 
