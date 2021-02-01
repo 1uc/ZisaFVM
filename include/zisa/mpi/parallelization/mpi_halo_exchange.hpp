@@ -7,6 +7,7 @@
 #include <zisa/memory/array_view.hpp>
 #include <zisa/model/all_variables.hpp>
 #include <zisa/mpi/mpi.hpp>
+#include <zisa/mpi/mpi_tag_constants.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 #include <zisa/parallelization/halo_exchange.hpp>
 #include <zisa/parallelization/halo_info.hpp>

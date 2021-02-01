@@ -1,5 +1,7 @@
 #include <zisa/mpi/parallelization/mpi_single_node_array_gatherer.hpp>
 
+#include <zisa/mpi/mpi_tag_constants.hpp>
+
 namespace zisa {
 
 std::shared_ptr<MPISingleNodeArrayGathererFactory>

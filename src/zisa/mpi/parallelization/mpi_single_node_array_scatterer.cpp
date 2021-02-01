@@ -1,5 +1,7 @@
 #include <zisa/mpi/parallelization/mpi_single_node_array_scatterer.hpp>
 
+#include <zisa/mpi/mpi_tag_constants.hpp>
+
 namespace zisa {
 MPISingleNodeArrayScattererFactory::MPISingleNodeArrayScattererFactory(
     std::shared_ptr<DistributedArrayInfo> array_info,

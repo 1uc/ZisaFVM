@@ -1,5 +1,7 @@
 #include <zisa/mpi/parallelization/mpi_all_reduce.hpp>
 
+#include <zisa/mpi/mpi_tag_constants.hpp>
+
 namespace zisa {
 
 MPIAllReduce::MPIAllReduce(ReductionOperation op, MPI_Comm mpi_comm)

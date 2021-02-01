@@ -9,6 +9,7 @@
 #include <zisa/model/all_variables.hpp>
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 #include <zisa/mpi/mpi.hpp>
+#include <zisa/mpi/mpi_tag_constants.hpp>
 #include <zisa/parallelization/distributed_grid.hpp>
 
 namespace zisa {

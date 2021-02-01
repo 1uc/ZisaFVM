@@ -1,7 +1,9 @@
+#include <zisa/mpi/io/gathered_vis_info.hpp>
+
 #include <algorithm>
 #include <numeric>
 #include <zisa/math/comparison.hpp>
-#include <zisa/mpi/io/gathered_vis_info.hpp>
+#include <zisa/mpi/mpi_tag_constants.hpp>
 
 namespace zisa {
 
