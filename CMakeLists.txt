@@ -19,15 +19,15 @@ add_library(zisa_dependencies INTERFACE)
 target_link_libraries(zisa_dependencies INTERFACE stdc++fs)
 
 # Boost
-find_package(Boost CONFIG REQUIRED program_options)
+find_package(Boost REQUIRED program_options)
 target_link_libraries(zisa_dependencies INTERFACE Boost::program_options)
 
 # JSON
-find_package(nlohmann_json MODULE REQUIRED)
+find_package(nlohmann_json REQUIRED)
 target_link_libraries(zisa_dependencies INTERFACE nlohmann_json::nlohmann_json)
 
 # Eigen
-find_package(Eigen3 CONFIG REQUIRED)
+find_package(Eigen3 REQUIRED)
 target_link_libraries(zisa_dependencies INTERFACE Eigen3::Eigen)
 
 # HDF5
@@ -101,78 +101,79 @@ target_link_libraries(zisa_dependencies INTERFACE Zisa::time_stepping)
 
 
 # -- generic dependency --------------------------------------------------------
-add_library(zisa_generic_obj OBJECT "")
-set_target_properties(zisa_generic_obj PROPERTIES CXX_STANDARD 17)
-target_include_directories(zisa_generic_obj PUBLIC include)
-target_link_libraries(zisa_generic_obj PUBLIC zisa_dependencies)
-target_link_libraries(zisa_generic_obj PRIVATE warning_flags)
-target_link_libraries(zisa_generic_obj PUBLIC Zisa::core)
+add_library(zisa_generic STATIC "")
+set_target_properties(zisa_generic PROPERTIES CXX_STANDARD 17)
+set_target_properties(zisa_generic PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(zisa_generic PUBLIC include)
+target_link_libraries(zisa_generic PUBLIC zisa_dependencies)
+target_link_libraries(zisa_generic PRIVATE warning_flags)
+target_link_libraries(zisa_generic PUBLIC Zisa::core)
 
 # -- MPI dependency ------------------------------------------------------------
 if(ZISA_HAS_MPI)
-  add_library(zisa_mpi_obj OBJECT "")
-  set_target_properties(zisa_mpi_obj PROPERTIES CXX_STANDARD 17)
-  target_include_directories(zisa_mpi_obj PUBLIC include)
-  target_link_libraries(zisa_mpi_obj PUBLIC zisa_dependencies)
-  target_link_libraries(zisa_mpi_obj PRIVATE warning_flags)
-  target_link_libraries(zisa_mpi_obj PUBLIC Zisa::core)
+  add_library(zisa_mpi STATIC "")
+  set_target_properties(zisa_mpi PROPERTIES CXX_STANDARD 17)
+  set_target_properties(zisa_mpi PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(zisa_mpi PUBLIC include)
+  target_link_libraries(zisa_mpi PUBLIC zisa_dependencies)
+  target_link_libraries(zisa_mpi PRIVATE warning_flags)
+  target_link_libraries(zisa_mpi PUBLIC Zisa::core)
 endif()
 
 # -- combined dependencies -----------------------------------------------------
-add_library(zisa_obj INTERFACE)
-target_sources(zisa_obj INTERFACE $<TARGET_OBJECTS:zisa_generic_obj>)
+add_library(zisa_combined INTERFACE)
+target_link_libraries(zisa_combined INTERFACE zisa_generic)
 
 if(ZISA_HAS_MPI)
-  target_sources(zisa_obj INTERFACE $<TARGET_OBJECTS:zisa_mpi_obj>)
+  target_link_libraries(zisa_combined INTERFACE zisa_mpi)
 endif()
 
-target_include_directories(zisa_obj INTERFACE include)
-target_link_libraries(zisa_obj INTERFACE zisa_dependencies)
-target_link_libraries(zisa_obj INTERFACE Zisa::core)
-
-# -- clang tidy ----------------------------------------------------------------
-if(CLANG_TIDY_EXE)
-  set_target_properties(zisa_obj PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
-endif()
+# # -- clang tidy ----------------------------------------------------------------
+# if(CLANG_TIDY_EXE)
+#   set_target_properties(zisa_generic PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
+#   if(ZISA_HAS_MPI)
+#   set_target_properties(zisa_mpi PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
+#   endif()
+# endif()
 
 add_executable(zisa "")
 set_target_properties(zisa PROPERTIES CXX_STANDARD 17)
-target_link_libraries(zisa PUBLIC zisa_obj)
+target_link_libraries(zisa PUBLIC zisa_combined)
 
 # -- Locate point --------------------------------------------------------------
 add_executable(locate-point "")
 set_target_properties(locate-point PROPERTIES CXX_STANDARD 17)
-target_link_libraries(locate-point PUBLIC zisa_obj)
+target_link_libraries(locate-point PUBLIC zisa_combined)
 
 # -- OpenGL Demo ---------------------------------------------------------------
 add_executable(opengl-demo "")
 set_target_properties(opengl-demo PROPERTIES CXX_STANDARD 17)
-target_link_libraries(opengl-demo PUBLIC zisa_obj)
+target_link_libraries(opengl-demo PUBLIC zisa_combined)
 
 # -- Something Demo ------------------------------------------------------------
 add_executable(something-demo "")
 set_target_properties(something-demo PROPERTIES CXX_STANDARD 17)
-target_link_libraries(something-demo PUBLIC zisa_obj)
+target_link_libraries(something-demo PUBLIC zisa_combined)
 
 # -- Space Filling Curve Demo --------------------------------------------------
 add_executable(space-filling-curve-demo "")
 set_target_properties(space-filling-curve-demo PROPERTIES CXX_STANDARD 17)
-target_link_libraries(space-filling-curve-demo PUBLIC zisa_obj)
+target_link_libraries(space-filling-curve-demo PUBLIC zisa_combined)
 
 # -- Domain Decomposition ------------------------------------------------------
 add_executable(domain-decomposition "")
 set_target_properties(domain-decomposition PROPERTIES CXX_STANDARD 17)
-target_link_libraries(domain-decomposition PUBLIC zisa_obj metis)
+target_link_libraries(domain-decomposition PUBLIC zisa_combined metis)
 
 # -- Renumber the Grid ---------------------------------------------------------
 add_executable(renumber-grid "")
 set_target_properties(renumber-grid PROPERTIES CXX_STANDARD 17)
-target_link_libraries(renumber-grid PUBLIC zisa_obj metis)
+target_link_libraries(renumber-grid PUBLIC zisa_combined metis)
 
 # -- Test Reference solutions --------------------------------------------------
 add_executable(test-distributed-reference "")
 set_target_properties(test-distributed-reference PROPERTIES CXX_STANDARD 17)
-target_link_libraries(test-distributed-reference PUBLIC zisa_obj)
+target_link_libraries(test-distributed-reference PUBLIC zisa_combined)
 
 # -- Tests ---------------------------------------------------------------------
 find_package(Catch2 CONFIG REQUIRED)
@@ -180,7 +181,7 @@ find_package(Catch2 CONFIG REQUIRED)
 add_executable(unit_tests "")
 set_target_properties(unit_tests PROPERTIES CXX_STANDARD 17)
 target_include_directories(unit_tests PUBLIC test)
-target_link_libraries(unit_tests PUBLIC zisa_obj Catch2::Catch2)
+target_link_libraries(unit_tests PUBLIC zisa_combined Catch2::Catch2)
 
 enable_testing()
 add_test(NAME UnitTests COMMAND unit_tests)
@@ -193,7 +194,7 @@ if(ZISA_HAS_BENCHMARK)
   add_executable(micro_benchmarks "")
   set_target_properties(micro_benchmarks PROPERTIES CXX_STANDARD 17)
   target_include_directories(micro_benchmarks PUBLIC benchmarks)
-  target_link_libraries(micro_benchmarks PUBLIC zisa_obj benchmark::benchmark)
+  target_link_libraries(micro_benchmarks PUBLIC zisa_combined benchmark::benchmark)
 endif()
 
 # -- Subdirectories ------------------------------------------------------------

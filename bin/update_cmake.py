@@ -24,7 +24,7 @@ def find_subdirectories(folder):
 def format_sources(target, sources):
     ret = ""
 
-    line_pattern = "  PUBLIC ${{CMAKE_CURRENT_LIST_DIR}}/{:s}\n"
+    line_pattern = "  PRIVATE ${{CMAKE_CURRENT_LIST_DIR}}/{:s}\n"
 
     if sources:
         ret += "".join(
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     base_directory = "src/"
     for d in find_subdirectories(base_directory):
-        recurse(d, {"generic": "zisa_generic_obj", "mpi": "zisa_mpi_obj"})
+        recurse(d, {"generic": "zisa_generic", "mpi": "zisa_mpi"})
         append_to_file(cmake_file, add_subdirectory(base_directory + d))
 
     add_executable(cmake_file, "zisa", "zisa.cpp")

@@ -1,6 +1,6 @@
 target_sources(unit_tests
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/cell_range.cpp
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/grid.cpp
-  PUBLIC ${CMAKE_CURRENT_LIST_DIR}/point_locator.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cell_range.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/grid.cpp
+  PRIVATE ${CMAKE_CURRENT_LIST_DIR}/point_locator.cpp
 )
 
