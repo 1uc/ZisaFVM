@@ -1,4 +1,4 @@
-target_sources(zisa_generic
+target_sources(zisa_generic_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/all_reduce.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/all_variables_gatherer.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/all_variables_scatterer.cpp

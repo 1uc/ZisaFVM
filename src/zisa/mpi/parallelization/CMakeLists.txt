@@ -1,6 +1,6 @@
 if(ZISA_HAS_MPI)
 
-target_sources(zisa_mpi
+target_sources(zisa_mpi_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/distributed_array_info.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/mpi_all_reduce.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/mpi_all_variables_gatherer.cpp

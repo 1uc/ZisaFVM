@@ -1,4 +1,4 @@
-target_sources(zisa_generic
+target_sources(zisa_generic_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cweno_ao.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/hybrid_weno.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/hybrid_weno_params.cpp

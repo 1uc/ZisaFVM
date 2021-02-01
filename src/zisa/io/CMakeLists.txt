@@ -1,4 +1,4 @@
-target_sources(zisa_generic
+target_sources(zisa_generic_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/backtrace.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/colors.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/data_source.cpp

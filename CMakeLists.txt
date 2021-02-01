@@ -99,31 +99,32 @@ endif()
 
 
 # -- generic dependency --------------------------------------------------------
-add_library(zisa_generic STATIC "")
-set_target_properties(zisa_generic PROPERTIES CXX_STANDARD 17)
-set_target_properties(zisa_generic PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(zisa_generic PUBLIC include)
-target_link_libraries(zisa_generic PUBLIC zisa_dependencies)
-target_link_libraries(zisa_generic PRIVATE zisa_warning_flags)
+add_library(zisa_generic_obj OBJECT "")
+set_target_properties(zisa_generic_obj PROPERTIES CXX_STANDARD 17)
+set_target_properties(zisa_generic_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(zisa_generic_obj PUBLIC include)
+target_link_libraries(zisa_generic_obj PUBLIC zisa_dependencies)
+target_link_libraries(zisa_generic_obj PRIVATE zisa_warning_flags)
 
 # -- MPI dependency ------------------------------------------------------------
 if(ZISA_HAS_MPI)
-  add_library(zisa_mpi STATIC "")
-  set_target_properties(zisa_mpi PROPERTIES CXX_STANDARD 17)
-  set_target_properties(zisa_mpi PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  target_include_directories(zisa_mpi PUBLIC include)
-  target_link_libraries(zisa_mpi PUBLIC zisa_dependencies)
-  target_link_libraries(zisa_mpi PRIVATE zisa_warning_flags)
-  target_link_libraries(zisa_mpi PUBLIC Zisa::core)
+  add_library(zisa_mpi_obj OBJECT "")
+  set_target_properties(zisa_mpi_obj PROPERTIES CXX_STANDARD 17)
+  set_target_properties(zisa_mpi_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(zisa_mpi_obj PUBLIC include)
+  target_link_libraries(zisa_mpi_obj PUBLIC zisa_dependencies)
+  target_link_libraries(zisa_mpi_obj PRIVATE zisa_warning_flags)
 endif()
 
 # -- combined dependencies -----------------------------------------------------
 add_library(zisa_combined INTERFACE)
-target_link_libraries(zisa_combined INTERFACE zisa_generic)
+target_sources(zisa_combined INTERFACE $<TARGET_OBJECTS:zisa_generic_obj>)
 
 if(ZISA_HAS_MPI)
-  target_link_libraries(zisa_combined INTERFACE zisa_mpi)
+  target_sources(zisa_combined INTERFACE $<TARGET_OBJECTS:zisa_mpi_obj>)
 endif()
+target_include_directories(zisa_combined INTERFACE include)
+target_link_libraries(zisa_combined INTERFACE zisa_dependencies)
 
 # # -- clang tidy ----------------------------------------------------------------
 # if(CLANG_TIDY_EXE)

@@ -1,4 +1,4 @@
-target_sources(zisa_generic
+target_sources(zisa_generic_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/cell.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/gmsh_reader.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/grid.cpp

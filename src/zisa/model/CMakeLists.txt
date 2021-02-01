@@ -1,4 +1,4 @@
-target_sources(zisa_generic
+target_sources(zisa_generic_obj
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/all_variables.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/distributed_cfl_condition.cpp
   PRIVATE ${CMAKE_CURRENT_LIST_DIR}/euler.cpp
