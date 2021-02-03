@@ -10,4 +10,3 @@ target_sources(zisa_mpi_obj
 )
 
 endif()
-add_subdirectory(cmake-build-debug)
