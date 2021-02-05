@@ -72,7 +72,7 @@ jobs:
                 -DZISA_HAS_MPI=${ZISA_HAS_MPI} \
                 ..
 
-      - name: Build everying
+      - name: Build everything
         run: |
           cd build
           cmake --build . --parallel $(nproc)
