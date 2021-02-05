@@ -65,6 +65,13 @@ if(ZISA_LOG_LEVEL)
   target_compile_definitions(zisa_dependencies INTERFACE ZISA_LOG_LEVEL=${ZISA_LOG_LEVEL})
 endif()
 
+# MPI
+if(ZISA_HAS_MPI)
+  find_package(MPI REQUIRED COMPONENTS CXX)
+  target_compile_definitions(fvm_dependencies INTERFACE ZISA_HAS_MPI=1)
+  target_link_libraries(fvm_dependencies INTERFACE MPI::MPI_CXX)
+endif()
+
 # OpenMP
 if(ZISA_HAS_OPENMP)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
