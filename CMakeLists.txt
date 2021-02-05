@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
-project(Zisa VERSION 0.1)
+project(ZisaFVM VERSION 0.1)
 
 include("cmake/has_build_type.cmake")
 include("cmake/fast_debug.cmake")
@@ -181,7 +181,7 @@ set_target_properties(test-distributed-reference PROPERTIES CXX_STANDARD 17)
 target_link_libraries(test-distributed-reference PUBLIC zisa_combined)
 
 # -- Tests ---------------------------------------------------------------------
-find_package(Catch2 CONFIG REQUIRED)
+find_package(Catch2 REQUIRED)
 
 add_executable(unit_tests "")
 set_target_properties(unit_tests PROPERTIES CXX_STANDARD 17)
