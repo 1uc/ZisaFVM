@@ -38,5 +38,3 @@ make install
 
 mkdir -p ${METIS_INSTALL}/doc
 wget ${METIS_DOC_LINK} -O ${METIS_INSTALL}/doc/manual.pdf
-
-cd ../..

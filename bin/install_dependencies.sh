@@ -3,6 +3,7 @@
 if [[ "$#" -lt 2 ]]
 then
     echo "Usage: $0 COMPILER DESTINATION [--zisa_has_mpi=ZISA_HAS_MPI]"
+    echo "                               [--zisa_has_metis=ZISA_HAS_METIS]"
 fi
 
 for arg in "$@"
@@ -10,6 +11,9 @@ do
     case $arg in
         --zisa_has_mpi=*)
             ZISA_HAS_MPI=${arg#*=}
+            ;;
+        --zisa_has_metis=*)
+            ZISA_HAS_METIS=${arg#*=}
             ;;
         *)
             ;;
@@ -21,6 +25,11 @@ then
     ZISA_HAS_MPI=0
 fi
 
+if [[ -z "${ZISA_HAS_METIS}" ]]
+then
+    ZISA_HAS_METIS=0
+fi
+
 component_name="ZisaFVM"
 if [[ ${ZISA_HAS_MPI} -eq 0 ]]
 then
@@ -29,11 +38,12 @@ else
     zisa_dependencies=("ZisaCore" "ZisaMemory" "ZisaSFC" "ZisaMPI" "ZisaTimeStepping")
 fi
 
-zisa_memory_root=$(realpath $(dirname $(readlink -f $0))/..)
+zisa_fvm_root=$(realpath $(dirname $(readlink -f $0))/..)
 
-install_dir=$(${zisa_memory_root}/bin/install_dir.sh $1 $2 --zisa_has_mpi=${ZISA_HAS_MPI})
+compiler=$1
+install_dir=$(${zisa_fvm_root}/bin/install_dir.sh $1 $2 --zisa_has_mpi=${ZISA_HAS_MPI})
 source_dir=${install_dir}/sources
-conan_file=${zisa_memory_root}/conanfile.txt
+conan_file=${zisa_fvm_root}/conanfile.txt
 
 if [[ -f $conan_file ]]
 then
@@ -47,6 +57,7 @@ do
     src_dir=${source_dir}/$dep
     repo_url=git@github.com:1uc/${dep}.git
 
+    # If necessary and reasonable remove ${src_dir}.
     if [[ -d ${src_dir} ]]
     then
         cd ${src_dir}
@@ -57,7 +68,7 @@ do
             exit -1
 
         else
-            cd -
+            cd ${HOME}
             rm -rf ${src_dir}
         fi
     fi
@@ -78,6 +89,13 @@ do
     cmake --build . --parallel $(nproc)
     cmake --install .
 done
+
+if [[ ${ZISA_HAS_METIS} -ne 0 ]]
+then
+    cd ${zisa_fvm_root}
+    bin/install_metis.sh $1
+    cd -
+fi
 
 echo "The dependencies were installed at"
 echo "    ${install_dir}"
