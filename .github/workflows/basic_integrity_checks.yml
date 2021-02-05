@@ -17,11 +17,13 @@ jobs:
       matrix:
         compiler: [[gcc, g++]]
         zisa_has_mpi: [0]
+        zisa_has_metis: [1]
 
     env:
       ZISA_COMPONENT: ZisaFVM
       COMPILER: ${{ matrix.compiler[0] }}
       ZISA_HAS_MPI: ${{ matrix.zisa_has_mpi }}
+      ZISA_HAS_METIS: ${{ matrix.zisa_has_metis }}
       REL_INSTALL_ROOT: zisa_dependencies
       CC: ${{ matrix.compiler[0] }}
       CXX: ${{ matrix.compiler[1] }}
@@ -56,7 +58,9 @@ jobs:
       - name: Install dependencies
         run: |
           export PATH=${PATH}:${HOME}/.local/bin
-          bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT}
+          bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT} \
+                                      --zisa_has_mpi=${ZISA_HAS_MPI} \
+                                      --zisa_has_metis=${ZISA_HAS_METIS}
 
       - name: Configure build
         run: |
@@ -70,6 +74,7 @@ jobs:
                 -DCMAKE_C_COMPILER=${CC} \
                 -DCMAKE_CXX_COMPILER=${CXX} \
                 -DZISA_HAS_MPI=${ZISA_HAS_MPI} \
+                -DZISA_HAS_METIS=${ZISA_HAS_METIS} \
                 ..
 
       - name: Build everything
