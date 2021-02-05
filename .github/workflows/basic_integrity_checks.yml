@@ -1,0 +1,82 @@
+name: Basic Integrity Checks
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows running this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [[gcc, g++]]
+        zisa_has_mpi: [0]
+
+    env:
+      ZISA_COMPONENT: ZisaFVM
+      COMPILER: ${{ matrix.compiler[0] }}
+      ZISA_HAS_MPI: ${{ matrix.zisa_has_mpi }}
+      REL_INSTALL_ROOT: zisa_dependencies
+      CC: ${{ matrix.compiler[0] }}
+      CXX: ${{ matrix.compiler[1] }}
+
+    steps:
+      # Checks-out the repository.
+      - uses: actions/checkout@v2
+
+      - name: Obtain access to private repos.
+        env:
+          ZISA_BOT_SSH_KEY: ${{ secrets.ZISA_BOT_SSH_KEY }}
+
+        run: |
+          mkdir -p ${HOME}/.ssh
+          echo "${ZISA_BOT_SSH_KEY}" > ${HOME}/.ssh/id_ed25519
+          chmod 700 ${HOME}/.ssh/id_ed25519
+
+      - name: Install MPI
+        if: matrix.zisa_has_mpi == 1
+        run: |
+          sudo apt-get install -y openmpi-bin libopenmpi-dev
+
+      - name: Install HDF5
+        run: |
+          sudo apt-get install -y libhdf5-serial-dev
+
+      - name: Install conan
+        run: |
+          pip3 install wheel setuptools
+          pip3 install conan
+
+      - name: Install dependencies
+        run: |
+          export PATH=${PATH}:${HOME}/.local/bin
+          bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT}
+
+      - name: Configure build
+        run: |
+          export INSTALL_DIR=$(bin/install_dir.sh ${CC} ${HOME}/${REL_INSTALL_ROOT})
+          mkdir build && cd build
+          cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/zisa \
+                -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/zisa/lib/cmake/zisa \
+                -DCMAKE_PROJECT_${ZISA_COMPONENT}_INCLUDE=${INSTALL_DIR}/conan/conan_paths.cmake \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_C_COMPILER=${CC} \
+                -DCMAKE_CXX_COMPILER=${CXX} \
+                -DZISA_HAS_MPI=${ZISA_HAS_MPI} \
+                ..
+
+      - name: Build everying
+        run: |
+          cd build
+          cmake --build .
+
+      - name: Run tests
+        run: |
+          cd build
+          ctest
