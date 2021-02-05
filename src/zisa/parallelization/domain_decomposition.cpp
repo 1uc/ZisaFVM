@@ -1,7 +1,11 @@
 #include <zisa/parallelization/domain_decomposition.hpp>
 
 #include <map>
+
+#if ZISA_HAS_METIS == 1
 #include <metis.h>
+#endif
+
 #include <zisa/grid/neighbour_range.hpp>
 #include <zisa/loops/for_each.hpp>
 
@@ -19,7 +23,7 @@ array<int_t, 1>
 compute_partition_full_stencil(const Grid &grid,
                                const std::vector<std::vector<int_t>> &stencils,
                                int n_parts) {
-
+#if ZISA_HAS_METIS == 1
   auto n_cells = grid.n_cells;
   auto nvtxs = metis_idx_t(n_cells);
   auto ncon = metis_idx_t(1); // # constraints
@@ -97,11 +101,14 @@ compute_partition_full_stencil(const Grid &grid,
   array<int_t, 1> partition(n_cells);
   for_each(flat_range(partition),
            [&partition, &part](int_t i) { partition[i] = int_t(part[i]); });
-
   return partition;
+#else
+  LOG_ERR("This requires `ZISA_HAS_METIS == 1`.");
+#endif
 }
 
 array<int_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
+#if ZISA_HAS_METIS == 1
   auto n_cells = grid.n_cells;
   auto n_vertices = grid.n_vertices;
   auto max_neighbours = grid.max_neighbours;
@@ -141,6 +148,9 @@ array<int_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
            [&partition, &epart](int_t i) { partition[i] = int_t(epart[i]); });
 
   return partition;
+#else
+  LOG_ERR("This requires `ZISA_HAS_METIS == 1`.");
+#endif
 }
 
 array<int_t, 1>
