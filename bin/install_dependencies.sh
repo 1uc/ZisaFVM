@@ -24,9 +24,9 @@ fi
 component_name="ZisaFVM"
 if [[ ${ZISA_HAS_MPI} -eq 0 ]]
 then
-    zisa_dependencies=("ZisaCore" "ZisaMemory" "ZisaTimeStepping")
+    zisa_dependencies=("ZisaCore" "ZisaMemory" "ZisaSFC" "ZisaTimeStepping")
 else
-    zisa_dependencies=("ZisaCore" "ZisaMemory" "ZisaMPI" "ZisaTimeStepping")
+    zisa_dependencies=("ZisaCore" "ZisaMemory" "ZisaSFC" "ZisaMPI" "ZisaTimeStepping")
 fi
 
 zisa_memory_root=$(realpath $(dirname $(readlink -f $0))/..)
@@ -69,6 +69,7 @@ do
 
     cmake -DCMAKE_INSTALL_PREFIX=${install_dir}/zisa \
           -DCMAKE_PREFIX_PATH=${install_dir}/zisa/lib/cmake/zisa \
+          -DCMAKE_MODULE_PATH=${install_dir}/conan \
           -DCMAKE_PROJECT_${dep}_INCLUDE=${install_dir}/conan/conan_paths.cmake \
           -DZISA_HAS_MPI=${ZISA_HAS_MPI} \
           -DCMAKE_BUILD_TYPE=Release \

@@ -13,37 +13,37 @@ include("cmake/warning_flags.cmake")
 
 
 # -- Dependencies --------------------------------------------------------------
-add_library(zisa_dependencies INTERFACE)
+add_library(fvm_dependencies INTERFACE)
 
 # experimental/filesystem
-target_link_libraries(zisa_dependencies INTERFACE stdc++fs)
+target_link_libraries(fvm_dependencies INTERFACE stdc++fs)
 
 # Boost
 find_package(Boost REQUIRED program_options)
-target_link_libraries(zisa_dependencies INTERFACE Boost::program_options)
+target_link_libraries(fvm_dependencies INTERFACE Boost::program_options)
 
 # JSON
 find_package(nlohmann_json REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE nlohmann_json::nlohmann_json)
+target_link_libraries(fvm_dependencies INTERFACE nlohmann_json::nlohmann_json)
 
 # Eigen
 find_package(Eigen3 REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE Eigen3::Eigen)
+target_link_libraries(fvm_dependencies INTERFACE Eigen3::Eigen)
 
 # HDF5
 find_package(HDF5 REQUIRED)
-target_include_directories(zisa_dependencies INTERFACE ${HDF5_INCLUDE_DIRS})
-target_link_libraries(zisa_dependencies INTERFACE ${HDF5_LIBRARIES})
+target_include_directories(fvm_dependencies INTERFACE ${HDF5_INCLUDE_DIRS})
+target_link_libraries(fvm_dependencies INTERFACE ${HDF5_LIBRARIES})
 
 # METIS
 include("cmake/GetMetis.cmake")
-target_link_libraries(zisa_dependencies INTERFACE metis)
+target_link_libraries(fvm_dependencies INTERFACE metis)
 
 # Helmholtz EOS
 if(ZISA_HAS_HELMHOLTZ_EOS)
   include("cmake/GetHelmholtzEOS.cmake")
-  target_compile_definitions(zisa_dependencies INTERFACE ZISA_HAS_HELMHOLTZ_EOS=1)
-  target_link_libraries(zisa_dependencies INTERFACE helmholtz_eos)
+  target_compile_definitions(fvm_dependencies INTERFACE ZISA_HAS_HELMHOLTZ_EOS=1)
+  target_link_libraries(fvm_dependencies INTERFACE helmholtz_eos)
 endif()
 
 # OpenGL
@@ -54,15 +54,15 @@ if(ZISA_HAS_OPENGL)
   set(OpenGL_GL_PREFERENCE "GLVND")
   find_package(OpenGL REQUIRED)
 
-  target_compile_definitions(zisa_dependencies INTERFACE ZISA_HAS_OPENGL=1)
+  target_compile_definitions(fvm_dependencies INTERFACE ZISA_HAS_OPENGL=1)
 
-  target_link_libraries(zisa_dependencies INTERFACE glfw GLEW::GLEW)
-  target_link_libraries(zisa_dependencies INTERFACE ${OPENGL_LIBRARIES})
+  target_link_libraries(fvm_dependencies INTERFACE glfw GLEW::GLEW)
+  target_link_libraries(fvm_dependencies INTERFACE ${OPENGL_LIBRARIES})
 endif()
 
 # Logging
 if(ZISA_LOG_LEVEL)
-  target_compile_definitions(zisa_dependencies INTERFACE ZISA_LOG_LEVEL=${ZISA_LOG_LEVEL})
+  target_compile_definitions(fvm_dependencies INTERFACE ZISA_LOG_LEVEL=${ZISA_LOG_LEVEL})
 endif()
 
 # MPI
@@ -77,30 +77,30 @@ if(ZISA_HAS_OPENMP)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
     find_package(OpenMP COMPONENTS CXX REQUIRED)
 
-    target_compile_definitions(zisa_dependencies INTERFACE ZISA_HAS_OPENMP=1)
-    target_link_libraries(zisa_dependencies INTERFACE OpenMP::OpenMP_CXX)
+    target_compile_definitions(fvm_dependencies INTERFACE ZISA_HAS_OPENMP=1)
+    target_link_libraries(fvm_dependencies INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
 # C++11 threads
 find_package(Threads REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(fvm_dependencies INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 
 # -- Zisa ----------------------------------------------------------------------
 find_package(ZisaCore REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE Zisa::core)
+target_link_libraries(fvm_dependencies INTERFACE Zisa::core)
 
 find_package(ZisaMemory REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE Zisa::memory)
+target_link_libraries(fvm_dependencies INTERFACE Zisa::memory)
 
 find_package(ZisaSFC REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE Zisa::sfc)
+target_link_libraries(fvm_dependencies INTERFACE Zisa::sfc)
 
 find_package(ZisaTimeStepping REQUIRED)
-target_link_libraries(zisa_dependencies INTERFACE Zisa::time_stepping)
+target_link_libraries(fvm_dependencies INTERFACE Zisa::time_stepping)
 
 if(ZISA_HAS_MPI)
   find_package(ZisaMPI REQUIRED)
-  target_link_libraries(zisa_dependencies INTERFACE Zisa::mpi)
+  target_link_libraries(fvm_dependencies INTERFACE Zisa::mpi)
 endif()
 
 
@@ -110,7 +110,7 @@ add_library(zisa_generic_obj OBJECT "")
 set_target_properties(zisa_generic_obj PROPERTIES CXX_STANDARD 17)
 set_target_properties(zisa_generic_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(zisa_generic_obj PUBLIC include)
-target_link_libraries(zisa_generic_obj PUBLIC zisa_dependencies)
+target_link_libraries(zisa_generic_obj PUBLIC fvm_dependencies)
 target_link_libraries(zisa_generic_obj PRIVATE zisa_warning_flags)
 
 # -- MPI dependency ------------------------------------------------------------
@@ -119,7 +119,7 @@ if(ZISA_HAS_MPI)
   set_target_properties(zisa_mpi_obj PROPERTIES CXX_STANDARD 17)
   set_target_properties(zisa_mpi_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
   target_include_directories(zisa_mpi_obj PUBLIC include)
-  target_link_libraries(zisa_mpi_obj PUBLIC zisa_dependencies)
+  target_link_libraries(zisa_mpi_obj PUBLIC fvm_dependencies)
   target_link_libraries(zisa_mpi_obj PRIVATE zisa_warning_flags)
 endif()
 
@@ -131,7 +131,7 @@ if(ZISA_HAS_MPI)
   target_sources(zisa_combined INTERFACE $<TARGET_OBJECTS:zisa_mpi_obj>)
 endif()
 target_include_directories(zisa_combined INTERFACE include)
-target_link_libraries(zisa_combined INTERFACE zisa_dependencies)
+target_link_libraries(zisa_combined INTERFACE fvm_dependencies)
 
 # # -- clang tidy ----------------------------------------------------------------
 # if(CLANG_TIDY_EXE)

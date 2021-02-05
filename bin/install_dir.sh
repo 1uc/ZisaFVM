@@ -21,7 +21,7 @@ then
     ZISA_HAS_MPI=0
 fi
 
-component_name="ZisaTimeStepping"
+component_name="ZisaFVM"
 
 compiler=$1
 compiler_id=$(basename ${compiler})

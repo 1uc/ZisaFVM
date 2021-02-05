@@ -64,6 +64,7 @@ jobs:
           mkdir build && cd build
           cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/zisa \
                 -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/zisa/lib/cmake/zisa \
+                -DCMAKE_MODULE_PATH=${INSTALL_DIR}/conan \
                 -DCMAKE_PROJECT_${ZISA_COMPONENT}_INCLUDE=${INSTALL_DIR}/conan/conan_paths.cmake \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DCMAKE_C_COMPILER=${CC} \
