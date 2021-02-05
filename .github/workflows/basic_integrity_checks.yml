@@ -75,7 +75,7 @@ jobs:
       - name: Build everying
         run: |
           cd build
-          cmake --build .
+          cmake --build --parallel $(nproc) .
 
       - name: Run tests
         run: |
