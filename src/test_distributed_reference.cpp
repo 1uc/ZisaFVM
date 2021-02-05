@@ -223,6 +223,7 @@ int main(int argc, char *argv[]) {
 
 #else
 
+#include <zisa/config.hpp>
 int main() {
   LOG_ERR("This test requires `ZISA_HAS_MPI == 1`.");
 }
