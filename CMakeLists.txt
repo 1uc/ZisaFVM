@@ -36,8 +36,11 @@ target_include_directories(fvm_dependencies INTERFACE ${HDF5_INCLUDE_DIRS})
 target_link_libraries(fvm_dependencies INTERFACE ${HDF5_LIBRARIES})
 
 # METIS
-include("cmake/GetMetis.cmake")
-target_link_libraries(fvm_dependencies INTERFACE metis)
+if(ZISA_HAS_HELMHOLTZ_EOS)
+  include("cmake/GetMetis.cmake")
+  target_compile_definitions(fvm_dependencies INTERFACE ZISA_HAS_METIS=1)
+  target_link_libraries(fvm_dependencies INTERFACE metis)
+endif()
 
 # Helmholtz EOS
 if(ZISA_HAS_HELMHOLTZ_EOS)

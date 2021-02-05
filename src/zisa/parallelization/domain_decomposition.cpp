@@ -10,7 +10,9 @@
 #include <zisa/loops/for_each.hpp>
 
 namespace zisa {
+#if ZISA_HAS_METIS == 1
 using metis_idx_t = ::idx_t;
+#endif
 
 PartitionedGrid::PartitionedGrid(array<int_t, 1> partition,
                                  array<int_t, 1> boundaries,
