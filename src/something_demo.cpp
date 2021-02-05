@@ -1,7 +1,10 @@
 #include <iostream>
 #include <string>
 
+#if ZISA_HAS_HELMHOLTZ_EOS
 #include <zisa/model/helmholtz_eos.hpp>
+#endif
+
 #include <zisa/reconstruction/cweno_ao.hpp>
 
 namespace zisa {
@@ -44,6 +47,7 @@ void test_evil_grid() {
 }
 
 void test_helmholtz_eos() {
+  #if ZISA_HAS_HELMHOLTZ_EOS
   auto table_path = std::string("data/stellar_convection/helm_table.dat");
   initialize_helmholtz_eos(table_path);
 
@@ -81,6 +85,7 @@ void test_helmholtz_eos() {
   PRINT(full_xvars.p);
   PRINT(full_xvars.E);
   PRINT(full_xvars.T);
+  #endif
 }
 }
 
