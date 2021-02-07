@@ -1,3 +1,4 @@
+#if ZISA_HAS_MPI == 1
 #include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/load_snapshot.hpp>
 #include <zisa/io/parallel_dump_snapshot.hpp>
@@ -219,3 +220,12 @@ int main(int argc, char *argv[]) {
 
   MPI_Finalize();
 }
+
+#else
+
+#include <zisa/config.hpp>
+int main() {
+  LOG_ERR("This test requires `ZISA_HAS_MPI == 1`.");
+}
+
+#endif

@@ -17,7 +17,7 @@ jobs:
       matrix:
         compiler: [[gcc, g++]]
         zisa_has_mpi: [0]
-        zisa_has_metis: [1]
+        zisa_has_metis: [0, 1]
 
     env:
       ZISA_COMPONENT: ZisaFVM

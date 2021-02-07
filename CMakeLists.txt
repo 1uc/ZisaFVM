@@ -36,8 +36,11 @@ target_include_directories(fvm_dependencies INTERFACE ${HDF5_INCLUDE_DIRS})
 target_link_libraries(fvm_dependencies INTERFACE ${HDF5_LIBRARIES})
 
 # METIS
-include("cmake/GetMetis.cmake")
-target_link_libraries(fvm_dependencies INTERFACE metis)
+if(ZISA_HAS_METIS)
+  include("cmake/GetMetis.cmake")
+  target_compile_definitions(fvm_dependencies INTERFACE ZISA_HAS_METIS=1)
+  target_link_libraries(fvm_dependencies INTERFACE metis)
+endif()
 
 # Helmholtz EOS
 if(ZISA_HAS_HELMHOLTZ_EOS)
@@ -168,12 +171,12 @@ target_link_libraries(space-filling-curve-demo PUBLIC zisa_combined)
 # -- Domain Decomposition ------------------------------------------------------
 add_executable(domain-decomposition "")
 set_target_properties(domain-decomposition PROPERTIES CXX_STANDARD 17)
-target_link_libraries(domain-decomposition PUBLIC zisa_combined metis)
+target_link_libraries(domain-decomposition PUBLIC zisa_combined)
 
 # -- Renumber the Grid ---------------------------------------------------------
 add_executable(renumber-grid "")
 set_target_properties(renumber-grid PROPERTIES CXX_STANDARD 17)
-target_link_libraries(renumber-grid PUBLIC zisa_combined metis)
+target_link_libraries(renumber-grid PUBLIC zisa_combined)
 
 # -- Test Reference solutions --------------------------------------------------
 add_executable(test-distributed-reference "")

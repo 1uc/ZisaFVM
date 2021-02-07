@@ -3,7 +3,9 @@
 #include <string>
 #include <tuple>
 
+#if ZISA_HAS_METIS == 1
 #include <metis.h>
+#endif
 
 #if ZISA_HAS_MPI == 1
 #include <mpi.h>
@@ -22,7 +24,9 @@
 namespace po = boost::program_options;
 
 namespace zisa {
+#if ZISA_HAS_METIS == 1
 using metis_idx_t = ::idx_t;
+#endif
 
 std::mutex work_queue_mutex;
 
