@@ -99,7 +99,7 @@ done
 
 if [[ ${ZISA_HAS_METIS} -ne 0 ]]
 then
-    cd "${zisa_fvm_root}"
+    cd "${zisa_root}"
     bin/install_metis.sh "$1"
     cd -
 fi
