@@ -97,6 +97,14 @@ do
     cmake --install .
 done
 
+if [[ ${ZISA_HAS_METIS} -ne 0 ]]
+then
+    cd "${zisa_fvm_root}"
+    bin/install_metis.sh "$1"
+    cd -
+fi
+
+
 echo "The dependencies were installed at"
 echo "    export DEP_DIR=${install_dir}"
 echo ""
