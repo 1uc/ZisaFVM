@@ -38,7 +38,7 @@ HDF5UnstructuredWriter::HDF5UnstructuredWriter(
 
 void HDF5ParallelWriter::do_write_scalar(const void *addr,
                                          const HDF5DataType &data_type,
-                                         const std::string &tag) const {
+                                         const std::string &tag) {
   // create a scalar data space.
   hid_t dataspace = zisa::H5S::create(H5S_SCALAR);
 
@@ -70,7 +70,7 @@ void HDF5ParallelWriter::do_write_scalar(const void *addr,
 }
 
 void HDF5ParallelWriter::do_write_string(const std::string &data,
-                                         const std::string &tag) const {
+                                         const std::string &tag) {
   // strings can be stored as 1d-arrays of characters.
   // don't forget the null-character at the end of 'data.c_str()'.
   hsize_t dims[1] = {data.size() + 1};
@@ -110,7 +110,7 @@ void HDF5UnstructuredWriter::do_write_array(const void *data,
                                             const HDF5DataType &data_type,
                                             const std::string &tag,
                                             int rank,
-                                            hsize_t const *dims) const {
+                                            hsize_t const *dims) {
 
   // assert incoming shape.
 
@@ -264,7 +264,7 @@ HDF5UnstructuredReader::HDF5UnstructuredReader(
 }
 
 std::vector<hsize_t>
-HDF5UnstructuredReader::do_dims(const std::string &tag) const {
+HDF5UnstructuredReader::do_hdf5_dims(const std::string &tag) const {
   // TODO this is duplicated in `HDF5SerialReader`.
   hid_t dataset = open_dataset(tag);
   hid_t dataspace = get_dataspace(dataset);
@@ -285,7 +285,7 @@ void HDF5UnstructuredReader::do_read_array(void *data,
                                            const HDF5DataType &data_type,
                                            const std::string &tag) const {
 
-  auto local_dims = dims(tag);
+  auto local_dims = do_hdf5_dims(tag);
   auto rank = local_dims.size();
   local_dims[0] = file_dims->ids.size();
 

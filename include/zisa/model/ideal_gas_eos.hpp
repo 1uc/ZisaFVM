@@ -283,7 +283,7 @@ private:
   double specific_gas_constant_;
 };
 
-void save(HDF5Writer &writer, const IdealGasEOS &eos);
+void save(HierarchicalWriter &writer, const IdealGasEOS &eos);
 
 } // namespace zisa
 

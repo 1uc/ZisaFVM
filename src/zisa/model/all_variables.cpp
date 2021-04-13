@@ -73,7 +73,7 @@ std::vector<std::string> numbered_labels(const std::string &pattern,
   return labels;
 }
 
-void save(HDF5Writer &writer,
+void save(HierarchicalWriter &writer,
           const AllVariables &all_variables,
           const std::vector<std::string> &labels) {
 
@@ -90,7 +90,7 @@ void save(HDF5Writer &writer,
 }
 
 [[nodiscard]] AllVariables
-AllVariables::load(HDF5Reader &reader, const std::vector<std::string> &labels) {
+AllVariables::load(HierarchicalReader &reader, const std::vector<std::string> &labels) {
 
   auto all_vars = AllVariables{};
   all_vars.cvars = GridVariables::load(reader, labels);
@@ -102,7 +102,7 @@ AllVariables::load(HDF5Reader &reader, const std::vector<std::string> &labels) {
   return all_vars;
 }
 
-void AllVariables::load(HDF5Reader &reader,
+void AllVariables::load(HierarchicalReader &reader,
                         AllVariables &all_vars,
                         const std::vector<std::string> &labels) {
 

@@ -6,6 +6,7 @@
 #ifndef ALL_VARIABLES_H_NO06DDKF
 #define ALL_VARIABLES_H_NO06DDKF
 
+#include "zisa/io/hierarchical_reader.hpp"
 #include <zisa/config.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/memory/array.hpp>
@@ -46,9 +47,9 @@ public:
   AllVariablesDimensions dims() const;
 
   [[nodiscard]] static AllVariables
-  load(HDF5Reader &reader, const std::vector<std::string> &labels);
+  load(HierarchicalReader &reader, const std::vector<std::string> &labels);
 
-  static void load(HDF5Reader &reader,
+  static void load(HierarchicalReader &reader,
                    AllVariables &all_vars,
                    const std::vector<std::string> &labels);
 
@@ -56,7 +57,7 @@ protected:
   void allocate(const AllVariablesDimensions &dims);
 };
 
-void save(HDF5Writer &writer,
+void save(HierarchicalWriter &writer,
           const AllVariables &all_variables,
           const std::vector<std::string> &labels);
 

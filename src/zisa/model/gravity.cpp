@@ -4,22 +4,22 @@ namespace zisa {
 
 RadialAlignment::RadialAlignment(double epsilon) : epsilon(epsilon) {}
 
-void save(HDF5Writer &writer, const RadialAlignment &alignment) {
+void save(HierarchicalWriter &writer, const RadialAlignment &alignment) {
   writer.write_scalar(alignment.epsilon, "epsilon");
 }
 
-RadialAlignment RadialAlignment::load(HDF5Reader &reader) {
+RadialAlignment RadialAlignment::load(HierarchicalReader &reader) {
   auto eps = reader.read_scalar<double>("epsilon");
   return RadialAlignment(eps);
 }
 
-void save(HDF5Writer &writer, const AxialAlignment &alignment) {
+void save(HierarchicalWriter &writer, const AxialAlignment &alignment) {
   writer.write_scalar(alignment.axis[0], "x");
   writer.write_scalar(alignment.axis[1], "y");
   writer.write_scalar(alignment.axis[2], "z");
 }
 
-AxialAlignment AxialAlignment::load(HDF5Reader &reader) {
+AxialAlignment AxialAlignment::load(HierarchicalReader &reader) {
   auto x = reader.read_scalar<double>("x");
   auto y = reader.read_scalar<double>("y");
   auto z = reader.read_scalar<double>("z");
@@ -27,11 +27,11 @@ AxialAlignment AxialAlignment::load(HDF5Reader &reader) {
   return AxialAlignment(XYZ{x, y, z});
 }
 
-void save(HDF5Writer &writer, const ConstantGravity &gravity) {
+void save(HierarchicalWriter &writer, const ConstantGravity &gravity) {
   writer.write_scalar(gravity.gravity, "g");
 }
 
-ConstantGravity ConstantGravity::load(HDF5Reader &reader) {
+ConstantGravity ConstantGravity::load(HierarchicalReader &reader) {
   auto g_ = reader.read_scalar<double>("g");
   return ConstantGravity(g_);
 }
@@ -41,19 +41,19 @@ PointMassGravity::PointMassGravity(double GM, double X) : GM(GM), X(X) {}
 PointMassGravity::PointMassGravity(double G, double M, double X)
     : GM(G * M), X(X) {}
 
-void save(HDF5Writer &writer, const PointMassGravity &gravity) {
+void save(HierarchicalWriter &writer, const PointMassGravity &gravity) {
   writer.write_scalar(gravity.GM, "GM");
   writer.write_scalar(gravity.X, "X");
 }
 
-PointMassGravity PointMassGravity::load(HDF5Reader &reader) {
+PointMassGravity PointMassGravity::load(HierarchicalReader &reader) {
   auto GM_ = reader.read_scalar<double>("GM");
   auto X_ = reader.read_scalar<double>("X");
 
   return PointMassGravity(GM_, X_);
 }
 
-void save(HDF5Writer &writer, const PolytropeGravity &gravity) {
+void save(HierarchicalWriter &writer, const PolytropeGravity &gravity) {
   writer.write_scalar(gravity.rhoC, "rhoC");
   writer.write_scalar(gravity.K, "K");
   writer.write_scalar(gravity.G, "G");
@@ -66,7 +66,7 @@ PolytropeGravity::PolytropeGravity(double rhoC, double K, double G)
 PolytropeGravity::PolytropeGravity(double rhoC, double K, double G, double eps)
     : rhoC(rhoC), K(K), G(G), eps(eps) {}
 
-PolytropeGravity PolytropeGravity::load(HDF5Reader &reader) {
+PolytropeGravity PolytropeGravity::load(HierarchicalReader &reader) {
   auto rhoC_ = reader.read_scalar<double>("rhoC");
   auto K_ = reader.read_scalar<double>("K");
   auto G_ = reader.read_scalar<double>("G");
@@ -75,7 +75,7 @@ PolytropeGravity PolytropeGravity::load(HDF5Reader &reader) {
   return PolytropeGravity(rhoC_, K_, G_, eps_);
 }
 
-void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity) {
+void save(HierarchicalWriter &writer, const PolytropeGravityWithJump &gravity) {
   writer.write_scalar(gravity.r_crit, "r_crit");
 
   writer.open_group("inner");
@@ -94,19 +94,19 @@ SphericalGravity::SphericalGravity(array<double, 1> radii) {
 SphericalGravity::SphericalGravity(array<double, 1> radii, array<double, 1> phi)
     : interpolate(std::move(radii), std::move(phi)) {}
 
-void save(HDF5Writer &writer, const SphericalGravity &gravity) {
+void save(HierarchicalWriter &writer, const SphericalGravity &gravity) {
   LOG_WARN("Not saving the gravitational potential.");
   //  save(writer, gravity.interpolate.points, "radii");
   //  save(writer, gravity.interpolate.values, "phi");
 }
 
-SphericalGravity SphericalGravity::load(HDF5Reader &reader) {
+SphericalGravity SphericalGravity::load(HierarchicalReader &reader) {
   auto radii_ = array<double, 1>::load(reader, "radii");
   auto phi_ = array<double, 1>::load(reader, "phi");
 
   return SphericalGravity(std::move(radii_), std::move(phi_));
 }
 
-void save(HDF5Writer &, const NoGravity &) { return; }
+void save(HierarchicalWriter &, const NoGravity &) { return; }
 
 } // zisa

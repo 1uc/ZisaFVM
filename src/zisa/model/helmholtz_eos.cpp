@@ -17,7 +17,7 @@ void initialize_helmholtz_eos(std::string &eos_table) {
   ZISA_UNUSED(done);
 }
 
-void save(HDF5Writer & /* writer */, const HelmholtzEOS & /* eos */) {
+void save(HierarchicalWriter & /* writer */, const HelmholtzEOS & /* eos */) {
   LOG_WARN("doing nothing.");
 }
 }

@@ -112,7 +112,7 @@ array<double, 1> make_radial_bins(const Grid &grid,
   return radii;
 }
 
-void save(HDF5Writer &writer, const RadialPoissonSolver &solver) {
+void save(HierarchicalWriter &writer, const RadialPoissonSolver &solver) {
   writer.open_group("poisson_solver");
   writer.write_string("RadialPoissonSolver", "name");
   writer.write_scalar(solver.G, "gravitational_constant");
@@ -132,7 +132,7 @@ void save(HDF5Writer &writer, const RadialPoissonSolver &solver) {
 }
 
 RadialPoissonSolver
-RadialPoissonSolver::load(HDF5Reader &reader,
+RadialPoissonSolver::load(HierarchicalReader &reader,
                           const std::shared_ptr<Grid> &grid) {
 
   reader.open_group("poisson_solver");

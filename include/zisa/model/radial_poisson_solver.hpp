@@ -32,10 +32,10 @@ public:
   virtual void update(RadialGravity &gravity,
                       const AllVariables &all_variables) const override;
 
-  friend void save(HDF5Writer &writer, const RadialPoissonSolver &solver);
+  friend void save(HierarchicalWriter &writer, const RadialPoissonSolver &solver);
 
   [[nodiscard]] static RadialPoissonSolver
-  load(HDF5Reader &reader, const std::shared_ptr<Grid> &grid);
+  load(HierarchicalReader &reader, const std::shared_ptr<Grid> &grid);
 
 protected:
   template <class Rho>
@@ -52,7 +52,7 @@ private:
   double G;
 };
 
-void save(HDF5Writer &writer, const RadialPoissonSolver &solver);
+void save(HierarchicalWriter &writer, const RadialPoissonSolver &solver);
 
 ///// Solves a radial poisson equation for the gravity.
 ///** This version does not use the cell-averages directly, instead it uses

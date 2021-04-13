@@ -5,6 +5,10 @@
 #include <zisa/model/helmholtz_eos.hpp>
 #endif
 
+#if ZISA_HAS_MPI == 1
+#include <zisa/mpi/mpi.hpp>
+#endif
+
 #include <zisa/reconstruction/cweno_ao.hpp>
 
 namespace zisa {

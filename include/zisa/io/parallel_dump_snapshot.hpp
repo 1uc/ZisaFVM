@@ -20,7 +20,7 @@ public:
         file_dims(std::move(file_dimensions)) {}
 
 protected:
-  virtual std::unique_ptr<HDF5Writer>
+  virtual std::unique_ptr<HierarchicalWriter>
   pick_writer(const std::string &file_name) override {
     return std::make_unique<HDF5UnstructuredWriter>(file_name, file_dims);
   }

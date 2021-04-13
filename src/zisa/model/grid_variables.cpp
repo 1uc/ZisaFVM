@@ -2,7 +2,7 @@
 
 namespace zisa {
 
-void save(HDF5Writer &writer,
+void save(HierarchicalWriter &writer,
           const GridVariables &vars,
           const std::vector<std::string> &labels) {
   array<double, 1> component({vars.shape(0)}, device_type::cpu);
@@ -15,7 +15,7 @@ void save(HDF5Writer &writer,
   }
 }
 
-GridVariables GridVariables::load(HDF5Reader &reader,
+GridVariables GridVariables::load(HierarchicalReader &reader,
                                   const std::vector<std::string> &labels) {
 
   if (labels.empty()) {
@@ -31,7 +31,7 @@ GridVariables GridVariables::load(HDF5Reader &reader,
   return vars;
 }
 
-void GridVariables::load(HDF5Reader &reader,
+void GridVariables::load(HierarchicalReader &reader,
                          GridVariables &vars,
                          const std::vector<std::string> &labels) {
 

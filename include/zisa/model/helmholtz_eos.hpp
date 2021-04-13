@@ -187,7 +187,7 @@ private:
   double z_bar;
 };
 
-void save(HDF5Writer &writer, const HelmholtzEOS &eos);
+void save(HierarchicalWriter &writer, const HelmholtzEOS &eos);
 
 } // namespace zisa
 #endif /* end of include guard */

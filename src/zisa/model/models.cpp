@@ -1,7 +1,7 @@
 #include <zisa/model/models.hpp>
 
 namespace zisa {
-void save_state(HDF5Writer &writer,
+void save_state(HierarchicalWriter &writer,
                 const AllVariables &u,
                 double t,
                 int_t n_steps,
@@ -12,7 +12,7 @@ void save_state(HDF5Writer &writer,
   save(writer, u, labels);
 }
 
-std::pair<double, int_t> load_state(HDF5Reader &reader,
+std::pair<double, int_t> load_state(HierarchicalReader &reader,
                                     AllVariables &u,
                                     const std::vector<std::string> &labels) {
 

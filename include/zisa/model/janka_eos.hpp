@@ -21,7 +21,7 @@ struct JankaEOSParams {
 };
 JankaEOSParams make_default_janka_eos_params();
 
-void save(HDF5Writer &writer, const JankaEOSParams &params);
+void save(HierarchicalWriter &writer, const JankaEOSParams &params);
 
 class JankaEOS : public EquationOfState {
 private:
@@ -349,7 +349,7 @@ public:
     return {pressure(u), sound_speed(rhoE(u))};
   }
 
-  [[nodiscard]] static JankaEOS load(HDF5Reader &reader) {
+  [[nodiscard]] static JankaEOS load(HierarchicalReader &reader) {
     reader.open_group("eos");
 
     double rho_bounce = reader.read_scalar<double>("rho_bounce");
@@ -374,7 +374,7 @@ private:
   std::array<double, 2> K;
 };
 
-void save(HDF5Writer &writer, const JankaEOS &eos);
+void save(HierarchicalWriter &writer, const JankaEOS &eos);
 
 JankaEOS make_janka_eos(const JankaEOSParams &params);
 

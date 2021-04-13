@@ -3,9 +3,9 @@
 namespace zisa {
 
 
-void save_extended_state(HDF5Writer &writer,
-                               const JankaEOS &eos,
-                               const AllVariables &all_variables) {
+void save_extended_state(HierarchicalWriter &writer,
+                         const JankaEOS &eos,
+                         const AllVariables &all_variables) {
 
   const auto &cvars = all_variables.cvars;
 

@@ -1,6 +1,7 @@
 #ifndef GRID_DECL_H_8IQQ7
 #define GRID_DECL_H_8IQQ7
 
+#include "zisa/io/hierarchical_reader.hpp"
 #include <functional>
 #include <optional>
 #include <string>
@@ -75,7 +76,7 @@ struct Grid {
        array<int_t, 2> vertex_indices,
        int_t quad_deg = 0);
 
-  [[nodiscard]] static Grid load(HDF5Reader &reader);
+  [[nodiscard]] static Grid load(HierarchicalReader &reader);
 
   const XYZ &vertex(int_t i, int_t k) const;
 
@@ -102,7 +103,7 @@ struct Grid {
   std::string str() const;
 };
 
-void save(HDF5Writer &writer, const Grid &grid);
+void save(HierarchicalWriter &writer, const Grid &grid);
 
 double volume(const Grid &grid);
 Triangle triangle(const Grid &grid, int_t i);

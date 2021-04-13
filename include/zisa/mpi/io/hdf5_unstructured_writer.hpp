@@ -35,10 +35,10 @@ public:
 protected:
   void do_write_scalar(void const *addr,
                        const HDF5DataType &data_type,
-                       const std::string &tag) const override;
+                       const std::string &tag) override;
 
   void do_write_string(const std::string &data,
-                       const std::string &tag) const override;
+                       const std::string &tag) override;
 
   virtual bool is_serial_writer() const = 0;
 };
@@ -55,7 +55,7 @@ protected:
                       const HDF5DataType &data_type,
                       const std::string &tag,
                       int rank,
-                      hsize_t const *dims) const override;
+                      hsize_t const *dims) override;
 
   bool is_serial_writer() const override;
 
@@ -77,7 +77,7 @@ public:
       const std::string &filename,
       std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims_);
 
-  virtual std::vector<hsize_t> do_dims(const std::string &tag) const override;
+  virtual std::vector<hsize_t> do_hdf5_dims(const std::string &tag) const override;
 
   virtual void do_read_array(void *data,
                              const HDF5DataType &data_type,

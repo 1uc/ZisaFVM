@@ -9,7 +9,7 @@
 namespace zisa {
 
 template <class EOS>
-void save_full_state(HDF5Writer &writer,
+void save_full_state(HierarchicalWriter &writer,
                      const LocalEOSState<EOS> &local_eos,
                      const AllVariables &all_variables,
                      double t,
@@ -23,7 +23,7 @@ void save_full_state(HDF5Writer &writer,
 }
 
 template <class EOS>
-void save_extended_state(HDF5Writer &writer,
+void save_extended_state(HierarchicalWriter &writer,
                          const LocalEOSState<EOS> &local_eos,
                          const AllVariables &all_variables) {
 
@@ -67,7 +67,7 @@ void save_extended_state(HDF5Writer &writer,
   save(writer, avars_array, avar_labels);
 }
 
-void save_extended_state(HDF5Writer &writer,
+void save_extended_state(HierarchicalWriter &writer,
                          const JankaEOS &eos,
                          const AllVariables &all_variables);
 

@@ -2,7 +2,7 @@
 
 namespace zisa {
 
-void save(HDF5Writer &writer, const IdealGasEOS &eos) {
+void save(HierarchicalWriter &writer, const IdealGasEOS &eos) {
 
   writer.open_group("eos");
   writer.write_scalar(eos.gamma(), "gamma");

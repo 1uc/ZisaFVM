@@ -40,7 +40,7 @@ void DumpSnapshot<EOS>::do_steady_state(const AllVariables &steady_state) {
 }
 
 template <class EOS>
-std::unique_ptr<HDF5Writer>
+std::unique_ptr<HierarchicalWriter>
 SerialDumpSnapshot<EOS>::pick_writer(const std::string &file_name) {
   return std::make_unique<HDF5SerialWriter>(file_name);
 }

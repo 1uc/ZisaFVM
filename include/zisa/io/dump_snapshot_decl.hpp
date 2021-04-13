@@ -26,7 +26,7 @@ protected:
   virtual void do_steady_state(const AllVariables &steady_state) override;
 
 protected:
-  virtual std::unique_ptr<HDF5Writer> pick_writer(const std::string &file_name)
+  virtual std::unique_ptr<HierarchicalWriter> pick_writer(const std::string &file_name)
       = 0;
 
 private:
@@ -43,7 +43,7 @@ public:
   using super::super;
 
 protected:
-  virtual std::unique_ptr<HDF5Writer>
+  virtual std::unique_ptr<HierarchicalWriter>
   pick_writer(const std::string &file_name) override;
 };
 

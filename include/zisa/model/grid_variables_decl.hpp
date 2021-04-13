@@ -1,6 +1,7 @@
 #ifndef GRID_VARIABLES_DECL_H_LKLNS
 #define GRID_VARIABLES_DECL_H_LKLNS
 
+#include "zisa/io/hierarchical_reader.hpp"
 #include <zisa/config.hpp>
 #include <zisa/loops/range.hpp>
 #include <zisa/math/cartesian.hpp>
@@ -24,14 +25,14 @@ public:
   inline double operator()(int_t i, int_t k) const;
 
   [[nodiscard]] static GridVariables
-  load(HDF5Reader &reader, const std::vector<std::string> &labels);
+  load(HierarchicalReader &reader, const std::vector<std::string> &labels);
 
-  static void load(HDF5Reader &reader,
+  static void load(HierarchicalReader &reader,
                    GridVariables &vars,
                    const std::vector<std::string> &labels);
 };
 
-void save(HDF5Writer &writer,
+void save(HierarchicalWriter &writer,
           const GridVariables &grid_variables,
           const std::vector<std::string> &labels);
 

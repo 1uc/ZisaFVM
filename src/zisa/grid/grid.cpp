@@ -922,7 +922,7 @@ std::shared_ptr<Grid> load_grid(const std::string &filename) {
   return load_grid(filename, 1);
 }
 
-void save(HDF5Writer &writer, const Grid &grid) {
+void save(HierarchicalWriter &writer, const Grid &grid) {
   writer.write_scalar(grid.n_cells, "n_cells");
   writer.write_scalar(grid.n_vertices, "n_vertices");
   writer.write_scalar(grid.n_edges, "n_edges");
@@ -961,7 +961,7 @@ double smallest_inradius(const Grid &grid) {
                            [&grid](int_t i) { return grid.inradius(i); });
 }
 
-Grid Grid::load(HDF5Reader &reader) {
+Grid Grid::load(HierarchicalReader &reader) {
   auto grid = Grid{};
 
   grid.n_cells = reader.read_scalar<int_t>("n_cells");

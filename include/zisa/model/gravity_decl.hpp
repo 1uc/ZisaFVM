@@ -43,10 +43,10 @@ public:
   }
 
   template <class G, class A>
-  friend void save(HDF5Writer &writer, const Gravity<G, A> &g);
+  friend void save(HierarchicalWriter &writer, const Gravity<G, A> &g);
 
   template <class RetGravity>
-  [[nodiscard]] static RetGravity load_impl(HDF5Reader &reader) {
+  [[nodiscard]] static RetGravity load_impl(HierarchicalReader &reader) {
     reader.open_group("gravity");
     auto g = GravityBase::load(reader);
     reader.switch_group("alignment");
@@ -63,7 +63,7 @@ protected:
 };
 
 template <class GravityBase, class Alignment>
-void save(HDF5Writer &writer, const Gravity<GravityBase, Alignment> &gravity) {
+void save(HierarchicalWriter &writer, const Gravity<GravityBase, Alignment> &gravity) {
   writer.open_group("gravity");
   save(writer, gravity.gravity);
   writer.switch_group("alignment");
@@ -84,14 +84,14 @@ public:
     return xy[dir] / (r + epsilon);
   }
 
-  friend void save(HDF5Writer &writer, const RadialAlignment &alignment);
-  [[nodiscard]] static RadialAlignment load(HDF5Reader &reader);
+  friend void save(HierarchicalWriter &writer, const RadialAlignment &alignment);
+  [[nodiscard]] static RadialAlignment load(HierarchicalReader &reader);
 
 private:
   double epsilon = 1e-50;
 };
 
-void save(HDF5Writer &writer, const RadialAlignment &alignment);
+void save(HierarchicalWriter &writer, const RadialAlignment &alignment);
 
 class AxialAlignment {
 public:
@@ -105,14 +105,14 @@ public:
     return axis[dir];
   }
 
-  friend void save(HDF5Writer &writer, const AxialAlignment &alignment);
-  [[nodiscard]] static AxialAlignment load(HDF5Reader &reader);
+  friend void save(HierarchicalWriter &writer, const AxialAlignment &alignment);
+  [[nodiscard]] static AxialAlignment load(HierarchicalReader &reader);
 
 private:
   XYZ axis;
 };
 
-void save(HDF5Writer &writer, const AxialAlignment &alignment);
+void save(HierarchicalWriter &writer, const AxialAlignment &alignment);
 
 class ConstantGravity {
 public:
@@ -123,14 +123,14 @@ public:
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
-  friend void save(HDF5Writer &writer, const ConstantGravity &gravity);
-  [[nodiscard]] static ConstantGravity load(HDF5Reader &reader);
+  friend void save(HierarchicalWriter &writer, const ConstantGravity &gravity);
+  [[nodiscard]] static ConstantGravity load(HierarchicalReader &reader);
 
 private:
   double gravity;
 };
 
-void save(HDF5Writer &writer, const ConstantGravity &gravity);
+void save(HierarchicalWriter &writer, const ConstantGravity &gravity);
 
 class ConstantGravityRadial : public Gravity<ConstantGravity, RadialAlignment> {
 private:
@@ -159,15 +159,15 @@ public:
   ANY_DEVICE_INLINE double phi(double chi) const;
   ANY_DEVICE_INLINE double dphi_dx(double chi) const;
 
-  friend void save(HDF5Writer &writer, const PointMassGravity &alignment);
-  [[nodiscard]] static PointMassGravity load(HDF5Reader &reader);
+  friend void save(HierarchicalWriter &writer, const PointMassGravity &alignment);
+  [[nodiscard]] static PointMassGravity load(HierarchicalReader &reader);
 
 private:
   double GM;
   double X;
 };
 
-void save(HDF5Writer &writer, const PointMassGravity &gravity);
+void save(HierarchicalWriter &writer, const PointMassGravity &gravity);
 
 class PointMassGravityRadial
     : public Gravity<PointMassGravity, RadialAlignment> {
@@ -222,8 +222,8 @@ public:
   ANY_DEVICE_INLINE RhoEntropy rhoK_center() const;
   ANY_DEVICE_INLINE double alpha(double chi) const;
 
-  friend void save(HDF5Writer &writer, const PolytropeGravity &gravity);
-  [[nodiscard]] static PolytropeGravity load(HDF5Reader &reader);
+  friend void save(HierarchicalWriter &writer, const PolytropeGravity &gravity);
+  [[nodiscard]] static PolytropeGravity load(HierarchicalReader &reader);
 
 private:
   double rhoC = 1.0;
@@ -256,7 +256,7 @@ public:
 
   ANY_DEVICE_INLINE double alpha(double chi) const;
 
-  friend void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity);
+  friend void save(HierarchicalWriter &writer, const PolytropeGravityWithJump &gravity);
 
 private:
   double r_crit;
@@ -264,7 +264,7 @@ private:
   PolytropeGravity outer;
 };
 
-void save(HDF5Writer &writer, const PolytropeGravityWithJump &gravity);
+void save(HierarchicalWriter &writer, const PolytropeGravityWithJump &gravity);
 
 class PolytropeGravityWithJumpRadial
     : public Gravity<PolytropeGravityWithJump, RadialAlignment> {
@@ -297,14 +297,14 @@ public:
   array<double, 1> &phi_array() { return interpolate.values; }
   const array<double, 1> &phi_array() const { return interpolate.values; }
 
-  friend void save(HDF5Writer &writer, const SphericalGravity &gravity);
-  [[nodiscard]] static SphericalGravity load(HDF5Reader &reader);
+  friend void save(HierarchicalWriter &writer, const SphericalGravity &gravity);
+  [[nodiscard]] static SphericalGravity load(HierarchicalReader &reader);
 
 private:
   NonUniformLinearInterpolation<double> interpolate;
 };
 
-void save(HDF5Writer &writer, const SphericalGravity &gravity);
+void save(HierarchicalWriter &writer, const SphericalGravity &gravity);
 
 class RadialGravity : public Gravity<SphericalGravity, RadialAlignment> {
 private:
@@ -329,7 +329,7 @@ public:
   array<double, 1> &phi_array() { return gravity.phi_array(); }
   const array<double, 1> &phi_array() const { return gravity.phi_array(); }
 
-  [[nodiscard]] static RadialGravity load(HDF5Reader &reader) {
+  [[nodiscard]] static RadialGravity load(HierarchicalReader &reader) {
     return super::load_impl<RadialGravity>(reader);
   }
 };
@@ -349,7 +349,7 @@ public:
   inline std::string str() const { return "No gravity."; }
 };
 
-void save(HDF5Writer &writer, const NoGravity &gravity);
+void save(HierarchicalWriter &writer, const NoGravity &gravity);
 
 } // namespace zisa
 

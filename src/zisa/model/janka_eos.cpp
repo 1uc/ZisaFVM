@@ -10,7 +10,7 @@ std::string JankaEOSParams::str() const {
                        E1);
 }
 
-void save(HDF5Writer &writer, const JankaEOSParams &params) {
+void save(HierarchicalWriter &writer, const JankaEOSParams &params) {
   writer.write_scalar(params.rho_bounce, "rho_bounce");
   writer.write_scalar(params.gamma[0], "gamma1");
   writer.write_scalar(params.gamma[1], "gamma2");
@@ -38,7 +38,7 @@ JankaEOS make_default_janka_eos() {
   return make_janka_eos(params);
 }
 
-void save(HDF5Writer &writer, const JankaEOS &eos) {
+void save(HierarchicalWriter &writer, const JankaEOS &eos) {
   writer.open_group("eos");
   save(writer, eos.params());
   writer.close_group();
