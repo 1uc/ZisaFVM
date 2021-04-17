@@ -78,8 +78,8 @@ case $remote in
   euler)
     dest="lucg@euler.ethz.ch:/cluster/scratch/lucg"
     ;;
-  rogui)
-    dest='lucg@rogui:copy-up'
+  leonhard)
+    dest="lucg@login.leonhard.ethz.ch:/cluster/scratch/lucg"
     ;;
   *)
     echo "Unknown remote."
