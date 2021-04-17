@@ -2,7 +2,7 @@
 
 BSUB_2="bsub -n 2 -R span[hosts=1] -R rusage[mem=2000] -W 24:00"
 BSUB_16="bsub -n 16 -R span[hosts=1] -R rusage[mem=2000] -W 24:00"
-BSUB_16="bsub -n 32 -R span[hosts=1] -R rusage[mem=3800] -W 24:00"
+BSUB_32="bsub -n 32 -R span[hosts=1] -R rusage[mem=3800] -W 24:00"
 BSUB="bsub -n 64 -R span[hosts=1] -R rusage[mem=7500] -W 24:00"
 
 cd ${ZISA}/build-omp && make -j$(nproc) domain-decomposition && cd -

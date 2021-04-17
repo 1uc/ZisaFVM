@@ -109,6 +109,7 @@ def folder_name(scheme):
 
 def build_target(target):
     host = get_host()
+    build_dir = "build-release"
 
     if host == "daint":
         raise Exception("Implement proper build instruction for 'daint'.")
@@ -118,13 +119,15 @@ def build_target(target):
 
     elif host == "euler":
         nproc = multiprocessing.cpu_count()
-        cmd = "cd build-release; make -j{} {:s}".format(nproc, target)
+        cmd = "cd {}; make -j{} {:s}".format(build_dir, nproc, target)
         subprocess.check_call(cmd, shell=True)
 
     else:
         nproc = multiprocessing.cpu_count()
-        cmd = "cd build-release; make -j{} {:s}".format(nproc, target)
+        cmd = "cd {}; make -j{} {:s}".format(build_dir, nproc, target)
         subprocess.check_call(cmd, shell=True)
+
+    return build_dir
 
 
 def build_zisa():

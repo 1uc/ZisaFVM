@@ -4,6 +4,8 @@ import os
 import re
 import subprocess
 
+import scibs
+
 hosts_with_slurm = ["daint"]
 hosts_with_lsf = ["euler"]
 hosts_without_queue = ["rogui", "liara", "ada", "aoifa"]
@@ -33,11 +35,39 @@ def todays_scratch_directory():
     return scratch
 
 
+def zisa_build_directory():
+    return os.path.join(zisa_home_directory(), "build-release")
+
+
+def zisa_grid_repository():
+    default_grid_repository = os.path.join(zisa_home_directory(), "grids")
+
+    try:
+        host = get_host()
+        if host in ["euler", "leonhard"]:
+            return os.path.expandvars("${WORK}/grids")
+        else:
+            scratch = os.path.expandvars("${SCRATCH}")
+            if scratch != "":
+                return os.path.join(scratch, "grids")
+            else:
+                return default_grid_repository
+
+    except UnknownHostError:
+        return default_grid_repository
+
+
 def zisa_home_directory():
     here = os.path.dirname(os.path.realpath(__file__))
     zisa = os.path.abspath(os.path.join(here, os.pardir, os.pardir))
 
     return zisa
+
+
+class UnknownHostError(Exception):
+    """Indicates that the 'generic hostname' could not be determined."""
+
+    pass
 
 
 def get_host():
@@ -48,7 +78,7 @@ def get_host():
     match = re.match("^({:s}).*".format("|".join(known_hosts)), hostname)
 
     if not match:
-        raise Exception("Can't deduce hostname from '{:s}'".format(hostname))
+        raise UnknownHostError("Can't deduce hostname from '{:s}'".format(hostname))
 
     if match.group(1) == "eu-login":
         return "euler"
@@ -79,32 +109,38 @@ class MPIHeuristics:
 
     def _init_by_host(self, host):
         if host == "euler":
+            self.max_cores_per_node = 128
             self.cores_per_node = 12
             self.max_nodes = 20
             self.work_per_core = 2.0
 
         elif host == "daint":
             self.cores_per_node = 12
+            self.cores_per_node = 12
             self.max_nodes = 160
             self.work_per_core = 2.0
 
         elif host == "rogui":
+            self.max_cores_per_node = 16
             self.cores_per_node = 1
             self.max_nodes = 16
             self.work_per_core = 1.0
 
         elif host == "liara":
+            self.max_cores_per_node = 2
             self.cores_per_node = 1
-            self.max_nodes = 1
+            self.max_nodes = 2
             self.work_per_core = 1.0
 
         elif host == "aoifa":
+            self.max_cores_per_node = 12
             self.cores_per_node = 1
             self.max_nodes = 12
             self.work_per_core = 1.0
 
         elif host == "ada":
             nproc = int(subprocess.check_output(["nproc"]))
+            self.max_cores_per_node = nproc
             self.cores_per_node = 2
             self.max_nodes = nproc // 2
             self.work_per_core = 1.0
@@ -119,3 +155,23 @@ class MPIHeuristics:
         cpn = self.cores_per_node
         n_proc = ((n_proc + cpn - 1) // cpn) * cpn
         return max(2, min(n_proc, self.max_cores))
+
+
+def max_cores_per_node():
+    heuristics = MPIHeuristics(host)
+    return heuristics.max_cores_per_node
+
+
+def make_batch_system():
+    host = get_host()
+    if host == "euler":
+        return scibs.EulerLSF()
+
+    elif has_slurm():
+        return scibs.SLUM()
+
+    elif has_lsf():
+        return scibs.LSF()
+
+    else:
+        return scibs.LocalBS()

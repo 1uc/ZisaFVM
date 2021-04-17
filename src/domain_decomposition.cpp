@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     std::exit(EXIT_FAILURE);
   }
 
-  if (options.count("partitions") == 0) {
+  if (options.count("workers") == 0) {
     std::cout << "Missing argument `-k K`.\n";
     std::exit(EXIT_FAILURE);
   }

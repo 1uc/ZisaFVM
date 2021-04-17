@@ -34,6 +34,9 @@ public:
   std::string str(int verbose = 0) const;
 
 protected:
+  void solve_exact(const RhoE &rhoE_bar, const Cell &cell_ref);
+  void solve_lsq(const RhoE &rhoE_bar, const Cell &cell_ref);
+
   equilibrium_values_t theta = equilibrium_values_t{};
   XYZ x_ref = XYZ{};
   bool found_equilibrium = false;
@@ -65,20 +68,20 @@ public:
   LocalEquilibrium() = default;
 
   template <class... Args>
-  explicit LocalEquilibrium(Args &&... /* args */) {}
+  explicit LocalEquilibrium(Args &&.../* args */) {}
 
   template <class... Args>
-  inline void solve(Args &&... /* args */) {
+  inline void solve(Args &&.../* args */) {
     // do nothing
   }
 
   template <class... Args>
-  RhoE extrapolate(Args &&... /* args */) const {
+  RhoE extrapolate(Args &&.../* args */) const {
     return {0.0, 0.0};
   }
 
   template <class... Args>
-  std::pair<RhoE, euler_xvar_t> extrapolate_full(Args &&... /* args */) const {
+  std::pair<RhoE, euler_xvar_t> extrapolate_full(Args &&.../* args */) const {
     return {RhoE{0.0, 0.0}, euler_xvar_t{0.0, 0.0}};
   }
 

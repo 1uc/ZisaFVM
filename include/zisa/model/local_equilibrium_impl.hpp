@@ -2,9 +2,14 @@
 #define LOCAL_EQUILIBRIUM_IMPL_H_NLD8L
 
 #include "local_equilibrium_decl.hpp"
+
 #include <zisa/math/cell.hpp>
 #include <zisa/math/quadrature.hpp>
 #include <zisa/math/quasi_newton.hpp>
+
+#include <functional>
+#include <unsupported/Eigen/LevenbergMarquardt>
+#include <unsupported/Eigen/src/NumericalDiff/NumericalDiff.h>
 
 namespace zisa {
 
@@ -26,6 +31,13 @@ LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
 template <class Equilibrium>
 void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
                                               const Cell &cell_ref) {
+
+  solve_lsq(rhoE_bar, cell_ref);
+}
+
+template <class Equilibrium>
+void LocalEquilibriumBase<Equilibrium>::solve_exact(const RhoE &rhoE_bar,
+                                                    const Cell &cell_ref) {
 
   x_ref = cell_ref.qr.points[0];
 
@@ -77,6 +89,70 @@ void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
 
   found_equilibrium = has_eq;
   theta = isentropic_equilibrium_values(eos, hS, rhoT_guess);
+}
+
+namespace detail {
+
+class LMDRhoEBar : public Eigen::DenseFunctor<double> {
+public:
+  LMDRhoEBar(const std::function<RhoE(const EnthalpyEntropy &)> &f_)
+      : DenseFunctor<double>(2, 2), f(f_) {}
+
+  int operator()(const Eigen::VectorXd &theta,
+                 Eigen::VectorXd &drhoE_bar) const {
+
+    auto drhoE_bar_ = f(EnthalpyEntropy{theta[0], theta[1]});
+
+    drhoE_bar[0] = drhoE_bar_.rho();
+    drhoE_bar[1] = drhoE_bar_.E();
+
+    return 0;
+  }
+
+private:
+  std::function<RhoE(const EnthalpyEntropy &)> f;
+};
+
+}
+
+template <class Equilibrium>
+void LocalEquilibriumBase<Equilibrium>::solve_lsq(const RhoE &rhoE_bar,
+                                                  const Cell &cell_ref) {
+
+  x_ref = cell_ref.qr.points[0];
+
+  const auto &eos = *equilibrium.eos;
+
+  auto full_guess = eos.full_extra_variables(rhoE_bar);
+  auto rhoT_guess = RhoT{full_guess.rho, full_guess.T};
+
+  auto drhoE_bar = [this, &eos, &cell_ref, &rhoE_bar, &rhoT_guess](
+                       const EnthalpyEntropy &theta_star) {
+    auto rhoE_eq = [this, &eos, &theta_star, &rhoT_guess](const XYZ &xy) {
+      return equilibrium.extrapolate(
+          isentropic_equilibrium_values(eos, theta_star, rhoT_guess),
+          x_ref,
+          xy);
+    };
+
+    return RhoE(rhoE_bar - average(cell_ref, rhoE_eq));
+  };
+
+  auto lm_drhoE_bar = detail::LMDRhoEBar(drhoE_bar);
+  auto lm_drhoE_bar_der
+      = Eigen::NumericalDiff<detail::LMDRhoEBar>(lm_drhoE_bar);
+  auto lm = Eigen::LevenbergMarquardt<Eigen::NumericalDiff<detail::LMDRhoEBar>>(
+      lm_drhoE_bar_der);
+
+  auto hS = Eigen::VectorXd(2);
+  hS[0] = full_guess.h;
+  hS[1] = full_guess.s;
+  auto info = lm.minimize(hS);
+  LOG_ERR_IF(info != 1, "`LevenbergMarquardt` failed.");
+
+  found_equilibrium = true;
+  theta = isentropic_equilibrium_values(
+      eos, EnthalpyEntropy{hS[0], hS[1]}, rhoT_guess);
 }
 
 template <class Equilibrium>

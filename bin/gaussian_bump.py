@@ -21,10 +21,10 @@ from tiwaz.launch_job import launch_all
 from tiwaz.latex_tables import write_convergence_table
 from tiwaz.convergence_plots import write_convergence_plots
 from tiwaz.scatter_plot import plot_visual_convergence
-from tiwaz.gmsh import generate_circular_grids
-from tiwaz.gmsh import decompose_grids
-from tiwaz.gmsh import renumber_grids
 from tiwaz.gmsh import GridNamingScheme
+from tiwaz.gmsh import generate_geo_circular_grids
+from tiwaz.gmsh import generate_smallish_grids
+from tiwaz.gmsh import decompose_smallish_grids
 from tiwaz.site_details import MPIHeuristics
 from tiwaz.work_estimate import ZisaWorkEstimate
 from tiwaz.queue_args import MPIQueueArgs
@@ -33,6 +33,8 @@ from tiwaz.post_process import load_data, load_grid
 from tiwaz.post_process import find_data_files, find_last_data_file
 from tiwaz.post_process import find_steady_state_file
 from tiwaz.tri_plot import TriPlot
+
+import scibs
 
 
 class GaussianBumpExperiment(sc.Subsection):
@@ -74,12 +76,14 @@ def make_work_estimate():
     return ZisaWorkEstimate(n0=n0, t0=t0, b0=b0, o0=o0)
 
 
-grid_name = GridNamingScheme("gaussian_bump")
+grid_repo = tiwaz.site_details.zisa_grid_repository()
+grid_name = GridNamingScheme(grid_repo, "gaussian_bump", version=0)
 
 parallelization = {"mode": "mpi"}
 
 radius = 0.5
-mesh_levels = list(range(0, 6)) + [7]
+# mesh_levels = list(range(0, 6)) + [7]
+mesh_levels = list(range(0, 2))
 lc_rel = {l: 0.1 * 0.5 ** l for l in mesh_levels}
 
 coarse_grid_levels = list(range(0, 6))
@@ -233,26 +237,25 @@ def compute_parts(mesh_levels, host):
         work_estimate, t_min=None, t_max=None, heuristics=heuristics
     )
 
-    parts_ = dict()
-    for l in mesh_levels:
-        parts_[l] = [queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})]
+    def compute_parts(l):
+        return queue_args.n_mpi_tasks({"grid": {"file": grid_name.msh_h5(l)}})
 
-    return parts_
+    parts = [[compute_parts(l)] for l in mesh_levels]
+    return parts
 
 
 def generate_grids(cluster, must_generate, must_decompose):
-    geo_name = lambda l: grid_name.geo(l)
-    msh_h5_name = lambda l: grid_name.msh_h5(l)
-
     if must_generate:
-        for l in mesh_levels:
-            shutil.rmtree(grid_name.dir(l), ignore_errors=True)
-
-        generate_circular_grids(geo_name, radius, lc_rel, mesh_levels, with_halo=True)
-        renumber_grids(msh_h5_name, mesh_levels)
+        geo_names = lambda l: grid_name.geo(l)
+        geo_files = generate_geo_circular_grids(
+            geo_names, radius, lc_rel, mesh_levels, with_halo=True
+        )
+        generate_smallish_grids(geo_files)
 
     if must_decompose:
-        decompose_grids(msh_h5_name, mesh_levels, compute_parts(mesh_levels, cluster))
+        msh_h5_files = [grid_name.msh_h5(l) for l in mesh_levels]
+        parts = compute_parts(mesh_levels, cluster)
+        decompose_smallish_grids(msh_h5_files, parts)
 
 
 def main():
@@ -283,17 +286,6 @@ def main():
     if args.post_process:
         for c, r in all_runs:
             post_process(c, r[0])
-
-    if args.copy_to_paper:
-        d = "${HOME}/git/papers/LucGrosheintz/papers/unstructured_well_balancing/img/gaussian_bump"
-        d = os.path.expandvars(d)
-
-        for c, _ in all_runs:
-            stem = c[0]["experiment"].short_id()
-            files = glob.glob(stem + "*.tex")
-
-            for f in files:
-                shutil.copy(f, os.path.join(d, os.path.basename(f)))
 
 
 if __name__ == "__main__":
