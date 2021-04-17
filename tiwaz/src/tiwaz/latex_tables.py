@@ -1,7 +1,7 @@
 import itertools
 import numpy as np
 
-from .post_process import extract_solver_data
+from tiwaz.post_process import extract_solver_data
 
 
 class LatexConvergenceTable(object):

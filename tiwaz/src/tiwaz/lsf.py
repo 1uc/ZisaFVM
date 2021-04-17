@@ -1,7 +1,7 @@
 import subprocess
 
-from .site_details import has_lsf
-from .utils import hhmm, read_txt, write_txt
+from tiwaz.site_details import has_lsf
+from tiwaz.utils import hhmm, read_txt, write_txt
 
 
 class LSF(object):

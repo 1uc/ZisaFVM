@@ -4,14 +4,15 @@ import meshio
 import h5py
 import os
 import datetime
+import argparse
 import scibs
 
-from .utils import read_txt, write_txt
-from .site_details import zisa_home_directory
-from .site_details import make_batch_system
-from .site_details import zisa_build_directory
-from .site_details import max_cores_per_node
-from .launch_params import build_target
+from tiwaz.utils import read_txt, write_txt
+from tiwaz.site_details import zisa_home_directory
+from tiwaz.site_details import make_batch_system
+from tiwaz.site_details import zisa_build_directory
+from tiwaz.site_details import max_cores_per_node
+from tiwaz.launch_params import build_target
 
 
 class GridNamingScheme:

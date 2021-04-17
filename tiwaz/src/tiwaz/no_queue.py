@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-from .site_details import has_no_queue
+from tiwaz.site_details import has_no_queue
 
 
 class NoQueue:

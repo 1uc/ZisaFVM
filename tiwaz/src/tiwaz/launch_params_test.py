@@ -1,6 +1,6 @@
 import pytest
 
-from .launch_params import LaunchParams
+from tiwaz.launch_params import LaunchParams
 
 
 def test_booleaness():

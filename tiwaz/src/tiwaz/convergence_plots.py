@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from .post_process import extract_solver_data
+from tiwaz.post_process import extract_solver_data
 
 import tinga
 from tinga.io import write_pickle

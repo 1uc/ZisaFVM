@@ -4,9 +4,9 @@ import glob
 import numpy as np
 import h5py
 
-from .launch_params import folder_name
-from .xdmf import generate_xdmf, xml_to_string
-from .io import read_json
+from tiwaz.launch_params import folder_name
+from tiwaz.xdmf import generate_xdmf, xml_to_string
+from tiwaz.io import read_json
 
 
 class Grid:

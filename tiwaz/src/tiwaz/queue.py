@@ -1,7 +1,7 @@
-from .slurm import SLURM
-from .lsf import LSF
-from .no_queue import NoQueue
-from .site_details import has_lsf, has_slurm, has_no_queue
+from tiwaz.slurm import SLURM
+from tiwaz.lsf import LSF
+from tiwaz.no_queue import NoQueue
+from tiwaz.site_details import has_lsf, has_slurm, has_no_queue
 
 
 def make_queue(queue_args):

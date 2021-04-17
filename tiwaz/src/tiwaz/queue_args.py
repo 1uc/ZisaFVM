@@ -1,4 +1,4 @@
-from .site_details import MPIHeuristics
+from tiwaz.site_details import MPIHeuristics
 from datetime import timedelta
 
 

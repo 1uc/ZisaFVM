@@ -4,8 +4,8 @@ import subprocess
 import glob
 import multiprocessing
 
-from .site_details import get_host
-from .utils import merge_dict
+from tiwaz.site_details import get_host
+from tiwaz.utils import merge_dict
 
 
 class LaunchParams(object):

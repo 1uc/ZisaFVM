@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .post_process import extract_solver_data
-from .colors import graded_colors
+from tiwaz.post_process import extract_solver_data
+from tiwaz.colors import graded_colors
 
 
 class ScatterPlot:

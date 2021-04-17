@@ -1,10 +1,10 @@
 import shutil
 import glob
 
-from .site_details import *
-from .queue import make_queue
-from .launch_params import folder_name
-from .post_process import find_data_files, find_grid
+from tiwaz.site_details import *
+from tiwaz.queue import make_queue
+from tiwaz.launch_params import folder_name
+from tiwaz.post_process import find_data_files, find_grid
 
 
 class LaunchJob(object):
