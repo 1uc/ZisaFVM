@@ -165,6 +165,7 @@ def convert_msh_to_hdf5(msh):
 def renumber_grid_command(grid_name):
     assert grid_name.endswith(".msh.h5")
 
+    zisa_home = zisa_home_directory()
     binary = os.path.join(zisa_home, "build-release/renumber-grid")
     return [binary, "--grid", grid_name]
 
@@ -232,6 +233,8 @@ def submit_grid_generation(batch_system, geo, resources):
 
 
 def generate_smallish_grids(geo_files, hours=24, mem=16e9):
+    build_target("renumber-grid")
+
     batch_system = make_batch_system()
 
     wall_clock = datetime.timedelta(hours=hours)
@@ -244,6 +247,8 @@ def generate_smallish_grids(geo_files, hours=24, mem=16e9):
 
 
 def decompose_smallish_grids(msh_h5_files, parts, hours=48, mem=16e9):
+    build_target("domain-decomposition")
+
     batch_system = make_batch_system()
     max_cores = max_cores_per_node()
 
@@ -261,9 +266,7 @@ def decompose_smallish_grids(msh_h5_files, parts, hours=48, mem=16e9):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run GMSH to generate grids")
-    parser.add_argument(
-        "--geo", nargs=1, type=str, help="The `*.geo` on which to run `gmsh`."
-    )
+    parser.add_argument("--geo", type=str, help="The `*.geo` on which to run `gmsh`.")
 
-    args = parser.parse()
+    args = parser.parse_args()
     generate_grid(args.geo)
