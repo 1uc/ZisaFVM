@@ -206,7 +206,7 @@ def submit_grid_decomposition(batch_system, msh_h5, n_proc, n_parts, resources):
 def generate_grid(geo):
     # fmt: off
     cmd = [
-        "bin/gmsh",
+        "gmsh",
         "-optimize_netgen",
         "-optimize_threshold", "0.9",
         "-3",

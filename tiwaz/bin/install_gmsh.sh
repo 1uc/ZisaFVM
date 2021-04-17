@@ -1,25 +1,38 @@
 #! /usr/bin/env bash
-set -x
+set -e
 
-TOP="${PWD}"
+if [[ "$#" -ne 1 ]]
+then
+    echo "Usage: $0 DESTINATION"
+    exit -1
+fi
+
+TOP=${PWD}
+
+mkdir -p ${TOP}/tmp
 
 GMSH_VERSION="4.7.1"
-GMSH_DIR=third_party/gmsh-${GMSH_VERSION}
-GMSH_BIN_DIR=${GMSH_DIR}/bin
+GMSH_INSTALL_PREFIX="$1/gmsh-${GMSH_VERSION}"
+GMSH_DIR=${TOP}/$(mktemp -d --tmpdir=tmp -t gmsh.XXXXXX)
 GMSH_NAME=gmsh-${GMSH_VERSION}-source
 GMSH_TAR_NAME=${GMSH_NAME}.tgz
-
-mkdir -p ${GMSH_BIN_DIR}
 
 wget http://gmsh.info/src/gmsh-${GMSH_VERSION}-source.tgz -O ${GMSH_DIR}/${GMSH_TAR_NAME}
 
 cd ${GMSH_DIR}
-echo ${PWD}
 tar xf ${GMSH_TAR_NAME}
 
 cd ${GMSH_NAME}
 mkdir -p build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=../.. -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX="${GMSH_INSTALL_PREFIX}" -DCMAKE_BUILD_TYPE=Release ..
 make -j$(($(nproc) + 1)) && make install
 
-ln -sf ${TOP}/${GMSH_BIN_DIR}/gmsh ${TOP}/bin/gmsh
+if ! command -v gmsh &> /dev/null
+then
+  echo "WARN: Could not find 'gmsh'. Please ensure that"
+  echo "    ${GMSH_INSTALL_PREFIX}/bin"
+  echo "is in the PATH."
+fi
+
+cd ${TOP}
+# rm -rf ${GMSH_DIR}
