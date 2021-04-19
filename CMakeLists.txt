@@ -204,6 +204,38 @@ if(ZISA_HAS_BENCHMARK)
   target_link_libraries(micro_benchmarks PUBLIC zisa_combined benchmark::benchmark)
 endif()
 
+# -- install -------------------------------------------------------------------
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/ZisaFVMConfigVersion.cmake"
+  VERSION ${ZisaFVM_VERSION}
+  COMPATIBILITY SameMajorVersion
+  )
+
+install(
+  FILES
+  "cmake/ZisaFVMConfig.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/ZisaFVMConfigVersion.cmake"
+  DESTINATION lib/cmake/zisa
+  )
+
+install(
+  TARGETS zisa
+          locate-point
+          renumber-grid
+          domain-decomposition
+  EXPORT ZisaFVMTargets
+  )
+include(GNUInstallDirs)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(EXPORT ZisaFVMTargets
+  FILE ZisaFVMTargets.cmake
+  NAMESPACE Zisa::
+  DESTINATION lib/cmake/zisa
+  )
+
+
 # -- Subdirectories ------------------------------------------------------------
 add_subdirectory(src)
 add_subdirectory(test)
