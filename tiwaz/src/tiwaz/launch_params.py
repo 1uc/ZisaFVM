@@ -4,6 +4,7 @@ import subprocess
 import glob
 import multiprocessing
 
+import tiwaz
 from tiwaz.site_details import get_host
 from tiwaz.utils import merge_dict
 
@@ -109,7 +110,7 @@ def folder_name(scheme):
 
 def build_target(target):
     host = get_host()
-    build_dir = "build-release"
+    build_dir = tiwaz.site_details.zisa_build_directory()
 
     if host == "daint":
         raise Exception("Implement proper build instruction for 'daint'.")

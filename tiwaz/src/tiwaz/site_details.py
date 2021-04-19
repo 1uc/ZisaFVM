@@ -3,6 +3,7 @@ import datetime
 import os
 import re
 import subprocess
+import toml
 
 import scibs
 
@@ -35,8 +36,43 @@ def todays_scratch_directory():
     return scratch
 
 
+def zisa_config():
+    here = os.path.dirname(os.path.realpath(__file__))
+    tiwaz = os.path.abspath(os.path.join(here, os.pardir, os.pardir))
+
+    config_file = os.path.join(tiwaz, "config.toml")
+    if os.path.exists(config_file):
+        return toml.load(config_file)
+
+    return None
+
+
+def zisa_install_directory():
+    config = zisa_config()
+    if "zisa" in config and "install_directory" in config["zisa"]:
+        return os.path.expandvars(
+            os.path.expanduser(config["zisa"]["install_directory"])
+        )
+
+    else:
+        here = os.path.dirname(os.path.realpath(__file__))
+        return os.path.abspath(os.path.join(here, os.pardir, os.pardir, "zisa"))
+
+
+def zisa_home_directory():
+    config = zisa_config()
+    if "zisa" in config and "home_directory" in config["zisa"]:
+        return os.path.expanduser(os.path.expandvars(config["zisa"]["home_directory"]))
+
+    raise Exception("Unknown Zisa root directory.")
+
+
 def zisa_build_directory():
-    return os.path.join(zisa_home_directory(), "build-release")
+    config = zisa_config()
+    if "zisa" in config and "build_directory" in config["zisa"]:
+        return os.path.expanduser(os.path.expandvars(config["zisa"]["build_directory"]))
+
+    raise Exception("Unknown Zisa root directory.")
 
 
 def zisa_grid_repository():
@@ -55,13 +91,6 @@ def zisa_grid_repository():
 
     except UnknownHostError:
         return default_grid_repository
-
-
-def zisa_home_directory():
-    here = os.path.dirname(os.path.realpath(__file__))
-    zisa = os.path.abspath(os.path.join(here, os.pardir, os.pardir))
-
-    return zisa
 
 
 class UnknownHostError(Exception):

@@ -7,6 +7,7 @@ import datetime
 import argparse
 import scibs
 
+import tiwaz
 from tiwaz.utils import read_txt, write_txt
 from tiwaz.site_details import zisa_home_directory
 from tiwaz.site_details import make_batch_system
@@ -165,8 +166,8 @@ def convert_msh_to_hdf5(msh):
 def renumber_grid_command(grid_name):
     assert grid_name.endswith(".msh.h5")
 
-    zisa_home = zisa_home_directory()
-    binary = os.path.join(zisa_home, "build-release/renumber-grid")
+    zisa = tiwaz.site_details.zisa_install_directory()
+    binary = os.path.join(zisa, "bin/renumber-grid")
     return [binary, "--grid", grid_name]
 
 

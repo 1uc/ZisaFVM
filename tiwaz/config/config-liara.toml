@@ -1,0 +1,4 @@
+[zisa]
+  home_directory = "~/git/zisa"
+  build_directory = "~/git/zisa/build-conan"
+  install_directory = "~/artefacts"
