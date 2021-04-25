@@ -10,7 +10,9 @@ include("cmake/gperftools.cmake")
 include("cmake/clang_tidy.cmake")
 include("cmake/warning_flags.cmake")
 
-
+if(ZISA_STRIP_RPATH != 1)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 # -- Dependencies --------------------------------------------------------------
 add_library(fvm_dependencies INTERFACE)
