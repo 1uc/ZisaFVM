@@ -1,9 +1,3 @@
-/*
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2017-11-06
- */
-
 #ifndef EULER_VARIABLES_H_4B77E
 #define EULER_VARIABLES_H_4B77E
 

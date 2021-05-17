@@ -1,9 +1,3 @@
-/*
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2018-01-25
- */
-
 #ifndef EQUATION_OF_STATE_BASE_H_F1NYM
 #define EQUATION_OF_STATE_BASE_H_F1NYM
 

@@ -1,9 +1,3 @@
-/* C++11 version of 'exec'.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-01-14
- */
-
 #include <cstdlib>
 #include <iostream>
 #include <memory>

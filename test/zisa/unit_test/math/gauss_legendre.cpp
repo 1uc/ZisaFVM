@@ -1,9 +1,3 @@
-/* Unit-tests for Gauss-Legendre quadrature.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2017-07-24
- */
-
 #include <zisa/testing/testing_framework.hpp>
 
 #include "zisa/math/gauss_legendre.hpp"

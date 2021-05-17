@@ -1,8 +1,3 @@
-/* Explicit time stepper interface.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-02-01
- */
 #ifndef TIME_INTEGRATION_H_N9QBMXXY
 #define TIME_INTEGRATION_H_N9QBMXXY
 

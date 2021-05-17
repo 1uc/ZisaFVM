@@ -1,8 +1,3 @@
-/* Generate TimeKeeper from CLI input parameters.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-03-07
- */
 #ifndef TIME_KEEPER_INTERFACE_H_0KERGNWD
 #define TIME_KEEPER_INTERFACE_H_0KERGNWD
 

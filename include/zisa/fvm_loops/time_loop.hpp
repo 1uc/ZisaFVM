@@ -1,8 +1,3 @@
-/* Finite Volume Methods using CUDA.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2014-12-11
- */
 #ifndef TIME_LOOP_H_3IJELTQK
 #define TIME_LOOP_H_3IJELTQK
 

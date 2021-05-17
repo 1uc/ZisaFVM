@@ -1,8 +1,3 @@
-/* Some general boundary conditions, e.g. outflow, reflective, etc.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2014-12-03
- */
 #ifndef BOUNDARY_CONDITION_H_KLH67JU5
 #define BOUNDARY_CONDITION_H_KLH67JU5
 

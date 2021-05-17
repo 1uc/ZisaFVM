@@ -1,8 +1,3 @@
-/* C++11 version of 'exec'.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-01-14
- */
 #ifndef EXEC_H_GIT5YS0K
 #define EXEC_H_GIT5YS0K
 #include <string>

@@ -1,8 +1,3 @@
-/* Simple Linux backtrace with line numbers.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-01-14
- */
 #ifndef BACKTRACE_H_DMH02QWB
 #define BACKTRACE_H_DMH02QWB
 

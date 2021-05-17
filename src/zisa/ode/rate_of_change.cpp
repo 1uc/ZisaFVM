@@ -1,8 +1,3 @@
-/* Shared functionality for ODE rate of change.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-09-14
- */
 #ifndef RATE_OF_CHANGE_CPP_UYNX1QZJ
 #define RATE_OF_CHANGE_CPP_UYNX1QZJ
 

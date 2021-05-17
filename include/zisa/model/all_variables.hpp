@@ -1,8 +1,3 @@
-/* Array-like data-structures for FVM.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-06-13
- */
 #ifndef ALL_VARIABLES_H_NO06DDKF
 #define ALL_VARIABLES_H_NO06DDKF
 

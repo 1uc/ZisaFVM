@@ -1,8 +1,3 @@
-/* Runtime selection of time integrator.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-11-18
- */
 #ifndef TIME_INTEGRATION_FACTORY_H_WA4FHC7U
 #define TIME_INTEGRATION_FACTORY_H_WA4FHC7U
 

@@ -1,8 +1,3 @@
-/* Forward declarations.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-08-30
- */
 #ifndef EULER_FWD_H_OPCEPA40
 #define EULER_FWD_H_OPCEPA40
 

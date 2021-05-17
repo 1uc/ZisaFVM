@@ -1,8 +1,3 @@
-/* The famous HLLC numerical flux.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-02-18
- */
 #ifndef HLLC_H_WOCXPIIT
 #define HLLC_H_WOCXPIIT
 

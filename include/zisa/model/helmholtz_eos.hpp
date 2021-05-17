@@ -1,9 +1,3 @@
-/*
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2018-01-24
- */
-
 #ifndef HELMHOLTZ_EOS_H_BJMBP
 #define HELMHOLTZ_EOS_H_BJMBP
 

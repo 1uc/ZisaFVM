@@ -1,9 +1,3 @@
-/* Compiled versions of FVM.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-08-25
- */
-
 #include <zisa/config.hpp>
 
 #include <zisa/fvm_loops/time_loop.hpp>

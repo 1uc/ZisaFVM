@@ -1,8 +1,3 @@
-/* Unit test for Runge-Kutta time integrators.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-08-09
- */
 #include <numeric>
 
 #include <zisa/testing/testing_framework.hpp>

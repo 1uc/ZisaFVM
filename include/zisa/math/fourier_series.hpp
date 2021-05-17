@@ -1,9 +1,3 @@
-/*
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2017-07-24
- */
-
 #ifndef FOURIER_SERIES_H_R3XD1
 #define FOURIER_SERIES_H_R3XD1
 

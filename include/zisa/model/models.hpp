@@ -1,8 +1,3 @@
-/* Functionality shared by all Models.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-01-20
- */
 #ifndef MODELS_H_KL3BI6CZ
 #define MODELS_H_KL3BI6CZ
 

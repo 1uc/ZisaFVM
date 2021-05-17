@@ -1,8 +1,3 @@
-/* Simple CLI progress bar.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-01-12
- */
 #ifndef PROGRESS_BAR_H_JSW0ELA2
 #define PROGRESS_BAR_H_JSW0ELA2
 #include <iostream>

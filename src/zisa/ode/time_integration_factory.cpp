@@ -1,8 +1,3 @@
-/* Runtime selection of time integrator.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-11-18
- */
 #include <zisa/ode/runge_kutta.hpp>
 #include <zisa/ode/time_integration_factory.hpp>
 

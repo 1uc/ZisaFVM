@@ -1,8 +1,3 @@
-/* Simple progress bar.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-01-12
- */
 #include <zisa/datetime.hpp>
 #include <zisa/io/progress_bar.hpp>
 

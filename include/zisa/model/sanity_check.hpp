@@ -1,8 +1,3 @@
-/* Check that the array contains sane values.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-09-06
- */
 #ifndef SANITY_CHECK_H_L4SIPN6H
 #define SANITY_CHECK_H_L4SIPN6H
 

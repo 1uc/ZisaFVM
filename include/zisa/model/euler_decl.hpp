@@ -1,8 +1,3 @@
-/* Callbacks for the Euler equations.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2014-11-12
- */
 #ifndef EULER_CUH_OTPMLDSW
 #define EULER_CUH_OTPMLDSW
 

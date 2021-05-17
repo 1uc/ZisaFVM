@@ -1,8 +1,3 @@
-/* Simple Linux backtrace with line numbers.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-01-14
- */
 #if defined(__GNUC__) || defined(__GNUG__)
 #include <cstdio>
 #include <execinfo.h>

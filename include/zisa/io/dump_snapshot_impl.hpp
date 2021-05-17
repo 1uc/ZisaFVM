@@ -1,8 +1,3 @@
-/* Implementation for visualizing the flow.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-09-14
- */
 #ifndef VISUALIZATION_INC_F9TKQD6Z
 #define VISUALIZATION_INC_F9TKQD6Z
 #include "dump_snapshot_decl.hpp"

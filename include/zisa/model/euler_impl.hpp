@@ -1,9 +1,3 @@
-/* Implementation details, fake a .cu file (there is a .cu file, but these are
- * all inline functions).
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2014-12-21
- */
 #ifndef EULER_IMPL_CUH_5WLETFDJ
 #define EULER_IMPL_CUH_5WLETFDJ
 

@@ -1,8 +1,3 @@
-/* Interface for visualizing the flow.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-09-14
- */
 #ifndef VISUALIZATION_H_748ODJNR
 #define VISUALIZATION_H_748ODJNR
 

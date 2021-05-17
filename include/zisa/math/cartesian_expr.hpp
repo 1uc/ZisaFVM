@@ -1,8 +1,3 @@
-/* Simple arrays.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2014-09-15
- */
 #ifndef CARTESIAN_EXPR_H_KJMKGEYM
 #define CARTESIAN_EXPR_H_KJMKGEYM
 

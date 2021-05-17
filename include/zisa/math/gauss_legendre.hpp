@@ -1,9 +1,3 @@
-/*
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2017-07-16
- */
-
 #ifndef GAUSS_LEGENDRE_H_S48VB
 #define GAUSS_LEGENDRE_H_S48VB
 

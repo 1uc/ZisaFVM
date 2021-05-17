@@ -1,8 +1,3 @@
-/* Selection of different timestepping schemes.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2015-03-02
- */
 #ifndef RUNGE_KUTTA_H_MQEL5YKN
 #define RUNGE_KUTTA_H_MQEL5YKN
 

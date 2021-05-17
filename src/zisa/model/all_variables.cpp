@@ -1,8 +1,3 @@
-/* Data-structure for all cell-centered variables exposed to Tyr.
- *
- * Authors: Luc Grosheintz <forbugrep@zoho.com>
- *    Date: 2016-06-13
- */
 #include <zisa/model/all_variables.hpp>
 
 namespace zisa {
