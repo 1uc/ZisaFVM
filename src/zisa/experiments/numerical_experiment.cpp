@@ -83,6 +83,14 @@ void TypicalNumericalExperiment::do_run() {
 }
 
 std::shared_ptr<BoundaryCondition>
+TypicalNumericalExperiment::choose_boundary_condition() {
+  if (boundary_condition_ == nullptr) {
+    boundary_condition_ = compute_boundary_condition();
+  }
+  return boundary_condition_;
+}
+
+std::shared_ptr<BoundaryCondition>
 TypicalNumericalExperiment::compute_boundary_condition() {
   auto grid = choose_grid();
   auto [u0, steady_state] = choose_initial_conditions();
@@ -177,14 +185,6 @@ std::shared_ptr<TimeLoop> TypicalNumericalExperiment::choose_time_loop() {
                                     sanity_check,
                                     visualization,
                                     progress_bar);
-}
-
-std::shared_ptr<BoundaryCondition>
-TypicalNumericalExperiment::choose_boundary_condition() {
-  if (boundary_condition_ == nullptr) {
-    boundary_condition_ = compute_boundary_condition();
-  }
-  return boundary_condition_;
 }
 
 int_t TypicalNumericalExperiment::choose_volume_deg() const {
