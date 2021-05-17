@@ -31,8 +31,7 @@ LocalEquilibriumBase<Equilibrium>::LocalEquilibriumBase(
 template <class Equilibrium>
 void LocalEquilibriumBase<Equilibrium>::solve(const RhoE &rhoE_bar,
                                               const Cell &cell_ref) {
-
-  solve_lsq(rhoE_bar, cell_ref);
+  solve_exact(rhoE_bar, cell_ref);
 }
 
 template <class Equilibrium>
