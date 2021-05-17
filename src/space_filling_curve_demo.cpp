@@ -155,10 +155,38 @@ void space_filling_snake() {
   save(writer, zs, "z");
 }
 
+void hilbert_curve_demo() {
+  int n = 32;
+
+  auto sfc_indices = array<double, 2>(shape_t<2>{n, n});
+  double dx = 1.0 / n;
+  for (int i = 0; i < n; ++i) {
+    double x = (i + 0.5) * dx;
+    for (int j = 0; j < n; ++j) {
+      double y = (j + 0.5) * dx;
+      sfc_indices(i, j) = double(hilbert_index<5>(x, y).to_ullong());
+    }
+  }
+
+  auto xs = array<double, 1>(n + 1);
+  auto ys = array<double, 1>(n + 1);
+
+  for (int_t i = 0; i < n + 1; ++i) {
+    xs[i] = i * dx;
+    ys[i] = i * dx;
+  }
+
+  auto writer = HDF5SerialWriter("hilbert_curve.h5");
+  save(writer, sfc_indices, "sfc");
+  save(writer, xs, "x");
+  save(writer, ys, "y");
+}
+
 }
 
 int main() {
   //  zisa::space_filling_curve_demo_3d();
-  zisa::space_filling_snake();
+  // zisa::space_filling_snake();
+  zisa::hilbert_curve_demo();
   return EXIT_SUCCESS;
 }
