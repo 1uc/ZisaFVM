@@ -14,9 +14,7 @@ public:
 
 class NoSanityCheck : public SanityCheck {
 public:
-  bool operator()(const AllVariables &) const override {
-    return true;
-  }
+  bool operator()(const AllVariables &) const override { return true; }
 };
 
 } // namespace zisa

@@ -65,9 +65,9 @@ TEST_CASE("GaussLegendre; check_roots_five", "[math]") {
   auto p = fn.fourier_poly<n_qp>();
 
   REQUIRE(almost_equal(p.at(n_qp),
-          zisa::sqrt(5.5) * double(3 * 5 * 7 * 9)
-              / (2 * 2 * 2 * 2 * 5.0 * 4 * 3 * 2),
-          1e-12));
+                       zisa::sqrt(5.5) * double(3 * 5 * 7 * 9)
+                           / (2 * 2 * 2 * 2 * 5.0 * 4 * 3 * 2),
+                       1e-12));
 
   for (int i = 0; i < 3; ++i) {
     INFO(string_format("Failed on i = %d.", i));
@@ -88,9 +88,10 @@ TEST_CASE("GaussLegendre; check_roots_four", "[math]") {
       = zisa::sqrt(4.5) * double(3 * 5 * 7) / double(2 * 2 * 2 * 4 * 3 * 2);
   REQUIRE(almost_equal(p.at(4), a_nn, 1e-12));
   REQUIRE(almost_equal(p.at(2), 4.0 / (8.0 - 1) * a_nn, 1e-12));
-  REQUIRE(almost_equal(p.at(0),
-              0.5 * 3.0 / 2.0 * 4.0 * 3.0 / ((8.0 - 1) * (8.0 - 3)) * a_nn,
-              1e-12));
+  REQUIRE(
+      almost_equal(p.at(0),
+                   0.5 * 3.0 / 2.0 * 4.0 * 3.0 / ((8.0 - 1) * (8.0 - 3)) * a_nn,
+                   1e-12));
 
   for (int i = 0; i < 2; ++i) {
     INFO(string_format("Failed on i = %d.", i));

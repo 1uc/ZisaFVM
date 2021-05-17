@@ -85,7 +85,8 @@ void save(HierarchicalWriter &writer,
 }
 
 [[nodiscard]] AllVariables
-AllVariables::load(HierarchicalReader &reader, const std::vector<std::string> &labels) {
+AllVariables::load(HierarchicalReader &reader,
+                   const std::vector<std::string> &labels) {
 
   auto all_vars = AllVariables{};
   all_vars.cvars = GridVariables::load(reader, labels);
