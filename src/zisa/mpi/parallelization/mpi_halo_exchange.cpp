@@ -66,8 +66,11 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
 
   // Post all receives
   std::vector<HaloSendInfo> send_info;
+  send_info.reserve(bytes_to_receive.size());
+
   std::vector<zisa::mpi::Request> recv_requests;
   recv_requests.reserve(bytes_to_receive.size());
+
   for (auto [rank, size] : bytes_to_receive) {
     int_t n_cells_halo = size / sizeof(int_t);
     send_info.emplace_back(HaloSendInfo{rank, array<int_t, 1>(n_cells_halo)});
@@ -78,7 +81,7 @@ exchange_halo_info(const std::vector<HaloRemoteInfo> &remote_info,
   }
 
   std::vector<zisa::mpi::Request> send_requests;
-  send_requests.reserve(send_requests.size());
+  send_requests.reserve(remote_info.size());
   for (const auto &r : remote_info) {
     send_requests.push_back(zisa::mpi::isend(
         array_const_view(r.cell_indices), r.remote_rank, xfer_tag, mpi_comm));
