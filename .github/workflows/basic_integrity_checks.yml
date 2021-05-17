@@ -75,6 +75,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=${CXX} \
                 -DZISA_HAS_MPI=${ZISA_HAS_MPI} \
                 -DZISA_HAS_METIS=${ZISA_HAS_METIS} \
+                -DZISA_HAS_HDF5=1 \
                 ..
 
       - name: Build everything
