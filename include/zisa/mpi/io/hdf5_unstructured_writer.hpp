@@ -5,22 +5,11 @@
 
 #include <numeric>
 #include <zisa/io/hdf5_writer.hpp>
+#include <zisa/mpi/io/hdf5_unstructured_file_dimensions.hpp>
 #include <zisa/mpi/mpi.hpp>
 #include <zisa/utils/integer_cast.hpp>
 
 namespace zisa {
-
-struct HDF5UnstructuredFileDimensions {
-  hsize_t n_cells_global;
-  hsize_t n_cells_local;
-  std::vector<hsize_t> ids;
-  MPI_Comm mpi_comm;
-
-  HDF5UnstructuredFileDimensions(hsize_t n_cells_global,
-                                 hsize_t n_cells_local,
-                                 std::vector<hsize_t> ids,
-                                 const MPI_Comm &mpi_comm);
-};
 
 /// `n_cells` is the number of cells in the patch, including ghost-cells.
 std::shared_ptr<HDF5UnstructuredFileDimensions>
@@ -77,7 +66,8 @@ public:
       const std::string &filename,
       std::shared_ptr<HDF5UnstructuredFileDimensions> file_dims_);
 
-  virtual std::vector<hsize_t> do_hdf5_dims(const std::string &tag) const override;
+  virtual std::vector<hsize_t>
+  do_hdf5_dims(const std::string &tag) const override;
 
   virtual void do_read_array(void *data,
                              const HDF5DataType &data_type,
