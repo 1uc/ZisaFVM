@@ -3,7 +3,7 @@
 namespace zisa {
 
 void save(HierarchicalWriter &writer,
-          const array<StencilFamily, 1, row_major> &stencils,
+          const array_const_view<StencilFamily, 1, row_major> &stencils,
           const std::string &tag,
           stencil_family_dispatch_tag) {
 
