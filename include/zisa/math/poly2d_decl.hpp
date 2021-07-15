@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 /* Two dimensional polynomial used for WENO reconstruction.
  */
 #ifndef POLY2D_DECL_H_83W71

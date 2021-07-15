@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef STENCIL_FAMILY_H_4HHJ0
 #define STENCIL_FAMILY_H_4HHJ0
 

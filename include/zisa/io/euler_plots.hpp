@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EULER_PLOTS_H_G38NN
 #define EULER_PLOTS_H_G38NN
 

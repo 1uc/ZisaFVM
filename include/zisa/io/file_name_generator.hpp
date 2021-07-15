@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef FILE_NAME_GENERATOR_H_VLEA4
 #define FILE_NAME_GENERATOR_H_VLEA4
 

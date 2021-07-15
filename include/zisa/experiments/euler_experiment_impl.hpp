@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EULER_EXPERIMENT_IMPL_H_VDI33
 #define EULER_EXPERIMENT_IMPL_H_VDI33
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 /* Generate TimeKeeper from CLI input parameters.
  */
 #include <zisa/ode/time_keeper.hpp>

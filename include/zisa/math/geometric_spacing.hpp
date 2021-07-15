@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_GEOMETRIC_SPACING_DI8ON_HPP
 #define ZISA_GEOMETRIC_SPACING_DI8ON_HPP
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef REFERENCE_SOLUTION_H_51D7E
 #define REFERENCE_SOLUTION_H_51D7E
 

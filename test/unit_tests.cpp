@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #define CATCH_CONFIG_RUNNER
 #include "zisa/testing/testing_framework.hpp"
 

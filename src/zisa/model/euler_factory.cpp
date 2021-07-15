@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EULER_FACTORY_H_BDRPI
 #define EULER_FACTORY_H_BDRPI
 

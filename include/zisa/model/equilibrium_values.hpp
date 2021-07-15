@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_EQUILIBRIUM_VALUES_HPP_BIUWQ
 #define ZISA_EQUILIBRIUM_VALUES_HPP_BIUWQ
 

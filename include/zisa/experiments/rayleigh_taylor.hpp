@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_RAYLEIGH_TAYLOR_28379_HPP
 #define ZISA_RAYLEIGH_TAYLOR_28379_HPP
 

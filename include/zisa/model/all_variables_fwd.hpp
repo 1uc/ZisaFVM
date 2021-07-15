@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 /* Forward declarations of classes in './all_variables.h`.
  */
 #ifndef ALL_VARIABLES_FWD_H_WCNVRL92

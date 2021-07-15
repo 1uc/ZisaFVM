@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef BARYCENTRIC_H_3NBM5
 #define BARYCENTRIC_H_3NBM5
 

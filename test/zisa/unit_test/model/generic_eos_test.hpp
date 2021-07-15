@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_GENERIC_EOS_TEST_XIMKL_HPP
 #define ZISA_GENERIC_EOS_TEST_XIMKL_HPP
 

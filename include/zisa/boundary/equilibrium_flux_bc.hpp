@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EQUILIBRIUM_FLUX_BC_H_YVWNM
 #define EQUILIBRIUM_FLUX_BC_H_YVWNM
 

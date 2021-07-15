@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef HELMHOLTZ_EOS_H_BJMBP
 #define HELMHOLTZ_EOS_H_BJMBP
 

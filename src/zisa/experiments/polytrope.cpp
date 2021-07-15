@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/boundary/frozen_boundary_condition.hpp>
 #include <zisa/experiments/ic/polytrope_ic.hpp>
 #include <zisa/experiments/polytrope.hpp>

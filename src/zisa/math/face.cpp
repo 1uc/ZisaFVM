@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/math/face.hpp>
 
 #include <zisa/math/quadrature.hpp>

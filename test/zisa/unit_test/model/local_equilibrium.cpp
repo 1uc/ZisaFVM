@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/cell_factory.hpp>
 #include <zisa/math/triangle.hpp>

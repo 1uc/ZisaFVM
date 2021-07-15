@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef PARSE_COMMAND_LINE_H_WIQC2
 #define PARSE_COMMAND_LINE_H_WIQC2
 

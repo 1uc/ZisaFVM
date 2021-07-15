@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef RUNGE_KUTTA_H_MQEL5YKN
 #define RUNGE_KUTTA_H_MQEL5YKN
 

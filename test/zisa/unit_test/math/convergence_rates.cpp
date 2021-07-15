@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include "convergence_rates.hpp"
 #include <zisa/math/basic_functions.hpp>
 

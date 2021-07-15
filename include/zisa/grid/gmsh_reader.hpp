@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef GMSH_READER_H_BC5CX
 #define GMSH_READER_H_BC5CX
 

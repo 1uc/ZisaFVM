@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef WENO_POLY_H_WYSZQ
 #define WENO_POLY_H_WYSZQ
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_POINT_LOCATOR_HPP_234IH
 #define ZISA_POINT_LOCATOR_HPP_234IH
 

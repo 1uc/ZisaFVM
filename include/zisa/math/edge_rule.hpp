@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EDGE_RULE_H_EFB8F
 #define EDGE_RULE_H_EFB8F
 

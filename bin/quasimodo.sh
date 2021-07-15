@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #
 #      Author : Luc Grosheintz <forbugrep@zoho.com>
 #     Created : 2015-01-02

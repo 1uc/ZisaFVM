@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 /* Interface for ODE rate of change.
  */
 #ifndef RATE_OF_CHANGE_H_ES9JNRXD

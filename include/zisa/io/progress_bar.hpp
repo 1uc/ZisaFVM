@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef PROGRESS_BAR_H_JSW0ELA2
 #define PROGRESS_BAR_H_JSW0ELA2
 #include <iostream>

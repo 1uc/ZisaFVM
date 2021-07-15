@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef VISUALIZATION_INC_F9TKQD6Z
 #define VISUALIZATION_INC_F9TKQD6Z
 #include "dump_snapshot_decl.hpp"

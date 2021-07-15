@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef LOCAL_CFL_CONDITION_DECL_H_QY93E
 #define LOCAL_CFL_CONDITION_DECL_H_QY93E
 

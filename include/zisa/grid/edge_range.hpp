@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EDGE_RANGE_H_QYT12
 #define EDGE_RANGE_H_QYT12
 

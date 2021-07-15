@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_MPI_SINGLE_NODE_ARRAY_SCATTERER_DECL_HPP_XCJQPO
 #define ZISA_MPI_SINGLE_NODE_ARRAY_SCATTERER_DECL_HPP_XCJQPO
 

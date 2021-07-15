@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 /* Simple fixed size arrays.
  */
 #ifndef COORDINATES_DECL_HPP_PCND3ABZ

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EULER_FWD_H_OPCEPA40
 #define EULER_FWD_H_OPCEPA40
 

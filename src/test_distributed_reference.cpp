@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #if ZISA_HAS_MPI == 1
 #include <zisa/io/file_name_generator.hpp>
 #include <zisa/io/load_snapshot.hpp>

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef COLOR_MAP_H_XAXAU
 #define COLOR_MAP_H_XAXAU
 

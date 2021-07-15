@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_FACE_HPP_JIDEW
 #define ZISA_FACE_HPP_JIDEW
 

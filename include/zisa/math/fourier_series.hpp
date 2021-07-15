@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef FOURIER_SERIES_H_R3XD1
 #define FOURIER_SERIES_H_R3XD1
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/reconstruction/stencil_family_params.hpp>
 #include <zisa/reconstruction/stencil_params.hpp>

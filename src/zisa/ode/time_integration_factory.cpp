@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/ode/runge_kutta.hpp>
 #include <zisa/ode/time_integration_factory.hpp>
 

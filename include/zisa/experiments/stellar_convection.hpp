@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_STELLAR_CONVECTION_HPP_CGIEYJ
 #define ZISA_STELLAR_CONVECTION_HPP_CGIEYJ
 

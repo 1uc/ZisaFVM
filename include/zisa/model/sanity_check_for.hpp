@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef SANITY_CHECK_FOR_H_UX4Z8
 #define SANITY_CHECK_FOR_H_UX4Z8
 

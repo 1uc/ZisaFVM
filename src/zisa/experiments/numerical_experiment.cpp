@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <memory>
 
 #include <zisa/boundary/boundary_condition_factory.hpp>

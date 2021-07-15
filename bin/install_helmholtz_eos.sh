@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 if (( $# < 1 )) || (( 2 < $# )) ; then
     echo "Usage: $0 COMPILER [LOCATION]"
     exit -1

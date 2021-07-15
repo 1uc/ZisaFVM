@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef POLYTROPE_IC_H_PK11F
 #define POLYTROPE_IC_H_PK11F
 

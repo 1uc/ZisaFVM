@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef HDF5_UNSTRUCTURED_FILE_DIMENSIONS_HPP_3KGKNX27
 #define HDF5_UNSTRUCTURED_FILE_DIMENSIONS_HPP_3KGKNX27
 

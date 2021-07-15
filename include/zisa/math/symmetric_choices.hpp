@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_SYMMETRIC_CHOICES_HPP_JZEWO
 #define ZISA_SYMMETRIC_CHOICES_HPP_JZEWO
 

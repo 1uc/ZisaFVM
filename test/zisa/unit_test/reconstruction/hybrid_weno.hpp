@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef HYBRID_WENO_H_P7059
 #define HYBRID_WENO_H_P7059
 

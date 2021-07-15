@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/math/edge_rule.hpp>
 #include <zisa/math/gauss_legendre.hpp>
 #include <zisa/math/max_quadrature_degree.hpp>

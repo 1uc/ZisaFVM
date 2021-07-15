@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_PERMUTATION_HPP_CAIWH
 #define ZISA_PERMUTATION_HPP_CAIWH
 

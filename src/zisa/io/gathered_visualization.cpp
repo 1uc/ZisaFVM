@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/io/gathered_visualization.hpp>
 
 #include <zisa/math/permutation.hpp>

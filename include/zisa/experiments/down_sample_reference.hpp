@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_DOWN_SAMPLE_REFERENCE_HPP
 #define ZISA_DOWN_SAMPLE_REFERENCE_HPP
 #include <zisa/config.hpp>

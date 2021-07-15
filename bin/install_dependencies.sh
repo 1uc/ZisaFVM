@@ -1,4 +1,8 @@
 #! /usr/bin/env bash
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 set -e
 
 component_name="ZisaFVM"

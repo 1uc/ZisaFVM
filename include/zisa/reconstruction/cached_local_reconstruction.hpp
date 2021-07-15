@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_CACHED_LOCAL_RECONSTRUCTION_HPP_ZOQENI
 #define ZISA_CACHED_LOCAL_RECONSTRUCTION_HPP_ZOQENI
 

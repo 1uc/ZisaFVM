@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_ALL_VARIABLES_GATHERER_HPP_IXKWO
 #define ZISA_ALL_VARIABLES_GATHERER_HPP_IXKWO
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef CWENO_AO_H_CLLVU
 #define CWENO_AO_H_CLLVU
 
