@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        compiler: [[gcc, g++]]
+        compiler: [[gcc, g++], [clang, clang++]]
         zisa_has_mpi: [0]
         zisa_has_metis: [0, 1]
 
