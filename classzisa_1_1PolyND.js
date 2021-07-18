@@ -1,0 +1,28 @@
+var classzisa_1_1PolyND =
+[
+    [ "PolyND", "classzisa_1_1PolyND.html#a80c6b6a86cfea56fbec5852505a31f95", null ],
+    [ "PolyND", "classzisa_1_1PolyND.html#ae6322a22e3b2f8611b49d7ec0a615507", null ],
+    [ "PolyND", "classzisa_1_1PolyND.html#a48046e01a70a9b9975a2bacca7c161bf", null ],
+    [ "PolyND", "classzisa_1_1PolyND.html#ac694b317b8b6a5376582c31b3442f9b4", null ],
+    [ "PolyND", "classzisa_1_1PolyND.html#a89a6fa2bc751a505d5955242b6b02b26", null ],
+    [ "a", "classzisa_1_1PolyND.html#a8e6f564613146538edf4b1b0ff4e761b", null ],
+    [ "a", "classzisa_1_1PolyND.html#aea904712715acea07c7acb9f155b6bac", null ],
+    [ "c", "classzisa_1_1PolyND.html#af4200579ae0ec46f1b2e3e4670eb06d0", null ],
+    [ "coeffs_ptr", "classzisa_1_1PolyND.html#a96ae2e002cadb6b20eafdf3f13d41345", null ],
+    [ "deep_copy", "classzisa_1_1PolyND.html#aa9874acc71f813b23e099fc52c8bfd4d", null ],
+    [ "degree", "classzisa_1_1PolyND.html#ada65b66e56b344a9919adc250da79a14", null ],
+    [ "dof", "classzisa_1_1PolyND.html#a08e8c82e505fc749135fe8ba3fc4463a", null ],
+    [ "eval_2d", "classzisa_1_1PolyND.html#ae963a9767bf60164f117f0aeec41a867", null ],
+    [ "eval_3d", "classzisa_1_1PolyND.html#a794966ce8be4f1af3c171a890a6463fe", null ],
+    [ "max_degree", "classzisa_1_1PolyND.html#a45d9dd41c1c945cb25c30f7aa13c8ab9", null ],
+    [ "n_dims", "classzisa_1_1PolyND.html#a76aa33c9ce95f04e03de7e73f74fe856", null ],
+    [ "operator()", "classzisa_1_1PolyND.html#afe51a936a5845de21242b7a71dc8804a", null ],
+    [ "operator*=", "classzisa_1_1PolyND.html#a2e8bb57444052d28dc151f21f521db98", null ],
+    [ "operator+=", "classzisa_1_1PolyND.html#a4c10fe630f21cc6aa168b7dcd83a1af2", null ],
+    [ "operator-=", "classzisa_1_1PolyND.html#af83895434b6dcf5a9f698713186ee070", null ],
+    [ "operator/=", "classzisa_1_1PolyND.html#a3435a0dbb26f0f624eb7dd06d3e09de2", null ],
+    [ "operator=", "classzisa_1_1PolyND.html#a9d2bdb8f803b08a8c52fa7d522e68bbb", null ],
+    [ "reference_length", "classzisa_1_1PolyND.html#a431116ebf4e7dda5dd137250be7a168a", null ],
+    [ "x_center", "classzisa_1_1PolyND.html#a39b8f62d5eb03e99706175674694b361", null ],
+    [ "operator<<", "classzisa_1_1PolyND.html#ae0f324308547ef6c08349b3041736197", null ]
+];

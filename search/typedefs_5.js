@@ -1,0 +1,4 @@
+var searchData=
+[
+  ['haloexchangerequest_3155',['HaloExchangeRequest',['../namespacezisa.html#a08e5c22004fb05906c0fc56e5cd0f5e6',1,'zisa']]]
+];
