@@ -1,6 +1,6 @@
 # ZisaFVM
-[![Build Status](https://github.com/1uc/ZisaFVM/actions/workflows/basic_integrity_checks.yml/badge.svg)](https://github.com/1uc/ZisaFVM/actions)
-[![Docs Status](https://github.com/1uc/ZisaFVM/actions/workflows/publish_docs.yml/badge.svg)](https://1uc.github.io/ZisaFVM)
+[![Build Status](https://github.com/1uc/ZisaFVM/actions/workflows/basic_integrity_checks.yml/badge.svg?branch=main)](https://github.com/1uc/ZisaFVM/actions)
+[![Docs Status](https://github.com/1uc/ZisaFVM/actions/workflows/publish_docs.yml/badge.svg?branch=main)](https://1uc.github.io/ZisaFVM)
 
 ZisaFVM is an unstructured, high-order finite volume solver used to research
 a well-balanced modification of the base scheme.
