@@ -66,7 +66,7 @@ jobs:
           export INSTALL_DIR=$(bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT} \
                                                            --zisa_has_mpi=${ZISA_HAS_MPI} \
                                                            --print_install_dir)
-          mkdir build && cd build
+
           cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/zisa \
                 -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/zisa/lib/cmake/zisa \
                 -DCMAKE_MODULE_PATH=${INSTALL_DIR}/conan \
@@ -77,9 +77,8 @@ jobs:
                 -DZISA_HAS_MPI=${ZISA_HAS_MPI} \
                 -DZISA_HAS_METIS=${ZISA_HAS_METIS} \
                 -DZISA_HAS_HDF5=1 \
-                ..
+                -B build
 
       - name: Build everything
         run: |
-          cd build
-          cmake --build . --parallel $(nproc)
+          cmake --build build --parallel $(nproc)

@@ -12,6 +12,7 @@ then
     echo "Usage: $0 COMPILER DESTINATION [--zisa_has_mpi=ZISA_HAS_MPI]"
     echo "                               [--zisa_has_netcdf=ZISA_HAS_NETCDF]"
     echo "                               [--cmake=CUSTOM_CMAKE_BINARY]"
+    echo "                               [--print_install_dir]"
     exit -1
 fi
 
