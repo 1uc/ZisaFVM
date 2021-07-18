@@ -59,12 +59,13 @@ jobs:
         run: |
           export PATH=${PATH}:${HOME}/.local/bin
           bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT} \
-                                      --zisa_has_mpi=${ZISA_HAS_MPI} \
-                                      --zisa_has_metis=${ZISA_HAS_METIS}
+                                      --zisa_has_mpi=${ZISA_HAS_MPI}
 
       - name: Configure build
         run: |
-          export INSTALL_DIR=$(bin/install_dir.sh ${CC} ${HOME}/${REL_INSTALL_ROOT})
+          export INSTALL_DIR=$(bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT} \
+                                                           --zisa_has_mpi=${ZISA_HAS_MPI} \
+                                                           --print_install_dir)
           mkdir build && cd build
           cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/zisa \
                 -DCMAKE_PREFIX_PATH=${INSTALL_DIR}/zisa/lib/cmake/zisa \

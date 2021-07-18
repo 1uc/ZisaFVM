@@ -27,6 +27,9 @@ do
         --cmake=*)
             CMAKE="$(realpath "${arg#*=}")"
             ;;
+        --print_install_dir)
+            PRINT_INSTALL_PATH=1
+            ;;
         *)
             ;;
     esac
@@ -79,6 +82,12 @@ install_dir="$(
         --zisa_has_hdf5=${ZISA_HAS_HDF5} \
         --zisa_has_netcdf=${ZISA_HAS_NETCDF} \
 )"
+
+if [[ ${PRINT_INSTALL_PATH} -eq 1 ]]
+then
+  echo $install_dir
+  exit 0
+fi
 
 source_dir="${install_dir}/sources"
 conan_file="${zisa_root}/conanfile.txt"
