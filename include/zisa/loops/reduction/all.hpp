@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_REDUCTION_ALL_DNWLI_HPP
 #define ZISA_REDUCTION_ALL_DNWLI_HPP
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef GRAVITY_SOURCE_LOOP_H_F39RG
 #define GRAVITY_SOURCE_LOOP_H_F39RG
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef POLY2D_IMPL_H_PP21T
 #define POLY2D_IMPL_H_PP21T
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef GAUSS_LEGENDRE_H_S48VB
 #define GAUSS_LEGENDRE_H_S48VB
 

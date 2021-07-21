@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef TRIANGULAR_RULE_H_V7Y5S
 #define TRIANGULAR_RULE_H_V7Y5S
 

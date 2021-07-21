@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_MPI_DUMP_SNAPSHOT_HPP_CUMJS
 #define ZISA_MPI_DUMP_SNAPSHOT_HPP_CUMJS
 

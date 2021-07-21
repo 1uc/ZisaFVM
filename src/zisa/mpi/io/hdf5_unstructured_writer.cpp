@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #if ZISA_HAS_HDF5
 #include <zisa/mpi/io/hdf5_unstructured_writer.hpp>
 

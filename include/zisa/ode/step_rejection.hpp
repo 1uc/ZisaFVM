@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_STEP_REJECTION_DIOWK_HPP
 #define ZISA_STEP_REJECTION_DIOWK_HPP
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EXEC_H_GIT5YS0K
 #define EXEC_H_GIT5YS0K
 #include <string>

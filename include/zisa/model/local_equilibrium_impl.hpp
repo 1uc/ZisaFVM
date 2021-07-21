@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef LOCAL_EQUILIBRIUM_IMPL_H_NLD8L
 #define LOCAL_EQUILIBRIUM_IMPL_H_NLD8L
 

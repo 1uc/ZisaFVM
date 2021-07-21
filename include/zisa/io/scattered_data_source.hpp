@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_SCATTERED_DATA_SOURCE_HPP_VIOEW
 #define ZISA_SCATTERED_DATA_SOURCE_HPP_VIOEW
 

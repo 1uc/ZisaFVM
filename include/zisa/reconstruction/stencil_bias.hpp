@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef STENCIL_BIAS_H_D7PZ0
 #define STENCIL_BIAS_H_D7PZ0
 

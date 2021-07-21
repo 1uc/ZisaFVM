@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <zisa/parallelization/distributed_grid.hpp>
 
 #include <zisa/io/hdf5_serial_writer.hpp>

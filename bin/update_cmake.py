@@ -1,5 +1,8 @@
 #! /usr/bin/env python3
 
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 import glob
 import os
 import errno

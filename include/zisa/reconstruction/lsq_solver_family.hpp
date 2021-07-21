@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef LSQ_SOLVER_FAMILY_H_ORZ2M
 #define LSQ_SOLVER_FAMILY_H_ORZ2M
 

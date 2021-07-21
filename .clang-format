@@ -1,0 +1,12 @@
+BasedOnStyle: LLVM
+
+AlwaysBreakTemplateDeclarations : true
+BinPackArguments : false
+BinPackParameters : false
+BreakBeforeBinaryOperators : All
+AlwaysBreakTemplateDeclarations: Yes
+
+ConstructorInitializerAllOnOneLineOrOnePerLine : true
+
+FixNamespaceComments : false
+# SplitEmptyNamespace : true

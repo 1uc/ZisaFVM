@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #if defined(__GNUC__) || defined(__GNUG__)
 #include <cstdio>
 #include <execinfo.h>

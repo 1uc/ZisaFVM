@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef GLOBAL_RECONSTRUCTION_IMPL_H_1EKED
 #define GLOBAL_RECONSTRUCTION_IMPL_H_1EKED
 

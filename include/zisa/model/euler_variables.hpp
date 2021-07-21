@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EULER_VARIABLES_H_4B77E
 #define EULER_VARIABLES_H_4B77E
 

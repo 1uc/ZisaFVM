@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_CELL_FLAGS_HPP_UUCOO
 #define ZISA_CELL_FLAGS_HPP_UUCOO
 

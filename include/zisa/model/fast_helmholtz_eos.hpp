@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_FAST_HELMHOLTZ_EOS_HPP_CCCU
 #define ZISA_FAST_HELMHOLTZ_EOS_HPP_CCCU
 

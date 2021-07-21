@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_MPI_PROGRESS_BAR_HPP_IUXXP
 #define ZISA_MPI_PROGRESS_BAR_HPP_IUXXP
 

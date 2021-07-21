@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_HALO_INFO_HPP_CNUWI
 #define ZISA_HALO_INFO_HPP_CNUWI
 

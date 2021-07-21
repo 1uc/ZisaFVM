@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef EULER_IMPL_CUH_5WLETFDJ
 #define EULER_IMPL_CUH_5WLETFDJ
 

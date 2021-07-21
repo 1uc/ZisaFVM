@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef TRIANGLE_RANGE_H_51FI7
 #define TRIANGLE_RANGE_H_51FI7
 

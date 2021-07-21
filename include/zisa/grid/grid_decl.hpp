@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef GRID_DECL_H_8IQQ7
 #define GRID_DECL_H_8IQQ7
 

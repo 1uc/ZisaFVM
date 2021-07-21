@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_SPHERICAL_SHELL_DDKOWE_HPP
 #define ZISA_SPHERICAL_SHELL_DDKOWE_HPP
 

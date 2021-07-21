@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef RATE_OF_CHANGE_CPP_UYNX1QZJ
 #define RATE_OF_CHANGE_CPP_UYNX1QZJ
 

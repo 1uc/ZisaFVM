@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef QUASI_NEWTON_H_W8GTO
 #define QUASI_NEWTON_H_W8GTO
 

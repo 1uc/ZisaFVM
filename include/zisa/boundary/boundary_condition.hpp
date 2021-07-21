@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef BOUNDARY_CONDITION_H_KLH67JU5
 #define BOUNDARY_CONDITION_H_KLH67JU5
 

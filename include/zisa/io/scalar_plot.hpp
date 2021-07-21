@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef SCALAR_PLOT_H_HW2VU
 #define SCALAR_PLOT_H_HW2VU
 

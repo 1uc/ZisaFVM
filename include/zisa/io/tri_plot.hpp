@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef TRI_PLOT_H_5752L
 #define TRI_PLOT_H_5752L
 

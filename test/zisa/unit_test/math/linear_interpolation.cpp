@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
 
 #include <zisa/math/comparison.hpp>
 #include <zisa/math/linear_interpolation.hpp>

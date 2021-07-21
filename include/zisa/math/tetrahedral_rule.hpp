@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_TETRAHEDRAL_RULE_HPP_CHUIWKJ
 #define ZISA_TETRAHEDRAL_RULE_HPP_CHUIWKJ
 

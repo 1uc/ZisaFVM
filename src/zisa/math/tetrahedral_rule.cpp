@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #include <map>
 #include <zisa/math/max_quadrature_degree.hpp>
 #include <zisa/math/tetrahedral_rule.hpp>

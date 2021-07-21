@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef TIME_INTEGRATION_H_N9QBMXXY
 #define TIME_INTEGRATION_H_N9QBMXXY
 

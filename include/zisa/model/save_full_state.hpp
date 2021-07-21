@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_SAVE_FULL_STATE_HPP
 #define ZISA_SAVE_FULL_STATE_HPP
 

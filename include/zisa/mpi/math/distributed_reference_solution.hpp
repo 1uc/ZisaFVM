@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_DISTRIBUTED_REFERENCE_SOLUTION_HPP_OQYEB
 #define ZISA_DISTRIBUTED_REFERENCE_SOLUTION_HPP_OQYEB
 

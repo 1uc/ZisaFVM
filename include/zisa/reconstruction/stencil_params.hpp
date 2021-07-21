@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef STENCIL_PARAMS_H_UXTH0
 #define STENCIL_PARAMS_H_UXTH0
 

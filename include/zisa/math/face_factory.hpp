@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_FACE_FACTORY_HPP_KEOWV
 #define ZISA_FACE_FACTORY_HPP_KEOWV
 

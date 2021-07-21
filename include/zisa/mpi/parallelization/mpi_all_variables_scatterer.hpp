@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2021 ETH Zurich, Luc Grosheintz-Laval
+
 #ifndef ZISA_MPI_ALL_VARIABLES_SCATTERER_HPP_XBTQI
 #define ZISA_MPI_ALL_VARIABLES_SCATTERER_HPP_XBTQI
 
