@@ -65,7 +65,7 @@ void HDF5ParallelWriter::do_write_string(const std::string &data,
   // strings can be stored as 1d-arrays of characters.
   // don't forget the null-character at the end of 'data.c_str()'.
   hsize_t dims[1] = {data.size() + 1};
-  hid_t dataspace = H5Screate_simple(1, dims, nullptr);
+  hid_t dataspace = H5S::create_simple(1, dims, nullptr);
 
   // this type of characters
   HDF5DataType data_type = make_hdf5_data_type<char>();
