@@ -93,7 +93,7 @@ Automated dependencies</h1>
                      [--zisa_has_mpi={0,1}]   \
                      [--zisa_has_cuda={0,1}]
 </pre><p> which will install the dependencies into a subfolder of <code>DIRECTORY</code> and print part of the CMake command needed to include the dependencies. <code>COMPILER</code> must be replaced with the compiler you want to use.</p>
-<p>If this worked continue by adding <a class="el" href="md_cmake.html#cmake_flags">project specific flags</a></p>
+<p>If this worked continue by adding <a class="el" href="md_building.html#cmake_flags">project specific flags</a></p>
 <h1><a class="anchor" id="autotoc_md3"></a>
 Overview of dependencies</h1>
 <p>Zisa uses modern CMake to manage any dependencies it has. We've devided them into four categories: <em>system dependencies</em> which are hard to install, low level libraries; <em>common dependencies</em> these are properly packaged libraries; <em>internal dependencies</em> meaning other parts of Zisa; and finally <em>scientific dependencies</em> these are dependencies on other scientific codes, which may not be nicely packaged and might not be open-source.</p>

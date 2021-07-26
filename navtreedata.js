@@ -35,13 +35,13 @@ var NAVTREE =
         [ "Scientific dependencies", "md_dependencies.html#autotoc_md7", null ]
       ] ]
     ] ],
-    [ "Building", "md_cmake.html", [
-      [ "CMake Primer", "md_cmake.html#autotoc_md9", [
-        [ "Globbing source files", "md_cmake.html#autotoc_md10", null ],
-        [ "Deleting build folders", "md_cmake.html#autotoc_md11", null ]
+    [ "Building", "md_building.html", [
+      [ "CMake Primer", "md_building.html#autotoc_md9", [
+        [ "Globbing source files", "md_building.html#autotoc_md10", null ],
+        [ "Deleting build folders", "md_building.html#autotoc_md11", null ]
       ] ],
-      [ "Project specific flags", "md_cmake.html#cmake_flags", null ],
-      [ "IDEs", "md_cmake.html#autotoc_md12", null ]
+      [ "Project specific flags", "md_building.html#cmake_flags", null ],
+      [ "IDEs", "md_building.html#autotoc_md12", null ]
     ] ],
     [ "Conan", "md_conan.html", [
       [ "Quick Conan Primer", "md_conan.html#autotoc_md14", [
@@ -49,6 +49,21 @@ var NAVTREE =
         [ "C++11 Standard Library", "md_conan.html#autotoc_md16", null ]
       ] ],
       [ "Combining CMake and Conan", "md_conan.html#autotoc_md17", null ]
+    ] ],
+    [ "CMake", "md_cmake.html", [
+      [ "CMake Primer", "md_cmake.html#autotoc_md19", [
+        [ "Globbing source files", "md_cmake.html#autotoc_md20", null ],
+        [ "Deleting build folders", "md_cmake.html#autotoc_md21", null ],
+        [ "<tt>CMAKE_MODULE_PATH</tt> and <tt>CMAKE_PREFIX_PATH</tt>", "md_cmake.html#autotoc_md22", null ],
+        [ "Installing an modern version", "md_cmake.html#autotoc_md23", null ],
+        [ "CUDA", "md_cmake.html#autotoc_md24", null ],
+        [ "Configuring a file.", "md_cmake.html#autotoc_md25", null ],
+        [ "Aliases", "md_cmake.html#autotoc_md26", null ]
+      ] ],
+      [ "Packaging with CMake", "md_cmake.html#autotoc_md27", null ]
+    ] ],
+    [ "Superbuild", "superbuild.html", [
+      [ "Random Notes", "superbuild.html#autotoc_md28", null ]
     ] ],
     [ "Contributing", "md_contributing.html", null ],
     [ "Namespaces", "namespaces.html", [
@@ -98,11 +113,11 @@ var NAVTREEINDEX =
 "euler__factory_8cpp.html#a0bc013cc4a514c4ca84ef2dc72280cda",
 "gravity_8hpp.html",
 "lsq__solver_8cpp.html#aa7d86ae83f61e5633b46f146f5a4617d",
-"namespacezisa.html#a1d487d70b0ae609ee4f57e0de932a957",
-"namespacezisa.html#ab4da54790704550ca1508eed7ea90866",
-"progress__bar_8hpp_source.html",
-"structzisa_1_1Grid.html#a0899ee87739b5c4765a77bb93c4de90f",
-"sum_8hpp.html#a0eeb25fce9b4b15978293532f6f60a58"
+"namespacezisa.html#a123a8e2771524d094fdd5e4f1e771af3",
+"namespacezisa.html#ab255a72033ce8f76fcdf8027c92f9003",
+"polynomial__expr_8hpp.html",
+"structzisa_1_1GatheredVisInfo.html#a9bc97449b7bdd9b89acfabaa7b5f5c51",
+"structzisa_1_1range__traits.html#aa93b999afb25b281fef84f61e05f773e"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
