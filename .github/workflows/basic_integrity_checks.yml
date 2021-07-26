@@ -32,15 +32,6 @@ jobs:
       # Checks-out the repository.
       - uses: actions/checkout@v2
 
-      - name: Obtain access to private repos.
-        env:
-          ZISA_BOT_SSH_KEY: ${{ secrets.ZISA_BOT_SSH_KEY }}
-
-        run: |
-          mkdir -p ${HOME}/.ssh
-          echo "${ZISA_BOT_SSH_KEY}" > ${HOME}/.ssh/id_ed25519
-          chmod 700 ${HOME}/.ssh/id_ed25519
-
       - name: Update Ubuntu
         run: |
           sudo apt-get update -y
