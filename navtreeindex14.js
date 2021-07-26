@@ -1,8 +1,5 @@
 var NAVTREEINDEX14 =
 {
-"structzisa_1_1range__traits.html#aa93b999afb25b281fef84f61e05f773e":[8,0,1,72,0],
-"structzisa_1_1reduce_1_1detail_1_1return__type__trait.html":[8,0,1,2,0,0],
-"structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01false_01_4.html":[8,0,1,2,0,2],
 "structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01false_01_4.html#ab4524f691dbdfdd41565268d24360171":[8,0,1,2,0,2,0],
 "structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01true_01_4.html":[8,0,1,2,0,1],
 "structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01true_01_4.html#a175e53edad445e11a0590ba826211853":[8,0,1,2,0,1,0],
@@ -15,7 +12,7 @@ var NAVTREEINDEX14 =
 "sum_8hpp.html#a15aa6f4e6f71bb4d5145c8211f067687":[9,0,0,0,7,0,5,2],
 "sum_8hpp_source.html":[9,0,0,0,7,0,5],
 "superbuild.html":[5],
-"superbuild.html#autotoc_md28":[5,0],
+"superbuild.html#autotoc_md23":[5,0],
 "symmetric__choices_8hpp.html":[9,0,0,0,8,34],
 "symmetric__choices_8hpp.html#a0d5c023783071b107924edcdca68cadf":[9,0,0,0,8,34,3],
 "symmetric__choices_8hpp_source.html":[9,0,0,0,8,34],

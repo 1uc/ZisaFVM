@@ -86,24 +86,10 @@ $(document).ready(function(){initNavTree('md_building.html',''); initResizable()
 <div class="title">Building </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Zisa uses CMake as a to building the project. Well, technically, to configure a build system which can then build Zisa.</p>
-<h1><a class="anchor" id="autotoc_md9"></a>
-CMake Primer</h1>
-<p>The most simple and often practical way of using CMake is on the command line to generate Make files. This can be done by </p><pre class="fragment">$ cmake ${MANY_FLAGS} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B ${BUILD_DIR}
-</pre><p> which will set up everything in the folder <code>${BUILD_DIR}</code> mostly called <code>build</code> and virtually never <code>.</code>. Nothing stops you from having several build folders each using either different dependencies or compilers.</p>
-<p>In order to actually compile one can type </p><pre class="fragment">$ cmake --build ${BUILD_DIR} --parallel $(nproc)
-</pre><p> Finally, it pays to check if the compilation commands correspond to something meaningful. Which is achieved by <code>make VERBOSE=1</code>.</p>
-<p>Equipped with this knowledge using CMake revolves around finding the correct value for <code>${MANY_FLAGS}</code>, see <a class="el" href="md_building.html#cmake_flags">Project specific flags</a> for help with this problem.</p>
-<h2><a class="anchor" id="autotoc_md10"></a>
-Globbing source files</h2>
-<p>The convincing argument for not globbing source files is that if one switches Git branches files might appear or vanish; and if <code>CMakeLists.txt</code> does not change (very likely), then <code>cmake</code> won't be run again, resulting in a misconfigured build.</p>
-<p>Obviously, adding the files manually is unacceptable. However, nothing is stopping us from have a script add them manually for us. This script is called <code>bin/update_cmake.py</code>. For every subfolder it simply lists the source files contained in that folder in a new <code>CMakeLists.txt</code> located in that subfolder. A simple <code>add_subdirectory</code> pulls in the files.</p>
-<h2><a class="anchor" id="autotoc_md11"></a>
-Deleting build folders</h2>
-<p>Personally, when facing strange issues with CMake, I think it helps to point CMake to a fresh location, either by changing the <code>${BUILD_DIR}</code> or by deleting it.</p>
+<div class="textblock"><p>Zisa uses CMake as a to building the project. Well, technically, to configure a build system which can then build Zisa. If our variant of using CMake isn't familiar, please read <a class="el" href="cmake_usage.html">CMake Usage</a>.</p>
 <h1><a class="anchor" id="cmake_flags"></a>
 Project specific flags</h1>
-<p>The script for installing the dependencies generates part of the CMake command required for compiling Zisa. You'll need to add flags to control which dependencies should be used:</p>
+<p>The script for installing the dependencies generates part of the CMake command required for compiling Zisa, see <a class="el" href="md_dependencies.html#automated_dependencies">Automated Dependencies</a>. You'll need to add flags to control which dependencies should be used:</p>
 <ul>
 <li><code>-DZISA_HAS_METIS={0,1}</code> for domain decomposition using Metis.</li>
 <li><code>-DZISA_HAS_OPENMP={0,1}</code> to enable OpenMp.</li>
@@ -124,7 +110,7 @@ Project specific flags</h1>
 <li><code>UBSAN</code> adds the flags for Clangs undefined behaviour sanitizer.</li>
 </ul>
 <p>all three are based on an optimized build with debug symbols. Note that <code>ASAN</code> and <code>UBSAN</code> expect the Clang compilers. The details can be found in <code>cmake/</code>.</p>
-<h1><a class="anchor" id="autotoc_md12"></a>
+<h1><a class="anchor" id="autotoc_md8"></a>
 IDEs</h1>
 <p>The tested way of using Zisa in an IDE is to configure the IDE to pass the required flags to CMake. In order to figure out which flags are needed you could follow the instructions for the CLI and once you have the correct flags copy-paste them into the settings menu of the IDE. </p>
 </div></div><!-- contents -->

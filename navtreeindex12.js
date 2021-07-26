@@ -1,8 +1,5 @@
 var NAVTREEINDEX12 =
 {
-"polynomial__expr_8hpp.html":[9,0,0,0,8,28],
-"polynomial__expr_8hpp.html#a405a269abd652e38d8b2cbd9dc00a5b4":[9,0,0,0,8,28,7],
-"polynomial__expr_8hpp.html#a8542ec2b561e537139429d6cc5768e27":[9,0,0,0,8,28,5],
 "polynomial__expr_8hpp.html#aa1514bd3263f7d3efe3c635c23c21e7f":[9,0,0,0,8,28,6],
 "polynomial__expr_8hpp.html#ab51843aa63ad6eae7bf01ffef16fd16a":[9,0,0,0,8,28,4],
 "polynomial__expr_8hpp_source.html":[9,0,0,0,8,28],
@@ -249,5 +246,8 @@ var NAVTREEINDEX12 =
 "structzisa_1_1GatheredVisInfo.html#a124a87efa48e88d8ba786be37c1046d7":[8,0,1,210,4],
 "structzisa_1_1GatheredVisInfo.html#a3657eb1057d0306390ccbb3e7b0b6dd7":[8,0,1,210,5],
 "structzisa_1_1GatheredVisInfo.html#a6c2cffc4d725e382da5eaa060532e4ac":[8,0,1,210,1],
-"structzisa_1_1GatheredVisInfo.html#a79c95dc324238a9829595abefb6117e6":[8,0,1,210,6]
+"structzisa_1_1GatheredVisInfo.html#a79c95dc324238a9829595abefb6117e6":[8,0,1,210,6],
+"structzisa_1_1GatheredVisInfo.html#a9bc97449b7bdd9b89acfabaa7b5f5c51":[8,0,1,210,2],
+"structzisa_1_1GatheredVisInfo.html#abd6de2b5dddf302bfcd97da4c20367e2":[8,0,1,210,0],
+"structzisa_1_1GatheredVisInfo.html#ae784ce23cd502de7c71069fd6c8fdf09":[8,0,1,210,3]
 };

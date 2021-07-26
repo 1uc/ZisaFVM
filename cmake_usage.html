@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ZisaFVM: CMake</title>
+<title>ZisaFVM: CMake Usage</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-$(document).ready(function(){initNavTree('md_cmake.html',''); initResizable(); });
+$(document).ready(function(){initNavTree('cmake_usage.html',''); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -83,25 +83,25 @@ $(document).ready(function(){initNavTree('md_cmake.html',''); initResizable(); }
 
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">CMake </div>  </div>
+<div class="title">CMake Usage </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>Here we briefly describe features of CMake directly relevant to Zisa.</p>
-<h1><a class="anchor" id="autotoc_md19"></a>
+<div class="textblock"><p><a class="anchor" id="md_cmake"></a>Here we briefly describe features of CMake directly relevant to Zisa.</p>
+<h1><a class="anchor" id="autotoc_md14"></a>
 CMake Primer</h1>
 <p>The most simple and often practical way of using CMake is on the command line to generate Make files. This can be done by </p><pre class="fragment">$ cmake ${MANY_FLAGS} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -B ${BUILD_DIR}
 </pre><p> which will set up everything in the folder <code>${BUILD_DIR}</code> mostly called <code>build</code> and virtually never <code>.</code>. Nothing stops you from having several build folders each using either different dependencies or compilers.</p>
 <p>In order to actually compile one can type </p><pre class="fragment">$ cmake --build ${BUILD_DIR} --parallel $(nproc)
 </pre><p> Finally, it pays to check if the compilation commands correspond to something meaningful. Which is achieved by <code>make VERBOSE=1</code>.</p>
 <p>Equipped with this knowledge using CMake revolves around finding the correct value for <code>${MANY_FLAGS}</code>, see <a class="el" href="md_building.html#cmake_flags">Project specific flags</a> for help with this problem.</p>
-<h2><a class="anchor" id="autotoc_md20"></a>
+<h2><a class="anchor" id="autotoc_md15"></a>
 Globbing source files</h2>
 <p>The convincing argument for not globbing source files is that if one switches Git branches files might appear or vanish; and if <code>CMakeLists.txt</code> does not change (very likely), then <code>cmake</code> won't be run again, resulting in a misconfigured build.</p>
 <p>Obviously, adding the files manually is unacceptable. However, nothing is stopping us from have a script add them manually for us. This script is called <code>bin/update_cmake.py</code>. For every subfolder it simply lists the source files contained in that folder in a new <code>CMakeLists.txt</code> located in that subfolder. A simple <code>add_subdirectory</code> pulls in the files.</p>
-<h2><a class="anchor" id="autotoc_md21"></a>
+<h2><a class="anchor" id="autotoc_md16"></a>
 Deleting build folders</h2>
 <p>Personally, when facing strange issues with CMake, I think it helps to point CMake to a fresh location, either by changing the <code>${BUILD_DIR}</code> or by deleting it.</p>
-<h2><a class="anchor" id="autotoc_md22"></a>
+<h2><a class="anchor" id="autotoc_md17"></a>
 &lt;tt&gt;CMAKE_MODULE_PATH&lt;/tt&gt; and &lt;tt&gt;CMAKE_PREFIX_PATH&lt;/tt&gt;</h2>
 <p>There are now two ways of finding dependencies. Either the library provides a <code>XYZConfig.cmake</code> which contains all the details about the targets, i.e. the <em>new way</em>. Alternatively, someone can write a <code>FindXYZ.cmake</code> module which contains all the details about how to use the library. Where does CMake look to find these things?</p>
 <ul>
@@ -109,10 +109,10 @@ Deleting build folders</h2>
 <li><code>CMAKE_MODULE_PATH</code> this is where CMake looks for <code>FindXYZ.cmake</code>.</li>
 </ul>
 <p>Well, there and the standard OS dependent locations.</p>
-<h2><a class="anchor" id="autotoc_md23"></a>
+<h2><a class="anchor" id="autotoc_md18"></a>
 Installing an modern version</h2>
 <p>CMake compiles and installs with relative ease. Therefore, if the cluster doesn't support a modern version, it's easy to install a modern version locally. The Zisa libraries contain a script which automates all steps involved.</p>
-<h2><a class="anchor" id="autotoc_md24"></a>
+<h2><a class="anchor" id="autotoc_md19"></a>
 CUDA</h2>
 <p>As of <code>3.18</code> CUDA works reasonably well with CMake. To use it, we add the language <code>CUDA</code> to the project. This unfortunately must also be done in every project using a CUDA dependency. Next we find <code>CUDA</code> by </p><pre class="fragment">find_package(CUDAToolkit REQUIRED)
 </pre><p> which provides the target <code>CUDA::cudart</code> and many more. The current situation isn't without quirks:</p>
@@ -125,18 +125,18 @@ CUDA</h2>
 <div class="line">)</div>
 </div><!-- fragment --> where <code>TARGET</code> should be replaced by the target, <code>SCOPE</code> should be one of <code>INTERFACE</code>, <code>PRIVATE</code> or <code>PUBLIC</code>; and <code>FLAG</code> be replaced by the desired flag. Analogously, one should guard flags that are to be passed only to <code>nvcc</code> but not the host compiler, e.g., <code>--expt-relaxed-constexpr</code> and vice-versa.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md25"></a>
+<h2><a class="anchor" id="autotoc_md20"></a>
 Configuring a file.</h2>
 <p>CMake has a templating system, to generate files with certain parts substituted when the project is built/installed. For our purposes it pretty simple, any CMake variable surrounded by <code>@</code> will be replaced by its value. To create the configured file, we must call </p><div class="fragment"><div class="line">configure_file(</div>
 <div class="line">  PATH_TO_TEMPLATE</div>
 <div class="line">  PATH_TO_SUBSTITUTED</div>
 <div class="line">  @ONLY</div>
 <div class="line">)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md26"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md21"></a>
 Aliases</h2>
 <p>It can be very useful to refer to certain targets by two names, one with the namespace and one without, e.g., <code>memory</code> and <code>Zisa::memory</code>. This is possible through </p><div class="fragment"><div class="line">add_library(Zisa::memory ALIAS memory)</div>
-</div><!-- fragment --><p> This creats the symmetry required to incorporate Zisa libraries either directly via <code>add_subdirectory</code> or as an external dependency via <code>find_package</code>.</p>
-<h1><a class="anchor" id="autotoc_md27"></a>
+</div><!-- fragment --><p> This creates the symmetry required to incorporate Zisa libraries either directly via <code>add_subdirectory</code> or as an external dependency via <code>find_package</code>.</p>
+<h1><a class="anchor" id="autotoc_md22"></a>
 Packaging with CMake</h1>
 <p>In modern CMake a library is installed along with a <code>*Config.cmake</code> file which describes the targets and their peculiarities. The definition of the targets, etc. can be done automatically by CMake, e.g., we tell CMake to generate the file for us called <code>ZisaTargets.cmake</code>. This is not the <code>ZisaConfig.cmake</code> that CMake will be looking for. Let's look at that file next. It contains the line </p><div class="fragment"><div class="line">include(&quot;${CMAKE_CURRENT_LIST_DIR}/ZisaTargets.cmake&quot;)</div>
 </div><!-- fragment --><p> which includes the autogenerated file. If the library has no dependencies, we could simply install the <code>ZisaConfig.cmake</code>. Job done.</p>

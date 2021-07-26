@@ -1,8 +1,5 @@
 var NAVTREEINDEX11 =
 {
-"namespacezisa.html#ab255a72033ce8f76fcdf8027c92f9003":[7,0,1,413],
-"namespacezisa.html#ab2bcf387d5d3cc35d1e503f4b84e4388":[7,0,1,693],
-"namespacezisa.html#ab2c5f450fac3d1d03699141692220086":[7,0,1,501],
 "namespacezisa.html#ab2cc068e3c25927995ade0200c91c58d":[7,0,1,312],
 "namespacezisa.html#ab2ed2bc271e84b491c71e0e195f6afa4":[7,0,1,439],
 "namespacezisa.html#ab30c2fc2d622827866bdb6e0270591da":[7,0,1,372],
@@ -249,5 +246,8 @@ var NAVTREEINDEX11 =
 "poly2d__impl_8hpp.html#a676182a349621da5dbc4208648a0d821":[9,0,0,0,8,27,8],
 "poly2d__impl_8hpp.html#a68eedb3f3649ef22022b7798fb61cba1":[9,0,0,0,8,27,5],
 "poly2d__impl_8hpp.html#a96dc7758e6e0b303f4cbb72a8acf982a":[9,0,0,0,8,27,7],
-"poly2d__impl_8hpp_source.html":[9,0,0,0,8,27]
+"poly2d__impl_8hpp_source.html":[9,0,0,0,8,27],
+"polynomial__expr_8hpp.html":[9,0,0,0,8,28],
+"polynomial__expr_8hpp.html#a405a269abd652e38d8b2cbd9dc00a5b4":[9,0,0,0,8,28,7],
+"polynomial__expr_8hpp.html#a8542ec2b561e537139429d6cc5768e27":[9,0,0,0,8,28,5]
 };

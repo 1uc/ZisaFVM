@@ -1,8 +1,5 @@
 var NAVTREEINDEX13 =
 {
-"structzisa_1_1GatheredVisInfo.html#a9bc97449b7bdd9b89acfabaa7b5f5c51":[8,0,1,210,2],
-"structzisa_1_1GatheredVisInfo.html#abd6de2b5dddf302bfcd97da4c20367e2":[8,0,1,210,0],
-"structzisa_1_1GatheredVisInfo.html#ae784ce23cd502de7c71069fd6c8fdf09":[8,0,1,210,3],
 "structzisa_1_1GaussLegendre.html":[8,0,1,112],
 "structzisa_1_1GaussLegendre.html#a008d70f57ce090a138e6dfa99673fd1c":[8,0,1,112,2],
 "structzisa_1_1GaussLegendre.html#a672d2178e7b3a93e4f3d8fb6edab2e5c":[8,0,1,112,1],
@@ -249,5 +246,8 @@ var NAVTREEINDEX13 =
 "structzisa_1_1euler__xvar__t.html#aa83a639c339bf40cefeb5845af8aad48":[8,0,1,155,1],
 "structzisa_1_1integer__tree__traits.html":[8,0,1,138],
 "structzisa_1_1omp__policy.html":[8,0,1,67],
-"structzisa_1_1range__traits.html":[8,0,1,72]
+"structzisa_1_1range__traits.html":[8,0,1,72],
+"structzisa_1_1range__traits.html#aa93b999afb25b281fef84f61e05f773e":[8,0,1,72,0],
+"structzisa_1_1reduce_1_1detail_1_1return__type__trait.html":[8,0,1,2,0,0],
+"structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01false_01_4.html":[8,0,1,2,0,2]
 };

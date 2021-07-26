@@ -27,43 +27,39 @@ var NAVTREE =
   [ "ZisaFVM", "index.html", [
     [ "Quickstart", "index.html#autotoc_md0", null ],
     [ "Dependencies", "md_dependencies.html", [
-      [ "Automated dependencies", "md_dependencies.html#autotoc_md2", null ],
-      [ "Overview of dependencies", "md_dependencies.html#autotoc_md3", [
-        [ "System dependencies", "md_dependencies.html#autotoc_md4", null ],
-        [ "Common dependencies", "md_dependencies.html#autotoc_md5", null ],
-        [ "Internal dependencies", "md_dependencies.html#autotoc_md6", null ],
-        [ "Scientific dependencies", "md_dependencies.html#autotoc_md7", null ]
+      [ "Automated dependencies", "md_dependencies.html#automated_dependencies", null ],
+      [ "Overview of dependencies", "md_dependencies.html#autotoc_md2", [
+        [ "System dependencies", "md_dependencies.html#autotoc_md3", null ],
+        [ "Common dependencies", "md_dependencies.html#autotoc_md4", null ],
+        [ "Internal dependencies", "md_dependencies.html#autotoc_md5", null ],
+        [ "Scientific dependencies", "md_dependencies.html#autotoc_md6", null ]
       ] ]
     ] ],
     [ "Building", "md_building.html", [
-      [ "CMake Primer", "md_building.html#autotoc_md9", [
-        [ "Globbing source files", "md_building.html#autotoc_md10", null ],
-        [ "Deleting build folders", "md_building.html#autotoc_md11", null ]
-      ] ],
       [ "Project specific flags", "md_building.html#cmake_flags", null ],
-      [ "IDEs", "md_building.html#autotoc_md12", null ]
+      [ "IDEs", "md_building.html#autotoc_md8", null ]
     ] ],
     [ "Conan", "md_conan.html", [
-      [ "Quick Conan Primer", "md_conan.html#autotoc_md14", [
-        [ "Conan Profiles", "md_conan.html#autotoc_md15", null ],
-        [ "C++11 Standard Library", "md_conan.html#autotoc_md16", null ]
+      [ "Quick Conan Primer", "md_conan.html#autotoc_md10", [
+        [ "Conan Profiles", "md_conan.html#autotoc_md11", null ],
+        [ "C++11 Standard Library", "md_conan.html#autotoc_md12", null ]
       ] ],
-      [ "Combining CMake and Conan", "md_conan.html#autotoc_md17", null ]
+      [ "Combining CMake and Conan", "md_conan.html#autotoc_md13", null ]
     ] ],
-    [ "CMake", "md_cmake.html", [
-      [ "CMake Primer", "md_cmake.html#autotoc_md19", [
-        [ "Globbing source files", "md_cmake.html#autotoc_md20", null ],
-        [ "Deleting build folders", "md_cmake.html#autotoc_md21", null ],
-        [ "<tt>CMAKE_MODULE_PATH</tt> and <tt>CMAKE_PREFIX_PATH</tt>", "md_cmake.html#autotoc_md22", null ],
-        [ "Installing an modern version", "md_cmake.html#autotoc_md23", null ],
-        [ "CUDA", "md_cmake.html#autotoc_md24", null ],
-        [ "Configuring a file.", "md_cmake.html#autotoc_md25", null ],
-        [ "Aliases", "md_cmake.html#autotoc_md26", null ]
+    [ "CMake Usage", "cmake_usage.html", [
+      [ "CMake Primer", "cmake_usage.html#autotoc_md14", [
+        [ "Globbing source files", "cmake_usage.html#autotoc_md15", null ],
+        [ "Deleting build folders", "cmake_usage.html#autotoc_md16", null ],
+        [ "<tt>CMAKE_MODULE_PATH</tt> and <tt>CMAKE_PREFIX_PATH</tt>", "cmake_usage.html#autotoc_md17", null ],
+        [ "Installing an modern version", "cmake_usage.html#autotoc_md18", null ],
+        [ "CUDA", "cmake_usage.html#autotoc_md19", null ],
+        [ "Configuring a file.", "cmake_usage.html#autotoc_md20", null ],
+        [ "Aliases", "cmake_usage.html#autotoc_md21", null ]
       ] ],
-      [ "Packaging with CMake", "md_cmake.html#autotoc_md27", null ]
+      [ "Packaging with CMake", "cmake_usage.html#autotoc_md22", null ]
     ] ],
     [ "Superbuild", "superbuild.html", [
-      [ "Random Notes", "superbuild.html#autotoc_md28", null ]
+      [ "Random Notes", "superbuild.html#autotoc_md23", null ]
     ] ],
     [ "Contributing", "md_contributing.html", null ],
     [ "Namespaces", "namespaces.html", [
@@ -110,14 +106,14 @@ var NAVTREEINDEX =
 "classzisa_1_1NoBoundaryCondition.html#a7e2ee5243711c601083928f574ee0828",
 "classzisa_1_1RollingConvergenceRate.html",
 "classzisa_1_1TypicalNumericalExperiment.html#adcfe896cfd0ff01ddf4bcfe6b1ccccff",
-"euler__factory_8cpp.html#a0bc013cc4a514c4ca84ef2dc72280cda",
-"gravity_8hpp.html",
-"lsq__solver_8cpp.html#aa7d86ae83f61e5633b46f146f5a4617d",
-"namespacezisa.html#a123a8e2771524d094fdd5e4f1e771af3",
-"namespacezisa.html#ab255a72033ce8f76fcdf8027c92f9003",
-"polynomial__expr_8hpp.html",
-"structzisa_1_1GatheredVisInfo.html#a9bc97449b7bdd9b89acfabaa7b5f5c51",
-"structzisa_1_1range__traits.html#aa93b999afb25b281fef84f61e05f773e"
+"euler__decl_8hpp.html#ab665e91c072a760defc2e99dcb97dbdd",
+"gmsh__reader_8hpp_source.html",
+"local__reconstruction_8hpp.html",
+"namespacezisa.html#a15fa58dd8173e9619fcc4d9d828cd57a",
+"namespacezisa.html#ab2cc068e3c25927995ade0200c91c58d",
+"polynomial__expr_8hpp.html#aa1514bd3263f7d3efe3c635c23c21e7f",
+"structzisa_1_1GaussLegendre.html",
+"structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01false_01_4.html#ab4524f691dbdfdd41565268d24360171"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

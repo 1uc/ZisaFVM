@@ -121,7 +121,7 @@ var searchData=
   ['circum_5fradii_219',['circum_radii',['../structzisa_1_1Grid.html#aac9e643acfa5e39f7aa44983117ed1cf',1,'zisa::Grid']]],
   ['circum_5fradius_220',['circum_radius',['../structzisa_1_1Grid.html#aa3c3ab7bea1edc7e35d3da7fb20f5e0f',1,'zisa::Grid::circum_radius()'],['../namespacezisa.html#ae16992109dbf7b1ff5d289f07c6c305c',1,'zisa::circum_radius(const Tetrahedron &amp;tet)'],['../namespacezisa.html#a8132d07c15baa05066554ad00462d81c',1,'zisa::circum_radius(const Triangle &amp;tri)']]],
   ['clear_221',['clear',['../classzisa_1_1DistributedReferenceSolution.html#a13f7e47a7e4abadd299d40b6752ec775',1,'zisa::DistributedReferenceSolution']]],
-  ['cmake_222',['CMake',['../md_cmake.html',1,'']]],
+  ['cmake_20usage_222',['CMake Usage',['../cmake_usage.html',1,'']]],
   ['cmake_2emd_223',['cmake.md',['../cmake_8md.html',1,'']]],
   ['coeffs_224',['coeffs',['../classzisa_1_1FourierSeriesBase.html#ab63f40094cafab76e5d5121b8c06ab9e',1,'zisa::FourierSeriesBase']]],
   ['coeffs_5fptr_225',['coeffs_ptr',['../classzisa_1_1PolyND.html#a96ae2e002cadb6b20eafdf3f13d41345',1,'zisa::PolyND']]],

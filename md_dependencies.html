@@ -86,7 +86,7 @@ $(document).ready(function(){initNavTree('md_dependencies.html',''); initResizab
 <div class="title">Dependencies </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="autotoc_md2"></a>
+<div class="textblock"><h1><a class="anchor" id="automated_dependencies"></a>
 Automated dependencies</h1>
 <p>Naturally, while it can be useful to be able to install each of the dependencies manually, e.g., on a pesky cluster, for the most part this can be automated in a script.</p>
 <p>To install the dependencies use </p><pre class="fragment">$ bin/install_dir.sh COMPILER DIRECTORY       \
@@ -94,10 +94,10 @@ Automated dependencies</h1>
                      [--zisa_has_cuda={0,1}]
 </pre><p> which will install the dependencies into a subfolder of <code>DIRECTORY</code> and print part of the CMake command needed to include the dependencies. <code>COMPILER</code> must be replaced with the compiler you want to use.</p>
 <p>If this worked continue by adding <a class="el" href="md_building.html#cmake_flags">project specific flags</a></p>
-<h1><a class="anchor" id="autotoc_md3"></a>
+<h1><a class="anchor" id="autotoc_md2"></a>
 Overview of dependencies</h1>
 <p>Zisa uses modern CMake to manage any dependencies it has. We've devided them into four categories: <em>system dependencies</em> which are hard to install, low level libraries; <em>common dependencies</em> these are properly packaged libraries; <em>internal dependencies</em> meaning other parts of Zisa; and finally <em>scientific dependencies</em> these are dependencies on other scientific codes, which may not be nicely packaged and might not be open-source.</p>
-<h2><a class="anchor" id="autotoc_md4"></a>
+<h2><a class="anchor" id="autotoc_md3"></a>
 System dependencies</h2>
 <p>We simply assume that these are present on the system. On a personal computer these are intalled using the package manager or something similar.</p>
 <p>Examples are:</p><ul>
@@ -106,16 +106,16 @@ System dependencies</h2>
 <li>HDF5</li>
 <li>NetCDF</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md5"></a>
+<h2><a class="anchor" id="autotoc_md4"></a>
 Common dependencies</h2>
 <p>Since these are nicely packaged C++ libraries, we can use Conan to install them. Conan can be installed using <code>pip</code>, e.g., </p><pre class="fragment">pip install --user conan
 </pre><p> Remember that you might need to add a folder to your <code>PATH</code>. There is a <code>conanfile.txt</code> which lists the libraries that need to be installed.</p>
 <p><b>Note:</b> If you're new to Conan and it's using the correct compiler, please read up on profiles. Which is how you can tell Conan the details required to pick an ABI compatible binary.</p>
 <p>Please refer to <a class="el" href="md_conan.html">Conan Details</a> for further details on how we use Conan.</p>
-<h2><a class="anchor" id="autotoc_md6"></a>
+<h2><a class="anchor" id="autotoc_md5"></a>
 Internal dependencies</h2>
 <p>These are distributed as source. Hence one must clone or download the repository; then compile and install using typical CMake commands. Once they're installed they are no different from common dependencies.</p>
-<h2><a class="anchor" id="autotoc_md7"></a>
+<h2><a class="anchor" id="autotoc_md6"></a>
 Scientific dependencies</h2>
 <p>These are installed using custom scripts, check <code>bin/</code> for anything with a related name. Note, that these dependencies are always optional, and not present in all parts of Zisa. </p>
 </div></div><!-- contents -->

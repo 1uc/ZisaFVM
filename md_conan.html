@@ -89,18 +89,18 @@ $(document).ready(function(){initNavTree('md_conan.html',''); initResizable(); }
 <div class="textblock"><p>Conan is a wonderful tool to download and install compiled libraries to a local folder on your computer. In addition it generates the necesary information to link against these local versions.</p>
 <p>It can be installed either using the package manager or </p><pre class="fragment">$ pip install --user conan
 </pre><p> (or <code>pip3</code> depending on your Linux distribution).</p>
-<h1><a class="anchor" id="autotoc_md14"></a>
+<h1><a class="anchor" id="autotoc_md10"></a>
 Quick Conan Primer</h1>
-<h2><a class="anchor" id="autotoc_md15"></a>
+<h2><a class="anchor" id="autotoc_md11"></a>
 Conan Profiles</h2>
 <p>In order to obtain ABI compatible libraries, Conan must be told which compiler, compiler version and which standard library should be used. My initial faulty assumption was it would just deduce everything from the environment variable <code>CC</code>. Instead Conan has a concept of "profiles" which are textfiles containing all the relevant information.</p>
 <p>One easy way setup a custom profile would be to run </p><pre class="fragment">$ conan profile show default
 </pre><p> and see what can/needs to be modified. Then create a new profile <code>PROFILE</code> in the folder <code>~/.conan/profiles</code>. Use this profile by </p><pre class="fragment">$ conan install CONANFILE --profile PROFILE
 </pre><p> where <code>CONANFILE</code> is typically <code>../conanfile.txt</code> and <code>PROFILE</code> is the name of the file you created in <code>~/.conan/profiles</code>, e.g., <code>default</code> if you want to redundantly specify the default profile.</p>
-<h2><a class="anchor" id="autotoc_md16"></a>
+<h2><a class="anchor" id="autotoc_md12"></a>
 C++11 Standard Library</h2>
 <p>Modern C++ links to a C++11 compatible version of the standard library. Conan must be told to use the modern library, either by modifying a profile (possibly the default) or by adding </p><pre class="fragment">$ conan CONANFILE -s compiler.libcxx=libstdc++11
-</pre><h1><a class="anchor" id="autotoc_md17"></a>
+</pre><h1><a class="anchor" id="autotoc_md13"></a>
 Combining CMake and Conan</h1>
 <p>Conan and CMake work very nicely together. There are several ways of combining the two. The rationale is to avoid a strong coupling of the two. Therefore, we strive for a <code>CMakeLists.txt</code> which does not contain Conan specific instructions. After all Conan is just a way of obtaining libraries and not the way. In particular, if all dependencies are installed in standard locations (meaning CMake can find them), then Conan should not be needed.</p>
 <p>The two <em>generators</em> we use are</p>
