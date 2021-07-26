@@ -41,6 +41,10 @@ jobs:
           echo "${ZISA_BOT_SSH_KEY}" > ${HOME}/.ssh/id_ed25519
           chmod 700 ${HOME}/.ssh/id_ed25519
 
+      - name: Update Ubuntu
+        run: |
+          sudo apt-get update -y
+
       - name: Install MPI
         if: matrix.zisa_has_mpi == 1
         run: |
