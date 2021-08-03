@@ -24,10 +24,10 @@ TEST_CASE("poly_dof-3d", "[math][poly]") {
 }
 
 TEST_CASE("PolyIndexRange<2>", "[math][poly]") {
-  zisa::int_t max_degree = 3;
+  int max_degree = 3;
   auto index_range = zisa::PolyIndexRange<2>(max_degree);
 
-  zisa::int_t degree = 0;
+  int degree = 0;
   zisa::int_t count = 0;
   for (auto [i, j] : index_range) {
     if (i + j > degree) {
@@ -44,10 +44,10 @@ TEST_CASE("PolyIndexRange<2>", "[math][poly]") {
 }
 
 TEST_CASE("PolyIndexRange<3>", "[math][poly]") {
-  zisa::int_t max_degree = 3;
+  int max_degree = 3;
   auto index_range = zisa::PolyIndexRange<3>(max_degree);
 
-  zisa::int_t degree = 0;
+  int degree = 0;
   zisa::int_t count = 0;
   for (auto [i, j, k] : index_range) {
     if (i + j + k > degree) {
@@ -76,7 +76,7 @@ void check_poly_degree_right_inverse() {
 
 template <int NDIMS>
 void check_poly_degree_left_inverse() {
-  for (zisa::int_t deg = 0; deg < 5; ++deg) {
+  for (int deg = 0; deg < 5; ++deg) {
     INFO(string_format("deg = %d \n", deg));
     REQUIRE(zisa::poly_degree<NDIMS>(zisa::poly_dof<NDIMS>(deg)) == deg);
   }

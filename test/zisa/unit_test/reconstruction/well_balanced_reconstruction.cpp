@@ -74,7 +74,6 @@ TEST_CASE("Wellbalanced RC; small perturbations", "[wb][math]") {
 
   using rc_t = zisa::CWENO_AO;
   using scaling_t = zisa::UnityScaling;
-  auto scaling = scaling_t{};
   auto local_rc_params = zisa::LocalRCParams{1, -1.0};
   auto rc = zisa::
       make_reconstruction_array<eq_t, rc_t, scaling_t, eos_t, gravity_t>(

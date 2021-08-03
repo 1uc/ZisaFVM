@@ -27,11 +27,11 @@ TEST_CASE("FrozenBC; example", "[bc]") {
   zisa::fill(u, 1.0);
 
   for (auto i : I) {
-    u(i, 0) = 100.0 * i + 0.0;
-    u(i, 1) = 100.0 * i + 1.0;
-    u(i, 2) = 100.0 * i + 2.0;
-    u(i, 3) = 100.0 * i + 3.0;
-    u(i, 4) = 100.0 * i + 4.0;
+    u(i, 0) = 100.0 * double(i) + 0.0;
+    u(i, 1) = 100.0 * double(i) + 1.0;
+    u(i, 2) = 100.0 * double(i) + 2.0;
+    u(i, 3) = 100.0 * double(i) + 3.0;
+    u(i, 4) = 100.0 * double(i) + 4.0;
   }
 
   auto bc = std::make_shared<zisa::FrozenBC>(grid, all_vars);
@@ -40,10 +40,10 @@ TEST_CASE("FrozenBC; example", "[bc]") {
   bc->apply(all_vars, /* t = */ 0.0);
 
   for (auto i : I) {
-    REQUIRE(u(i, 0) == 100.0 * i + 0.0);
-    REQUIRE(u(i, 1) == 100.0 * i + 1.0);
-    REQUIRE(u(i, 2) == 100.0 * i + 2.0);
-    REQUIRE(u(i, 3) == 100.0 * i + 3.0);
-    REQUIRE(u(i, 4) == 100.0 * i + 4.0);
+    REQUIRE(u(i, 0) == 100.0 * double(i) + 0.0);
+    REQUIRE(u(i, 1) == 100.0 * double(i) + 1.0);
+    REQUIRE(u(i, 2) == 100.0 * double(i) + 2.0);
+    REQUIRE(u(i, 3) == 100.0 * double(i) + 3.0);
+    REQUIRE(u(i, 4) == 100.0 * double(i) + 4.0);
   }
 }

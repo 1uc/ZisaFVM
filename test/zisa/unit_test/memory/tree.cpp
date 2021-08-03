@@ -9,7 +9,7 @@
 TEST_CASE("Tree; basic API", "[.][memory][tree]") {
   auto grid = zisa::load_grid(zisa::TestGridFactory::small());
 
-  auto tree = zisa::Tree<int, 4>{};
+  auto tree = zisa::Tree<zisa::int_t, 4>{};
   auto f = [&grid](zisa::int_t i, zisa::int_t j) {
     return zisa::norm(grid->cell_centers(i) - grid->cell_centers(j));
   };

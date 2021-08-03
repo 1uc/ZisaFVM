@@ -23,8 +23,6 @@ TEST_CASE("quasi_newton; scalar", "[math][quasi_newton]") {
 }
 
 TEST_CASE("quasi_newton; system", "[math][quasi_newton]") {
-  auto theta = zisa::EnthalpyEntropy{1.0, 2.0};
-
   auto f = [](const zisa::EnthalpyEntropy &theta) {
     auto [h, K] = theta;
 

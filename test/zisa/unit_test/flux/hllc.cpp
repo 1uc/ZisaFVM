@@ -10,7 +10,6 @@
 TEST_CASE("HLLC; consistency") {
 
   using eos_t = zisa::IdealGasEOS;
-  using gravity_t = zisa::ConstantGravityRadial;
   using euler_t = zisa::Euler;
 
   auto eos = eos_t{1.6, 1.0};

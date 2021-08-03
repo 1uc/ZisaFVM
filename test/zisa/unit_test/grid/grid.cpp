@@ -366,7 +366,7 @@ TEST_CASE("Grid; tets", "[grid]") {
     for (zisa::int_t i = 0; i < n_cells; ++i) {
       for (zisa::int_t l = 0; l < 4; ++l) {
         if (grid->is_valid(i, l)) {
-          int j = grid->neighbours(i, l);
+          auto j = grid->neighbours(i, l);
 
           bool found_i = false;
           for (zisa::int_t k = 0; k < 4; ++k) {

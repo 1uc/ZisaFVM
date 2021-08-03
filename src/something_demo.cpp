@@ -54,7 +54,7 @@ void test_evil_grid() {
 }
 
 void test_helmholtz_eos() {
-  #if ZISA_HAS_HELMHOLTZ_EOS
+#if ZISA_HAS_HELMHOLTZ_EOS
   auto table_path = std::string("data/stellar_convection/helm_table.dat");
   initialize_helmholtz_eos(table_path);
 
@@ -92,11 +92,11 @@ void test_helmholtz_eos() {
   PRINT(full_xvars.p);
   PRINT(full_xvars.E);
   PRINT(full_xvars.T);
-  #endif
+#endif
 }
 }
 
-int main(int argc, char *argv[]) {
+int main([[maybe_unused]] int argc, [[maybe_unused]] char *argv[]) {
 #if ZISA_HAS_MPI == 1
   int available_thread_level = -1;
   int requested_thread_level = MPI_THREAD_MULTIPLE;

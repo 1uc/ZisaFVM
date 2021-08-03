@@ -108,6 +108,10 @@ compute_partition_full_stencil(const Grid &grid,
            [&partition, &part](int_t i) { partition[i] = int_t(part[i]); });
   return partition;
 #else
+  ZISA_UNUSED(grid);
+  ZISA_UNUSED(stencils);
+  ZISA_UNUSED(n_parts);
+
   LOG_ERR("This requires `ZISA_HAS_METIS == 1`.");
 #endif
 }
@@ -154,6 +158,9 @@ array<int_t, 1> compute_partitions_mesh(const Grid &grid, int n_parts) {
 
   return partition;
 #else
+  ZISA_UNUSED(grid);
+  ZISA_UNUSED(n_parts);
+
   LOG_ERR("This requires `ZISA_HAS_METIS == 1`.");
 #endif
 }
@@ -235,7 +242,9 @@ compute_effective_stencils(const Grid &grid,
 
   std::vector<std::vector<int_t>> effective_stencils(grid.n_cells);
 
+#if ZISA_HAS_OPENMP == 1
 #pragma omp parallel for
+#endif
   for (int_t i = 0; i < grid.n_cells; ++i) {
     auto stencils = StencilFamily(grid, i, params);
     effective_stencils[i] = stencils.local2global();
@@ -349,13 +358,14 @@ extract_vertices(const array<XYZ, 1> &vertices,
                  index_range(vi_local2old.size()),
                  [&](int_t i) { vi_old2local[vi_local2old[i]] = i; });
 
-  zisa::for_each(
-                 serial_policy{},
-                 index_range(local_vertex_indices.shape(0)), [&](int_t i) {
-    for (int_t k : index_range(local_vertex_indices.shape(1))) {
-      local_vertex_indices(i, k) = vi_old2local[local_vertex_indices(i, k)];
-    }
-  });
+  zisa::for_each(serial_policy{},
+                 index_range(local_vertex_indices.shape(0)),
+                 [&](int_t i) {
+                   for (int_t k : index_range(local_vertex_indices.shape(1))) {
+                     local_vertex_indices(i, k)
+                         = vi_old2local[local_vertex_indices(i, k)];
+                   }
+                 });
 
   int_t n_vertices_local = vi_old2local.size();
   array<XYZ, 1> local_vertices(n_vertices_local);

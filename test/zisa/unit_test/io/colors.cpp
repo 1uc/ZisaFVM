@@ -8,10 +8,10 @@
 #include <zisa/io/colors.hpp>
 
 TEST_CASE("Color Conversions") {
-  zisa::RGBColor rgb{0.3, 0.1, 0.4};
+  zisa::RGBColor rgb{0.3f, 0.1f, 0.4f};
   auto xyz = zisa::rgb2xyz(rgb);
 
-  float tol = 1e-4;
+  float tol = 1e-4f;
 
   SECTION("RGB <-> XYZ") {
     auto approx = xyz2rgb(rgb2xyz(rgb));

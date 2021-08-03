@@ -25,11 +25,18 @@ TEST_CASE("FewPointsCache; API", "[math][cache]") {
   cache.update(f);
 
   for (auto p : points) {
-    REQUIRE(cache.get(p) == f(p));
+    SECTION("Exactly in cache.") { REQUIRE(cache.get(p) == f(p)); }
 
-    double eps = 1e-10;
-    auto p_prime = zisa::XYZ{p[0] + eps, p[1] - eps, p[2] - eps};
+    SECTION("Outside cache.") {
+      double eps = 1e-8;
+      auto p_prime = zisa::XYZ{p[0] + eps, p[1] - eps, p[2] - eps};
+      REQUIRE(cache.get(p_prime) == f(p_prime));
+    }
 
-    REQUIRE(cache.get(p) == f(p));
+    SECTION("Near a point in cache.") {
+      double eps = 1e-12;
+      auto p_prime = zisa::XYZ{p[0] + eps, p[1] - eps, p[2] - eps};
+      REQUIRE(cache.get(p_prime) == f(p));
+    }
   }
 }

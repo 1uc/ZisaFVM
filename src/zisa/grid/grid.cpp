@@ -547,10 +547,12 @@ array<array<double, 1>, 1> compute_normalized_moments(const Grid &grid,
   for (const auto &i : cell_indices(grid)) {
     if (grid.is_triangular()) {
       auto tri = triangle(grid, i);
-      normalized_moments(i) = zisa::normalized_moments(tri, quad_deg, quad_deg);
+      normalized_moments(i) = zisa::normalized_moments(
+          tri, integer_cast<int>(quad_deg), quad_deg);
     } else if (grid.is_tetrahedral()) {
       auto tet = tetrahedron(grid, i);
-      normalized_moments(i) = zisa::normalized_moments(tet, quad_deg, quad_deg);
+      normalized_moments(i) = zisa::normalized_moments(
+          tet, integer_cast<int>(quad_deg), quad_deg);
     } else {
       LOG_ERR("Implement this first.");
     }
@@ -1050,7 +1052,7 @@ array<double, 1>
 normalized_moments(const Triangle &tri, int degree, int_t quad_deg) {
   if (quad_deg == MAX_QUADRATURE_DEGREE) {
     quad_deg = MAX_TRIANGULAR_RULE_DEGREE;
-    degree = quad_deg;
+    degree = zisa::integer_cast<int>(quad_deg);
   }
 
   auto length = characteristic_length(tri);
@@ -1075,7 +1077,7 @@ array<double, 1>
 normalized_moments(const Tetrahedron &tet, int degree, int_t quad_deg) {
   if (quad_deg == MAX_QUADRATURE_DEGREE) {
     quad_deg = MAX_TETRAHEDRAL_RULE_DEGREE;
-    degree = quad_deg;
+    degree = zisa::integer_cast<int>(quad_deg);
   }
 
   auto length = characteristic_length(tet);

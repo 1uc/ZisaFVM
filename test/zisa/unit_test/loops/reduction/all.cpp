@@ -17,9 +17,9 @@ TEST_CASE("all; basic examples") {
 
   SECTION("all true") {
     for (zisa::int_t i = 0; i < n_cells; ++i) {
-      grid_vars(i, 0) = i + 2;
-      grid_vars(i, 1) = i + 3;
-      grid_vars(i, 2) = i + 2;
+      grid_vars(i, 0) = double(i + 2);
+      grid_vars(i, 1) = double(i + 3);
+      grid_vars(i, 2) = double(i + 2);
     }
 
     bool expected = true;
@@ -29,9 +29,9 @@ TEST_CASE("all; basic examples") {
 
   SECTION("some false") {
     for (zisa::int_t i = 0; i < n_cells; ++i) {
-      grid_vars(i, 0) = i + 2;
+      grid_vars(i, 0) = double(i + 2);
       grid_vars(i, 1) = -double(i);
-      grid_vars(i, 2) = i + 2;
+      grid_vars(i, 2) = double(i + 2);
     }
 
     bool expected = false;

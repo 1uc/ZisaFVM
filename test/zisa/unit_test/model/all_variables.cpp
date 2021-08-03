@@ -35,7 +35,6 @@ TEST_CASE("AllVariables; load/store", "[memory]") {
   zisa::int_t n_cvars = zisa::euler_var_t::size();
   zisa::int_t n_avars = 2;
 
-  auto euler = zisa::make_default_euler();
   auto dims = zisa::AllVariablesDimensions{n_cells, n_cvars, n_avars};
 
   auto all_vars_store = zisa::AllVariables(dims);

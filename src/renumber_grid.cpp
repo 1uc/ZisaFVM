@@ -77,7 +77,7 @@ void renumber_grid(const std::string &grid_file) {
       cell_centers[i] += vertices[vertex_indices(i, k)];
     }
 
-    cell_centers[i] /= max_vertices;
+    cell_centers[i] /= double(max_vertices);
 
     x_min = zisa::min(cell_centers[i][0], x_min);
     x_max = zisa::max(cell_centers[i][0], x_max);

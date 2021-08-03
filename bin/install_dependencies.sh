@@ -12,6 +12,7 @@ then
     echo "Usage: $0 COMPILER DESTINATION [--zisa_has_mpi=ZISA_HAS_MPI]"
     echo "                               [--zisa_has_cuda=ZISA_HAS_CUDA]"
     echo "                               [--zisa_has_netcdf=ZISA_HAS_NETCDF]"
+    echo "                               [--zisa_has_metis=ZISA_HAS_METIS]"
     echo "                               [--cmake=CUSTOM_CMAKE_BINARY]"
     echo "                               [--conan_profile=CONAN_PROFILE]"
     echo "                               [--print_install_dir]"
@@ -29,6 +30,9 @@ do
             ;;
         --zisa_has_netcdf=*)
             ZISA_HAS_NETCDF=${arg#*=}
+            ;;
+        --zisa_has_metis=*)
+            ZISA_HAS_METIS=${arg#*=}
             ;;
         --cmake=*)
             CMAKE="$(realpath "${arg#*=}")"
@@ -80,6 +84,11 @@ fi
 if [[ -z "${ZISA_HAS_NETCDF}" ]]
 then
     ZISA_HAS_NETCDF=0
+fi
+
+if [[ -z "${ZISA_HAS_METIS}" ]]
+then
+    ZISA_HAS_METIS=0
 fi
 
 if [[ ${ZISA_HAS_MPI} -eq 0 ]]

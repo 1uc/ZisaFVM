@@ -57,17 +57,14 @@ void save_partitioned_grid(const std::string &dirname,
   //  PRINT(metis_timer.elapsed_seconds());
 
   auto partitioned_grid = compute_partitioned_grid_by_sfc(grid, n_parts);
-
-  const auto &permutation = partitioned_grid.permutation;
   const auto &partition = partitioned_grid.partition;
-  const auto &boundaries = partitioned_grid.boundaries;
 
   std::vector<std::thread> workers;
   workers.reserve(n_workers);
 
   std::vector<int> work_queue(n_parts, 0);
 
-  auto job = [&](int p) {
+  auto job = [&](int_t p) {
     auto [local_vertex_indices, local_vertices, global_cell_indices]
         = extract_subgrid(grid, partitioned_grid, stencil_params, p);
 
@@ -90,12 +87,12 @@ void save_partitioned_grid(const std::string &dirname,
 
   auto scheduling_loop = [&work_queue, job]() {
     while (true) {
-      int p = -1;
+      auto p = int_t(-1);
       {
         auto lock = std::unique_lock(work_queue_mutex);
 
-        int n_parts = work_queue.size();
-        for (int pp = 0; pp < n_parts; ++pp) {
+        auto n_parts = work_queue.size();
+        for (std::size_t pp = 0; pp < n_parts; ++pp) {
           if (work_queue[pp] == 0) {
             work_queue[pp] = 1;
             p = pp;
@@ -103,7 +100,7 @@ void save_partitioned_grid(const std::string &dirname,
           }
         }
 
-        if (p == -1) {
+        if (p == int_t(-1)) {
           return; // no more work to be had.
         }
       }

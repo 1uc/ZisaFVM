@@ -22,7 +22,7 @@ TEST_CASE("for_each; saxpy-like update") {
 
   zisa::fill(u1, -1.0);
 
-  auto f = [](zisa::int_t i, zisa::int_t k) { return 100 * i + k; };
+  auto f = [](zisa::int_t i, zisa::int_t k) { return double(100 * i + k); };
 
   for (zisa::int_t i = 0; i < n_cells; ++i) {
     for (zisa::int_t k = 0; k < n_vars; ++k) {

@@ -98,9 +98,8 @@ SphericalGravity::SphericalGravity(array<double, 1> radii, array<double, 1> phi)
     : interpolate(std::move(radii), std::move(phi)) {}
 
 void save(HierarchicalWriter &writer, const SphericalGravity &gravity) {
-  LOG_WARN("Not saving the gravitational potential.");
-  //  save(writer, gravity.interpolate.points, "radii");
-  //  save(writer, gravity.interpolate.values, "phi");
+  save(writer, gravity.interpolate.points, "radii");
+  save(writer, gravity.interpolate.values, "phi");
 }
 
 SphericalGravity SphericalGravity::load(HierarchicalReader &reader) {

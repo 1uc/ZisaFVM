@@ -125,16 +125,16 @@ void space_filling_curve_demo_3d() {
 }
 
 void space_filling_snake() {
-  int n = 64;
+  int_t n = 64;
 
   auto sfc_indices = array<double, 3>(shape_t<3>{n, n, n});
-  double dx = 1.0 / n;
-  for (int i = 0; i < n; ++i) {
-    double x = (i + 0.5) * dx;
-    for (int j = 0; j < n; ++j) {
-      double y = (j + 0.5) * dx;
-      for (int k = 0; k < n; ++k) {
-        double z = (k + 0.5) * dx;
+  double dx = 1.0 / double(n);
+  for (int_t i = 0; i < n; ++i) {
+    double x = (double(i) + 0.5) * dx;
+    for (int_t j = 0; j < n; ++j) {
+      double y = (double(j) + 0.5) * dx;
+      for (int_t k = 0; k < n; ++k) {
+        double z = (double(k) + 0.5) * dx;
 
         sfc_indices(i, j, k) = double(hilbert_index<6>(x, y, z).to_ullong());
       }
@@ -146,9 +146,9 @@ void space_filling_snake() {
   auto zs = array<double, 1>(n + 1);
 
   for (int_t i = 0; i < n + 1; ++i) {
-    xs[i] = i * dx;
-    ys[i] = i * dx;
-    zs[i] = i * dx;
+    xs[i] = double(i) * dx;
+    ys[i] = double(i) * dx;
+    zs[i] = double(i) * dx;
   }
 
   auto writer = HDF5SerialWriter("sfc_snake.h5");
@@ -159,14 +159,14 @@ void space_filling_snake() {
 }
 
 void hilbert_curve_demo() {
-  int n = 32;
+  int_t n = 32;
 
   auto sfc_indices = array<double, 2>(shape_t<2>{n, n});
-  double dx = 1.0 / n;
-  for (int i = 0; i < n; ++i) {
-    double x = (i + 0.5) * dx;
-    for (int j = 0; j < n; ++j) {
-      double y = (j + 0.5) * dx;
+  double dx = 1.0 / double(n);
+  for (int_t i = 0; i < n; ++i) {
+    double x = (double(i) + 0.5) * dx;
+    for (int_t j = 0; j < n; ++j) {
+      double y = (double(j) + 0.5) * dx;
       sfc_indices(i, j) = double(hilbert_index<5>(x, y).to_ullong());
     }
   }
@@ -175,8 +175,8 @@ void hilbert_curve_demo() {
   auto ys = array<double, 1>(n + 1);
 
   for (int_t i = 0; i < n + 1; ++i) {
-    xs[i] = i * dx;
-    ys[i] = i * dx;
+    xs[i] = double(i) * dx;
+    ys[i] = double(i) * dx;
   }
 
   auto writer = HDF5SerialWriter("hilbert_curve.h5");

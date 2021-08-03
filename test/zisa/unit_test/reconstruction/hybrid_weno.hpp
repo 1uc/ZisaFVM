@@ -31,9 +31,9 @@ inline void save_grid_with_stencil(const std::string &filename,
 
 inline std::pair<std::shared_ptr<Grid>, array<StencilFamily, 1>>
 load_grid_with_stencils(const std::vector<std::string> &grid_names,
-                        int grid_level,
+                        int_t grid_level,
                         const HybridWENOParams &params,
-                        int quad_deg) {
+                        int_t quad_deg) {
 
   auto grid_name = grid_names[grid_level];
   auto grid = load_grid(grid_name, quad_deg);
@@ -53,16 +53,14 @@ load_grid_with_stencils(const std::vector<std::string> &grid_names,
 }
 
 template <class RC>
-void test_hybrid_weno_valid_stencil(
-    const std::vector<std::string> &grid_names,
-    const std::tuple<double, double> &expected_rate,
-    const HybridWENOParams &params,
-    int_t n_dims) {
+void test_hybrid_weno_valid_stencil(const std::vector<std::string> &grid_names,
+                                    const HybridWENOParams &params,
+                                    int_t n_dims) {
 
   auto quad_deg = (n_dims == 2 ? MAX_TRIANGULAR_RULE_DEGREE
                                : MAX_TETRAHEDRAL_RULE_DEGREE);
 
-  for (int grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
+  for (int_t grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
 
@@ -123,7 +121,7 @@ void test_hybrid_weno_convergence(
   auto quad_deg = (n_dims == 2 ? MAX_TRIANGULAR_RULE_DEGREE
                                : MAX_TETRAHEDRAL_RULE_DEGREE);
 
-  for (int grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
+  for (int_t grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
 
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
@@ -260,7 +258,7 @@ inline void set_qbar_local(array<euler_var_t, 1> &qbar_local,
   const auto &l2g = rc.local2global();
 
   for (int_t ii = 0; ii < l2g.size(); ++ii) {
-    int i = l2g[ii];
+    auto i = l2g[ii];
 
     for (int_t k = 0; k < u.shape(1); ++k) {
       qbar_local[ii][k] = u(i, k);
@@ -275,14 +273,11 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
                                 const HybridWENOParams &params,
                                 int_t n_dims) {
 
-  using scaling_t = zisa::UnityScaling;
-  auto scaling = scaling_t{};
-
   auto quad_deg = (n_dims == 2 ? MAX_TRIANGULAR_RULE_DEGREE
                                : MAX_TETRAHEDRAL_RULE_DEGREE);
   double tol = 5e-6;
 
-  for (int grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
+  for (int_t grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
     auto grid_name = grid_names[grid_level];
 
     auto [grid, sf]
@@ -292,7 +287,7 @@ void test_hybrid_weno_stability(const std::vector<std::string> &grid_names,
 
     auto f = [grid = grid](const XYZ &x) {
       double z = (grid->n_dims() == 2 ? 0.0 : 0.5);
-      auto d = zisa::norm(x - XYZ{0.5, 0.5, 0.5});
+      auto d = zisa::norm(x - XYZ{0.5, 0.5, z});
       return (d < 0.3 ? 10.0 : 1.0);
     };
 
@@ -364,7 +359,7 @@ void test_hybrid_weno_matrices(const std::vector<std::string> &grid_names,
   auto quad_deg = (n_dims == 2 ? MAX_TRIANGULAR_RULE_DEGREE
                                : MAX_TETRAHEDRAL_RULE_DEGREE);
 
-  for (int grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
+  for (int_t grid_level = 0; grid_level < grid_names.size(); ++grid_level) {
     auto [grid, sf]
         = load_grid_with_stencils(grid_names, grid_level, params, quad_deg);
 

@@ -89,8 +89,6 @@ TEST_CASE("StencilFamily", "[weno_ao]") {
 
 TEST_CASE("StencilFamily, 3D", "[stencil][3d]") {
   auto grid = zisa::load_grid(zisa::TestGridFactory::unit_cube(1), 3);
-  zisa::int_t i_cell = 90;
-  auto n_cells = grid->n_cells;
 
   auto cell_indices = std::vector<zisa::int_t>{0, 20, 90};
 
@@ -107,7 +105,7 @@ TEST_CASE("StencilFamily, 3D", "[stencil][3d]") {
 
         auto n = zisa::poly_dof<3>(s.order() - 1);
         auto observed = double(s.size());
-        auto expected = double(n * s.overfit_factor());
+        auto expected = double(n) * s.overfit_factor();
 
         // Poly has zero mean.
         INFO(string_format("i = %d", i_cell));

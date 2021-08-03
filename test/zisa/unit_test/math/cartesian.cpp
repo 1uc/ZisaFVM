@@ -23,6 +23,12 @@ TEST_CASE("Cartesian; structured bindings", "[math]") {
 
   zisa::euler_var_t u{1.0, 2.0, 3.0, 4.0, 5.0};
   auto [rho, mvx, mvy, mvz, E] = u;
+
+  REQUIRE(rho == 1.0);
+  REQUIRE(mvx == 2.0);
+  REQUIRE(mvy == 3.0);
+  REQUIRE(mvz == 4.0);
+  REQUIRE(E == 5.0);
 }
 
 TEST_CASE("Cartesian; comparison", "[math]") {

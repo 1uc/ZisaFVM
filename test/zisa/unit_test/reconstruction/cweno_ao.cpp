@@ -83,8 +83,7 @@ TEST_CASE("CWENO; reconstruct smooth (stencil)",
   auto cases = cweno_ao_2d_cases();
 
   for (auto &[expected_rate, params] : cases) {
-    zisa::test_hybrid_weno_valid_stencil<zisa::CWENO_AO>(
-        grid_names, expected_rate, params, 2);
+    zisa::test_hybrid_weno_valid_stencil<zisa::CWENO_AO>(grid_names, params, 2);
   }
 }
 
@@ -186,8 +185,7 @@ TEST_CASE("CWENO; reconstruct smooth 3D (stencil)",
   auto cases = cweno_3d_cases();
 
   for (auto &[_, expected_rate, params] : cases) {
-    zisa::test_hybrid_weno_valid_stencil<zisa::CWENO_AO>(
-        grid_names, expected_rate, params, 3);
+    zisa::test_hybrid_weno_valid_stencil<zisa::CWENO_AO>(grid_names, params, 3);
   }
 }
 
