@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 project(ZisaFVM VERSION 0.1)
 
+if(ZISA_HAS_CUDA)
+  enable_language(CUDA)
+endif()
+
 include("cmake/has_build_type.cmake")
 include("cmake/fast_debug.cmake")
 include("cmake/native.cmake")
@@ -97,22 +101,39 @@ if(ZISA_HAS_MPI)
   target_link_libraries(fvm_dependencies INTERFACE Zisa::mpi)
 endif()
 
+target_include_directories(fvm_dependencies INTERFACE
+  $<BUILD_INTERFACE:${ZisaFVM_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 # -- generic dependency --------------------------------------------------------
 add_library(zisa_generic_obj OBJECT "")
 set_target_properties(zisa_generic_obj PROPERTIES CXX_STANDARD 17)
 set_target_properties(zisa_generic_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(zisa_generic_obj PUBLIC include)
 target_link_libraries(zisa_generic_obj PUBLIC fvm_dependencies)
-target_link_libraries(zisa_generic_obj PRIVATE zisa_warning_flags)
+target_link_libraries(zisa_generic_obj PRIVATE fvm_warning_flags)
 
 # -- MPI dependency ------------------------------------------------------------
 if(ZISA_HAS_MPI)
   add_library(zisa_mpi_obj OBJECT "")
   set_target_properties(zisa_mpi_obj PROPERTIES CXX_STANDARD 17)
   set_target_properties(zisa_mpi_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
-  target_include_directories(zisa_mpi_obj PUBLIC include)
   target_link_libraries(zisa_mpi_obj PUBLIC fvm_dependencies)
-  target_link_libraries(zisa_mpi_obj PRIVATE zisa_warning_flags)
+  target_link_libraries(zisa_mpi_obj PRIVATE fvm_warning_flags)
+endif()
+
+# -- CUDA dependency ------------------------------------------------------------
+if(ZISA_HAS_CUDA)
+  add_library(zisa_cuda_obj OBJECT "")
+  set_target_properties(zisa_cuda_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(zisa_cuda_obj PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  set_target_properties(zisa_cuda_obj PROPERTIES CUDA_STANDARD 11)
+  set_target_properties(zisa_cuda_obj PROPERTIES CXX_STANDARD 17)
+
+  target_link_libraries(zisa_cuda_obj PUBLIC fvm_dependencies)
+  target_link_libraries(zisa_cuda_obj PUBLIC Zisa::core)
+  target_link_libraries(zisa_cuda_obj PUBLIC CUDA::cudart)
+  target_link_libraries(zisa_cuda_obj PRIVATE fvm_warning_flags)
 endif()
 
 # -- combined dependencies -----------------------------------------------------
@@ -122,6 +143,12 @@ target_sources(zisa_combined INTERFACE $<TARGET_OBJECTS:zisa_generic_obj>)
 if(ZISA_HAS_MPI)
   target_sources(zisa_combined INTERFACE $<TARGET_OBJECTS:zisa_mpi_obj>)
 endif()
+
+if(ZISA_HAS_CUDA)
+  target_sources(zisa_combined INTERFACE $<TARGET_OBJECTS:zisa_cuda_obj>)
+endif()
+
+
 target_include_directories(zisa_combined INTERFACE include)
 target_link_libraries(zisa_combined INTERFACE fvm_dependencies)
 
@@ -133,52 +160,52 @@ target_link_libraries(zisa_combined INTERFACE fvm_dependencies)
 #   endif()
 # endif()
 
-add_executable(zisa "")
-set_target_properties(zisa PROPERTIES CXX_STANDARD 17)
-target_link_libraries(zisa PUBLIC zisa_combined)
+macro (zisa_generic_executable)
+  message(${ARGV0})
+  add_executable(${ARGV0} "")
+  set_target_properties(${ARGV0} PROPERTIES CXX_STANDARD 17)
+  set_target_properties(${ARGV0} PROPERTIES CUDA_STANDARD 11)
+  set_target_properties(${ARGV0} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  target_link_libraries(${ARGV0} PUBLIC zisa_combined)
+  target_link_libraries(${ARGV0} PRIVATE fvm_warning_flags)
+
+  if(ZISA_HAS_CUDA)
+    set_target_properties(${ARGV0} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+  endif()
+endmacro()
+
+zisa_generic_executable(zisa)
 
 # -- Locate point --------------------------------------------------------------
-add_executable(locate-point "")
-set_target_properties(locate-point PROPERTIES CXX_STANDARD 17)
-target_link_libraries(locate-point PUBLIC zisa_combined)
+zisa_generic_executable(locate-point)
 
 # -- OpenGL Demo ---------------------------------------------------------------
-add_executable(opengl-demo "")
-set_target_properties(opengl-demo PROPERTIES CXX_STANDARD 17)
-target_link_libraries(opengl-demo PUBLIC zisa_combined)
+zisa_generic_executable(opengl-demo)
+
+# -- CUDA Demo ------------------------------------------------------------
+zisa_generic_executable(cuda-demo)
 
 # -- Something Demo ------------------------------------------------------------
-add_executable(something-demo "")
-set_target_properties(something-demo PROPERTIES CXX_STANDARD 17)
-target_link_libraries(something-demo PUBLIC zisa_combined)
+zisa_generic_executable(something-demo)
 
 # -- Space Filling Curve Demo --------------------------------------------------
-add_executable(space-filling-curve-demo "")
-set_target_properties(space-filling-curve-demo PROPERTIES CXX_STANDARD 17)
-target_link_libraries(space-filling-curve-demo PUBLIC zisa_combined)
+zisa_generic_executable(space-filling-curve-demo)
 
 # -- Domain Decomposition ------------------------------------------------------
-add_executable(domain-decomposition "")
-set_target_properties(domain-decomposition PROPERTIES CXX_STANDARD 17)
-target_link_libraries(domain-decomposition PUBLIC zisa_combined)
+zisa_generic_executable(domain-decomposition)
 
 # -- Renumber the Grid ---------------------------------------------------------
-add_executable(renumber-grid "")
-set_target_properties(renumber-grid PROPERTIES CXX_STANDARD 17)
-target_link_libraries(renumber-grid PUBLIC zisa_combined)
+zisa_generic_executable(renumber-grid)
 
 # -- Test Reference solutions --------------------------------------------------
-add_executable(test-distributed-reference "")
-set_target_properties(test-distributed-reference PROPERTIES CXX_STANDARD 17)
-target_link_libraries(test-distributed-reference PUBLIC zisa_combined)
+zisa_generic_executable(test-distributed-reference)
 
 # -- Tests ---------------------------------------------------------------------
 find_package(Catch2 REQUIRED)
 
-add_executable(unit_tests "")
-set_target_properties(unit_tests PROPERTIES CXX_STANDARD 17)
+zisa_generic_executable(unit_tests)
 target_include_directories(unit_tests PUBLIC test)
-target_link_libraries(unit_tests PUBLIC zisa_combined Catch2::Catch2)
+target_link_libraries(unit_tests PUBLIC Catch2::Catch2)
 
 enable_testing()
 add_test(NAME UnitTests COMMAND unit_tests)
@@ -187,10 +214,9 @@ add_test(NAME UnitTests COMMAND unit_tests)
 if(ZISA_HAS_BENCHMARK)
   find_package(benchmark CONFIG REQUIRED)
 
-  add_executable(micro_benchmarks "")
-  set_target_properties(micro_benchmarks PROPERTIES CXX_STANDARD 17)
+  zisa_generic_executable(micro_benchmarks)
   target_include_directories(micro_benchmarks PUBLIC benchmarks)
-  target_link_libraries(micro_benchmarks PUBLIC zisa_combined benchmark::benchmark)
+  target_link_libraries(micro_benchmarks PUBLIC benchmark::benchmark)
 endif()
 
 # -- install -------------------------------------------------------------------

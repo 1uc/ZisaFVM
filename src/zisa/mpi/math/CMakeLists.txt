@@ -5,3 +5,6 @@ target_sources(zisa_mpi_obj
 )
 
 endif()
+if(ZISA_HAS_CUDA)
+
+endif()

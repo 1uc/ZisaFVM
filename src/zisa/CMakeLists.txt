@@ -1,8 +1,12 @@
 if(ZISA_HAS_MPI)
 
 endif()
+if(ZISA_HAS_CUDA)
+
+endif()
 add_subdirectory(boundary)
 add_subdirectory(cli)
+add_subdirectory(cuda)
 add_subdirectory(experiments)
 add_subdirectory(flux)
 add_subdirectory(fvm_loops)

@@ -15,7 +15,7 @@ def find_files(folder, suffixes):
 
 
 def find_source_files(folder):
-    suffixes = [".c", ".C", ".cpp", ".c++"]
+    suffixes = [".c", ".C", ".cpp", ".c++", ".cu"]
     return find_files(folder, suffixes)
 
 
@@ -68,12 +68,12 @@ def recurse(base_directory, targets):
     for dependency, target in targets.items():
         filtered_sources = list(filter(select_for(dependency), source_files))
 
-        if dependency == "mpi":
-            append_to_file(cmake_file, "if(ZISA_HAS_MPI)\n\n")
+        if dependency != "generic":
+            append_to_file(cmake_file, f"if(ZISA_HAS_{dependency.upper()})\n\n")
 
         append_to_file(cmake_file, format_sources(target, filtered_sources))
 
-        if dependency == "mpi":
+        if dependency != "generic":
             append_to_file(cmake_file, "endif()\n")
 
     for d in find_subdirectories(base_directory):
@@ -85,13 +85,21 @@ def is_mpi_file(path):
     return "zisa/mpi/" in path
 
 
+def is_cuda_file(path):
+    return "zisa/cuda/" in path
+
+
 def is_generic_file(path):
-    return not is_mpi_file(path)
+    somethings = [is_mpi_file, is_cuda_file]
+    return not any(is_something(path) for is_something in somethings)
 
 
 def select_for(dependency):
     if dependency == "mpi":
         return is_mpi_file
+
+    if dependency == "cuda":
+        return is_cuda_file
 
     elif dependency == "generic":
         return is_generic_file
@@ -118,13 +126,21 @@ if __name__ == "__main__":
 
     base_directory = "src/"
     for d in find_subdirectories(base_directory):
-        recurse(d, {"generic": "zisa_generic_obj", "mpi": "zisa_mpi_obj"})
+        recurse(
+            d,
+            {
+                "generic": "zisa_generic_obj",
+                "mpi": "zisa_mpi_obj",
+                "cuda": "zisa_cuda_obj",
+            },
+        )
         append_to_file(cmake_file, add_subdirectory(base_directory + d))
 
     add_executable(cmake_file, "zisa", "zisa.cpp")
     add_executable(cmake_file, "locate-point", "locate_point.cpp")
     add_executable(cmake_file, "domain-decomposition", "domain_decomposition.cpp")
     add_executable(cmake_file, "opengl-demo", "opengl_demo.cpp")
+    add_executable(cmake_file, "cuda-demo", "cuda_demo.cpp")
     add_executable(cmake_file, "something-demo", "something_demo.cpp")
     add_executable(cmake_file, "renumber-grid", "renumber_grid.cpp")
     add_executable(
