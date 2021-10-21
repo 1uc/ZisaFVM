@@ -11,6 +11,7 @@
 #include <zisa/io/hdf5_serial_writer.hpp>
 #include <zisa/math/tetrahedral_rule.hpp>
 #include <zisa/memory/array_stencil_family.hpp>
+#include <zisa/reconstruction/assemble_weno_ao_matrix.hpp>
 #include <zisa/reconstruction/global_reconstruction.hpp>
 #include <zisa/unit_test/math/convergence_rates.hpp>
 #include <zisa/unit_test/reconstruction/compute_convergence.hpp>

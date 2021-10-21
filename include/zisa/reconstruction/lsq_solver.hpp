@@ -54,11 +54,5 @@ private:
   Eigen::MatrixXd A;
 };
 
-Eigen::MatrixXd assemble_weno_ao_matrix(const Grid &grid,
-                                        const Stencil &stencil);
-
-Eigen::MatrixXd assemble_weno_ao_matrix(
-    const Grid &grid, const array_const_view<int_t, 1> &stencil, int order);
-
 } // namespace zisa
 #endif /* end of include guard */

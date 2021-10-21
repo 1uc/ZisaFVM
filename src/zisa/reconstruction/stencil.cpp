@@ -10,6 +10,7 @@
 #include <zisa/math/tetrahedral_rule.hpp>
 #include <zisa/math/triangular_rule.hpp>
 #include <zisa/memory/array_view.hpp>
+#include <zisa/reconstruction/assemble_weno_ao_matrix.hpp>
 #include <zisa/reconstruction/lsq_solver.hpp>
 #include <zisa/reconstruction/stencil.hpp>
 #include <zisa/utils/indent_block.hpp>

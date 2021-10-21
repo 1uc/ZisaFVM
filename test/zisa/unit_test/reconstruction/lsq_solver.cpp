@@ -3,19 +3,11 @@
 
 #include <zisa/reconstruction/lsq_solver.hpp>
 
+#include <zisa/reconstruction/assemble_weno_ao_matrix.hpp>
 #include <zisa/reconstruction/lsq_solver_family.hpp>
 #include <zisa/reconstruction/stencil_family.hpp>
 #include <zisa/testing/testing_framework.hpp>
 #include <zisa/unit_test/grid/test_grid_factory.hpp>
-
-namespace zisa {
-Eigen::MatrixXd allocate_weno_ao_matrix(const Grid &grid,
-                                        const Stencil &stencil);
-
-void assemble_weno_ao_matrix(Eigen::MatrixXd &A,
-                             const Grid &grid,
-                             const Stencil &stencil);
-}
 
 TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
   auto params = zisa::StencilFamilyParams(
@@ -38,7 +30,9 @@ TEST_CASE("LSQSolver; assemble_weno_ao_matrix", "[lsq][3d]") {
       auto A = zisa::allocate_weno_ao_matrix(*grid, stencil);
       A = Eigen::MatrixXd::Constant(A.rows(), A.cols(), magic_value);
 
-      zisa::assemble_weno_ao_matrix(A, *grid, stencil);
+      auto A_ref = Eigen::Ref<Eigen::MatrixXd>(A);
+
+      zisa::assemble_weno_ao_matrix(A_ref, *grid, stencil);
 
       for (Eigen::Index i = 0; i < A.rows(); ++i) {
         for (Eigen::Index j = 0; j < A.cols(); ++j) {
