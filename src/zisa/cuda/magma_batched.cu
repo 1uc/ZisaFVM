@@ -6,18 +6,21 @@ namespace magma {
 
 namespace internal {
 ANY_DEVICE_INLINE
-static double *extract_pointer(const array_const_view<double, 2, column_major> &a, int_t k) {
+static double *
+extract_pointer(const array_const_view<double, 2, column_major> &a, int_t k) {
   return const_cast<double *>(&a(0, k));
 }
 
 ANY_DEVICE_INLINE
-static double *extract_pointer(const array_const_view<double, 3, column_major> &a, int_t k) {
+static double *
+extract_pointer(const array_const_view<double, 3, column_major> &a, int_t k) {
   return const_cast<double *>(&a(0, 0, k));
 }
 
 template <int NDIMS>
-__global__ void fill_ptrs_kernel(array_view<double *, 1> a_ptrs,
-                                 array_const_view<double, NDIMS, column_major> a) {
+__global__ void
+fill_ptrs_kernel(array_view<double *, 1> a_ptrs,
+                 array_const_view<double, NDIMS, column_major> a) {
   auto tid = threadIdx.x;
   int_t i = tid;
   auto n_mat = a_ptrs.shape(0);
@@ -58,15 +61,17 @@ void fill_ptrs(const array_view<double *, 1> &a_ptrs,
 }
 }
 
-#define ZISA_FILL_PTRS_DEFN(NDIMS) \
-void fill_ptrs(const array_view<double *, 1> &a_ptrs, \
-const array_const_view<double, NDIMS, column_major> &a) { \
-  internal::fill_ptrs(a_ptrs, a);  \
-}
+#define ZISA_FILL_PTRS_DEFN(NDIMS)                                             \
+  void fill_ptrs(const array_view<double *, 1> &a_ptrs,                        \
+                 const array_const_view<double, NDIMS, column_major> &a) {     \
+    internal::fill_ptrs(a_ptrs, a);                                            \
+  }
 
 ZISA_FILL_PTRS_DEFN(2);
 ZISA_FILL_PTRS_DEFN(3);
 
 #undef ZISA_FILL_PTRS_DECL
 
-}}}
+}
+}
+}

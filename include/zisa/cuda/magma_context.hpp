@@ -3,8 +3,8 @@
 
 #include <zisa/config.hpp>
 
-#include <memory>
 #include <magma_v2.h>
+#include <memory>
 
 namespace zisa {
 namespace cuda {
@@ -15,22 +15,16 @@ namespace magma {
  */
 class MAGMAContext {
 public:
-  MAGMAContext() {
-    magma_init();
-  }
+  MAGMAContext() { magma_init(); }
 
-  ~MAGMAContext() {
-    magma_finalize();
-  }
+  ~MAGMAContext() { magma_finalize(); }
 
   MAGMAContext(const MAGMAContext &) = delete;
   MAGMAContext(MAGMAContext &&) = default;
 
-  const MAGMAContext &operator=(const MAGMAContext&) = delete;
-  MAGMAContext &operator=(MAGMAContext&&) = default;
+  const MAGMAContext &operator=(const MAGMAContext &) = delete;
+  MAGMAContext &operator=(MAGMAContext &&) = default;
 };
-
-
 
 /// RAII style MAGMA queue.
 /**  A MAGMA queue is one of those pointer to opaque object constructs
@@ -43,7 +37,8 @@ public:
 class MAGMAQueue {
 public:
   MAGMAQueue() = default;
-  MAGMAQueue(std::shared_ptr<MAGMAContext> magma_context, magma_int_t device_id);
+  MAGMAQueue(std::shared_ptr<MAGMAContext> magma_context,
+             magma_int_t device_id);
 
   MAGMAQueue(const MAGMAQueue &) = delete;
   MAGMAQueue(MAGMAQueue &&) = default;
