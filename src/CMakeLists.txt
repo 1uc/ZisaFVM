@@ -1,4 +1,3 @@
-add_subdirectory(src)
 add_subdirectory(zisa)
 
 target_sources(zisa
