@@ -1,4 +1,5 @@
 add_subdirectory(boundary)
+add_subdirectory(cuda)
 add_subdirectory(filesystem)
 add_subdirectory(flux)
 add_subdirectory(grid)
