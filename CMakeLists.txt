@@ -79,6 +79,12 @@ if(ZISA_HAS_OPENMP)
     target_link_libraries(fvm_dependencies INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
+if(ZISA_HAS_MAGMA)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+  find_package(MAGMA REQUIRED)
+  target_link_libraries(fvm_dependencies INTERFACE MAGMA)
+endif()
+
 # C++11 threads
 find_package(Threads REQUIRED)
 target_link_libraries(fvm_dependencies INTERFACE ${CMAKE_THREAD_LIBS_INIT})
