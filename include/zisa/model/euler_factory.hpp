@@ -7,8 +7,6 @@
 #include <type_traits>
 #include <utility>
 
-using std::declval;
-
 #include <zisa/cli/input_parameters.hpp>
 #include <zisa/model/euler.hpp>
 #include <zisa/model/local_eos_state.hpp>
