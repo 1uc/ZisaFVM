@@ -167,7 +167,6 @@ target_link_libraries(zisa_combined INTERFACE fvm_dependencies)
 # endif()
 
 macro (zisa_generic_executable)
-  message(${ARGV0})
   add_executable(${ARGV0} "")
   set_target_properties(${ARGV0} PROPERTIES CXX_STANDARD 17)
   set_target_properties(${ARGV0} PROPERTIES CUDA_STANDARD 11)
