@@ -138,7 +138,6 @@ if(ZISA_HAS_CUDA)
 
   target_link_libraries(zisa_cuda_obj PUBLIC fvm_dependencies)
   target_link_libraries(zisa_cuda_obj PUBLIC Zisa::core)
-  target_link_libraries(zisa_cuda_obj PUBLIC CUDA::cudart)
   target_link_libraries(zisa_cuda_obj PRIVATE fvm_warning_flags)
 endif()
 
