@@ -34,33 +34,27 @@ void HDF5ParallelWriter::do_write_scalar(const void *addr,
                                          const HDF5DataType &data_type,
                                          const std::string &tag) {
   // create a scalar data space.
-  hid_t dataspace = zisa::H5S::create(H5S_SCALAR);
+  auto dataspace = HDF5Dataspace(zisa::H5S::create(H5S_SCALAR));
 
   // Create dataspace, everyone needs to participate here! This way the
   // meta-data stays consistent among all processes.
-  hid_t dataset = zisa::H5D::create(file.top(),
-                                    tag.c_str(),
-                                    data_type(),
-                                    dataspace,
-                                    H5P_DEFAULT,
-                                    H5P_DEFAULT,
-                                    H5P_DEFAULT);
+  auto dataset = HDF5Dataset(zisa::H5D::create(file.top(),
+                                               tag.c_str(),
+                                               *data_type,
+                                               *dataspace,
+                                               H5P_DEFAULT,
+                                               H5P_DEFAULT,
+                                               H5P_DEFAULT));
 
   if (is_serial_writer()) {
     // we want only one process to write, hence we need `independent` mode.
-    hid_t h5_properties = zisa::H5P::create(H5P_DATASET_XFER);
-    H5Pset_dxpl_mpio(h5_properties, H5FD_MPIO_INDEPENDENT);
+    auto h5_properties = HDF5Property(zisa::H5P::create(H5P_DATASET_XFER));
+    H5Pset_dxpl_mpio(*h5_properties, H5FD_MPIO_INDEPENDENT);
 
     // write the scalar, but only by one process
     zisa::H5D::write(
-        dataset, data_type(), H5S_ALL, H5S_ALL, h5_properties, addr);
-
-    zisa::H5P::close(h5_properties);
+        *dataset, *data_type, H5S_ALL, H5S_ALL, *h5_properties, addr);
   }
-
-  // close
-  zisa::H5D::close(dataset);
-  zisa::H5S::close(dataspace);
 }
 
 void HDF5ParallelWriter::do_write_string(const std::string &data,
@@ -68,36 +62,30 @@ void HDF5ParallelWriter::do_write_string(const std::string &data,
   // strings can be stored as 1d-arrays of characters.
   // don't forget the null-character at the end of 'data.c_str()'.
   hsize_t dims[1] = {data.size() + 1};
-  hid_t dataspace = H5S::create_simple(1, dims, nullptr);
+  auto dataspace = HDF5Dataspace(H5S::create_simple(1, dims, nullptr));
 
   // this type of characters
   HDF5DataType data_type = make_hdf5_data_type<char>();
 
   // Create dataspace, everyone needs to participate here! This way the
   // meta-data stays consistent among all processes.
-  hid_t dataset = zisa::H5D::create(file.top(),
-                                    tag.c_str(),
-                                    data_type(),
-                                    dataspace,
-                                    H5P_DEFAULT,
-                                    H5P_DEFAULT,
-                                    H5P_DEFAULT);
+  auto dataset = HDF5Dataset(zisa::H5D::create(file.top(),
+                                               tag.c_str(),
+                                               *data_type,
+                                               *dataspace,
+                                               H5P_DEFAULT,
+                                               H5P_DEFAULT,
+                                               H5P_DEFAULT));
 
   if (is_serial_writer()) {
     // we want only one process to write, hence we need `independent` mode.
-    hid_t h5_properties = zisa::H5P::create(H5P_DATASET_XFER);
-    zisa::H5P::set_dxpl_mpio(h5_properties, H5FD_MPIO_INDEPENDENT);
+    auto h5_properties = HDF5Property(zisa::H5P::create(H5P_DATASET_XFER));
+    zisa::H5P::set_dxpl_mpio(*h5_properties, H5FD_MPIO_INDEPENDENT);
 
     // write the string, but only by one process
     zisa::H5D::write(
-        dataset, data_type(), H5S_ALL, H5S_ALL, h5_properties, data.c_str());
-
-    zisa::H5P::close(h5_properties);
+        *dataset, *data_type, H5S_ALL, H5S_ALL, *h5_properties, data.c_str());
   }
-
-  // close
-  zisa::H5D::close(dataset);
-  zisa::H5S::close(dataspace);
 }
 
 void HDF5UnstructuredWriter::do_write_array(const void *data,
@@ -115,41 +103,39 @@ void HDF5UnstructuredWriter::do_write_array(const void *data,
   }
 
   // create filespace
-  hid_t h5_filespace
-      = zisa::H5S::create_simple(rank, global_dims.data(), nullptr);
+  auto h5_filespace = HDF5Dataspace(
+      zisa::H5S::create_simple(rank, global_dims.data(), nullptr));
 
   // create a property list
-  hid_t h5_plist = zisa::H5P::create(H5P_DATASET_CREATE);
+  auto h5_plist = HDF5Property(zisa::H5P::create(H5P_DATASET_CREATE));
 
   // create a dataset
-  hid_t h5_dataset = zisa::H5D::create(file.top(),
-                                       tag.c_str(),
-                                       H5T_NATIVE_DOUBLE,
-                                       h5_filespace,
-                                       H5P_DEFAULT,
-                                       h5_plist,
-                                       H5P_DEFAULT);
-
-  zisa::H5P::close(h5_plist);
-  zisa::H5S::close(h5_filespace);
+  auto h5_dataset = HDF5Dataset(zisa::H5D::create(file.top(),
+                                                  tag.c_str(),
+                                                  H5T_NATIVE_DOUBLE,
+                                                  *h5_filespace,
+                                                  H5P_DEFAULT,
+                                                  *h5_plist,
+                                                  H5P_DEFAULT));
 
   // NOTE: HDF5 tutorial suggest this extra closing and reopening step of the
   // file space
-  h5_filespace = zisa::H5D::get_space(h5_dataset);
+  h5_filespace = HDF5Dataspace(zisa::H5D::get_space(*h5_dataset));
 
   // select the corresponding slab on disk
   auto gids = global_ids(rank, dims);
-  H5S::select_elements(h5_filespace,
+  H5S::select_elements(*h5_filespace,
                        H5S_SELECT_SET,
                        gids.size() / integer_cast<size_t>(rank),
                        gids.data());
 
   // select only part of the memspace
-  hid_t h5_memspace = zisa::H5S::create_simple(rank, dims, nullptr);
+  auto h5_memspace
+      = HDF5Dataspace(zisa::H5S::create_simple(rank, dims, nullptr));
 
   auto offset = std::vector<hsize_t>(integer_cast<size_t>(rank), hsize_t(0));
   auto count = local_count(rank, dims);
-  zisa::H5S::select_hyperslab(h5_memspace,
+  zisa::H5S::select_hyperslab(*h5_memspace,
                               H5S_SELECT_SET,
                               offset.data(),
                               nullptr,
@@ -157,18 +143,12 @@ void HDF5UnstructuredWriter::do_write_array(const void *data,
                               nullptr);
 
   // property list for collective MPI write
-  h5_plist = zisa::H5P::create(H5P_DATASET_XFER);
-  zisa::H5P::set_dxpl_mpio(h5_plist, H5FD_MPIO_INDEPENDENT);
+  h5_plist = HDF5Property(zisa::H5P::create(H5P_DATASET_XFER));
+  zisa::H5P::set_dxpl_mpio(*h5_plist, H5FD_MPIO_INDEPENDENT);
 
   // write slab to file
   zisa::H5D::write(
-      h5_dataset, data_type(), h5_memspace, h5_filespace, h5_plist, data);
-
-  // close everything
-  zisa::H5S::close(h5_filespace);
-  zisa::H5S::close(h5_memspace);
-  zisa::H5P::close(h5_plist);
-  zisa::H5D::close(h5_dataset);
+      *h5_dataset, *data_type, *h5_memspace, *h5_filespace, *h5_plist, data);
 }
 
 bool HDF5UnstructuredWriter::is_serial_writer() const {
@@ -260,17 +240,14 @@ HDF5UnstructuredReader::HDF5UnstructuredReader(
 std::vector<hsize_t>
 HDF5UnstructuredReader::do_hdf5_dims(const std::string &tag) const {
   // TODO this is duplicated in `HDF5SerialReader`.
-  hid_t dataset = open_dataset(tag);
-  hid_t dataspace = get_dataspace(dataset);
+  auto dataset = open_dataset(tag);
+  auto dataspace = get_dataspace(*dataset);
 
-  auto rank = static_cast<int_t>(H5S::get_simple_extent_ndims(dataspace));
+  auto rank = static_cast<int_t>(H5S::get_simple_extent_ndims(*dataspace));
   std::vector<hsize_t> dims(rank);
 
-  H5S::get_simple_extent_dims(dataspace, &(dims[0]), nullptr);
+  H5S::get_simple_extent_dims(*dataspace, &(dims[0]), nullptr);
   dims[0] = file_dims->n_cells_local;
-
-  zisa::H5D::close(dataset);
-  zisa::H5S::close(dataspace);
 
   return dims;
 }
@@ -283,26 +260,22 @@ void HDF5UnstructuredReader::do_read_array(void *data,
   auto rank = local_dims.size();
   local_dims[0] = file_dims->ids.size();
 
-  hid_t dataset = open_dataset(tag);
-  hid_t filespace = get_dataspace(dataset);
+  auto dataset = open_dataset(tag);
+  auto filespace = get_dataspace(*dataset);
 
-  hid_t memspace = zisa::H5S::create_simple(
-      integer_cast<int>(rank), local_dims.data(), nullptr);
+  auto memspace = HDF5Dataspace(zisa::H5S::create_simple(
+      integer_cast<int>(rank), local_dims.data(), nullptr));
 
-  hid_t plist = zisa::H5P::create(H5P_DATASET_XFER);
-  zisa::H5P::set_dxpl_mpio(plist, H5FD_MPIO_COLLECTIVE);
+  auto plist = HDF5Property(zisa::H5P::create(H5P_DATASET_XFER));
+  zisa::H5P::set_dxpl_mpio(*plist, H5FD_MPIO_COLLECTIVE);
 
   auto gids = global_ids(file_dims->ids, rank, local_dims.data());
   zisa::H5S::select_elements(
-      filespace, H5S_SELECT_SET, gids.size() / rank, gids.data());
+      *filespace, H5S_SELECT_SET, gids.size() / rank, gids.data());
 
   // read slab from file
-  zisa::H5D::read(dataset, data_type(), memspace, filespace, H5P_DEFAULT, data);
-
-  zisa::H5P::close(plist);
-  zisa::H5S::close(filespace);
-  zisa::H5S::close(memspace);
-  zisa::H5D::close(dataset);
+  zisa::H5D::read(
+      *dataset, *data_type, *memspace, *filespace, H5P_DEFAULT, data);
 }
 
 void HDF5UnstructuredReader::do_read_scalar(void *data,
@@ -310,16 +283,12 @@ void HDF5UnstructuredReader::do_read_scalar(void *data,
                                             const std::string &tag) const {
 
   auto dataset = open_dataset(tag);
-  auto dataspace = get_dataspace(dataset);
+  auto dataspace = get_dataspace(*dataset);
 
-  auto properties = zisa::H5P::create(H5P_DATASET_XFER);
-  zisa::H5P::set_dxpl_mpio(properties, H5FD_MPIO_COLLECTIVE);
+  auto properties = HDF5Property(zisa::H5P::create(H5P_DATASET_XFER));
+  zisa::H5P::set_dxpl_mpio(*properties, H5FD_MPIO_COLLECTIVE);
 
-  zisa::H5D::read(dataset, data_type(), H5S_ALL, H5S_ALL, properties, data);
-
-  zisa::H5D::close(dataset);
-  zisa::H5S::close(dataspace);
-  zisa::H5P::close(properties);
+  zisa::H5D::read(*dataset, *data_type, H5S_ALL, H5S_ALL, *properties, data);
 }
 
 std::string HDF5UnstructuredReader::do_read_string(const std::string &) const {

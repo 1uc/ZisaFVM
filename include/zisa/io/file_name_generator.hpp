@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 #include <zisa/config.hpp>
 #include <zisa/io/file_manipulation.hpp>

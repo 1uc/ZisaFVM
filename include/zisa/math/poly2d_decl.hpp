@@ -7,6 +7,9 @@
 #define POLY2D_DECL_H_83W71
 
 #include <zisa/config.hpp>
+
+#include <array>
+
 #include <zisa/io/format_as_list.hpp>
 #include <zisa/math/cartesian.hpp>
 #include <zisa/math/polynomial_expr.hpp>
