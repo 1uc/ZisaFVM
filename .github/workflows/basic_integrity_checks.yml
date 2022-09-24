@@ -41,9 +41,15 @@ jobs:
         run: |
           sudo apt-get install -y openmpi-bin libopenmpi-dev
 
-      - name: Install HDF5
+      - name: Install HDF5 (serial)
+        if: matrix.zisa_has_mpi == 0
         run: |
           sudo apt-get install -y libhdf5-serial-dev
+
+      - name: Install HDF5 (openmpi)
+        if: matrix.zisa_has_mpi == 1
+        run: |
+          sudo apt-get install -y libhdf5-openmpi-dev
 
       - name: Install conan
         run: |
@@ -54,12 +60,14 @@ jobs:
         run: |
           export PATH=${PATH}:${HOME}/.local/bin
           bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT} \
-                                      --zisa_has_mpi=${ZISA_HAS_MPI}
+                                      --zisa_has_mpi=${ZISA_HAS_MPI} \
+                                      --zisa_has_hdf5=1
 
       - name: Configure build
         run: |
           export INSTALL_DIR=$(bin/install_dependencies.sh ${CC} ${HOME}/${REL_INSTALL_ROOT} \
                                                            --zisa_has_mpi=${ZISA_HAS_MPI} \
+                                                           --zisa_has_hdf5=1 \
                                                            --print_install_dir)
 
           cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/zisa \
