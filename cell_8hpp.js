@@ -1,6 +1,6 @@
 var cell_8hpp =
 [
-    [ "Cell", "classzisa_1_1Cell.html", "classzisa_1_1Cell" ],
+    [ "zisa::Cell", "classzisa_1_1Cell.html", "classzisa_1_1Cell" ],
     [ "avg_moment", "cell_8hpp.html#a583742fbea821c8908730d891da9cb30", null ],
     [ "avg_moment", "cell_8hpp.html#a0836df5f66ababe32c8d77e3e4124ec1", null ],
     [ "barycenter", "cell_8hpp.html#a6a53d2970b048718c75460d755acf880", null ],

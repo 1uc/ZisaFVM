@@ -1,7 +1,7 @@
 var grid__decl_8hpp =
 [
-    [ "QRDegrees", "structzisa_1_1QRDegrees.html", "structzisa_1_1QRDegrees" ],
-    [ "Grid", "structzisa_1_1Grid.html", "structzisa_1_1Grid" ],
+    [ "zisa::QRDegrees", "structzisa_1_1QRDegrees.html", "structzisa_1_1QRDegrees" ],
+    [ "zisa::Grid", "structzisa_1_1Grid.html", "structzisa_1_1Grid" ],
     [ "distance_to_boundary", "grid__decl_8hpp.html#a968922b8f3634aa0580c9d05fa6867fc", null ],
     [ "is_boundary_cell", "grid__decl_8hpp.html#ada385cc50ca2a380fb5a1e02204e020a", null ],
     [ "is_inside_cell", "grid__decl_8hpp.html#af39b1345685f4565a5d9f4564c0e53e4", null ],

@@ -6,5 +6,5 @@ var classzisa_1_1PointwiseScale =
     [ "degree", "classzisa_1_1PointwiseScale.html#a8869f3bb14836ac390193f2e502dbb42", null ],
     [ "n_dims", "classzisa_1_1PointwiseScale.html#a1e3c625ff84caa78f4ecec6a833de33f", null ],
     [ "reference_length", "classzisa_1_1PointwiseScale.html#a9af8bb0c524fcc7210bf57422597fc35", null ],
-    [ "x_center", "classzisa_1_1PointwiseScale.html#a5c1768a7ba8c8edca977c033fcc219cf", null ]
+    [ "x_center", "classzisa_1_1PointwiseScale.html#a6c23d9f2604b73b9d167500994c9b41f", null ]
 ];

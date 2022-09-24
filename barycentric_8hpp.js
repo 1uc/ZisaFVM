@@ -1,7 +1,7 @@
 var barycentric_8hpp =
 [
-    [ "Barycentric2D", "classzisa_1_1Barycentric2D.html", "classzisa_1_1Barycentric2D" ],
-    [ "Barycentric3D", "classzisa_1_1Barycentric3D.html", "classzisa_1_1Barycentric3D" ],
+    [ "zisa::Barycentric2D", "classzisa_1_1Barycentric2D.html", "classzisa_1_1Barycentric2D" ],
+    [ "zisa::Barycentric3D", "classzisa_1_1Barycentric3D.html", "classzisa_1_1Barycentric3D" ],
     [ "coord", "barycentric_8hpp.html#a0f536e6b706713a0e296f2e126dd8ea1", null ],
     [ "coord", "barycentric_8hpp.html#ab0bd5a2256fee220ce399c8e98dbc451", null ],
     [ "is_inside", "barycentric_8hpp.html#ab93835a8da98470b62027d5ca9d170df", null ],

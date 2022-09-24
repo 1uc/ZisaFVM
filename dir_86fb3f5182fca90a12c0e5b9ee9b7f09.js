@@ -1,8 +1,6 @@
 var dir_86fb3f5182fca90a12c0e5b9ee9b7f09 =
 [
-    [ "cell_flags.hpp", "cell__flags_8hpp.html", [
-      [ "CellFlags", "structzisa_1_1CellFlags.html", "structzisa_1_1CellFlags" ]
-    ] ],
+    [ "cell_flags.hpp", "cell__flags_8hpp.html", "cell__flags_8hpp" ],
     [ "cell_range.hpp", "cell__range_8hpp.html", "cell__range_8hpp" ],
     [ "edge_range.hpp", "edge__range_8hpp.html", "edge__range_8hpp" ],
     [ "face_range.hpp", "face__range_8hpp.html", "face__range_8hpp" ],

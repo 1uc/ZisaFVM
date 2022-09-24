@@ -6,5 +6,5 @@ var classzisa_1_1PointwiseSum =
     [ "degree", "classzisa_1_1PointwiseSum.html#a0a71e4a7d4589495b61a7d192fd63bdd", null ],
     [ "n_dims", "classzisa_1_1PointwiseSum.html#ab78ff5cb1289f551e113e6b3c91c01bc", null ],
     [ "reference_length", "classzisa_1_1PointwiseSum.html#a296b081a47effaca5960e86f449381fe", null ],
-    [ "x_center", "classzisa_1_1PointwiseSum.html#a6754d75c097db2418c10a3ca780e9998", null ]
+    [ "x_center", "classzisa_1_1PointwiseSum.html#aa5a5a5302e30c1c31a7da502d977b6dc", null ]
 ];

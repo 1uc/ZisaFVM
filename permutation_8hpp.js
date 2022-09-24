@@ -1,7 +1,7 @@
 var permutation_8hpp =
 [
-    [ "Cycle", "structzisa_1_1Cycle.html", "structzisa_1_1Cycle" ],
-    [ "Permutation", "structzisa_1_1Permutation.html", "structzisa_1_1Permutation" ],
+    [ "zisa::Cycle", "structzisa_1_1Cycle.html", "structzisa_1_1Cycle" ],
+    [ "zisa::Permutation", "structzisa_1_1Permutation.html", "structzisa_1_1Permutation" ],
     [ "apply_cycle", "permutation_8hpp.html#a9037cb8e07d765b7dfb495c1bae6dda7", null ],
     [ "apply_cycle", "permutation_8hpp.html#a086c96058e3a33748e0374fcc85d7b1d", null ],
     [ "apply_permutation", "permutation_8hpp.html#ab2cc068e3c25927995ade0200c91c58d", null ],

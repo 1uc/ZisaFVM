@@ -45,7 +45,7 @@ var classzisa_1_1JankaEOS =
     [ "rhoP", "classzisa_1_1JankaEOS.html#af66fabf41fb09e7b0dc3b54e09e5cf57", null ],
     [ "sound_speed", "classzisa_1_1JankaEOS.html#adb10349176eabd52e1dfa2fb51f0f582", null ],
     [ "sound_speed", "classzisa_1_1JankaEOS.html#a69a6b9b37346048ba819e158dcc333e6", null ],
-    [ "split_pressure", "classzisa_1_1JankaEOS.html#ad72961aa1fbae0cc6f687781267080b7", null ],
+    [ "split_pressure", "classzisa_1_1JankaEOS.html#aa69a22eda2a555ff2b917097cc38076a", null ],
     [ "str", "classzisa_1_1JankaEOS.html#a19a12dad386859f53a27664bc3254a4e", null ],
     [ "thermal_energy", "classzisa_1_1JankaEOS.html#ac9158a946a958466fb83d909665f3866", null ],
     [ "thermal_energy", "classzisa_1_1JankaEOS.html#a18da0f336f697d8311aa11aa6604c887", null ],

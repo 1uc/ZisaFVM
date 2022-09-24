@@ -100,20 +100,27 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "all_8hpp.html",
-"classzisa_1_1CVarConstExpr.html#a993f5681542511a5f73bc64bca34639d",
-"classzisa_1_1EulerGlobalReconstruction.html#ab26c19ff0f7e2b08ab8e838a3b745eed",
-"classzisa_1_1IdealGasEOS.html#a013ad3e057a23a119e602c772bede651",
-"classzisa_1_1NoBoundaryCondition.html#a7e2ee5243711c601083928f574ee0828",
-"classzisa_1_1RollingConvergenceRate.html",
-"classzisa_1_1TypicalNumericalExperiment.html#adcfe896cfd0ff01ddf4bcfe6b1ccccff",
-"euler__decl_8hpp.html#ab665e91c072a760defc2e99dcb97dbdd",
-"gmsh__reader_8hpp_source.html",
-"local__reconstruction_8hpp.html",
-"namespacezisa.html#a15fa58dd8173e9619fcc4d9d828cd57a",
-"namespacezisa.html#ab2cc068e3c25927995ade0200c91c58d",
-"polynomial__expr_8hpp.html#aa1514bd3263f7d3efe3c635c23c21e7f",
-"structzisa_1_1GaussLegendre.html",
-"structzisa_1_1reduce_1_1detail_1_1return__type__trait_3_01Range_00_01Transform_00_01false_01_4.html#ab4524f691dbdfdd41565268d24360171"
+"classzisa_1_1ArrayGatherer.html#a93876c7724a0a5566a6e433ca13d4796",
+"classzisa_1_1CartesianNot.html#a63c925f7e82134a6c2604b8a36c598f4",
+"classzisa_1_1EulerExperiment.html#a4292ff4a8ed32a6f2c0c2030ec87eb62",
+"classzisa_1_1FourierSeries.html#a1b1768b868941ac87250127d5495dfa4",
+"classzisa_1_1HelmholtzEOS.html#a3239c76fdd5e887f04cfe1922207901b",
+"classzisa_1_1JankaEOS.html#a47a250163001eb544a4965e0b5453fe4",
+"classzisa_1_1MPIHaloExchange.html#a33b02e3b74b460dd8f6badfe57ae1a05",
+"classzisa_1_1PointwiseSubtract.html#abf96419ac93016ab60aa853a19a4ff58",
+"classzisa_1_1RadialPoissonSolver.html#a49cb324788bc910774f8e5b339c8716d",
+"classzisa_1_1Stencil.html#a9e2a5fc684a92656b3fcade2aa306670",
+"classzisa_1_1TypicalNumericalExperiment.html#a34fcfe5836b527b8f60fb63872d2a16c",
+"dir_3edd3b36ccbfe248fb2e3b9d0e32d37f.html",
+"functions.html",
+"grid__variables__decl_8hpp.html",
+"mpi__single__node__array__scatterer_8cpp.html",
+"namespacezisa.html#a6204077cd48e8d8ead13ac2220e22984",
+"namespacezisa.html#af198e168003d749cc68acb77f5b880ac",
+"stencil_8cpp.html#a3751d14ce895a098fb0e4958de3236b2",
+"structzisa_1_1Grid.html#a5604a04e85ee29ba922cf6920e7362e1",
+"structzisa_1_1RhoE.html#ab191a75917d9cfefc1ad901778ebc91d",
+"tetrahedron_8hpp.html#ae16992109dbf7b1ff5d289f07c6c305c"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

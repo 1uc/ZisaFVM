@@ -1,6 +1,6 @@
 var denormalized__rule_8hpp =
 [
-    [ "DenormalizedRule", "structzisa_1_1DenormalizedRule.html", "structzisa_1_1DenormalizedRule" ],
+    [ "zisa::DenormalizedRule", "structzisa_1_1DenormalizedRule.html", "structzisa_1_1DenormalizedRule" ],
     [ "denormalize", "denormalized__rule_8hpp.html#a504d791038e034cdda08a36a3cad65cf", null ],
     [ "operator!=", "denormalized__rule_8hpp.html#a1d5b9eabf2875510f28474d482353cff", null ],
     [ "operator==", "denormalized__rule_8hpp.html#a6a2b33a91b98090900910fe0442f24b2", null ],

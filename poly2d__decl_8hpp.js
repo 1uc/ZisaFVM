@@ -1,6 +1,6 @@
 var poly2d__decl_8hpp =
 [
-    [ "PolyND", "classzisa_1_1PolyND.html", "classzisa_1_1PolyND" ],
+    [ "zisa::PolyND< NCOEFFS, NVARS >", "classzisa_1_1PolyND.html", "classzisa_1_1PolyND" ],
     [ "operator<<", "poly2d__decl_8hpp.html#a68eedb3f3649ef22022b7798fb61cba1", null ],
     [ "poly_degree", "poly2d__decl_8hpp.html#a10c4923f59a2f847e39faa1c12b8ce71", null ],
     [ "poly_degree", "poly2d__decl_8hpp.html#ab7fd4e5180870c7f192fefc402b22058", null ],

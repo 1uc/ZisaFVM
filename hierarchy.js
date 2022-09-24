@@ -257,8 +257,10 @@ var hierarchy =
     [ "zisa::LocalEOSState< IdealGasEOS >", "classzisa_1_1LocalEOSState_3_01IdealGasEOS_01_4.html", null ],
     [ "zisa::LocalEquilibrium< NoEquilibrium >", "classzisa_1_1LocalEquilibrium_3_01NoEquilibrium_01_4.html", null ],
     [ "zisa::LocalEquilibriumBase< Equilibrium >", "classzisa_1_1LocalEquilibriumBase.html", [
-      [ "zisa::LocalEquilibrium< zisa::IsentropicEquilibrium >", "classzisa_1_1LocalEquilibrium.html", null ],
       [ "zisa::LocalEquilibrium< Equilibrium >", "classzisa_1_1LocalEquilibrium.html", null ]
+    ] ],
+    [ "zisa::LocalEquilibriumBase< zisa::IsentropicEquilibrium >", "classzisa_1_1LocalEquilibriumBase.html", [
+      [ "zisa::LocalEquilibrium< zisa::IsentropicEquilibrium >", "classzisa_1_1LocalEquilibrium.html", null ]
     ] ],
     [ "zisa::LocalEulerScaling< EOS >", "classzisa_1_1LocalEulerScaling.html", null ],
     [ "zisa::LocalRCParams", "structzisa_1_1LocalRCParams.html", null ],
@@ -284,12 +286,12 @@ var hierarchy =
         [ "zisa::StellarConvection", "classzisa_1_1StellarConvection.html", null ]
       ] ],
       [ "zisa::TypicalNumericalExperiment", "classzisa_1_1TypicalNumericalExperiment.html", [
-        [ "zisa::EulerExperiment< IdealGasEOS, ConstantGravityRadial >", "classzisa_1_1EulerExperiment.html", [
-          [ "zisa::SmoothBubble", "classzisa_1_1SmoothBubble.html", null ]
-        ] ],
         [ "zisa::EulerExperiment< IdealGasEOS, PolytropeGravityRadial >", "classzisa_1_1EulerExperiment.html", [
           [ "zisa::Polytrope", "classzisa_1_1Polytrope.html", null ],
           [ "zisa::RayleighTaylor", "classzisa_1_1RayleighTaylor.html", null ]
+        ] ],
+        [ "zisa::EulerExperiment< IdealGasEOS, ConstantGravityRadial >", "classzisa_1_1EulerExperiment.html", [
+          [ "zisa::SmoothBubble", "classzisa_1_1SmoothBubble.html", null ]
         ] ],
         [ "zisa::EulerExperiment< EOS, Gravity >", "classzisa_1_1EulerExperiment.html", null ]
       ] ]

@@ -1,7 +1,7 @@
 var classzisa_1_1SumRatesOfChange =
 [
     [ "SumRatesOfChange", "classzisa_1_1SumRatesOfChange.html#a614e13cfcd4a1a9d49e30c19ce64a68a", null ],
-    [ "SumRatesOfChange", "classzisa_1_1SumRatesOfChange.html#a65ef8847f3cfaef5d624ee02debd2519", null ],
+    [ "SumRatesOfChange", "classzisa_1_1SumRatesOfChange.html#aed93068617af953a676b09d5da2887fe", null ],
     [ "SumRatesOfChange", "classzisa_1_1SumRatesOfChange.html#a714890e462a72fd80d53737374aafb08", null ],
     [ "add_term", "classzisa_1_1SumRatesOfChange.html#a2c4d0077edcf0778960d5ddbc369b4e9", null ],
     [ "compute", "classzisa_1_1SumRatesOfChange.html#aee36e86721b3c018103d23906ccb9883", null ],

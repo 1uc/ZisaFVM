@@ -14,7 +14,7 @@ var colors_8cpp =
     [ "operator<<", "colors_8cpp.html#a76fc8388137b08878b1c7bf14ea90da3", null ],
     [ "operator<<", "colors_8cpp.html#a3854a19c909bd99aca555279c41a04f2", null ],
     [ "operator<<", "colors_8cpp.html#acdfe7dfdecfd36091d217ae96519f66a", null ],
-    [ "reference_white", "colors_8cpp.html#a4022d3e944bb7a4913dc2919c681d592", null ],
+    [ "reference_white", "colors_8cpp.html#ab0331c297a269ebccacc307a3f9f9fc0", null ],
     [ "rgb2lab", "colors_8cpp.html#a3d9559c25a27fd65749b5e3e15ae8332", null ],
     [ "rgb2xyz", "colors_8cpp.html#ac3d775591955fb2fcdb1911e6fa1a20f", null ],
     [ "xyz2lab", "colors_8cpp.html#a89e9784d747301f5e2e1d7c1f7daa4bd", null ],

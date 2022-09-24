@@ -1,7 +1,7 @@
 var model_2polytrope_8hpp =
 [
-    [ "PolytropeParams", "structzisa_1_1PolytropeParams.html", "structzisa_1_1PolytropeParams" ],
-    [ "compute_polytrope_densities", "model_2polytrope_8hpp.html#af69710f40decde65bbe70cd8fd5c6567", null ],
+    [ "zisa::PolytropeParams", "structzisa_1_1PolytropeParams.html", "structzisa_1_1PolytropeParams" ],
+    [ "compute_polytrope_densities", "model_2polytrope_8hpp.html#a344b17aa5cd57d10a9ca894f0abe25e3", null ],
     [ "compute_polytrope_profile", "model_2polytrope_8hpp.html#a36e2b2411167ffb216e9c79a2f3a62e3", null ],
     [ "compute_polytrope_profile", "model_2polytrope_8hpp.html#a7e3d0afdbc0c34f14b2d7542c386793a", null ],
     [ "integrate_lane_emden", "model_2polytrope_8hpp.html#ab2ed2bc271e84b491c71e0e195f6afa4", null ],

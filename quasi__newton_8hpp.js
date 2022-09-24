@@ -1,4 +1,4 @@
 var quasi__newton_8hpp =
 [
-    [ "quasi_newton", "quasi__newton_8hpp.html#ab4883d6d69149f83c728012092f47dd2", null ]
+    [ "quasi_newton", "quasi__newton_8hpp.html#a1be9128f21c0ac9d95c5d68efb5d9cff", null ]
 ];

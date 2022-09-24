@@ -1,6 +1,6 @@
 var tetrahedron_8hpp =
 [
-    [ "Tetrahedron", "classzisa_1_1Tetrahedron.html", "classzisa_1_1Tetrahedron" ],
+    [ "zisa::Tetrahedron", "classzisa_1_1Tetrahedron.html", "classzisa_1_1Tetrahedron" ],
     [ "barycenter", "tetrahedron_8hpp.html#a60054a931ba6425a1104e9981594464b", null ],
     [ "characteristic_length", "tetrahedron_8hpp.html#a0793cbb35f25a305df88792a16728d3f", null ],
     [ "circum_radius", "tetrahedron_8hpp.html#ae16992109dbf7b1ff5d289f07c6c305c", null ],

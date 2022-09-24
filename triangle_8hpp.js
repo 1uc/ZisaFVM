@@ -1,6 +1,6 @@
 var triangle_8hpp =
 [
-    [ "Triangle", "classzisa_1_1Triangle.html", "classzisa_1_1Triangle" ],
+    [ "zisa::Triangle", "classzisa_1_1Triangle.html", "classzisa_1_1Triangle" ],
     [ "barycenter", "triangle_8hpp.html#abc4added57a9d675e2e4d08f9056ce6f", null ],
     [ "characteristic_length", "triangle_8hpp.html#a03693d2ef8ad6a57c9c4aa37e53e8827", null ],
     [ "circum_radius", "triangle_8hpp.html#a8132d07c15baa05066554ad00462d81c", null ],

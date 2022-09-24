@@ -5,9 +5,7 @@ var dir_8b52324fceb2c700026c48b922aadca6 =
     [ "data_source.cpp", "data__source_8cpp.html", null ],
     [ "exec.cpp", "exec_8cpp.html", "exec_8cpp" ],
     [ "file_name_generator.cpp", "file__name__generator_8cpp.html", "file__name__generator_8cpp" ],
-    [ "fng.hpp", "fng_8hpp.html", [
-      [ "FNG", "classzisa_1_1FNG.html", "classzisa_1_1FNG" ]
-    ] ],
+    [ "fng.hpp", "fng_8hpp.html", "fng_8hpp" ],
     [ "gathered_visualization.cpp", "gathered__visualization_8cpp.html", null ],
     [ "load_snapshot.cpp", "load__snapshot_8cpp.html", null ],
     [ "no_visualization.cpp", "no__visualization_8cpp.html", null ],

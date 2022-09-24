@@ -1,6 +1,6 @@
 var quadrature_8hpp =
 [
-    [ "UnitDomain", "structzisa_1_1detail_1_1UnitDomain.html", null ],
+    [ "zisa::detail::UnitDomain", "structzisa_1_1detail_1_1UnitDomain.html", null ],
     [ "average", "quadrature_8hpp.html#a20faa8eec40cccb70bc405d349836616", null ],
     [ "average", "quadrature_8hpp.html#a7dc59ee3d238ffe616e1b024bd56370b", null ],
     [ "average", "quadrature_8hpp.html#a98e044922134d6a4b08b99b7f58be78e", null ],

@@ -1,9 +1,9 @@
 var colors_8hpp =
 [
-    [ "SRGBColor", "structzisa_1_1SRGBColor.html", "structzisa_1_1SRGBColor" ],
-    [ "RGBColor", "structzisa_1_1RGBColor.html", "structzisa_1_1RGBColor" ],
-    [ "XYZColor", "structzisa_1_1XYZColor.html", "structzisa_1_1XYZColor" ],
-    [ "LABColor", "structzisa_1_1LABColor.html", "structzisa_1_1LABColor" ],
+    [ "zisa::SRGBColor", "structzisa_1_1SRGBColor.html", "structzisa_1_1SRGBColor" ],
+    [ "zisa::RGBColor", "structzisa_1_1RGBColor.html", "structzisa_1_1RGBColor" ],
+    [ "zisa::XYZColor", "structzisa_1_1XYZColor.html", "structzisa_1_1XYZColor" ],
+    [ "zisa::LABColor", "structzisa_1_1LABColor.html", "structzisa_1_1LABColor" ],
     [ "almost_equal", "colors_8hpp.html#a831a784a88f35304aa9480f83dbaa2a1", null ],
     [ "almost_equal", "colors_8hpp.html#aaedfcef8c1bb8914c3dd5078da14b283", null ],
     [ "almost_equal", "colors_8hpp.html#a096a62f8fe0b028f3f9d0b6f1a412fbc", null ],

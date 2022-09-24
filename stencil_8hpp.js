@@ -1,6 +1,6 @@
 var stencil_8hpp =
 [
-    [ "Stencil", "classzisa_1_1Stencil.html", "classzisa_1_1Stencil" ],
+    [ "zisa::Stencil", "classzisa_1_1Stencil.html", "classzisa_1_1Stencil" ],
     [ "biased_stencil", "stencil_8hpp.html#ae770930ead4117125884d19180a71693", null ],
     [ "central_stencil", "stencil_8hpp.html#a5317d33da3b5f36037ec0351ea81cf04", null ],
     [ "conservative_stencil", "stencil_8hpp.html#a3751d14ce895a098fb0e4958de3236b2", null ],

@@ -188,4 +188,4 @@ var menudata={children:[
 {text:"z",url:"globals.html#index_z"}]},
 {text:"Functions",url:"globals_func.html"},
 {text:"Macros",url:"globals_defs.html"}]}]},
-{text:"Github Page",url:"https://github.com/1uc/ZisaFVM"}]}
+{text:"Github Page",url:"^https://github.com/1uc/ZisaFVM"}]}
