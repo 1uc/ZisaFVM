@@ -3,7 +3,7 @@
   cmake_paths
 
 [requires]
-  Catch2/2.11.1@catchorg/stable
+  catch2/2.13.7
   nlohmann_json/3.9.1
   boost/1.75.0
   eigen/3.3.9
