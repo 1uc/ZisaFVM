@@ -16,7 +16,7 @@ var searchData=
   ['poly2d_5fimpl_2ehpp_13',['poly2d_impl.hpp',['../poly2d__impl_8hpp.html',1,'']]],
   ['polynomial_5fexpr_2ehpp_14',['polynomial_expr.hpp',['../polynomial__expr_8hpp.html',1,'']]],
   ['polytrope_2ecpp_15',['polytrope.cpp',['../experiments_2polytrope_8cpp.html',1,'(Global Namespace)'],['../model_2polytrope_8cpp.html',1,'(Global Namespace)']]],
-  ['polytrope_2ehpp_16',['polytrope.hpp',['../model_2polytrope_8hpp.html',1,'(Global Namespace)'],['../experiments_2polytrope_8hpp.html',1,'(Global Namespace)']]],
+  ['polytrope_2ehpp_16',['polytrope.hpp',['../experiments_2polytrope_8hpp.html',1,'(Global Namespace)'],['../model_2polytrope_8hpp.html',1,'(Global Namespace)']]],
   ['polytrope_5fic_2ehpp_17',['polytrope_ic.hpp',['../polytrope__ic_8hpp.html',1,'']]],
   ['progress_5fbar_2ecpp_18',['progress_bar.cpp',['../progress__bar_8cpp.html',1,'']]],
   ['progress_5fbar_2ehpp_19',['progress_bar.hpp',['../progress__bar_8hpp.html',1,'']]]

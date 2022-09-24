@@ -13,7 +13,7 @@ var searchData=
   ['distributed_5fgrid_2ehpp_10',['distributed_grid.hpp',['../distributed__grid_8hpp.html',1,'']]],
   ['distributed_5freference_5fsolution_2ecpp_11',['distributed_reference_solution.cpp',['../distributed__reference__solution_8cpp.html',1,'']]],
   ['distributed_5freference_5fsolution_2ehpp_12',['distributed_reference_solution.hpp',['../distributed__reference__solution_8hpp.html',1,'']]],
-  ['domain_5fdecomposition_2ecpp_13',['domain_decomposition.cpp',['../domain__decomposition_8cpp.html',1,'(Global Namespace)'],['../zisa_2parallelization_2domain__decomposition_8cpp.html',1,'(Global Namespace)']]],
+  ['domain_5fdecomposition_2ecpp_13',['domain_decomposition.cpp',['../zisa_2parallelization_2domain__decomposition_8cpp.html',1,'(Global Namespace)'],['../domain__decomposition_8cpp.html',1,'(Global Namespace)']]],
   ['domain_5fdecomposition_2ehpp_14',['domain_decomposition.hpp',['../domain__decomposition_8hpp.html',1,'']]],
   ['down_5fsample_5freference_2ecpp_15',['down_sample_reference.cpp',['../down__sample__reference_8cpp.html',1,'']]],
   ['down_5fsample_5freference_2ehpp_16',['down_sample_reference.hpp',['../down__sample__reference_8hpp.html',1,'']]],
